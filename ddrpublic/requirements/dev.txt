@@ -1,0 +1,11 @@
+# dependencies for local dev environment
+
+# Non-Python dependencies
+# sudo apt-get install graphviz
+
+# include base
+-r _base.txt
+
+bpython                         # MIT
+snakefood                       # GPL
+sphinx                          # BSD
