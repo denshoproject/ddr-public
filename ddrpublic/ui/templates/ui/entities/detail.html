@@ -1,21 +1,27 @@
 {% extends "ui/collections/base.html" %}
 
 {% block title %}{{ repo }}-{{ org }}-{{ cid }}-{{ eid }}{% endblock %}
-{% block pagetitle %}{{ repo }}-{{ org }}-{{ cid }}-{{ eid }}{% endblock %}
+{% block pagetitle %}object: {{ repo }}-{{ org }}-{{ cid }}-{{ eid }}{% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
 <li>{{ eid }}</li>
 {% endblock breadcrumbs %}
 
 {% block content %}
-<p>
-all about object {{ repo }}-{{ org }}-{{ cid }}-{{ eid }}.
-</p>
+<table>
+{% for field in entity %}
+  <tr>
+    <th>{{ field.0 }}</th>
+    <td>{{ field.1 }}</td>
+  </tr>
+{% endfor %}
+</table>
 
 <h3>files</h3>
 <p>
-<a href="{% url "ui-file" repo org cid eid "master" "a1b2c3d4e5" %}">{{ repo }}-{{ org }}-{{ cid }}-{{ eid }}-master-a1b2c3d4e5</a><br/>
-<a href="{% url "ui-file" repo org cid eid "master" "a1b2c3d4e5" %}">{{ repo }}-{{ org }}-{{ cid }}-{{ eid }}-mezzanine-a1b2c3d4e5</a><br/>
+{% for f in files %}
+<a href="{{ f.url }}">{{ f.id }}</a><br/>
+{% endfor %}
 </p>
 {% endblock content %}
 

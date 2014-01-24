@@ -1,7 +1,7 @@
 {% extends "ui/repo/base.html" %}
 
 {% block title %}{{ repo }}-{{ org }}{% endblock %}
-{% block pagetitle %}{{ repo }}-{{ org }}{% endblock %}
+{% block pagetitle %}organization: {{ repo }}-{{ org }}{% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
 <li>{{ org }}</li>
@@ -13,8 +13,9 @@ all about organization {{ repo }}-{{ org }}.
 </p>
 <h3>collections</h3>
 <p>
-<a href="{% url "ui-collection" repo org "111" %}">{{ repo }}-{{ org }}-111</a><br/>
-<a href="{% url "ui-collection" repo org "123" %}">{{ repo }}-{{ org }}-123</a><br/>
+{% for collection in collections %}
+<a href="{{ collection.url }}">{{ collection.id }}</a><br/>
+{% endfor %}
 </p>
 {% endblock content %}
 
