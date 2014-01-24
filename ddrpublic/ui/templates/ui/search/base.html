@@ -1,0 +1,5 @@
+{% extends "ui/base.html" %}
+
+{% block breadcrumbs %}{{ block.super }}
+<li><a href="{% url "ui-search-index" %}">search</a></li>
+{% endblock breadcrumbs %}

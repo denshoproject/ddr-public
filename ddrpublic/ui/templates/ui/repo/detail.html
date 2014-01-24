@@ -1,0 +1,23 @@
+{% extends "ui/base.html" %}
+
+{% block title %}{{ repo }}{% endblock %}
+{% block pagetitle %}{{ repo }}{% endblock %}
+
+{% block breadcrumbs %}{{ block.super }}
+<li>{{ repo }}</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+<p>
+all about repository {{ repo }}.
+</p>
+<h3>organizations</h3>
+<p>
+<a href="{% url "ui-organization" repo "densho"  %}">{{ repo }}-densho</a><br/>
+<a href="{% url "ui-organization" repo "testing" %}">{{ repo }}-testing</a><br/>
+</p>
+{% endblock content %}
+
+{% block footer %}
+ui/repo/detail.html
+{% endblock footer %}

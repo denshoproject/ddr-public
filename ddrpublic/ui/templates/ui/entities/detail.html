@@ -1,0 +1,24 @@
+{% extends "ui/collections/base.html" %}
+
+{% block title %}{{ repo }}-{{ org }}-{{ cid }}-{{ eid }}{% endblock %}
+{% block pagetitle %}{{ repo }}-{{ org }}-{{ cid }}-{{ eid }}{% endblock %}
+
+{% block breadcrumbs %}{{ block.super }}
+<li>{{ eid }}</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+<p>
+all about object {{ repo }}-{{ org }}-{{ cid }}-{{ eid }}.
+</p>
+
+<h3>files</h3>
+<p>
+<a href="{% url "ui-file" repo org cid eid "master" "a1b2c3d4e5" %}">{{ repo }}-{{ org }}-{{ cid }}-{{ eid }}-master-a1b2c3d4e5</a><br/>
+<a href="{% url "ui-file" repo org cid eid "master" "a1b2c3d4e5" %}">{{ repo }}-{{ org }}-{{ cid }}-{{ eid }}-mezzanine-a1b2c3d4e5</a><br/>
+</p>
+{% endblock content %}
+
+{% block footer %}
+ui/entities/detail.html
+{% endblock footer %}

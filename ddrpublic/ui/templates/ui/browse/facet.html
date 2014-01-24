@@ -1,0 +1,15 @@
+{% extends "ui/browse/base.html" %}
+
+{% block title %}{{ facet }}{% endblock %}
+{% block pagetitle %}{{ facet }}{% endblock %}
+
+{% block breadcrumbs %}{{ block.super }}
+<li>{{ facet }}</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+{% endblock content %}
+
+{% block footer %}
+ui/browse/facet.html
+{% endblock footer %}

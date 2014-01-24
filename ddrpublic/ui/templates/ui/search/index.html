@@ -1,0 +1,19 @@
+{% extends "ui/base.html" %}
+
+{% block title %}search{% endblock %}
+{% block pagetitle %}search{% endblock %}
+
+{% block breadcrumbs %}{{ block.super }}
+<li>search</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+<form name="" action="results/" method="post">
+<input name="search" type="text" value="" />
+<input type="submit" value="search" />
+</form>
+{% endblock content %}
+
+{% block footer %}
+ui/search/index.html
+{% endblock footer %}

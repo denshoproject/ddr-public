@@ -1,0 +1,46 @@
+<html>
+<head>
+<title>{% block title %}{% endblock %} | ddr-public</title>
+{% block headmeta %}{% endblock headmeta %}
+<style>
+</style>
+{% block pagecss %}{% endblock %}
+</head>
+<body>
+
+<div id="nav" style="border-top:1px solid #eee;">
+
+<a href="{% url "ui-index" %}">DDR</a>
+| <a href="{% url "ui-browse-index" %}">browse</a>
+| <a href="{% url "ui-search-index" %}">search</a>
+
+<ul class="breadcrumb">
+<li><a href="{% url "ui-index" %}">home</a></li>
+{% block breadcrumbs %}{% endblock breadcrumbs %}
+</ul><!-- .breadcrumb -->
+
+</div><!-- #nav -->
+
+{% for message in messages %}
+<div class="alert alert-{{ message.tags }}">
+  <button type="button" class="close" data-dismiss="alert">&times;</button>
+  {{ message|safe }}
+</div>
+{% endfor %}
+
+<h1>{% block pagetitle %}PAGE TITLE{% endblock pagetitle %}</h1>
+
+<div id="content">
+{% block content %}{% endblock content %}
+</div><!-- #content -->
+
+<hr/>
+
+<div id="footer">
+{% block footer %}{% endblock footer %}
+</div><!-- #footer -->
+
+{% block javascript %}{% endblock %}
+
+</body>
+</html>

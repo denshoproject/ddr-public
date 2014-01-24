@@ -1,0 +1,18 @@
+{% extends "ui/entities/base.html" %}
+
+{% block title %}{{ repo }}-{{ org }}-{{ cid }}-{{ eid }}-{{ role }}-{{ sha1 }}{% endblock %}
+{% block pagetitle %}{{ repo }}-{{ org }}-{{ cid }}-{{ eid }}-{{ role }}-{{ sha1 }}{% endblock %}
+
+{% block breadcrumbs %}{{ block.super }}
+<li>{{ role }}-{{ sha1 }}</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+<p>
+all abotu file {{ repo }}-{{ org }}-{{ cid }}-{{ eid }}-{{ role }}-{{ sha1 }}
+</p>
+{% endblock content %}
+
+{% block footer %}
+ui/files/detail.html
+{% endblock footer %}

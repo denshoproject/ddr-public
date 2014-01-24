@@ -1,0 +1,25 @@
+{% extends "ui/organizations/base.html" %}
+
+{% block title %}{{ repo }}-{{ org }}-{{ cid }}{% endblock %}
+{% block pagetitle %}{{ repo }}-{{ org }}-{{ cid }}{% endblock %}
+
+{% block breadcrumbs %}{{ block.super }}
+<li>{{ cid }}</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+<p>
+all about collection {{ repo }}-{{ org }}-{{ cid }}.
+</p>
+
+<h3>objects</h3>
+<p>
+<a href="{% url "ui-entity" repo org cid "1" %}">{{ repo }}-{{ org }}-{{ cid }}-1</a><br/>
+<a href="{% url "ui-entity" repo org cid "2" %}">{{ repo }}-{{ org }}-{{ cid }}-2</a><br/>
+<a href="{% url "ui-entity" repo org cid "3" %}">{{ repo }}-{{ org }}-{{ cid }}-3</a><br/>
+</p>
+{% endblock content %}
+
+{% block footer %}
+ui/collections/detail.html
+{% endblock footer %}

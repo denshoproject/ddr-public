@@ -1,0 +1,5 @@
+{% extends "ui/repo/base.html" %}
+
+{% block breadcrumbs %}{{ block.super }}
+<li><a href="{% url "ui-organization" repo org %}">{{ org }}</a></li>
+{% endblock breadcrumbs %}
