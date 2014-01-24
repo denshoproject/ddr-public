@@ -51,7 +51,6 @@ DDR_USBHDD_BASE_DIR = 'ddr'
 
 MEDIA_BASE = os.path.join(MEDIA_ROOT, 'base')
 
-
 ENTITY_FILE_ROLES = (
     ('master','master'),
     ('mezzanine','mezzanine'),
@@ -141,7 +140,7 @@ SESSION_ENGINE = 'redis_sessions.session'
 ALLOWED_HOSTS = []
 
 TEMPLATE_DIRS = (
-    '/usr/local/src/ddr-local/ddrpublic/ui/templates',
+    '/usr/local/src/ddr-public/ddrpublic/ui/templates',
 )
 
 STATICFILES_DIRS = (
@@ -242,6 +241,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-ROOT_URLCONF = 'ddrpublic.urls'
+ROOT_URLCONF = 'ui.urls'
 
 WSGI_APPLICATION = 'ddrpublic.wsgi.application'
