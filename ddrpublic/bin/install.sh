@@ -49,7 +49,7 @@ apt-get --assume-yes install nginx
 
 
 echo "${bldgrn}cache server${txtrst}"
-Oapt-get --assume-yes install redis-server
+apt-get --assume-yes install redis-server
 
 
 echo "${bldgrn}search engine${txtrst}"
