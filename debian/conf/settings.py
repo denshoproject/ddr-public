@@ -90,7 +90,6 @@ INSTALLED_APPS = (
     'sorl.thumbnail',
     #
     'ddrpublic',
-    'elasticsearch',
     'ui',
 )
 
@@ -119,7 +118,9 @@ CACHES = {
 # ElasticSearch
 ELASTICSEARCH_HOST = '192.168.56.101'
 ELASTICSEARCH_PORT = '9200'
+ELASTICSEARCH_HOST_PORT = ':'.join([ELASTICSEARCH_HOST, ELASTICSEARCH_PORT])
 ELASTICSEARCH_MAX_SIZE = 1000000
+
 
 # sorl-thumbnail
 THUMBNAIL_DEBUG = DEBUG

@@ -8,10 +8,11 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
-<form name="" action="results/" method="post">
-<input name="search" type="text" value="" />
-<input type="submit" value="search" />
+
+<form name="search" class="" action="{% url "ui-search-results" %}" method="get">
+  <input name="query" type="text" value="{{ query }}" />
 </form>
+
 {% endblock content %}
 
 {% block footer %}

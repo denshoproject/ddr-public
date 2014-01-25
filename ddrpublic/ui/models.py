@@ -1,8 +1,16 @@
-from django.conf import settings
+import logging
+logger = logging.getLogger(__name__)
 
-import elasticsearch
+from dateutil import parser
+
+from django.conf import settings
+from django.core.urlresolvers import reverse
+
+from DDR import elasticsearch
 
 INDEX = 'ddr'
+
+HOST = settings.ELASTICSEARCH_HOST_PORT
 
 
 # TODO reindex using parents/children (http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/docs-index_.html#parent-children)
@@ -24,7 +32,7 @@ def make_object_id( model, repo, org=None, cid=None, eid=None, role=None, sha1=N
     return None
 
 def get_object_fields( index, model, object_id ):
-    get = elasticsearch.get(index=index, model=model, id=object_id)
+    get = elasticsearch.get(HOST, index=index, model=model, id=object_id)
     if get:
         fields = []
         for field in get:
@@ -74,6 +82,45 @@ def build_object( obj, fields ):
         obj.collection_id = '-'.join([repo,org,cid])
         obj.entity_id = '-'.join([repo,org,cid,eid])
 
+def massage_hits( hits ):
+    """massage the results
+    """
+    def rename(hit, fieldname):
+        # Django templates can't display fields/attribs that start with underscore
+        under = '_%s' % fieldname
+        hit[fieldname] = hit.pop(under)
+    for hit in hits:
+        rename(hit, 'index')
+        rename(hit, 'type')
+        rename(hit, 'id')
+        rename(hit, 'score')
+        rename(hit, 'source')
+        # extract certain fields for easier display
+        for field in hit['source']['d'][1:]:
+            if field.keys():
+                if field.keys()[0] == 'id': hit['id'] = field['id']
+                if field.keys()[0] == 'title': hit['title'] = field['title']
+                if field.keys()[0] == 'record_created': hit['record_created'] = parser.parse(field['record_created'])
+                if field.keys()[0] == 'record_lastmod': hit['record_lastmod'] = parser.parse(field['record_lastmod'])
+        # assemble urls for each record type
+        if hit.get('id', None):
+            if hit['type'] == 'collection':
+                try:
+                    # TODO This helps us deal with bad data like ddr-testing-141-1 (an entity)
+                    #      getting added to index as a collection
+                    #      That problem should be solved so we can remove this.
+                    repo,org,cid = hit['id'].split('-')
+                    hit['url'] = reverse('ui-collection', args=[repo,org,cid])
+                except:
+                    hits.remove(hit)
+            elif hit['type'] == 'entity':
+                repo,org,cid,eid = hit['id'].split('-')
+                hit['url'] = reverse('ui-entity', args=[repo,org,cid,eid])
+            elif hit['type'] == 'file':
+                repo,org,cid,eid,role,sha1 = hit['id'].split('-')
+                hit['url'] = reverse('ui-file', args=[repo,org,cid,eid,role,sha1])
+    return hits
+
 
 class Repository( object ):
     index = INDEX
@@ -93,8 +140,8 @@ class Repository( object ):
     
     def organizations( self ):
         # TODO add repo to ElasticSearch so we can do this the right way
-        #hits = elasticsearch.query(model='organization', query='id:"%s"' % self.id)
-        #organizations = elasticsearch.massage_hits(hits)
+        #hits = elasticsearch.query(HOST, model='organization', query='id:"%s"' % self.id)
+        #organizations = massage_hits(hits)
         organizations = ['ddr-densho', 'ddr-testing',]
         return organizations
 
@@ -118,8 +165,8 @@ class Organization( object ):
         return o
     
     def collections( self ):
-        hits = elasticsearch.query(model='collection', query='id:"%s"' % self.id, sort='id',)
-        collections = elasticsearch.massage_hits(hits)
+        hits = elasticsearch.query(HOST, model='collection', query='id:"%s"' % self.id, sort='id',)
+        collections = massage_hits(hits)
         return collections
 
 
@@ -143,8 +190,8 @@ class Collection( object ):
         return None
     
     def entities( self ):
-        hits = elasticsearch.query(model='entity', query='id:"%s"' % self.id, sort='id',)
-        entities = elasticsearch.massage_hits(hits)
+        hits = elasticsearch.query(HOST, model='entity', query='id:"%s"' % self.id, sort='id',)
+        entities = massage_hits(hits)
         return entities
 
 
@@ -169,8 +216,8 @@ class Entity( object ):
         return None
     
     def files( self ):
-        hits = elasticsearch.query(model='file', query='id:"%s"' % self.id, sort='id',)
-        files = elasticsearch.massage_hits(hits)
+        hits = elasticsearch.query(HOST, model='file', query='id:"%s"' % self.id, sort='id',)
+        files = massage_hits(hits)
         return files
 
 
