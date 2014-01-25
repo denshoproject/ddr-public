@@ -48,14 +48,16 @@ def get(index, model, id):
     """
     GET http://192.168.56.101:9200/ddr/collection/{repo}-{org}-{cid}
     """
-    url = 'http://%s/%s/%s/%s' % (HOST_PORT, index, model, enid)
+    url = 'http://%s/%s/%s/%s' % (HOST_PORT, index, model, id)
     headers = {'content-type': 'application/json'}
     r = requests.get(url, headers=headers)
     data = json.loads(r.text)
-    hits = []
-    if data and data.get('_source', None) and data['_source'].get('d', None):
-        hits = data['_source']['d']
-    return hits
+    if data.get('exists', False):
+        hits = []
+        if data and data.get('_source', None) and data['_source'].get('d', None):
+            hits = data['_source']['d']
+        return hits
+    return None
 
 def query(index='ddr', model=None, query='', filters={}, sort=[]):
     """Run a query, get a list of zero or more hits.
