@@ -12,6 +12,8 @@ from django.core.urlresolvers import reverse
 
 HOST_PORT = '%s:%s' % (settings.ELASTICSEARCH_HOST, settings.ELASTICSEARCH_PORT)
 
+MAX_SIZE = 1000000
+
 
 
 def _clean_dict(data):
@@ -59,7 +61,7 @@ def get(index, model, id):
         return hits
     return None
 
-def query(index='ddr', model=None, query='', filters={}, sort=[]):
+def query(index='ddr', model=None, query='', filters={}, sort='', fields='', size=MAX_SIZE):
     """Run a query, get a list of zero or more hits.
     
     curl -XGET 'http://localhost:9200/twitter/tweet/_search?q=user:kimchy&pretty=true'
@@ -68,22 +70,22 @@ def query(index='ddr', model=None, query='', filters={}, sort=[]):
     @param model: Type of object ('collection', 'entity', 'file')
     @param query: User's search text
     @param filters: dict
-    @param sort: dict
+    @param sort: str
+    @param fields: str
+    @param size: int Number of results to return
     @returns list of hits (dicts)
     """
     _clean_dict(filters)
     _clean_dict(sort)
-    
     if model and query:
-        url = 'http://%s/%s/%s/_search?q=%s&pretty=true' % (HOST_PORT, index, model, query)
+        url = 'http://%s/%s/%s/_search?q=%s' % (HOST_PORT, index, model, query)
     else:
-        url = 'http://%s/%s/_search?q=%s&pretty=true' % (HOST_PORT, index, query)
+        url = 'http://%s/%s/_search?q=%s' % (HOST_PORT, index, query)
     
-    payload = {}
-    if filters:
-        payload['filter'] = {'term':filters}
-    if sort:
-        payload['sort'] = [sort]
+    payload = {'size':size,}
+    if fields:  payload['fields'] = fields
+    if filters: payload['filter'] = {'term':filters}
+    if sort:    payload['sort'  ] = sort
     logger.debug(str(payload))
     
     headers = {'content-type': 'application/json'}
