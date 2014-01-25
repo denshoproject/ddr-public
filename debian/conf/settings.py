@@ -36,7 +36,7 @@ STATIC_URL='/static/'
 # Filesystem path and URL for media to be manipulated by ddrlocal
 # (collection repositories, thumbnail cache, etc).
 MEDIA_ROOT='/var/www/media'
-MEDIA_URL='/media/'
+MEDIA_URL='http://192.168.56.120/media/'
 
 ACCESS_FILE_APPEND='-a'
 ACCESS_FILE_EXTENSION='.jpg'
@@ -133,6 +133,30 @@ THUMBNAIL_ENGINE = 'sorl.thumbnail.engines.convert_engine.Engine'
 THUMBNAIL_CONVERT = 'convert'
 THUMBNAIL_IDENTIFY = 'identify'
 THUMBNAIL_CACHE_TIMEOUT = 60*60*24*365*10  # 10 years
+
+
+# File thumbnail URL generator function
+# sorl.thumbnail will download original files from this source and generate thumbnails locally.
+# This may point to a local or remote machine.
+# Function for generating access file URLs; source media may be on local or remote system.
+
+# Local VM
+def UI_THUMB_URL(ddrfile):
+    """Example:
+    http://192.168.56.101/media/base/ddr-testing-123/files/ddr-testing-123-1/files/ddr-testing-123-1-master-a1b2c3d4e5-a.jpg
+    """
+    return 'http://192.168.56.101/media/base/%s/files/%s/files/%s' % (
+        ddrfile.collection_id, ddrfile.entity_id, ddrfile.access_rel)
+# # Amazon S3
+# def UI_THUMB_URL(ddrfile):
+#     """Example:
+#     https://densho-ddr.s3.amazonaws.com/ddr-testing-123/ddr-testing-123-1-master-a1b2c3d4e5-a.jpg
+#     """
+#     bucket = 'densho-ddr'
+#     folder = ddrfile.collection_id
+#     object_key = ddrfile.access_rel
+#     return 'https://%s.s3.amazonaws.com/%s/%s' % (bucket, folder, object_key)
+
 
 SESSION_ENGINE = 'redis_sessions.session'
 

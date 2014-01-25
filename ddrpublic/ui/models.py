@@ -195,3 +195,6 @@ class File( object ):
             build_object(f, fields)
             return f
         return None
+    
+    def access_url( self ):
+        return settings.UI_THUMB_URL(self)
