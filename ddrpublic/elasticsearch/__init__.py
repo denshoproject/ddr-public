@@ -119,8 +119,14 @@ def massage_hits( hits ):
         # assemble urls for each record type
         if hit.get('id', None):
             if hit['type'] == 'collection':
-                repo,org,cid = hit['id'].split('-')
-                hit['url'] = reverse('ui-collection', args=[repo,org,cid])
+                try:
+                    # TODO This helps us deal with bad data like ddr-testing-141-1 (an entity)
+                    #      getting added to index as a collection
+                    #      That problem should be solved so we can remove this.
+                    repo,org,cid = hit['id'].split('-')
+                    hit['url'] = reverse('ui-collection', args=[repo,org,cid])
+                except:
+                    hits.remove(hit)
             elif hit['type'] == 'entity':
                 repo,org,cid,eid = hit['id'].split('-')
                 hit['url'] = reverse('ui-entity', args=[repo,org,cid,eid])
