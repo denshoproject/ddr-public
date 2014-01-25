@@ -118,7 +118,7 @@ CACHES = {
 }
 
 # ElasticSearch
-ELASTICSEARCH_HOST = 'localhost'
+ELASTICSEARCH_HOST = '192.168.56.101'
 ELASTICSEARCH_PORT = '9200'
 
 # sorl-thumbnail
