@@ -2,5 +2,7 @@
 *.pyc
 *.db
 *.svg
+build/
 ddrpublic/ddrpublic/settings.py
+src/
 tmp/
