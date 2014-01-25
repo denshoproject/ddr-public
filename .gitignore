@@ -2,4 +2,5 @@
 *.pyc
 *.db
 *.svg
+ddrpublic/ddrpublic/settings.py
 tmp/
