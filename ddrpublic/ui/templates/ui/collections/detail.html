@@ -9,10 +9,10 @@
 
 {% block content %}
 <table>
-{% for field in collection %}
+{% for f in object.fields %}
   <tr>
-    <th>{{ field.0 }}</th>
-    <td>{{ field.1 }}</td>
+    <th>{{ f.0 }}</th>
+    <td>{{ f.1 }}</td>
   </tr>
 {% endfor %}
 </table>

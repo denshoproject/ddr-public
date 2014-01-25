@@ -8,9 +8,14 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
-<p>
-all about organization {{ repo }}-{{ org }}.
-</p>
+<table>
+{% for f in object.fields %}
+  <tr>
+    <th>{{ f.0 }}</th>
+    <td>{{ f.1 }}</td>
+  </tr>
+{% endfor %}
+
 <h3>collections</h3>
 <p>
 {% for collection in collections %}

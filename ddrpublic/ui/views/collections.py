@@ -8,7 +8,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 
-import elasticsearch
+from ui.models import Repository, Organization, Collection, Entity, File
 
 
 # views ----------------------------------------------------------------
@@ -24,29 +24,17 @@ def list( request, repo, org ):
     )
 
 def detail( request, repo, org, cid ):
-    collection_id='%s-%s-%s' % (repo, org, cid)
-    get = elasticsearch.get(
-        index='ddr',
-        model='collection',
-        id=collection_id,
-    )
-    obj = []
-    for field in get:
-        for k,v in field.iteritems():
-            obj.append((k,v))
-    entities = elasticsearch.massage_hits(
-        elasticsearch.query(
-            model='entity',
-            query='id:"%s-%s-%s"' % (repo, org, cid),
-        )
-    )
+    collection = Collection.get(repo, org, cid)
+    if not collection:
+        raise Http404
+    entities = collection.entities()
     return render_to_response(
         'ui/collections/detail.html',
         {
             'repo': repo,
             'org': org,
             'cid': cid,
-            'collection': obj,
+            'object': collection,
             'entities': entities,
         },
         context_instance=RequestContext(request, processors=[])
