@@ -66,11 +66,11 @@
 
 {% if hits %}
 {% for hit in hits %}
-<div class="hit">
+<div class="hit" style="margin-top:10;">
   <div class="type">
-    {% if hit.type == "collection" %}<span class="badge badge-info">collection</span>{% endif %}
-    {% if hit.type == "entity" %}<span class="badge badge-success">object</span>{% endif %}
-    {% if hit.type == "file" %}<span class="badge badge-inverse">file</span>{% endif %}
+    {% if hit.type == "collection" %}<span class="badge badge-info">[collection]</span>{% endif %}
+    {% if hit.type == "entity" %}<span class="badge badge-success">[object]</span>{% endif %}
+    {% if hit.type == "file" %}<span class="badge badge-inverse">[file]</span>{% endif %}
   </div>
 
   <div class="sort muted">
@@ -80,11 +80,12 @@
     {% endif %}{# sort.record_created or sort.record_lastmod #}
   </div>
 
-  <h3>
+  <h3 style="margin:0">
   <a href="{{ hit.url }}">{{ hit.id }} - {{ hit.title }}</a>
   </h3>
+
   <div class="source muted">
-  {{ hit.source.d|truncatewords_html:56 }}
+  {{ hit.description|truncatewords_html:56 }}
   </div>
   <div class="url">
   <a href="{{ hit.url }}">{{ hit.url }}</a>
