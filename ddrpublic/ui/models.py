@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 
 from DDR import elasticsearch
+from DDR import models
 
 INDEX = 'ddr'
 
@@ -31,77 +32,20 @@ def make_object_id( model, repo, org=None, cid=None, eid=None, role=None, sha1=N
         return repo
     return None
 
-def get_object_fields( index, model, object_id ):
-    get = elasticsearch.get(HOST, index=index, model=model, id=object_id)
-    if get:
-        fields = []
-        for field in get:
-            for k,v in field.iteritems():
-                fields.append((k,v))
-        return fields
-    return None
-def get_organization_fields( object_id ): return get_object_fields(index, 'organization', object_id)
-def get_collection_fields( object_id ): return get_object_fields(index, 'collection', object_id)
-def get_entity_fields( object_id ): return get_object_fields(index, 'entity', object_id)
-def get_file_fields( object_id ): return get_object_fields(index, 'file', object_id)
-
-def get_object( index, model, object_id ):
-    fields = get_object_fields(index, model, object_id)
-    if fields:
-        o = {'fieldnames': [], 'fields': [],}
-        for k,v in fields:
-            o['fieldnames'].append(k)
-            o['fields'].append((k,v))
-            o[k] = v
-        return o
-    return None
-def get_organization( index, object_id ): return get_object_fields(index, 'organization', object_id)
-def get_collection( index, object_id ): return get_object_fields(index, 'colllaection', object_id)
-def get_entity( index, object_id ): return get_object_fields(index, 'entity', object_id)
-def get_file( index, object_id ): return get_object_fields(index, 'file', object_id)
-
-def build_object( obj, fields ):
-    obj.fieldnames = []
-    obj.fields = []
-    for k,v in fields:
-        # entity JSON contains 'files' field that clashes with Entity.files() function
-        if (k == 'files') and (obj.model == 'entity'):
-            k = '_files'
-        obj.fieldnames.append(k)
-        obj.fields.append((k,v))
-        setattr(obj, k, v)
-    
-    # parent object ids
-    if   obj.model == 'collection':
-        pass
-    elif obj.model == 'entity':
-        repo,org,cid,eid = obj.id.split('-')
-        obj.collection_id = '-'.join([repo,org,cid])
-    elif obj.model == 'file':
-        repo,org,cid,eid,role,sha1 = obj.id.split('-')
-        obj.collection_id = '-'.join([repo,org,cid])
-        obj.entity_id = '-'.join([repo,org,cid,eid])
-
-def massage_hits( hits ):
+def massage_query_results( results ):
     """massage the results
     """
     def rename(hit, fieldname):
         # Django templates can't display fields/attribs that start with underscore
         under = '_%s' % fieldname
         hit[fieldname] = hit.pop(under)
+    hits = results['hits']['hits']
     for hit in hits:
         rename(hit, 'index')
         rename(hit, 'type')
         rename(hit, 'id')
         rename(hit, 'score')
         rename(hit, 'source')
-        # extract certain fields for easier display
-        for field in hit['source']['d'][1:]:
-            if field.keys():
-                if field.keys()[0] == 'id': hit['id'] = field['id']
-                if field.keys()[0] == 'title': hit['title'] = field['title']
-                if field.keys()[0] == 'record_created': hit['record_created'] = parser.parse(field['record_created'])
-                if field.keys()[0] == 'record_lastmod': hit['record_lastmod'] = parser.parse(field['record_lastmod'])
         # assemble urls for each record type
         if hit.get('id', None):
             if hit['type'] == 'collection':
@@ -165,8 +109,8 @@ class Organization( object ):
         return o
     
     def collections( self ):
-        hits = elasticsearch.query(HOST, model='collection', query='id:"%s"' % self.id, sort='id',)
-        collections = massage_hits(hits)
+        results = elasticsearch.query(HOST, model='collection', query='id:"%s"' % self.id, sort='id',)
+        collections = massage_query_results(results)
         return collections
 
 
@@ -182,16 +126,24 @@ class Collection( object ):
     @staticmethod
     def get( repo, org, cid ):
         id = make_object_id(Collection.model, repo, org, cid)
-        fields = get_object_fields(INDEX, Collection.model, id)
-        if fields:
-            c = Collection()
-            build_object(c, fields)
-            return c
+        document = elasticsearch.get_document(HOST, index=INDEX, model=Collection.model, id=id)
+        if document:
+            o = Collection()
+            o.fieldnames = models.model_fields(Collection.model)
+            o.id = id
+            o.fields = []
+            for fieldname in o.fieldnames:
+                if document.get(fieldname,None):
+                    # direct attribute
+                    setattr(o, fieldname, document[fieldname])
+                    # key,value tuple for use in template
+                    o.fields.append( (fieldname, document[fieldname]) )
+            return o
         return None
     
     def entities( self ):
-        hits = elasticsearch.query(HOST, model='entity', query='id:"%s"' % self.id, sort='id',)
-        entities = massage_hits(hits)
+        results = elasticsearch.query(HOST, model='entity', query='id:"%s"' % self.id, sort='id',)
+        entities = massage_query_results(results)
         return entities
 
 
@@ -208,16 +160,28 @@ class Entity( object ):
     @staticmethod
     def get( repo, org, cid, eid ):
         id = make_object_id(Entity.model, repo, org, cid, eid)
-        fields = get_object_fields(INDEX, Entity.model, id)
-        if fields:
-            e = Entity()
-            build_object(e, fields)
-            return e
+        document = elasticsearch.get_document(HOST, index=INDEX, model=Entity.model, id=id)
+        if document:
+            o = Entity()
+            o.fieldnames = models.model_fields(Entity.model)
+            o.id = id
+            setattr(o, 'collection_id', '-'.join([repo,org,cid]))
+            o.fields = []
+            for fieldname in o.fieldnames:
+                # entity JSON contains 'files' field that clashes with Entity.files() function
+                if fieldname == 'files':
+                    fieldname = '_files'
+                if document.get(fieldname,None):
+                    # direct attribute
+                    setattr(o, fieldname, document[fieldname])
+                    # key,value tuple for use in template
+                    o.fields.append( (fieldname, document[fieldname]) )
+            return o
         return None
     
     def files( self ):
-        hits = elasticsearch.query(HOST, model='file', query='id:"%s"' % self.id, sort='id',)
-        files = massage_hits(hits)
+        results = elasticsearch.query(HOST, model='file', query='id:"%s"' % self.id, sort='id',)
+        files = massage_query_results(results)
         return files
 
 
@@ -236,11 +200,22 @@ class File( object ):
     @staticmethod
     def get( repo, org, cid, eid, role, sha1 ):
         id = make_object_id(File.model, repo, org, cid, eid, role, sha1)
-        fields = get_object_fields(INDEX, File.model, id)
-        if fields:
-            f = File()
-            build_object(f, fields)
-            return f
+        document = elasticsearch.get_document(HOST, index=INDEX, model=File.model, id=id)
+        if document:
+            o = File()
+            o.fieldnames = models.model_fields(File.model)
+            o.id = id
+            setattr(o, 'entity_id', '-'.join([repo,org,cid,eid]))
+            setattr(o, 'collection_id', '-'.join([repo,org,cid]))
+            o.fields = []
+            fieldnames = o.fieldnames
+            for fieldname in o.fieldnames:
+                if document.get(fieldname,None):
+                    # direct attribute
+                    setattr(o, fieldname, document[fieldname])
+                    # key,value tuple for use in template
+                    o.fields.append( (fieldname, document[fieldname]) )
+            return o
         return None
     
     def access_url( self ):
