@@ -63,6 +63,10 @@ def massage_query_results( results ):
             elif hit['type'] == 'file':
                 repo,org,cid,eid,role,sha1 = hit['id'].split('-')
                 hit['url'] = reverse('ui-file', args=[repo,org,cid,eid,role,sha1])
+        hit['source']['d']['index'] = hit['index']
+        hit['source']['d']['type'] = hit['type']
+        hit['source']['d']['model'] = hit['type']
+        hit['source']['d']['url'] = hit['url']
     return hits
 
 
