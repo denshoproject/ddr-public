@@ -129,15 +129,16 @@ class Collection( object ):
         document = elasticsearch.get_document(HOST, index=INDEX, model=Collection.model, id=id)
         if document:
             o = Collection()
-            o.fieldnames = models.model_fields(Collection.model)
             o.id = id
             o.fields = []
-            for fieldname in o.fieldnames:
+            for field in models.model_fields(Collection.model):
+                fieldname = field['name']
+                label = field.get('label', field['name'])
                 if document.get(fieldname,None):
                     # direct attribute
                     setattr(o, fieldname, document[fieldname])
-                    # key,value tuple for use in template
-                    o.fields.append( (fieldname, document[fieldname]) )
+                    # fieldname,label,value tuple for use in template
+                    o.fields.append( (fieldname, label, document[fieldname]) )
             return o
         return None
     
@@ -163,19 +164,20 @@ class Entity( object ):
         document = elasticsearch.get_document(HOST, index=INDEX, model=Entity.model, id=id)
         if document:
             o = Entity()
-            o.fieldnames = models.model_fields(Entity.model)
             o.id = id
             setattr(o, 'collection_id', '-'.join([repo,org,cid]))
             o.fields = []
-            for fieldname in o.fieldnames:
+            for field in models.model_fields(Entity.model):
+                fieldname = field['name']
+                label = field.get('label', field['name'])
                 # entity JSON contains 'files' field that clashes with Entity.files() function
                 if fieldname == 'files':
                     fieldname = '_files'
                 if document.get(fieldname,None):
                     # direct attribute
                     setattr(o, fieldname, document[fieldname])
-                    # key,value tuple for use in template
-                    o.fields.append( (fieldname, document[fieldname]) )
+                    # fieldname,label,value tuple for use in template
+                    o.fields.append( (fieldname, label, document[fieldname]) )
             return o
         return None
     
@@ -203,18 +205,18 @@ class File( object ):
         document = elasticsearch.get_document(HOST, index=INDEX, model=File.model, id=id)
         if document:
             o = File()
-            o.fieldnames = models.model_fields(File.model)
             o.id = id
             setattr(o, 'entity_id', '-'.join([repo,org,cid,eid]))
             setattr(o, 'collection_id', '-'.join([repo,org,cid]))
             o.fields = []
-            fieldnames = o.fieldnames
-            for fieldname in o.fieldnames:
+            for field in models.model_fields(File.model):
+                fieldname = field['name']
+                label = field.get('label', field['name'])
                 if document.get(fieldname,None):
                     # direct attribute
                     setattr(o, fieldname, document[fieldname])
-                    # key,value tuple for use in template
-                    o.fields.append( (fieldname, document[fieldname]) )
+                    # fieldname,label,value tuple for use in template
+                    o.fields.append( (fieldname, label, document[fieldname]) )
             return o
         return None
     
