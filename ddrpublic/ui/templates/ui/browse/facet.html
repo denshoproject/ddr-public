@@ -8,6 +8,12 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
+<p>
+{% for term in results.terms %}
+<a href="">{{ term.term }}</a> ({{ term.count }})<br/>
+{% endfor %}
+</p>
+
 {% endblock content %}
 
 {% block footer %}
