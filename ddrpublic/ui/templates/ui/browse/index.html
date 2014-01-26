@@ -8,14 +8,20 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
+
+<a href="{% url "ui-browse-facet" "contributor" %}">contributor</a><br/>
+<a href="{% url "ui-browse-facet" "digitize_organization" %}">digitize_organization</a><br/>
 <a href="{% url "ui-browse-facet" "creators" %}">creators</a><br/>
-<a href="{% url "ui-browse-facet" "facilities" %}">facilities</a><br/>
-<a href="{% url "ui-browse-facet" "formats" %}">formats</a><br/>
-<a href="{% url "ui-browse-facet" "genres" %}">genres</a><br/>
-<a href="{% url "ui-browse-facet" "languages" %}">languages</a><br/>
-<a href="{% url "ui-browse-facet" "locations" %}">locations</a><br/>
+<a href="{% url "ui-browse-facet" "facility" %}">facility</a><br/>
+<a href="{% url "ui-browse-facet" "format" %}">format</a><br/>
+<a href="{% url "ui-browse-facet" "genre" %}">genre</a><br/>
+<a href="{% url "ui-browse-facet" "language" %}">language</a><br/>
+<a href="{% url "ui-browse-facet" "location" %}">location</a><br/>
 <a href="{% url "ui-browse-facet" "persons" %}">persons</a><br/>
+<a href="{% url "ui-browse-facet" "public" %}">public</a><br/>
+<a href="{% url "ui-browse-facet" "status" %}">status</a><br/>
 <a href="{% url "ui-browse-facet" "topics" %}">topics</a><br/>
+
 {% endblock content %}
 
 {% block footer %}
