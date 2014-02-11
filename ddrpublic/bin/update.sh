@@ -66,7 +66,11 @@ echo "./ddrpublic/ddrpublic/settings.py"
 cp /usr/local/src/ddr-public/debian/conf/settings.py /usr/local/src/ddr-public/ddrpublic/ddrpublic
 
 echo "/etc/nginx/sites-available/ddrpublic.conf"
-cp /usr/local/src/ddr-public/debian/conf/ddrpublic.conf /etc/nginx/sites-available/
+cp /usr/local/src/ddr-public/debian/conf/ddrpublic.conf /etc/nginx/sites-available
+rm /etc/nginx/sites-enabled/ddrpublic.conf
+ln -s /etc/nginx/sites-available/ddrpublic.conf /etc/nginx/sites-enabled
+rm /etc/nginx/sites-enabled/default
+/etc/init.d/nginx restart
 
 echo "/etc/supervisor/supervisord.conf"
 cp /usr/local/src/ddr-public/debian/conf/supervisord.conf /etc/supervisor/
