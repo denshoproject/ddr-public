@@ -134,6 +134,7 @@ THUMBNAIL_ENGINE = 'sorl.thumbnail.engines.convert_engine.Engine'
 THUMBNAIL_CONVERT = 'convert'
 THUMBNAIL_IDENTIFY = 'identify'
 THUMBNAIL_CACHE_TIMEOUT = 60*60*24*365*10  # 10 years
+THUMBNAIL_DUMMY = True
 
 
 # File thumbnail URL generator function
