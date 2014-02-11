@@ -65,6 +65,7 @@ git clone https://github.com/densho/ddr-lint.git
 cd /usr/local/src/ddr-lint/ddrlint
 python setup.py install
 pip install -r /usr/local/src/ddr-lint/ddrlint/requirements/production.tx
+chown -R root.ddr /usr/local/src/ddr-lint
 
 
 echo "${bldgrn}ddr-cmdln${txtrst}"
@@ -74,23 +75,23 @@ git clone https://github.com/densho/ddr-cmdln.git
 cd /usr/local/src/ddr-cmdln/ddr
 python setup.py install
 pip install -r /usr/local/src/ddr-cmdln/ddr/requirements/production.txt
+chown -R root.ddr /usr/local/src/ddr-cmdln
 
 
 echo "${bldgrn}ddr-local${txtrst}"
-apt-get --assume-yes install imagemagick libssl-dev python-dev libxml2 libxml2-dev libxslt1-dev supervisor
 cd /usr/local/src
 git clone https://github.com/densho/ddr-local.git
-cd /usr/local/src/ddr-local/ddrlocal
-#python setup.py install
-pip install -r /usr/local/src/ddr-local/ddrlocal/requirements/production.txt
+chown -R root.ddr /usr/local/src/ddr-local
 
 
 echo "${bldgrn}ddr-public${txtrst}"
-#apt-get --assume-yes install imagemagick libssl-dev python-dev libxml2 libxml2-dev libxslt1-dev supervisor
+apt-get --assume-yes install imagemagick supervisor
 cd /usr/local/src
 git clone https://github.com/densho/ddr-public.git
 cd /usr/local/src/ddr-public/ddrpublic
-pip install -r /usr/local/src/ddr-public/ddrpublic/requirements/production.txt
+pip install -U -r /usr/local/src/ddr-public/ddrpublic/requirements/production.txt
+chown -R root.ddr /usr/local/src/ddr-public
+chmod +x /usr/local/src/ddr-public/ddrpublic/manage.py
 
 
 echo "${bldgrn}creating directories${txtrst}"

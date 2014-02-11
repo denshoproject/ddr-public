@@ -79,11 +79,11 @@ MANAGERS = ADMINS
 SITE_ID = 1
 
 INSTALLED_APPS = (
-    'django.contrib.auth',
+    #'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
+    #'django.contrib.sessions',
     'django.contrib.sites',
-    'django.contrib.messages',
+    #'django.contrib.messages',
     'django.contrib.staticfiles',
     #'django.contrib.admin',
     #
@@ -116,7 +116,7 @@ CACHES = {
 }
 
 # ElasticSearch
-ELASTICSEARCH_HOST = '192.168.56.101'
+ELASTICSEARCH_HOST = 'localhost'
 ELASTICSEARCH_PORT = '9200'
 ELASTICSEARCH_HOST_PORT = ':'.join([ELASTICSEARCH_HOST, ELASTICSEARCH_PORT])
 ELASTICSEARCH_MAX_SIZE = 1000000
@@ -160,7 +160,7 @@ def UI_THUMB_URL(ddrfile):
 #     return 'https://%s.s3.amazonaws.com/%s/%s' % (bucket, folder, object_key)
 
 
-SESSION_ENGINE = 'redis_sessions.session'
+#SESSION_ENGINE = 'redis_sessions.session'
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
@@ -256,15 +256,15 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
     'django.core.context_processors.static',
     'django.core.context_processors.tz',
-    'django.contrib.messages.context_processors.messages',
+    #'django.contrib.messages.context_processors.messages',
 )
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    #'django.contrib.sessions.middleware.SessionMiddleware',
     #'django.middleware.csrf.CsrfViewMiddleware',
     #'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
+    #'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
