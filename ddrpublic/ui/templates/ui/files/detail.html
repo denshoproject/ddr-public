@@ -1,8 +1,13 @@
 {% extends "ui/entities/base.html" %}
 {% load thumbnail %}
 
-{% block title %}{{ repo }}-{{ org }}-{{ cid }}-{{ eid }}-{{ role }}-{{ sha1 }}{% endblock %}
-{% block pagetitle %}file: {{ repo }}-{{ org }}-{{ cid }}-{{ eid }}-{{ role }}-{{ sha1 }}{% endblock %}
+{% block title %}
+{{ object.id }} {% if object.label %}&mdash;{% endif %} {{ object.label }}
+{% endblock %}
+
+{% block pagetitle %}
+{{ object.id }} {% if object.label %}&mdash;{% endif %} {{ object.label }}
+{% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
 <li>{{ role }}-{{ sha1 }}</li>

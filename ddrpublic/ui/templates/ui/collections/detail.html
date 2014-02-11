@@ -1,13 +1,19 @@
 {% extends "ui/organizations/base.html" %}
 
-{% block title %}{{ repo }}-{{ org }}-{{ cid }}{% endblock %}
-{% block pagetitle %}collection: {{ repo }}-{{ org }}-{{ cid }}{% endblock %}
+{% block title %}
+{{ object.id }} {% if object.title %}&mdash;{% endif %} {{ object.title }}
+{% endblock %}
+
+{% block pagetitle %}
+{{ object.id }} {% if object.title %}&mdash;{% endif %} {{ object.title }}
+{% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
 <li>{{ cid }}</li>
 {% endblock breadcrumbs %}
 
 {% block content %}
+COLLECTION
 <table>
 {% for f in object.fields %}
   <tr>
@@ -20,7 +26,7 @@
 <h3>objects</h3>
 <p>
 {% for entity in entities %}
-<a href="{{ entity.url }}">{{ entity.id }}</a><br/>
+<a href="{{ entity.url }}">{{ entity.id }} {% if entity.source.d.title %}&mdash;{% endif %} {{ entity.source.d.title }}</a><br/>
 {% endfor %}
 </p>
 {% endblock content %}

@@ -19,7 +19,7 @@
 <h3>collections</h3>
 <p>
 {% for collection in collections %}
-<a href="{{ collection.url }}">{{ collection.id }}</a><br/>
+<a href="{{ collection.url }}">{{ collection.id }} {% if collection.source.d.title %}&mdash;{% endif %} {{ collection.source.d.title }}</a><br/>
 {% endfor %}
 </p>
 {% endblock content %}
