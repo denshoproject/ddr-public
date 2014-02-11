@@ -39,7 +39,7 @@ def massage_query_results( results ):
         # Django templates can't display fields/attribs that start with underscore
         under = '_%s' % fieldname
         hit[fieldname] = hit.pop(under)
-    hits = results['hits']['hits']
+    hits = results.get('hits', [])['hits']
     for hit in hits:
         rename(hit, 'index')
         rename(hit, 'type')
@@ -49,20 +49,15 @@ def massage_query_results( results ):
         # assemble urls for each record type
         if hit.get('id', None):
             if hit['type'] == 'collection':
-                try:
-                    # TODO This helps us deal with bad data like ddr-testing-141-1 (an entity)
-                    #      getting added to index as a collection
-                    #      That problem should be solved so we can remove this.
-                    repo,org,cid = hit['id'].split('-')
-                    hit['url'] = reverse('ui-collection', args=[repo,org,cid])
-                except:
-                    hits.remove(hit)
+                repo,org,cid = hit['id'].split('-')
+                hit['url'] = reverse('ui-collection', args=[repo,org,cid])
             elif hit['type'] == 'entity':
                 repo,org,cid,eid = hit['id'].split('-')
                 hit['url'] = reverse('ui-entity', args=[repo,org,cid,eid])
             elif hit['type'] == 'file':
                 repo,org,cid,eid,role,sha1 = hit['id'].split('-')
                 hit['url'] = reverse('ui-file', args=[repo,org,cid,eid,role,sha1])
+        # copy ES results info to individual object source
         hit['source']['d']['index'] = hit['index']
         hit['source']['d']['type'] = hit['type']
         hit['source']['d']['model'] = hit['type']
