@@ -8,11 +8,18 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
+<div class="container-fluid">
+  <div class="row">
 
-<form name="search" class="" action="{% url "ui-search-results" %}" method="get">
-  <input name="query" type="text" value="{{ query }}" />
+<form name="search" class="form-inline" role="form" action="{% url "ui-search-results" %}" method="get">
+  <div class="form-group">
+    <input id="query" name="query" type="text" class="form-control" placeholder="Your search here"  value="{{ query }}" />
+    <button type="submit" class="btn btn-default">Search</button>
+  </div><!-- .form-group -->
 </form>
 
+  </div><!-- .row -->
+</div><!-- .container-fluid -->
 {% endblock content %}
 
 {% block footer %}

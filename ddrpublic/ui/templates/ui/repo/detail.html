@@ -8,14 +8,21 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
+<div class="container-fluid">
+  <div class="row">
+
 <p>
 all about repository {{ repo }}.
 </p>
+
 <h3>organizations</h3>
-<p>
-<a href="{% url "ui-organization" repo "densho"  %}">{{ repo }}-densho</a><br/>
-<a href="{% url "ui-organization" repo "testing" %}">{{ repo }}-testing</a><br/>
-</p>
+<ul>
+  <li><a href="{% url "ui-organization" repo "densho"  %}">{{ repo }}-densho</a></li>
+  <li><a href="{% url "ui-organization" repo "testing" %}">{{ repo }}-testing</a></li>
+</ul>
+
+  </div><!-- .row -->
+</div><!-- .container-fluid -->
 {% endblock content %}
 
 {% block footer %}

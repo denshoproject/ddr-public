@@ -8,20 +8,26 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
+<div class="container-fluid">
+  <div class="row">
 
-<a href="{% url "ui-browse-facet" "contributor" %}">contributor</a><br/>
-<a href="{% url "ui-browse-facet" "digitize_organization" %}">digitize_organization</a><br/>
-<a href="{% url "ui-browse-facet" "creators" %}">creators</a><br/>
-<a href="{% url "ui-browse-facet" "facility" %}">facility</a><br/>
-<a href="{% url "ui-browse-facet" "format" %}">format</a><br/>
-<a href="{% url "ui-browse-facet" "genre" %}">genre</a><br/>
-<a href="{% url "ui-browse-facet" "language" %}">language</a><br/>
-<a href="{% url "ui-browse-facet" "location" %}">location</a><br/>
-<a href="{% url "ui-browse-facet" "persons" %}">persons</a><br/>
-<a href="{% url "ui-browse-facet" "public" %}">public</a><br/>
-<a href="{% url "ui-browse-facet" "status" %}">status</a><br/>
-<a href="{% url "ui-browse-facet" "topics" %}">topics</a><br/>
+<ul>
+  <li><a href="{% url "ui-browse-facet" "contributor" %}">contributor</a></li>
+  <li><a href="{% url "ui-browse-facet" "digitize_organization" %}">digitize_organization</a></li>
+  <li><a href="{% url "ui-browse-facet" "creators" %}">creators</a></li>
+  <li><a href="{% url "ui-browse-facet" "facility" %}">facility</a></li>
+  <li><a href="{% url "ui-browse-facet" "format" %}">format</a></li>
+  <li><a href="{% url "ui-browse-facet" "genre" %}">genre</a></li>
+  <li><a href="{% url "ui-browse-facet" "language" %}">language</a></li>
+  <li><a href="{% url "ui-browse-facet" "location" %}">location</a></li>
+  <li><a href="{% url "ui-browse-facet" "persons" %}">persons</a></li>
+  <li><a href="{% url "ui-browse-facet" "public" %}">public</a></li>
+  <li><a href="{% url "ui-browse-facet" "status" %}">status</a></li>
+  <li><a href="{% url "ui-browse-facet" "topics" %}">topics</a></li>
+</ul>
 
+  </div><!-- .row -->
+</div><!-- .container-fluid -->
 {% endblock content %}
 
 {% block footer %}

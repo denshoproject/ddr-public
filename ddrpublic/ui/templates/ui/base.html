@@ -1,25 +1,90 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
+
+
+
 <head>
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>{% block title %}{% endblock %} | ddr-public</title>
+
 {% block headmeta %}{% endblock headmeta %}
+
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap-theme.min.css">
+
 <style>
+.navbar { margin-bottom:0px; }
+.breadcrumb { }
+#footer { margin-top:30px; border-top:1px solid #ddd; padding-top:30px; padding-bottom:30px; }
+.hit { margin-top:10px; padding-left:10px; }
+.hit.collection { border-left:3px solid blue; }
+.hit.entity { border-left:3px solid green; }
+.hit.file { border-left:3px solid orange; }
 </style>
+
 {% block pagecss %}{% endblock %}
+
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+<![endif]-->
+
 </head>
+
+
+
 <body>
 
-<div id="nav" style="border-top:1px solid #eee;">
 
-<a href="{% url "ui-index" %}">DDR</a>
-| <a href="{% url "ui-browse-index" %}">browse</a>
-| <a href="{% url "ui-search-index" %}">search</a>
 
-<ul class="breadcrumb">
+<nav class="navbar navbar-inverse navbar-static-top" role="navigation">
+  <div class="container-fluid">
+    
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="{% url "ui-index" %}">Densho Digital Repository</a>
+    </div><!-- .navbar-header -->
+
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      
+      <ul class="nav navbar-nav">
+        <li><a href="{% url "ui-browse-index" %}">Browse</a></li> 
+        <li><a href="{% url "ui-search-index" %}">Search</a></li> 
+      </ul>
+      
+      <form class="navbar-form navbar-right" role="search" action="{% url "ui-search-results" %}" method="get">
+        <div class="form-group">
+          <input id="query" name="query" type="text" class="form-control" placeholder="Search" value="{{ query }}" />
+        </div>
+        <button type="submit" class="btn btn-default">Submit</button>
+      </form>
+      
+    </div><!-- /.navbar-collapse -->
+    
+  </div><!-- /.container-fluid -->
+</nav>
+
+
+
+<div class="container-fluid">
+  <div class="row">
+
+<ol class="breadcrumb">
 <li><a href="{% url "ui-index" %}">home</a></li>
 {% block breadcrumbs %}{% endblock breadcrumbs %}
-</ul><!-- .breadcrumb -->
-
-</div><!-- #nav -->
+</ol><!-- .breadcrumb -->
 
 {% for message in messages %}
 <div class="alert alert-{{ message.tags }}">
@@ -28,19 +93,40 @@
 </div>
 {% endfor %}
 
+
 <h1>{% block pagetitle %}PAGE TITLE{% endblock pagetitle %}</h1>
+
+  </div><!-- .row -->
+</div><!-- .container-fluid -->
+
+
 
 <div id="content">
 {% block content %}{% endblock content %}
 </div><!-- #content -->
 
-<hr/>
 
-<div id="footer">
+
+<div class="container-fluid">
+  <div class="row">
+
+<div id="footer" class="text-muted">
 {% block footer %}{% endblock footer %}
 </div><!-- #footer -->
 
+  </div><!-- .row -->
+</div><!-- .container-fluid -->
+
+
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="https://code.jquery.com/jquery.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
 {% block javascript %}{% endblock %}
+
+
 
 </body>
 </html>

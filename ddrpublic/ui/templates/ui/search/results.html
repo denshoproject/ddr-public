@@ -8,6 +8,20 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
+<div class="container-fluid">
+  <div class="row">
+
+<form name="search" class="form-inline" role="form" action="{% url "ui-search-results" %}" method="get">
+  <div class="form-group">
+    <input
+       id="query" name="query" type="text"
+       class="form-control"
+       placeholder="Your search here"
+       value="{{ query }}"
+    />
+    <button type="submit" class="btn btn-default">Search</button>
+  </div><!-- .form-group -->
+</form>
 
 <div id="querymeta">
 
@@ -66,12 +80,9 @@
 
 {% if hits %}
 {% for hit in hits %}
-<div class="hit" style="margin-top:10;">
-  <div class="type">
-    {% if hit.type == "collection" %}<span class="badge badge-info">[collection]</span>{% endif %}
-    {% if hit.type == "entity" %}<span class="badge badge-success">[object]</span>{% endif %}
-    {% if hit.type == "file" %}<span class="badge badge-inverse">[file]</span>{% endif %}
-  </div>
+<div class="hit {{ hit.type }}">
+
+  <span class="badge badge-info">{{ hit.type }}</span>
 
   <div class="sort muted">
     {% if sort.record_created or sort.record_lastmod %}
@@ -95,6 +106,8 @@
 {% endfor %}
 {% endif %}
 
+  </div><!-- .row -->
+</div><!-- .container-fluid -->
 {% endblock content %}
 
 {% block footer %}

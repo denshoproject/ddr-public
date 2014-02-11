@@ -5,7 +5,8 @@
 {% endblock %}
 
 {% block pagetitle %}
-{{ object.id }} {% if object.title %}&mdash;{% endif %} {{ object.title }}
+<span class="label label-default">{{ object.id }}</span>
+{{ object.title }}
 {% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
@@ -13,22 +14,29 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
-COLLECTION
-<table>
+<div class="container-fluid">
+  <div class="row">
+
+<dl class="dl-horizontal">
 {% for f in object.fields %}
-  <tr>
-    <th>{{ f.1 }}</th>
-    <td>{{ f.2 }}</td>
-  </tr>
+  <dt>{{ f.1 }}</dt>
+  <dd>{{ f.2 }}</dd>
 {% endfor %}
-</table>
+</dl>
 
 <h3>objects</h3>
-<p>
+<ul>
 {% for entity in entities %}
-<a href="{{ entity.url }}">{{ entity.id }} {% if entity.source.d.title %}&mdash;{% endif %} {{ entity.source.d.title }}</a><br/>
+  <li>
+    <a href="{{ entity.url }}">
+    <span class="label label-default">{{ entity.id }}</span>
+    {{ entity.source.d.title }}</a>
+  </li>
 {% endfor %}
-</p>
+</ul>
+
+  </div><!-- .row -->
+</div><!-- .container-fluid -->
 {% endblock content %}
 
 {% block footer %}

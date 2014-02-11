@@ -5,7 +5,8 @@
 {% endblock %}
 
 {% block pagetitle %}
-{{ object.id }} {% if object.title %}&mdash;{% endif %} {{ object.title }}
+<span class="label label-default">{{ object.id }}</span>
+{{ object.title }}
 {% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
@@ -13,22 +14,27 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
-OBJECT
-<table>
+<div class="container-fluid">
+  <div class="row">
+
+<dl class="dl-horizontal">
 {% for f in object.fields %}
-  <tr>
-    <th>{{ f.1 }}</th>
-    <td>{{ f.2 }}</td>
-  </tr>
+  <dt>{{ f.1 }}</dt>
+  <dd>{{ f.2 }}</dd>
 {% endfor %}
-</table>
+</dl>
 
 <h3>files</h3>
-<p>
+<ul>
 {% for f in files %}
-<a href="{{ f.url }}">{{ f.id }} {% if f.source.d.label %}&mdash;{% endif %} {{ f.source.d.label }}</a><br/>
+  <li>
+    <a href="{{ f.url }}"><span class="label label-default">{{ f.id }}</span> {{ f.source.d.label }}</a>
+  </li>
 {% endfor %}
-</p>
+</ul>
+
+  </div><!-- .row -->
+</div><!-- .container-fluid -->
 {% endblock content %}
 
 {% block footer %}

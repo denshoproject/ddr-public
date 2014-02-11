@@ -8,11 +8,20 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
-<p>
+<div class="container-fluid">
+  <div class="row">
+
+<ul>
 {% for term in results.terms %}
-<a href="{% url "ui-search-results" %}?query={{ facet }}:{{ term.term }}">{{ term.term }}</a> ({{ term.count }})<br/>
+  <li>
+    <span class="badge">{{ term.count }}</span>
+    <a href="{% url "ui-search-results" %}?query={{ facet }}:{{ term.term }}">{{ term.term }}</a>
+  </li>
 {% endfor %}
-</p>
+</ul>
+
+  </div><!-- .row -->
+</div><!-- .container-fluid -->
 {% endblock content %}
 
 {% block footer %}

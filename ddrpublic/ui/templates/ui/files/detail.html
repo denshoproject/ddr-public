@@ -6,7 +6,8 @@
 {% endblock %}
 
 {% block pagetitle %}
-{{ object.id }} {% if object.label %}&mdash;{% endif %} {{ object.label }}
+<span class="label label-default">{{ object.id }}</span>
+{{ object.label }}
 {% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
@@ -14,19 +15,22 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
+<div class="container-fluid">
+  <div class="row">
 
 {% thumbnail object.access_url "300x300" as im %}
-<img src="{{ im.url }}">
+<img src="{{ im.url }}" class="img-responsive">
 {% endthumbnail %}
 
-<table>
+<dl class="dl-horizontal">
 {% for f in object.fields %}
-  <tr>
-    <th>{{ f.1 }}</th>
-    <td>{{ f.2 }}</td>
-  </tr>
+  <dt>{{ f.1 }}</dt>
+  <dd>{{ f.2 }}</dd>
 {% endfor %}
-</table>
+</dl>
+
+  </div><!-- .row -->
+</div><!-- .container-fluid -->
 {% endblock content %}
 
 {% block footer %}
