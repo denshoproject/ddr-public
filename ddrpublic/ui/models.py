@@ -83,7 +83,7 @@ class Repository( object ):
     
     def organizations( self ):
         # TODO add repo to ElasticSearch so we can do this the right way
-        #hits = elasticsearch.query(HOST, model='organization', query='id:"%s"' % self.id)
+        #hits = elasticsearch.query(HOST, index=INDEX, model='organization', query='id:"%s"' % self.id)
         #organizations = massage_hits(hits)
         organizations = ['ddr-densho', 'ddr-testing',]
         return organizations
@@ -108,7 +108,7 @@ class Organization( object ):
         return o
     
     def collections( self ):
-        results = elasticsearch.query(HOST, model='collection', query='id:"%s"' % self.id, sort='id',)
+        results = elasticsearch.query(HOST, index=INDEX, model='collection', query='id:"%s"' % self.id, sort='id',)
         collections = massage_query_results(results)
         return collections
 
@@ -125,7 +125,7 @@ class Collection( object ):
     @staticmethod
     def get( repo, org, cid ):
         id = make_object_id(Collection.model, repo, org, cid)
-        document = elasticsearch.get_document(HOST, index=INDEX, model=Collection.model, id=id)
+        document = elasticsearch.get(HOST, index=INDEX, model=Collection.model, id=id)
         if document:
             o = Collection()
             o.id = id
@@ -142,7 +142,7 @@ class Collection( object ):
         return None
     
     def entities( self ):
-        results = elasticsearch.query(HOST, model='entity', query='id:"%s"' % self.id, sort='id',)
+        results = elasticsearch.query(HOST, index=INDEX, model='entity', query='id:"%s"' % self.id, sort='id',)
         entities = massage_query_results(results)
         return entities
 
@@ -160,7 +160,7 @@ class Entity( object ):
     @staticmethod
     def get( repo, org, cid, eid ):
         id = make_object_id(Entity.model, repo, org, cid, eid)
-        document = elasticsearch.get_document(HOST, index=INDEX, model=Entity.model, id=id)
+        document = elasticsearch.get(HOST, index=INDEX, model=Entity.model, id=id)
         if document:
             o = Entity()
             o.id = id
@@ -181,7 +181,7 @@ class Entity( object ):
         return None
     
     def files( self ):
-        results = elasticsearch.query(HOST, model='file', query='id:"%s"' % self.id, sort='id',)
+        results = elasticsearch.query(HOST, index=INDEX, model='file', query='id:"%s"' % self.id, sort='id',)
         files = massage_query_results(results)
         return files
 
@@ -201,7 +201,7 @@ class File( object ):
     @staticmethod
     def get( repo, org, cid, eid, role, sha1 ):
         id = make_object_id(File.model, repo, org, cid, eid, role, sha1)
-        document = elasticsearch.get_document(HOST, index=INDEX, model=File.model, id=id)
+        document = elasticsearch.get(HOST, index=INDEX, model=File.model, id=id)
         if document:
             o = File()
             o.id = id
