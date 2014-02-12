@@ -10,5 +10,5 @@ gunicorn                   # MIT          gunicorn (0.14.5-3+deb7u1)       gunic
 
 sorl-thumbnail             # BSD          python-sorl-thumbnail (11.12-4)  python-sorl-thumbnail (11.12-5)
 
--e git://github.com/densho/ddr-cmdln.git#egg=DDR
--e git://github.com/densho/ddr-local.git#egg=ddrlocal
+#-e git://github.com/densho/ddr-cmdln.git#egg=DDR
+#-e git://github.com/densho/ddr-local.git#egg=ddrlocal
