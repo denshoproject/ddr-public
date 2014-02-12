@@ -40,8 +40,7 @@ def results( request ):
             'record_lastmod': request.GET.get('record_lastmod', ''),}
     # do the query
     results = elasticsearch.query(settings.ELASTICSEARCH_HOST_PORT, models.INDEX, query=q, filters=filters, sort=sort)
-    rawhits = models.massage_query_results(results)
-    hits = [h['source']['d'] for h in rawhits]
+    hits = models.massage_query_results(results)
     return render_to_response(
         'ui/search/results.html',
         {'hits': hits,

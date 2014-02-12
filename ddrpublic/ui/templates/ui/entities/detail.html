@@ -28,7 +28,7 @@
 <ul>
 {% for f in files %}
   <li>
-    <a href="{{ f.url }}"><span class="label label-default">{{ f.id }}</span> {{ f.source.d.label }}</a>
+    <a href="{{ f.url }}"><span class="label label-default">{{ f.id }}</span> {% if f.title %}{{ f.title }}{% else %}{{ f.basename_orig }}{% endif %}</a>
   </li>
 {% endfor %}
 </ul>

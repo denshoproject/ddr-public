@@ -1,3 +1,4 @@
+import json
 import logging
 logger = logging.getLogger(__name__)
 
@@ -33,36 +34,60 @@ def make_object_id( model, repo, org=None, cid=None, eid=None, role=None, sha1=N
     return None
 
 def massage_query_results( results ):
-    """massage the results
+    """Take data from ES query, make a reasonable facsimile of the original object.
     """
-    def rename(hit, fieldname):
-        # Django templates can't display fields/attribs that start with underscore
-        under = '_%s' % fieldname
-        hit[fieldname] = hit.pop(under)
-    hits = results.get('hits', [])['hits']
-    for hit in hits:
-        rename(hit, 'index')
-        rename(hit, 'type')
-        rename(hit, 'id')
-        rename(hit, 'score')
-        rename(hit, 'source')
-        # assemble urls for each record type
-        if hit.get('id', None):
-            if hit['type'] == 'collection':
-                repo,org,cid = hit['id'].split('-')
-                hit['url'] = reverse('ui-collection', args=[repo,org,cid])
-            elif hit['type'] == 'entity':
-                repo,org,cid,eid = hit['id'].split('-')
-                hit['url'] = reverse('ui-entity', args=[repo,org,cid,eid])
-            elif hit['type'] == 'file':
-                repo,org,cid,eid,role,sha1 = hit['id'].split('-')
-                hit['url'] = reverse('ui-file', args=[repo,org,cid,eid,role,sha1])
+    objects = []
+    for hit in results.get('hits', [])['hits']:
+        o = hit['_source']
         # copy ES results info to individual object source
-        hit['source']['d']['index'] = hit['index']
-        hit['source']['d']['type'] = hit['type']
-        hit['source']['d']['model'] = hit['type']
-        hit['source']['d']['url'] = hit['url']
-    return hits
+        o['index'] = hit['_index']
+        o['type'] = hit['_type']
+        o['model'] = hit['_type']
+        # assemble urls for each record type
+        if o.get('id', None):
+            if o['type'] == 'collection':
+                repo,org,cid = o['id'].split('-')
+                o['url'] = reverse('ui-collection', args=[repo,org,cid])
+            elif o['type'] == 'entity':
+                repo,org,cid,eid = o['id'].split('-')
+                o['url'] = reverse('ui-entity', args=[repo,org,cid,eid])
+            elif o['type'] == 'file':
+                repo,org,cid,eid,role,sha1 = o['id'].split('-')
+                o['url'] = reverse('ui-file', args=[repo,org,cid,eid,role,sha1])
+        objects.append(o)
+    return objects
+
+def build_object( o, id, source ):
+    """Build object from ES GET data.
+    """
+    o.id = id
+    o.fields = []
+    for field in models.model_fields(o.model):
+        fieldname = field['name']
+        label = field.get('label', field['name'])
+        if source.get(fieldname,None):
+            # direct attribute
+            setattr(o, fieldname, source[fieldname])
+            # fieldname,label,value tuple for use in template
+            o.fields.append( (fieldname, label, source[fieldname]) )
+    # rename entity.files to entity._files
+    ohasattr = hasattr(o, 'files')
+    if (o.model == 'entity') and hasattr(o, 'files'):
+        o._files = o.files
+        try:
+            delattr(o, 'files')
+        except:
+            pass
+    # parent object ids
+    if o.model == 'file': o.repo,o.org,o.cid,o.eid,o.role,o.sha1 = o.id.split('-')
+    elif o.model == 'entity': o.repo,o.org,o.cid,o.eid = o.id.split('-')
+    elif o.model == 'collection': o.repo,o.org,o.cid = o.id.split('-')
+    elif o.model == 'organization': o.repo,o.org = o.id.split('-')
+    if o.model in ['file']: o.entity_id = '%s-%s-%s-%s' % (o.repo,o.org,o.cid,o.eid)
+    if o.model in ['file','entity']: o.collection_id = '%s-%s-%s' % (o.repo,o.org,o.cid)
+    if o.model in ['file','entity','collection']: o.organization_id = '%s-%s' % (o.repo,o.org)
+    if o.model in ['file','entity','collection','organization']: o.repository_id = '%s' % (o.repo)
+    return o
 
 
 class Repository( object ):
@@ -125,20 +150,11 @@ class Collection( object ):
     @staticmethod
     def get( repo, org, cid ):
         id = make_object_id(Collection.model, repo, org, cid)
-        document = elasticsearch.get(HOST, index=INDEX, model=Collection.model, id=id)
-        if document:
-            o = Collection()
-            o.id = id
-            o.fields = []
-            for field in models.model_fields(Collection.model):
-                fieldname = field['name']
-                label = field.get('label', field['name'])
-                if document.get(fieldname,None):
-                    # direct attribute
-                    setattr(o, fieldname, document[fieldname])
-                    # fieldname,label,value tuple for use in template
-                    o.fields.append( (fieldname, label, document[fieldname]) )
-            return o
+        raw = elasticsearch.get(HOST, index=INDEX, model=Collection.model, id=id)
+        status = raw['status']
+        response = json.loads(raw['response'])
+        if (status == 200) and response['exists']:
+            return build_object(Collection(), id, response['_source'])
         return None
     
     def entities( self ):
@@ -160,29 +176,18 @@ class Entity( object ):
     @staticmethod
     def get( repo, org, cid, eid ):
         id = make_object_id(Entity.model, repo, org, cid, eid)
-        document = elasticsearch.get(HOST, index=INDEX, model=Entity.model, id=id)
-        if document:
-            o = Entity()
-            o.id = id
-            setattr(o, 'collection_id', '-'.join([repo,org,cid]))
-            o.fields = []
-            for field in models.model_fields(Entity.model):
-                fieldname = field['name']
-                label = field.get('label', field['name'])
-                # entity JSON contains 'files' field that clashes with Entity.files() function
-                if fieldname == 'files':
-                    fieldname = '_files'
-                if document.get(fieldname,None):
-                    # direct attribute
-                    setattr(o, fieldname, document[fieldname])
-                    # fieldname,label,value tuple for use in template
-                    o.fields.append( (fieldname, label, document[fieldname]) )
-            return o
+        raw = elasticsearch.get(HOST, index=INDEX, model=Entity.model, id=id)
+        status = raw['status']
+        response = json.loads(raw['response'])
+        if (status == 200) and response['exists']:
+            return build_object(Entity(), id, response['_source'])
         return None
     
     def files( self ):
         results = elasticsearch.query(HOST, index=INDEX, model='file', query='id:"%s"' % self.id, sort='id',)
         files = massage_query_results(results)
+        for f in files:
+            f['xmp'] = None
         return files
 
 
@@ -201,22 +206,11 @@ class File( object ):
     @staticmethod
     def get( repo, org, cid, eid, role, sha1 ):
         id = make_object_id(File.model, repo, org, cid, eid, role, sha1)
-        document = elasticsearch.get(HOST, index=INDEX, model=File.model, id=id)
-        if document:
-            o = File()
-            o.id = id
-            setattr(o, 'entity_id', '-'.join([repo,org,cid,eid]))
-            setattr(o, 'collection_id', '-'.join([repo,org,cid]))
-            o.fields = []
-            for field in models.model_fields(File.model):
-                fieldname = field['name']
-                label = field.get('label', field['name'])
-                if document.get(fieldname,None):
-                    # direct attribute
-                    setattr(o, fieldname, document[fieldname])
-                    # fieldname,label,value tuple for use in template
-                    o.fields.append( (fieldname, label, document[fieldname]) )
-            return o
+        raw = elasticsearch.get(HOST, index=INDEX, model=File.model, id=id)
+        status = raw['status']
+        response = json.loads(raw['response'])
+        if (status == 200) and response['exists']:
+            return build_object(File(), id, response['_source'])
         return None
     
     def access_url( self ):

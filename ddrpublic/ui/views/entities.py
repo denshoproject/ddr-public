@@ -28,7 +28,6 @@ def detail( request, repo, org, cid, eid ):
     entity = Entity.get(repo, org, cid, eid)
     if not entity:
         raise Http404
-    files = entity.files()
     return render_to_response(
         'ui/entities/detail.html',
         {
@@ -37,7 +36,7 @@ def detail( request, repo, org, cid, eid ):
             'cid': cid,
             'eid': eid,
             'object': entity,
-            'files': files,
+            'files': entity.files,
         },
         context_instance=RequestContext(request, processors=[])
     )
