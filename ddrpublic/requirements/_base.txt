@@ -5,6 +5,8 @@
 
                            # LICENSE      DEBIAN PKG (WHEEZY)              (JESSIE)
 
+redis                      # MIT          python-redis (2.4.13-1)          python-redis (2.4.13-2)          y
+django-redis               # BSD          n/a                              n/a                              y
 django                     # MIT          python-django (1.4.5-1)          python-django (1.5.1-2)
 gunicorn                   # MIT          gunicorn (0.14.5-3+deb7u1)       gunicorn (0.15.0-1)
 
