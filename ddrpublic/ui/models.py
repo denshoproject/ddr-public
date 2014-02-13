@@ -6,9 +6,12 @@ from dateutil import parser
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.template import Context, Template
 
 from DDR import elasticsearch
-from DDR import models
+from DDR import models as DDRmodels
+
+MODEL_FIELDS = elasticsearch.model_fields()
 
 INDEX = 'ddr'
 
@@ -57,19 +60,92 @@ def massage_query_results( results ):
         objects.append(o)
     return objects
 
+# ----------------------------------------------------------------------
+# functions for displaying various types of content
+
+#>>> t = Template("My name is {{ my_name }}.")
+#>>> c = Context({"my_name": "Adrian"})
+
+DATETIME_TEMPLATE = """{{ dt|date:"Y F j (D) G:i:s" }}"""
+
+FACET_TEMPLATE = """<ul class="list-unstyled">
+{% for facet in facets %}
+  <li><a href="{{ facet.url }}">{{ facet.text }}</a></li>
+{% endfor %}
+</ul>"""
+
+FILESIZE_TEMPLATE = """{{ text|filesizeformat }}"""
+
+STRING_TEMPLATE = """{{ text }}"""
+
+STRING_COLLAPSED_TEMPLATE = """{{ text|truncatechars:512 }}"""
+
+def display_datetime(fieldname, text):
+    dt = parser.parse(text)
+    t = Template(DATETIME_TEMPLATE)
+    c = Context({'dt':dt})
+    return t.render(c)
+
+def display_facet(fieldname, text):
+    # make everything a list
+    if isinstance(text, basestring):
+        text = text.strip().split(';')
+    lines = []
+    for t in text:
+        url = '/search/results/?query=%s:%s' % (fieldname, t.strip())
+        lines.append( {'url':url, 'text':t.strip()} )
+    t = Template(FACET_TEMPLATE)
+    c = Context({'facets': lines})
+    return t.render(c)
+
+def display_filesize(fieldname, text):
+    t = Template(FILESIZE_TEMPLATE)
+    c = Context({'text':text})
+    return t.render(c)
+
+def display_string(fieldname, text):
+    t = Template(STRING_TEMPLATE)
+    c = Context({'text':text})
+    return t.render(c)
+
+def display_string_collapsed(fieldname, text):
+    t = Template(STRING_COLLAPSED_TEMPLATE)
+    c = Context({'text':text})
+    return t.render(c)
+
+field_display_handler = {
+    'datetime': display_datetime,
+    'facet': display_facet,
+    'filesize': display_filesize,
+    'string': display_string,
+    'string_collapsed': display_string_collapsed,
+}
+
+def field_display_style( o, field ):
+    for modelfield in MODEL_FIELDS[o.model]:
+        if modelfield['name'] == field:
+            return modelfield['elasticsearch']['display']
+    return None
+
+# ----------------------------------------------------------------------
+
 def build_object( o, id, source ):
     """Build object from ES GET data.
     """
     o.id = id
     o.fields = []
-    for field in models.model_fields(o.model):
+    for field in DDRmodels.model_fields(o.model):
         fieldname = field['name']
         label = field.get('label', field['name'])
         if source.get(fieldname,None):
             # direct attribute
             setattr(o, fieldname, source[fieldname])
             # fieldname,label,value tuple for use in template
-            o.fields.append( (fieldname, label, source[fieldname]) )
+            contents = source[fieldname]
+            style = field_display_style(o, fieldname)
+            if style:
+                contents_display = field_display_handler[style](fieldname, contents)
+                o.fields.append( (fieldname, label, contents_display) )
     # rename entity.files to entity._files
     ohasattr = hasattr(o, 'files')
     if (o.model == 'entity') and hasattr(o, 'files'):
