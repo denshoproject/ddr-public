@@ -39,7 +39,7 @@ def results( request ):
     sort = {'record_created': request.GET.get('record_created', ''),
             'record_lastmod': request.GET.get('record_lastmod', ''),}
     # do the query
-    results = elasticsearch.query(settings.ELASTICSEARCH_HOST_PORT, models.INDEX, query=q, filters=filters, sort=sort)
+    results = elasticsearch.query(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX, query=q, filters=filters, sort=sort)
     hits = models.massage_query_results(results)
     return render_to_response(
         'ui/search/results.html',

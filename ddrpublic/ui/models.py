@@ -13,8 +13,6 @@ from DDR import models as DDRmodels
 
 MODEL_FIELDS = elasticsearch.model_fields()
 
-INDEX = 'ddr'
-
 HOST = settings.ELASTICSEARCH_HOST_PORT
 
 
@@ -167,7 +165,7 @@ def build_object( o, id, source ):
 
 
 class Repository( object ):
-    index = INDEX
+    index = settings.DOCUMENT_INDEX
     model = 'repository'
     id = None
     repo = None
@@ -184,14 +182,14 @@ class Repository( object ):
     
     def organizations( self ):
         # TODO add repo to ElasticSearch so we can do this the right way
-        #hits = elasticsearch.query(HOST, index=INDEX, model='organization', query='id:"%s"' % self.id)
+        #hits = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='organization', query='id:"%s"' % self.id)
         #organizations = massage_hits(hits)
         organizations = ['ddr-densho', 'ddr-testing',]
         return organizations
 
 
 class Organization( object ):
-    index = INDEX
+    index = settings.DOCUMENT_INDEX
     model = 'organization'
     id = None
     repo = None
@@ -209,13 +207,13 @@ class Organization( object ):
         return o
     
     def collections( self ):
-        results = elasticsearch.query(HOST, index=INDEX, model='collection', query='id:"%s"' % self.id, sort='id',)
+        results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='collection', query='id:"%s"' % self.id, sort='id',)
         collections = massage_query_results(results)
         return collections
 
 
 class Collection( object ):
-    index = INDEX
+    index = settings.DOCUMENT_INDEX
     model = 'collection'
     id = None
     repo = None
@@ -226,7 +224,7 @@ class Collection( object ):
     @staticmethod
     def get( repo, org, cid ):
         id = make_object_id(Collection.model, repo, org, cid)
-        raw = elasticsearch.get(HOST, index=INDEX, model=Collection.model, id=id)
+        raw = elasticsearch.get(HOST, index=settings.DOCUMENT_INDEX, model=Collection.model, id=id)
         status = raw['status']
         response = json.loads(raw['response'])
         if (status == 200) and response['exists']:
@@ -234,13 +232,13 @@ class Collection( object ):
         return None
     
     def entities( self ):
-        results = elasticsearch.query(HOST, index=INDEX, model='entity', query='id:"%s"' % self.id, sort='id',)
+        results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='entity', query='id:"%s"' % self.id, sort='id',)
         entities = massage_query_results(results)
         return entities
 
 
 class Entity( object ):
-    index = INDEX
+    index = settings.DOCUMENT_INDEX
     model = 'entity'
     id = None
     repo = None
@@ -252,7 +250,7 @@ class Entity( object ):
     @staticmethod
     def get( repo, org, cid, eid ):
         id = make_object_id(Entity.model, repo, org, cid, eid)
-        raw = elasticsearch.get(HOST, index=INDEX, model=Entity.model, id=id)
+        raw = elasticsearch.get(HOST, index=settings.DOCUMENT_INDEX, model=Entity.model, id=id)
         status = raw['status']
         response = json.loads(raw['response'])
         if (status == 200) and response['exists']:
@@ -260,7 +258,7 @@ class Entity( object ):
         return None
     
     def files( self ):
-        results = elasticsearch.query(HOST, index=INDEX, model='file', query='id:"%s"' % self.id, sort='id',)
+        results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file', query='id:"%s"' % self.id, sort='id',)
         files = massage_query_results(results)
         for f in files:
             f['xmp'] = None
@@ -268,7 +266,7 @@ class Entity( object ):
 
 
 class File( object ):
-    index = INDEX
+    index = settings.DOCUMENT_INDEX
     model = 'file'
     id = None
     repo = None
@@ -282,7 +280,7 @@ class File( object ):
     @staticmethod
     def get( repo, org, cid, eid, role, sha1 ):
         id = make_object_id(File.model, repo, org, cid, eid, role, sha1)
-        raw = elasticsearch.get(HOST, index=INDEX, model=File.model, id=id)
+        raw = elasticsearch.get(HOST, index=settings.DOCUMENT_INDEX, model=File.model, id=id)
         status = raw['status']
         response = json.loads(raw['response'])
         if (status == 200) and response['exists']:
