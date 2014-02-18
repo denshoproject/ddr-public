@@ -18,7 +18,7 @@
 <ul class="list-unstyled">
 {% for term in terms %}
   <li>
-    <a href="{% url "ui-search-results" %}?query={{ facet.name }}:{{ term.term }}">{{ term.title }}</a>
+    <a href="{% url "ui-search-results" %}?query={{ facet.name }}:{{ term.term|urlencode }}">{{ term.title }}</a>
     {% if term.count %}<span class="badge">{{ term.count }}</span>{% endif %}
     {% if term.description %}&mdash; {{ term.description }}{% endif %}
   </li>

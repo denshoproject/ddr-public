@@ -10,6 +10,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
+from django.utils.http import urlencode
 
 from DDR import elasticsearch
 from ui import models
@@ -33,6 +34,9 @@ def results( request ):
     # prep query for elasticsearch
     model = request.GET.get('model', None)
     q = request.GET.get('query', None)
+    if q:
+        key,val = q.split(':')
+        q = urlencode({key:val})
     #filters = {'public': request.GET.get('public', ''),
     #           'status': request.GET.get('status', ''),}
     filters = {}

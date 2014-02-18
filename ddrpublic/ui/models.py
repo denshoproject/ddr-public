@@ -7,6 +7,7 @@ from dateutil import parser
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.template import Context, Template
+from django.utils.http import urlencode
 
 from DDR import elasticsearch
 from DDR import models as DDRmodels
@@ -92,7 +93,8 @@ def display_facet(fieldname, text, facet):
         text = text.strip().split(';')
     lines = []
     for t in text:
-        url = '/search/results/?query=%s:%s' % (fieldname, t.strip())
+        query = urlencode({fieldname: t.strip()})
+        url = '/search/results/?query=%s' % query
         termdata = {'url':url, 'term':t.strip(), 'title':t.strip()}
         if facet and facet['terms']:
             for term in facet['terms']:
