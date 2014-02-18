@@ -11,6 +11,8 @@ from django.template import Context, Template
 from DDR import elasticsearch
 from DDR import models as DDRmodels
 
+from ui import faceting
+
 MODEL_FIELDS = elasticsearch.model_fields()
 
 HOST = settings.ELASTICSEARCH_HOST_PORT
@@ -68,7 +70,7 @@ DATETIME_TEMPLATE = """{{ dt|date:"Y F j (D) G:i:s" }}"""
 
 FACET_TEMPLATE = """<ul class="list-unstyled">
 {% for facet in facets %}
-  <li><a href="{{ facet.url }}">{{ facet.text }}</a></li>
+  <li><a href="{{ facet.url }}">{{ facet.title }}</a></li>
 {% endfor %}
 </ul>"""
 
@@ -84,14 +86,19 @@ def display_datetime(fieldname, text):
     c = Context({'dt':dt})
     return t.render(c)
 
-def display_facet(fieldname, text):
+def display_facet(fieldname, text, facet):
     # make everything a list
     if isinstance(text, basestring):
         text = text.strip().split(';')
     lines = []
     for t in text:
         url = '/search/results/?query=%s:%s' % (fieldname, t.strip())
-        lines.append( {'url':url, 'text':t.strip()} )
+        termdata = {'url':url, 'term':t.strip(), 'title':t.strip()}
+        if facet and facet['terms']:
+            for term in facet['terms']:
+                if term[0] == t:
+                    termdata['title'] = term[1]
+        lines.append(termdata)
     t = Template(FACET_TEMPLATE)
     c = Context({'facets': lines})
     return t.render(c)
@@ -130,6 +137,7 @@ def field_display_style( o, field ):
 def build_object( o, id, source ):
     """Build object from ES GET data.
     """
+    facets = faceting.facets_list()
     o.id = id
     o.fields = []
     for field in DDRmodels.model_fields(o.model):
@@ -142,7 +150,11 @@ def build_object( o, id, source ):
             contents = source[fieldname]
             style = field_display_style(o, fieldname)
             if style:
-                contents_display = field_display_handler[style](fieldname, contents)
+                if style == 'facet':
+                    facet = faceting.get_facet(facets, fieldname)
+                    contents_display = field_display_handler[style](fieldname, contents, facet)
+                else:
+                    contents_display = field_display_handler[style](fieldname, contents)
                 o.fields.append( (fieldname, label, contents_display) )
     # rename entity.files to entity._files
     ohasattr = hasattr(o, 'files')
