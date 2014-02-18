@@ -12,18 +12,9 @@
   <div class="row">
 
 <ul class="list-unstyled">
-  <li><a href="{% url "ui-browse-facet" "contributor" %}">contributor</a></li>
-  <li><a href="{% url "ui-browse-facet" "digitize_organization" %}">digitize_organization</a></li>
-  <li><a href="{% url "ui-browse-facet" "creators" %}">creators</a></li>
-  <li><a href="{% url "ui-browse-facet" "facility" %}">facility</a></li>
-  <li><a href="{% url "ui-browse-facet" "format" %}">format</a></li>
-  <li><a href="{% url "ui-browse-facet" "genre" %}">genre</a></li>
-  <li><a href="{% url "ui-browse-facet" "language" %}">language</a></li>
-  <li><a href="{% url "ui-browse-facet" "location" %}">location</a></li>
-  <li><a href="{% url "ui-browse-facet" "persons" %}">persons</a></li>
-  <li><a href="{% url "ui-browse-facet" "public" %}">public</a></li>
-  <li><a href="{% url "ui-browse-facet" "status" %}">status</a></li>
-  <li><a href="{% url "ui-browse-facet" "topics" %}">topics</a></li>
+{% for facet in facets %}
+  <li><a href="{{ facet.url }}">{{ facet.title }}</a></li>
+{% endfor %}
 </ul>
 
   </div><!-- .row -->

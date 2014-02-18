@@ -1,21 +1,26 @@
 {% extends "ui/browse/base.html" %}
 
-{% block title %}{{ facet }}{% endblock %}
-{% block pagetitle %}{{ facet }}{% endblock %}
+{% block title %}{{ facet.title }}{% endblock %}
+{% block pagetitle %}{{ facet.title }}{% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
-<li>{{ facet }}</li>
+<li>{{ facet.title }}</li>
 {% endblock breadcrumbs %}
 
 {% block content %}
 <div class="container-fluid">
   <div class="row">
 
+<p>
+{{ facet.description }}
+</p>
+
 <ul class="list-unstyled">
-{% for term in results.terms %}
+{% for term in terms %}
   <li>
-    <span class="badge">{{ term.count }}</span>
-    <a href="{% url "ui-search-results" %}?query={{ facet }}:{{ term.term }}">{{ term.term }}</a>
+    <a href="{% url "ui-search-results" %}?query={{ facet.name }}:{{ term.term }}">{{ term.title }}</a>
+    {% if term.count %}<span class="badge">{{ term.count }}</span>{% endif %}
+    {% if term.description %}&mdash; {{ term.description }}{% endif %}
   </li>
 {% endfor %}
 </ul>
