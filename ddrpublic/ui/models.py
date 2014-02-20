@@ -285,7 +285,7 @@ class Entity( object ):
     cid = None
     eid = None
     fieldnames = []
-    _files = []
+    _file_objects = []
     
     @staticmethod
     def get( repo, org, cid, eid ):
@@ -301,12 +301,12 @@ class Entity( object ):
         return reverse('ui-entity', args=(self.repo, self.org, self.cid, self.eid))
     
     def files( self ):
-        if not self._files:
+        if not self._file_objects:
             results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file', query='id:"%s"' % self.id, sort='id',)
-            self._files = massage_query_results(results)
-            for f in self._files:
+            self._file_objects = massage_query_results(results)
+            for f in self._file_objects:
                 f['xmp'] = None
-        return self._files
+        return self._file_objects
     
     def parent( self ):
         return Collection.get(self.repo, self.org, self.cid)
