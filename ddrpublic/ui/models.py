@@ -341,4 +341,4 @@ class File( object ):
         return settings.UI_THUMB_URL(self)
     
     def parent( self ):
-        return Entity.get(self.repo, self.org, self.cid, self.eidde)
+        return Entity.get(self.repo, self.org, self.cid, self.eid)
