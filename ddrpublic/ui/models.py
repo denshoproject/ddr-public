@@ -194,6 +194,9 @@ class Repository( object ):
         #build_object(r)
         return r
     
+    def absolute_url( self ):
+        return reverse('ui-repo', args=(self.repo))
+    
     def organizations( self ):
         # TODO add repo to ElasticSearch so we can do this the right way
         #hits = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='organization', query='id:"%s"' % self.id)
@@ -227,6 +230,9 @@ class Organization( object ):
         #build_object(o)
         return o
     
+    def absolute_url( self ):
+        return reverse('ui-organization', args=(self.repo, self.org))
+    
     def collections( self ):
         if not self._collections:
             results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='collection', query='id:"%s"' % self.id, sort='id',)
@@ -253,6 +259,9 @@ class Collection( object ):
         if (status == 200) and response['exists']:
             return build_object(Collection(), id, response['_source'])
         return None
+    
+    def absolute_url( self ):
+        return reverse('ui-collection', args=(self.repo, self.org, self.cid))
     
     def entities( self ):
         if not self._entities:
@@ -281,6 +290,9 @@ class Entity( object ):
         if (status == 200) and response['exists']:
             return build_object(Entity(), id, response['_source'])
         return None
+    
+    def absolute_url( self ):
+        return reverse('ui-entity', args=(self.repo, self.org, self.cid, self.eid))
     
     def files( self ):
         if not self._files:
@@ -312,6 +324,9 @@ class File( object ):
         if (status == 200) and response['exists']:
             return build_object(File(), id, response['_source'])
         return None
+    
+    def absolute_url( self ):
+        return reverse('ui-file', args=(self.repo, self.org, self.cid, self.eid, self.role, self.sha1))
     
     def access_url( self ):
         return settings.UI_THUMB_URL(self)
