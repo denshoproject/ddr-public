@@ -36,7 +36,7 @@ STATIC_URL='/static/'
 # Filesystem path and URL for media to be manipulated by ddrlocal
 # (collection repositories, thumbnail cache, etc).
 MEDIA_ROOT='/var/www/media'
-MEDIA_URL='http://192.168.56.120/media/'
+MEDIA_URL='http://ddr.densho.org/media/'
 
 ACCESS_FILE_APPEND='-a'
 ACCESS_FILE_EXTENSION='.jpg'
@@ -127,8 +127,9 @@ METADATA_INDEX = 'meta'
 
 # sorl-thumbnail
 THUMBNAIL_DEBUG = DEBUG
-THUMBNAIL_KVSTORE = 'sorl.thumbnail.kvstores.redis_kvstore.KVStore'
+THUMBNAIL_DEBUG = False
 #THUMBNAIL_KVSTORE = 'sorl.thumbnail.kvstores.cached_db_kvstore.KVStore'
+THUMBNAIL_KVSTORE = 'sorl.thumbnail.kvstores.redis_kvstore.KVStore'
 THUMBNAIL_REDIS_PASSWORD = ''
 THUMBNAIL_REDIS_HOST = REDIS_HOST
 THUMBNAIL_REDIS_PORT = int(REDIS_PORT)
@@ -137,8 +138,8 @@ THUMBNAIL_ENGINE = 'sorl.thumbnail.engines.convert_engine.Engine'
 THUMBNAIL_CONVERT = 'convert'
 THUMBNAIL_IDENTIFY = 'identify'
 THUMBNAIL_CACHE_TIMEOUT = 60*60*24*365*10  # 10 years
-THUMBNAIL_DUMMY = True
-
+THUMBNAIL_DUMMY = False
+THUMBNAIL_URL_TIMEOUT = 60  # 1min
 
 # File thumbnail URL generator function
 # sorl.thumbnail will download original files from this source and generate thumbnails locally.
@@ -152,6 +153,14 @@ def UI_THUMB_URL(ddrfile):
     """
     return 'http://192.168.56.101/media/base/%s/files/%s/files/%s' % (
         ddrfile.collection_id, ddrfile.entity_id, ddrfile.access_rel)
+
+# colo
+def UI_THUMB_URL(ddrfile):
+    """Example:
+    /media/ddr-testing-123/ddr-testing-123-1-master-a1b2c3d4e5-a.jpg
+    """
+    return '%s%s/%s' % (MEDIA_URL, ddrfile.collection_id, ddrfile.access_rel)
+
 # # Amazon S3
 # def UI_THUMB_URL(ddrfile):
 #     """Example:
