@@ -183,6 +183,7 @@ class Repository( object ):
     id = None
     repo = None
     fieldnames = []
+    _organizations = []
     
     @staticmethod
     def get( repo ):
@@ -197,8 +198,14 @@ class Repository( object ):
         # TODO add repo to ElasticSearch so we can do this the right way
         #hits = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='organization', query='id:"%s"' % self.id)
         #organizations = massage_hits(hits)
-        organizations = ['ddr-densho', 'ddr-testing',]
-        return organizations
+        if not self._organizations:
+            org_ids = ['ddr-densho', 'ddr-jamsj', 'ddr-janm', 'ddr-jcch', 'ddr-njpa', 'ddr-one', 'ddr-qumulo', 'ddr-testing',]
+            organizations = []
+            for org_id in org_ids:
+                repo,org = org_id.split('-')
+                o = Organization.get(repo, org)
+                self._organizations.append(o)
+        return self._organizations
 
 
 class Organization( object ):
@@ -208,6 +215,7 @@ class Organization( object ):
     repo = None
     org = None
     fieldnames = []
+    _collections = []
     
     @staticmethod
     def get( repo, org ):
@@ -220,9 +228,10 @@ class Organization( object ):
         return o
     
     def collections( self ):
-        results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='collection', query='id:"%s"' % self.id, sort='id',)
-        collections = massage_query_results(results)
-        return collections
+        if not self._collections:
+            results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='collection', query='id:"%s"' % self.id, sort='id',)
+            self._collections = massage_query_results(results)
+        return self._collections
 
 
 class Collection( object ):
@@ -233,6 +242,7 @@ class Collection( object ):
     org = None
     cid = None
     fieldnames = []
+    _entities = []
     
     @staticmethod
     def get( repo, org, cid ):
@@ -245,9 +255,10 @@ class Collection( object ):
         return None
     
     def entities( self ):
-        results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='entity', query='id:"%s"' % self.id, sort='id',)
-        entities = massage_query_results(results)
-        return entities
+        if not self._entities:
+            results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='entity', query='id:"%s"' % self.id, sort='id',)
+            self._entities = massage_query_results(results)
+        return self._entities
 
 
 class Entity( object ):
@@ -259,6 +270,7 @@ class Entity( object ):
     cid = None
     eid = None
     fieldnames = []
+    _files = []
     
     @staticmethod
     def get( repo, org, cid, eid ):
@@ -271,11 +283,12 @@ class Entity( object ):
         return None
     
     def files( self ):
-        results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file', query='id:"%s"' % self.id, sort='id',)
-        files = massage_query_results(results)
-        for f in files:
-            f['xmp'] = None
-        return files
+        if not self._files:
+            results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file', query='id:"%s"' % self.id, sort='id',)
+            self._files = massage_query_results(results)
+            for f in self._files:
+                f['xmp'] = None
+        return self._files
 
 
 class File( object ):
