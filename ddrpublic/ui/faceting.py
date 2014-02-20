@@ -3,6 +3,8 @@ from django.core.urlresolvers import reverse
 
 from DDR import elasticsearch
 
+SHOW_THESE = ['topics', 'facility', 'location', 'format', 'genre',]
+
 
 def facets_list():
     """Returns a list of facets in alphabetical order, with URLs
@@ -10,8 +12,9 @@ def facets_list():
     facets_list = []
     facets = elasticsearch.load_facets('/usr/local/src/ddr-cmdln/ddr/DDR/models/facets.json')
     names = facets.keys()
-    names.sort()
-    for name in names:
+    #names.sort()
+    #for name in names:
+    for name in SHOW_THESE:
         f = facets[name]
         f['name'] = name
         f['url'] = reverse('ui-browse-facet', args=[name])
