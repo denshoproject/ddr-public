@@ -1,0 +1,33 @@
+{% extends "ui/base.html" %}
+
+{% block title %}Collections{% endblock %}
+{% block pagetitle %}Collections{% endblock %}
+
+{% block breadcrumbs %}{{ block.super }}
+<li>Collections</li>{% endblock breadcrumbs %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+
+{% for organization in organizations %}
+{% if organization.collections %}
+<h2>{{ organization.id }}</h2>
+<ul class="list-unstyled">
+  {% for collection in organization.collections %}
+  <li>
+    <a href="{{ collection.url }}">
+    <span class="label label-default">{{ collection.id }}</span>
+    {{ collection.title }}</a>
+  </li>
+  {% endfor %}
+{% endif %}
+{% endfor %}{# organizations #}
+
+  </div><!-- .row -->
+</div><!-- .container-fluid -->
+{% endblock content %}
+
+{% block footer %}
+ui/index.html
+{% endblock footer %}

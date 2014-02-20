@@ -13,12 +13,12 @@ from ui.models import Repository, Organization, Collection, Entity, File
 
 # views ----------------------------------------------------------------
 
-def list( request, repo, org ):
+def list( request ):
+    organizations = Repository.get('ddr').organizations()
     return render_to_response(
-        'ui/collections/list.html',
+        'ui/collections.html',
         {
-            'repo': repo,
-            'org': org,
+            'organizations': organizations,
         },
         context_instance=RequestContext(request, processors=[])
     )
