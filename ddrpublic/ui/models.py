@@ -238,6 +238,9 @@ class Organization( object ):
             results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='collection', query='id:"%s"' % self.id, sort='id',)
             self._collections = massage_query_results(results)
         return self._collections
+    
+    def parent( self ):
+        return None
 
 
 class Collection( object ):
@@ -268,6 +271,9 @@ class Collection( object ):
             results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='entity', query='id:"%s"' % self.id, sort='id',)
             self._entities = massage_query_results(results)
         return self._entities
+    
+    def parent( self ):
+        return Organization.get(self.repo, self.org)
 
 
 class Entity( object ):
@@ -301,6 +307,9 @@ class Entity( object ):
             for f in self._files:
                 f['xmp'] = None
         return self._files
+    
+    def parent( self ):
+        return Collection.get(self.repo, self.org, self.cid)
 
 
 class File( object ):
@@ -330,3 +339,6 @@ class File( object ):
     
     def access_url( self ):
         return settings.UI_THUMB_URL(self)
+    
+    def parent( self ):
+        return Entity.get(self.repo, self.org, self.cid, self.eidde)
