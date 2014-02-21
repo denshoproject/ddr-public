@@ -27,7 +27,6 @@ def detail( request, repo, org, cid ):
     collection = Collection.get(repo, org, cid)
     if not collection:
         raise Http404
-    entities = collection.entities()
     return render_to_response(
         'ui/collections/detail.html',
         {
@@ -35,7 +34,6 @@ def detail( request, repo, org, cid ):
             'org': org,
             'cid': cid,
             'object': collection,
-            'entities': entities,
         },
         context_instance=RequestContext(request, processors=[])
     )

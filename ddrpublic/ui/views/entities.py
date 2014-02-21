@@ -36,7 +36,6 @@ def detail( request, repo, org, cid, eid ):
             'cid': cid,
             'eid': eid,
             'object': entity,
-            'files': entity.files(),
         },
         context_instance=RequestContext(request, processors=[])
     )
