@@ -92,12 +92,13 @@ def display_facet(fieldname, text, facet):
     if isinstance(text, basestring):
         text = text.strip().split(';')
     lines = []
-    for t in text:
-        url = '/search/%s:%s/' % (fieldname, django_urlquote(t.strip()))
-        termdata = {'url':url, 'term':t.strip(), 'title':t.strip()}
+    for txt in text:
+        term_id = faceting.extract_term_id(txt)
+        url = '/search/%s:%s/' % (fieldname, django_urlquote(term_id))
+        termdata = {'url':url, 'term':txt.strip(), 'title':txt.strip()}
         if facet and facet['terms']:
             for term in facet['terms']:
-                if term['id'] == t:
+                if term['id'] == txt:
                     termdata['title'] = term['title']
         lines.append(termdata)
     t = Template(FACET_TEMPLATE)
