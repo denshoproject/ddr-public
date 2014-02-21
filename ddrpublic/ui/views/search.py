@@ -50,3 +50,22 @@ def results( request ):
          'sort': sort,},
         context_instance=RequestContext(request, processors=[])
     )
+
+def term_query( request, field, term ):
+    """Results of a search query.
+    """
+    # prep query for elasticsearch
+    terms = {field:term}
+    filters = {}
+    sort = {'record_created': request.GET.get('record_created', ''),
+            'record_lastmod': request.GET.get('record_lastmod', ''),}
+    # do the query
+    results = elasticsearch.query(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX, term=terms, filters=filters, sort=sort)
+    hits = models.massage_query_results(results)
+    return render_to_response(
+        'ui/search/results.html',
+        {'hits': hits,
+         'filters': filters,
+         'sort': sort,},
+        context_instance=RequestContext(request, processors=[])
+    )

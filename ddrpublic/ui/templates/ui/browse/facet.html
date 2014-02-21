@@ -16,10 +16,10 @@
 </p>
 
 <ul class="list-unstyled">
-{% for term in facet.terms %}
+{% for term in facet_terms %}
   <li>
-    <a href="{% url "ui-search-results" %}?query={{ facet.id }}:{{ term.id|urlencode }}">{{ term.title }}</a>
-    {% if term.count %}<span class="badge">{{ term.count }}</span>{% endif %}
+    <span class="badge">{% if term.count %}{{ term.count }}{% else %} &nbsp;&nbsp; {% endif %}</span>
+    <a href="{% url "ui-search-term-query" facet.id term.id %}">{{ term.title }}</a>
     {# if term.description %}&mdash; {{ term.description }}{% endif #}
   </li>
 {% endfor %}

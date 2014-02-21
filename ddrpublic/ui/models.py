@@ -93,7 +93,7 @@ def display_facet(fieldname, text, facet):
         text = text.strip().split(';')
     lines = []
     for t in text:
-        url = '/search/results/?query=%s:%s' % (fieldname, django_urlquote(t.strip()))
+        url = '/search/%s:%s/' % (fieldname, django_urlquote(t.strip()))
         termdata = {'url':url, 'term':t.strip(), 'title':t.strip()}
         if facet and facet['terms']:
             for term in facet['terms']:
