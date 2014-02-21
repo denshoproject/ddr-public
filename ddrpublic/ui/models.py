@@ -256,6 +256,7 @@ class Collection( object ):
     cid = None
     fieldnames = []
     _entities = []
+    _signature = None
     
     @staticmethod
     def get( repo, org, cid ):
@@ -282,6 +283,14 @@ class Collection( object ):
     
     def parent( self ):
         return Organization.get(self.repo, self.org)
+    
+    def signature( self ):
+        if not self._signature:
+            for e in self.entities():
+                if not self._signature:
+                    if e.signature():
+                        self._signature = e.signature()
+        return self._signature
 
 
 class Entity( object ):
@@ -294,6 +303,7 @@ class Entity( object ):
     eid = None
     fieldnames = []
     _file_objects = []
+    _signature = None
     
     @staticmethod
     def get( repo, org, cid, eid ):
@@ -321,6 +331,11 @@ class Entity( object ):
     
     def parent( self ):
         return Collection.get(self.repo, self.org, self.cid)
+    
+    def signature( self ):
+        if self.files() and (not self._signature):
+            self._signature = self.files()[0]
+        return self._signature
 
 
 class File( object ):
