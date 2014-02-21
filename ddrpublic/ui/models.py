@@ -240,7 +240,7 @@ class Organization( object ):
                                           query='id:"%s"' % self.id, sort='id',)
             for m in massage_query_results(results):
                 o = build_object(Collection(), m['id'], m)
-                self._entities.append(o)
+                self._collections.append(o)
         return self._collections
     
     def parent( self ):

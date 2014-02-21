@@ -16,7 +16,7 @@
 <ul class="list-unstyled">
   {% for collection in organization.collections %}
   <li>
-    <a href="{{ collection.url }}">
+    <a href="{{ collection.absolute_url }}">
     <span class="label label-default">{{ collection.id }}</span>
     {{ collection.title }}</a>
   </li>
