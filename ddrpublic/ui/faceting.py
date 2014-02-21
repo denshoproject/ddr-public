@@ -38,6 +38,13 @@ def get_facet(name):
                 cache.set(key, cached, CACHE_TIMEOUT)
     return cached
 
+def extract_term_id( text ):
+    if ('[' in text) and (']' in text):
+        term_id = text.split('[')[1].split(']')[0]
+    else:
+        term_id = text
+    return term_id
+
 def facet_terms(facet):
     """
     If term is precoordinate all the terms are listed, with count of number of occurances (if any).
@@ -51,11 +58,7 @@ def facet_terms(facet):
         # IMPORTANT: topic and facility term IDs are int. All others are str.
         term_counts = {}
         for t in results['terms']:
-            term_id = None
-            if ('[' in t['term']) and (']' in t['term']):
-                term_id = t['term'].split('[')[1].split(']')[0]
-            else:
-                term_id = t['term']
+            term_id = extract_term_id(t['term'])
             term_count = t['count']
             if term_id and term_count:
                 term_counts[term_id] = term_count
