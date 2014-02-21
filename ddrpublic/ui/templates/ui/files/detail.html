@@ -25,9 +25,11 @@
 <div class="container-fluid">
   <div class="row">
 
-{% thumbnail object.access_url "300x300" as img %}
+<div style="float:right;">
+{% thumbnail object.access_url "400x400" as img %}
 <img src="{{ img.url }}" class="img-responsive">
 {% endthumbnail %}
+</div>
 
 <dl class="dl-horizontal">
 {% for f in object.fields %}

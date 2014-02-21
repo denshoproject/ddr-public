@@ -46,15 +46,25 @@
 </dl>
 
 <h3>objects</h3>
-<ul class="list-unstyled">
-{% for entity in entities %}
-  <li>
-    <a href="{{ entity.url }}">
-    <span class="label label-default">{{ entity.id }}</span>
-    {{ entity.title }}</a>
-  </li>
+<table>
+{% for entity in object.entities %}
+  <tr>
+    <td>
+{% thumbnail entity.signature.access_url "64x64" as img %}
+      <a href="{{ entity.absolute_url }}" class="thumbnail">
+      <img src="{{ img.url }}" class="img-responsive">
+      </a>
+{% endthumbnail %}
+    </td>
+    <td>
+      <a href="{{ entity.absolute_url }}">
+      <span class="label label-default">{{ entity.id }}</span>
+      {{ entity.title }}
+      </a>
+    </td>
+  </tr>
 {% endfor %}
-</ul>
+</table>
 
   </div><!-- .row -->
 </div><!-- .container-fluid -->
