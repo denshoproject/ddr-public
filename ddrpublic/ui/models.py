@@ -235,8 +235,12 @@ class Organization( object ):
     
     def collections( self ):
         if not self._collections:
-            results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='collection', query='id:"%s"' % self.id, sort='id',)
-            self._collections = massage_query_results(results)
+            self._collections = []
+            results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='collection',
+                                          query='id:"%s"' % self.id, sort='id',)
+            for m in massage_query_results(results):
+                o = build_object(Collection(), m['id'], m)
+                self._entities.append(o)
         return self._collections
     
     def parent( self ):
@@ -268,8 +272,12 @@ class Collection( object ):
     
     def entities( self ):
         if not self._entities:
-            results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='entity', query='id:"%s"' % self.id, sort='id',)
-            self._entities = massage_query_results(results)
+            self._entities = []
+            results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='entity',
+                                          query='id:"%s"' % self.id, sort='id',)
+            for m in massage_query_results(results):
+                o = build_object(Entity(), m['id'], m)
+                self._entities.append(o)
         return self._entities
     
     def parent( self ):
@@ -302,10 +310,13 @@ class Entity( object ):
     
     def files( self ):
         if not self._file_objects:
-            results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file', query='id:"%s"' % self.id, sort='id',)
-            self._file_objects = massage_query_results(results)
-            for f in self._file_objects:
-                f['xmp'] = None
+            self._file_objects = []
+            results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file',
+                                          query='id:"%s"' % self.id, sort='id',)
+            for m in massage_query_results(results):
+                m['xmp'] = None
+                o = build_object(File(), m['id'], m)
+                self._file_objects.append(o)
         return self._file_objects
     
     def parent( self ):
