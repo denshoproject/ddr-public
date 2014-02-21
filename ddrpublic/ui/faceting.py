@@ -53,9 +53,8 @@ def facet_terms(facet):
             term_counts[t['term']] = t['count']
         # add counts to terms
         for term in facet['terms']:
-            t = {'term':term[0], 'title':term[1], 'description':term[2]}
-            t['count'] = term_counts.get(t['term'], None)
-            facet_terms.append(t)
+            term['count'] = term_counts.get(term['id'], 0)
+            facet_terms.append(term)
     else:
         # postcoordinate
         for t in results['terms']:
