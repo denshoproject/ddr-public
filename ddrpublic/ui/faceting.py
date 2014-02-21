@@ -43,7 +43,7 @@ def facet_terms(facet):
     If term is precoordinate all the terms are listed, with count of number of occurances (if any).
     If term is postcoordinate, all the terms come from the index, but there is not title/description.
     """
-    facet_terms = []
+    facetterms = []
     results = elasticsearch.facet_terms(settings.ELASTICSEARCH_HOST_PORT,
                                         settings.DOCUMENT_INDEX, facet['name'], order='term')
     if facet.get('terms', []):
@@ -54,11 +54,11 @@ def facet_terms(facet):
         # add counts to terms
         for term in facet['terms']:
             term['count'] = term_counts.get(term['id'], 0)
-            facet_terms.append(term)
+            facetterms.append(term)
     else:
         # postcoordinate
         for t in results['terms']:
             t['title'] = t['term']
             t['description'] = ''
-            facet_terms.append(t)
-    return facet_terms
+            facetterms.append(t)
+    return facetterms
