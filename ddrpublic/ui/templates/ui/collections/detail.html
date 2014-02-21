@@ -20,7 +20,8 @@
 {% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
-<li>{{ cid }}</li>
+<li><a href="{% url "ui-collections-list" %}">Collections</a></li>
+<li>{{ object.id }}</li>
 {% endblock breadcrumbs %}
 
 {% block content %}
