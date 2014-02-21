@@ -1,31 +1,42 @@
+import json
+
 from django.conf import settings
+from django.core.cache import cache
 from django.core.urlresolvers import reverse
 
 from DDR import elasticsearch
 
-SHOW_THESE = ['topics', 'facility', 'location', 'format', 'genre',]
-
+CACHE_TIMEOUT = 30
 
 def facets_list():
     """Returns a list of facets in alphabetical order, with URLs
     """
-    facets_list = []
-    facets = elasticsearch.load_facets('/usr/local/src/ddr-cmdln/ddr/DDR/models/facets.json')
-    names = facets.keys()
-    #names.sort()
-    #for name in names:
-    for name in SHOW_THESE:
-        f = facets[name]
-        f['name'] = name
-        f['url'] = reverse('ui-browse-facet', args=[name])
-        facets_list.append(f)
-    return facets_list
+    key = 'facets:list'
+    cached = cache.get(key)
+    if not cached:
+        facets_list = []
+        for name in elasticsearch.list_facets():
+            raw = elasticsearch.get(settings.ELASTICSEARCH_HOST_PORT,
+                                    index=settings.METADATA_INDEX, model='facet', id=name)
+            f = json.loads(raw['response'])['_source']
+            f['name'] = name
+            f['url'] = reverse('ui-browse-facet', args=[name])
+            facets_list.append(f)
+        cached = facets_list
+        cache.set(key, cached, CACHE_TIMEOUT)
+    return cached
 
-def get_facet(facets, name):
-    for f in facets:
-        if f['name'] == name:
-            return f
-    return None
+def get_facet(name):
+    key = 'facets:%s' % name
+    print(key)
+    cached = cache.get(key)
+    print('cached: %s' % cached)
+    if not cached:
+        for f in facets_list():
+            if f['name'] == name:
+                cached = f
+                cache.set(key, cached, CACHE_TIMEOUT)
+    return cached
 
 def facet_terms(facet):
     """
@@ -33,7 +44,8 @@ def facet_terms(facet):
     If term is postcoordinate, all the terms come from the index, but there is not title/description.
     """
     facet_terms = []
-    results = elasticsearch.facet_terms(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX, facet['name'], order='term')
+    results = elasticsearch.facet_terms(settings.ELASTICSEARCH_HOST_PORT,
+                                        settings.DOCUMENT_INDEX, facet['name'], order='term')
     if facet.get('terms', []):
         # precoordinate
         term_counts = {}

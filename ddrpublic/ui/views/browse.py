@@ -12,30 +12,27 @@ from DDR import elasticsearch
 
 from ui import faceting
 
+SHOW_THESE = ['topic', 'facility', 'location', 'format', 'genre',]
 
 
 # views ----------------------------------------------------------------
 
 def index( request ):
+    facets = [faceting.get_facet(name) for name in SHOW_THESE]
     return render_to_response(
         'ui/browse/index.html',
         {
-            'facets': faceting.facets_list(),
+            'facets': facets,
         },
         context_instance=RequestContext(request, processors=[])
     )
 
 def facet( request, facet ):
-    facet_name = facet
-    facets = faceting.facets_list()
-    facet = faceting.get_facet(facets, facet_name)
-    terms = faceting.facet_terms(facet)
+    facet = faceting.get_facet(facet)
     return render_to_response(
         'ui/browse/facet.html',
         {
             'facet': facet,
-            'terms': terms,
-            'facets': facets,
         },
         context_instance=RequestContext(request, processors=[])
     )

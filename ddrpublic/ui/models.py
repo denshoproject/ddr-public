@@ -97,8 +97,8 @@ def display_facet(fieldname, text, facet):
         termdata = {'url':url, 'term':t.strip(), 'title':t.strip()}
         if facet and facet['terms']:
             for term in facet['terms']:
-                if term[0] == t:
-                    termdata['title'] = term[1]
+                if term['id'] == t:
+                    termdata['title'] = term['title']
         lines.append(termdata)
     t = Template(FACET_TEMPLATE)
     c = Context({'facets': lines})
@@ -135,10 +135,10 @@ def field_display_style( o, field ):
 
 # ----------------------------------------------------------------------
 
+
 def build_object( o, id, source ):
     """Build object from ES GET data.
     """
-    facets = faceting.facets_list()
     o.id = id
     o.fields = []
     for field in DDRmodels.model_fields(o.model):
@@ -152,7 +152,7 @@ def build_object( o, id, source ):
             style = field_display_style(o, fieldname)
             if style:
                 if style == 'facet':
-                    facet = faceting.get_facet(facets, fieldname)
+                    facet = faceting.get_facet(fieldname)
                     contents_display = field_display_handler[style](fieldname, contents, facet)
                 else:
                     contents_display = field_display_handler[style](fieldname, contents)
