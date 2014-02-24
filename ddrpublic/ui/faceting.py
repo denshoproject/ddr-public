@@ -1,4 +1,5 @@
 import json
+import re
 
 from django.conf import settings
 from django.core.cache import cache
@@ -38,9 +39,13 @@ def get_facet(name):
                 cache.set(key, cached, CACHE_TIMEOUT)
     return cached
 
+INT_IN_STRING = re.compile(r'^\d+$')
+
 def extract_term_id( text ):
     if ('[' in text) and (']' in text):
         term_id = text.split('[')[1].split(']')[0]
+    elif re.match(INT_IN_STRING, text):
+        term_id = int(text)
     else:
         term_id = text
     return term_id
