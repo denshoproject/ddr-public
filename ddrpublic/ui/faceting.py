@@ -55,7 +55,7 @@ def facet_terms(facet):
                                         settings.DOCUMENT_INDEX, facet['name'], order='term')
     if facet.get('terms', []):
         # precoordinate
-        # IMPORTANT: topic and facility term IDs are int. All others are str.
+        # IMPORTANT: topics and facility term IDs are int. All others are str.
         term_counts = {}
         for t in results['terms']:
             term_id = extract_term_id(t['term'])

@@ -12,7 +12,7 @@ from DDR import elasticsearch
 
 from ui import faceting
 
-SHOW_THESE = ['topic', 'facility', 'location', 'format', 'genre',]
+SHOW_THESE = ['topics', 'facility', 'location', 'format', 'genre',]
 
 
 # views ----------------------------------------------------------------
