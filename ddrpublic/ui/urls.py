@@ -23,7 +23,7 @@ urlpatterns = patterns(
     url(r'^browse/(?P<facet>[\w]+)/$', 'ui.views.browse.facet', name='ui-browse-facet'),
     url(r'^browse/$', 'ui.views.browse.index', name='ui-browse-index'),
     
-    url(r'^search/(?P<field>[\w]+):(?P<term>[\w]+)/$', 'ui.views.search.term_query', name='ui-search-term-query'),
+    url(r'^search/(?P<field>[\w]+):(?P<term>[\w ,]+)/$', 'ui.views.search.term_query', name='ui-search-term-query'),
     url(r'^search/results/$', 'ui.views.search.results', name='ui-search-results'),
     url(r'^search/$', 'ui.views.search.index', name='ui-search-index'),
     
