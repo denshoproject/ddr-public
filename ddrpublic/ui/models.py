@@ -98,7 +98,7 @@ def display_facet(fieldname, text, facet):
         termdata = {'url':url, 'term':txt.strip(), 'title':txt.strip()}
         if facet and facet['terms']:
             for term in facet['terms']:
-                if term['id'] == txt:
+                if term['id'] == term_id:
                     termdata['title'] = term['title']
         lines.append(termdata)
     t = Template(FACET_TEMPLATE)
