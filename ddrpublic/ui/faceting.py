@@ -62,6 +62,9 @@ def facet_terms(facet):
             term_count = t['count']
             if term_id and term_count:
                 term_counts[term_id] = term_count
+        # make URLs for terms
+        for term in facet['terms']:
+            term['url'] = reverse('ui-search-term-query', args=(facet['id'], term['id']))
         # add counts to terms
         for term in facet['terms']:
             term_id = term['id']
@@ -74,5 +77,6 @@ def facet_terms(facet):
         for t in results['terms']:
             t['title'] = t['term']
             t['description'] = ''
+            t['url'] = '/search/%s:%s/' % (facet['id'], t['term'])
             facetterms.append(t)
     return facetterms
