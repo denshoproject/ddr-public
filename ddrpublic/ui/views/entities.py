@@ -13,23 +13,30 @@ from ui.models import Repository, Organization, Collection, Entity, File
 
 # views ----------------------------------------------------------------
 
-def list( request, repo, org, cid ):
-    return render_to_response(
-        'ui/entities/list.html',
-        {
-            'repo': repo,
-            'org': org,
-            'cid': cid,
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
-
 def detail( request, repo, org, cid, eid ):
     entity = Entity.get(repo, org, cid, eid)
     if not entity:
         raise Http404
     return render_to_response(
         'ui/entities/detail.html',
+        {
+            'repo': repo,
+            'org': org,
+            'cid': cid,
+            'eid': eid,
+            'object': entity,
+        },
+        context_instance=RequestContext(request, processors=[])
+    )
+
+def files( request, repo, org, cid, eid ):
+    """Lists all the files in an entity.
+    """
+    entity = Entity.get(repo, org, cid, eid)
+    if not entity:
+        raise Http404
+    return render_to_response(
+        'ui/entities/files.html',
         {
             'repo': repo,
             'org': org,

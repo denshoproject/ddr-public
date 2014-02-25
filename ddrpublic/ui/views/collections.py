@@ -37,3 +37,33 @@ def detail( request, repo, org, cid ):
         },
         context_instance=RequestContext(request, processors=[])
     )
+
+def entities( request, repo, org, cid ):
+    collection = Collection.get(repo, org, cid)
+    if not collection:
+        raise Http404
+    return render_to_response(
+        'ui/collections/entities.html',
+        {
+            'repo': repo,
+            'org': org,
+            'cid': cid,
+            'object': collection,
+        },
+        context_instance=RequestContext(request, processors=[])
+    )
+
+def files( request, repo, org, cid ):
+    collection = Collection.get(repo, org, cid)
+    if not collection:
+        raise Http404
+    return render_to_response(
+        'ui/collections/files.html',
+        {
+            'repo': repo,
+            'org': org,
+            'cid': cid,
+            'object': collection,
+        },
+        context_instance=RequestContext(request, processors=[])
+    )

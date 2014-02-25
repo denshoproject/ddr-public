@@ -1,50 +1,33 @@
-{% extends "ui/collections/base.html" %}
+{% extends "ui/entities/base.html" %}
 {% load thumbnail %}
 
 {% block parent %}
+<!--
 <div id="parent">
 <a href="{{ object.parent.absolute_url }}"><span class="label label-default">{{ object.parent.id }}</span></a>
 <a href="{{ object.parent.absolute_url }}">{{ object.parent.title }}</a>
 </div>
+-->
 {% endblock %}
 
 {% block title %}
-{{ object.id }} {% if object.title %}&mdash;{% endif %} {{ object.title }}
+{{ object.id }} {% if object.title %}&mdash;{% endif %} {{ object.title }} &mdash; Files
 {% endblock %}
 
 {% block pagetitle %}
 <span class="label label-default">{{ object.id }}</span>
-{{ object.title }}
+{{ object.title }} &mdash; Files
 {% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
-<li>{{ eid }}</li>
+<li><a href="{{ object.absolute_url }}">{{ object.title }}</a></li>
+<li>Files</li>
 {% endblock breadcrumbs %}
 
 {% block content %}
 <div class="container-fluid">
   <div class="row">
 
-{% if object.signature %}
-<div id="signature">
-  <a href="{{ object.signature.absolute_url }}" class="thumbnail">
-{% thumbnail object.signature.access_url "200x200" as img %}
-    <img src="{{ img.url }}" class="img-responsive">
-{% endthumbnail %}
-    {{ object.signature.label|truncatechars:32 }}
-  </a>
-</div>
-{% endif %}
-
-<dl class="dl-horizontal clearfix">
-{% for f in object.fields %}
-  <!-- {{ f.0 }} -->
-  <dt>{{ f.1 }}</dt>
-  <dd>{{ f.2 }}</dd>
-{% endfor %}
-</dl>
-
-<h3>files</h3>
 <table>
 {% for file in object.files %}
   <tr>
@@ -64,14 +47,11 @@
   </tr>
 {% endfor %}
 </table>
-<p>
-<a href="{% url "ui-entity-files" repo org cid eid %}">All files</a>
-</p>
 
   </div><!-- .row -->
 </div><!-- .container-fluid -->
 {% endblock content %}
 
 {% block footer %}
-ui/entities/detail.html
+ui/entities/files.html
 {% endblock footer %}

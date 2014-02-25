@@ -13,18 +13,6 @@ from ui.models import Repository, Organization, Collection, Entity, File
 
 # views ----------------------------------------------------------------
 
-def list( request, repo, org, cid, eid ):
-    return render_to_response(
-        'ui/files/list.html',
-        {
-            'repo': repo,
-            'org': org,
-            'cid': cid,
-            'eid': eid,
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
-
 def detail( request, repo, org, cid, eid, role, sha1 ):
     ffile = File.get(repo, org, cid, eid, role, sha1)
     if not ffile:
