@@ -264,7 +264,7 @@ class Collection( object ):
         raw = elasticsearch.get(HOST, index=settings.DOCUMENT_INDEX, model=Collection.model, id=id)
         status = raw['status']
         response = json.loads(raw['response'])
-        if (status == 200) and response['exists']:
+        if (status == 200) and (response['found'] or response['exists']):
             return build_object(Collection(), id, response['_source'])
         return None
     
@@ -322,7 +322,7 @@ class Entity( object ):
         raw = elasticsearch.get(HOST, index=settings.DOCUMENT_INDEX, model=Entity.model, id=id)
         status = raw['status']
         response = json.loads(raw['response'])
-        if (status == 200) and response['exists']:
+        if (status == 200) and (response['found'] or response['exists']):
             return build_object(Entity(), id, response['_source'])
         return None
     
@@ -368,7 +368,7 @@ class File( object ):
         raw = elasticsearch.get(HOST, index=settings.DOCUMENT_INDEX, model=File.model, id=id)
         status = raw['status']
         response = json.loads(raw['response'])
-        if (status == 200) and response['exists']:
+        if (status == 200) and (response['found'] or response['exists']):
             return build_object(File(), id, response['_source'])
         return None
     

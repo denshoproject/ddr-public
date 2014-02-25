@@ -4,7 +4,7 @@ PACKAGE_SERVER=tank.densho.org
 
 BOOTSTRAP=bootstrap-3.0.3.zip
 JQUERY=jquery-1.10.2.min.js
-ELASTICSEARCH=elasticsearch-0.90.5.deb
+ELASTICSEARCH=elasticsearch-1.0.1.deb
 
 
 # text color variables
