@@ -1,5 +1,6 @@
-{% extends "ui/organizations/base.html" %}
+{% extends "ui/base.html" %}
 
 {% block breadcrumbs %}{{ block.super }}
-<li><a href="{% url "ui-collection" repo org cid %}">{{ cid }}</a></li>
+<li><a href="{% url "ui-collections-list" %}">Collections</a></li>
+<li><a href="{% url "ui-collection" repo org cid %}">{{ repo }}-{{org }}-{{ cid }}</a></li>
 {% endblock breadcrumbs %}
