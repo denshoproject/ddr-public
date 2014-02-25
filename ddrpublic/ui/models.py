@@ -256,7 +256,6 @@ class Collection( object ):
     org = None
     cid = None
     fieldnames = []
-    _entities = []
     _signature = None
     
     @staticmethod
@@ -272,15 +271,27 @@ class Collection( object ):
     def absolute_url( self ):
         return reverse('ui-collection', args=(self.repo, self.org, self.cid))
     
-    def entities( self ):
-        if not self._entities:
-            self._entities = []
-            results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='entity',
-                                          query='id:"%s"' % self.id, sort='id',)
-            for m in massage_query_results(results):
-                o = build_object(Entity(), m['id'], m)
-                self._entities.append(o)
-        return self._entities
+    def entities( self, index=0, size=50 ):
+        entities = []
+        results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='entity',
+                                      query='id:"%s"' % self.id,
+                                      first=index, size=size, sort='id',)
+        for m in massage_query_results(results):
+            o = build_object(Entity(), m['id'], m)
+            entities.append(o)
+        return entities
+    
+    def files( self, index=0, size=50 ):
+        """Gets all the files in a collection; paging optional.
+        """
+        files = []
+        results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file',
+                                      query='id:"%s"' % self.id,
+                                      first=index, size=size, sort='id',)
+        for m in massage_query_results(results):
+            o = build_object(File(), m['id'], m)
+            files.append(o)
+        return files
     
     def parent( self ):
         return Organization.get(self.repo, self.org)
@@ -303,7 +314,6 @@ class Entity( object ):
     cid = None
     eid = None
     fieldnames = []
-    _file_objects = []
     _signature = None
     
     @staticmethod
@@ -319,16 +329,17 @@ class Entity( object ):
     def absolute_url( self ):
         return reverse('ui-entity', args=(self.repo, self.org, self.cid, self.eid))
     
-    def files( self ):
-        if not self._file_objects:
-            self._file_objects = []
-            results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file',
-                                          query='id:"%s"' % self.id, sort='id',)
-            for m in massage_query_results(results):
-                m['xmp'] = None
-                o = build_object(File(), m['id'], m)
-                self._file_objects.append(o)
-        return self._file_objects
+    def files( self, index=0, size=50 ):
+        """Gets all the files in an entity; paging optional.
+        """
+        files = []
+        results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file',
+                                      query='id:"%s"' % self.id,
+                                      first=index, size=size, sort='id',)
+        for m in massage_query_results(results):
+            o = build_object(File(), m['id'], m)
+            files.append(o)
+        return files
     
     def parent( self ):
         return Collection.get(self.repo, self.org, self.cid)
