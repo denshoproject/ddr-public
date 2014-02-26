@@ -1,4 +1,5 @@
 {% extends "ui/search/base.html" %}
+{% load bootstrap_pagination %}
 
 {% block title %}search results{% endblock %}
 {% block pagetitle %}search results{% endblock %}
@@ -73,13 +74,18 @@
   </div>
 
   <div>
-    {{ hits|length }} results<br/>
+    {{ paginator.count }} results<br/>
   </div>
 
 </div><!-- .querymeta -->
 
-{% if hits %}
-{% for hit in hits %}
+{% if page.object_list %}
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page %}
+{% endif %}
+
+{% for hit in page.object_list %}
 <div class="hit {{ hit.type }}">
 
   <span class="badge badge-info">{{ hit.type }}</span>
@@ -104,6 +110,11 @@
 
 </div>
 {% endfor %}
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page %}
+{% endif %}
+
 {% endif %}
 
   </div><!-- .row -->

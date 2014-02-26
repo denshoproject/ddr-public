@@ -87,6 +87,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     #'django.contrib.admin',
     #
+    'bootstrap_pagination',
     'sorl.thumbnail',
     #
     'ddrpublic',
@@ -121,9 +122,10 @@ ELASTICSEARCH_PORT = '9200'
 ELASTICSEARCH_HOST_PORT = ':'.join([ELASTICSEARCH_HOST, ELASTICSEARCH_PORT])
 ELASTICSEARCH_MAX_SIZE = 1000000
 
+RESULTS_PER_PAGE = 25
+
 DOCUMENT_INDEX = 'documents'
 METADATA_INDEX = 'meta'
-
 
 # sorl-thumbnail
 THUMBNAIL_DEBUG = DEBUG
@@ -266,6 +268,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.debug',
     'django.core.context_processors.i18n',
     'django.core.context_processors.media',
+    'django.core.context_processors.request',
     'django.core.context_processors.static',
     'django.core.context_processors.tz',
     #'django.contrib.messages.context_processors.messages',

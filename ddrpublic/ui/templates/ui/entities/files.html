@@ -1,4 +1,5 @@
 {% extends "ui/entities/base.html" %}
+{% load bootstrap_pagination %}
 {% load thumbnail %}
 
 {% block parent %}
@@ -27,8 +28,18 @@
 <div class="container-fluid">
   <div class="row">
 
+    <div>
+      {{ paginator.count }} results<br/>
+    </div>
+
+{% if page.object_list %}
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page %}
+{% endif %}
+
 <table>
-{% for file in object.files %}
+{% for file in page.object_list %}
   <tr>
     <td>
 {% thumbnail file.access_url "64x64" as img %}
@@ -46,6 +57,12 @@
   </tr>
 {% endfor %}
 </table>
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page %}
+{% endif %}
+
+{% endif %}
 
   </div><!-- .row -->
 </div><!-- .container-fluid -->

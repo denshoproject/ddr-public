@@ -3,6 +3,7 @@ logger = logging.getLogger(__name__)
 
 from django.conf import settings
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
@@ -35,6 +36,8 @@ def files( request, repo, org, cid, eid ):
     entity = Entity.get(repo, org, cid, eid)
     if not entity:
         raise Http404
+    paginator = Paginator(entity.files(), settings.RESULTS_PER_PAGE)
+    page = paginator.page(request.GET.get('page', 1))
     return render_to_response(
         'ui/entities/files.html',
         {
@@ -43,6 +46,8 @@ def files( request, repo, org, cid, eid ):
             'cid': cid,
             'eid': eid,
             'object': entity,
+            'paginator': paginator,
+            'page': page,
         },
         context_instance=RequestContext(request, processors=[])
     )

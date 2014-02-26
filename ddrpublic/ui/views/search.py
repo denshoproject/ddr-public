@@ -6,6 +6,7 @@ from dateutil import parser
 
 from django.conf import settings
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
@@ -42,9 +43,12 @@ def results( request ):
     # do the query
     results = elasticsearch.query(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX, query=q, filters=filters, sort=sort)
     hits = models.massage_query_results(results)
+    paginator = Paginator(hits, settings.RESULTS_PER_PAGE)
+    page = paginator.page(request.GET.get('page', 1))
     return render_to_response(
         'ui/search/results.html',
-        {'hits': hits,
+        {'paginator': paginator,
+         'page': page,
          'query': q,
          'filters': filters,
          'sort': sort,},
