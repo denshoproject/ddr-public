@@ -23,6 +23,14 @@ COLLECTION_LIST_FIELDS = ['id', 'title', 'description',]
 ENTITY_LIST_FIELDS = ['id', 'title', 'description',]
 FILE_LIST_FIELDS = ['id', 'basename_orig', 'label',]
 
+def all_list_fields():
+    LIST_FIELDS = []
+    for mf in [COLLECTION_LIST_FIELDS, ENTITY_LIST_FIELDS, FILE_LIST_FIELDS]:
+        for f in mf:
+            if f not in LIST_FIELDS:
+                LIST_FIELDS.append(f)
+    return LIST_FIELDS
+
 HOST = settings.ELASTICSEARCH_HOST_PORT
 
 
