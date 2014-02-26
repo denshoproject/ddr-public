@@ -29,9 +29,7 @@ def facets_list():
 
 def get_facet(name):
     key = 'facets:%s' % name
-    print(key)
     cached = cache.get(key)
-    print('cached: %s' % cached)
     if not cached:
         for f in facets_list():
             if f['name'] == name:
