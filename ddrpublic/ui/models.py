@@ -16,6 +16,13 @@ from ui import faceting
 
 MODEL_FIELDS = elasticsearch.model_fields()
 
+DEFAULT_SIZE = 10
+
+ORGANIZATION_LIST_FIELDS = ['id', 'title', 'description',]
+COLLECTION_LIST_FIELDS = ['id', 'title', 'description',]
+ENTITY_LIST_FIELDS = ['id', 'title', 'description',]
+FILE_LIST_FIELDS = ['id', 'basename_orig', 'label',]
+
 HOST = settings.ELASTICSEARCH_HOST_PORT
 
 
@@ -296,23 +303,27 @@ class Collection( object ):
     def backend_url( self ):
         return backend_url('collection', self.id)
     
-    def entities( self, index=0, size=50 ):
+    def entities( self, index=0, size=DEFAULT_SIZE ):
         entities = []
         results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='entity',
                                       query='id:"%s"' % self.id,
-                                      first=index, size=size, sort='id',)
+                                      fields=ENTITY_LIST_FIELDS,
+                                      first=index, size=size,
+                                      sort='id',)
         for m in massage_query_results(results):
             o = build_object(Entity(), m['id'], m)
             entities.append(o)
         return entities
     
-    def files( self, index=0, size=50 ):
+    def files( self, index=0, size=DEFAULT_SIZE ):
         """Gets all the files in a collection; paging optional.
         """
         files = []
         results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file',
                                       query='id:"%s"' % self.id,
-                                      first=index, size=size, sort='id',)
+                                      fields=FILE_LIST_FIELDS,
+                                      first=index, size=size,
+                                      sort='id',)
         for m in massage_query_results(results):
             o = build_object(File(), m['id'], m)
             files.append(o)
@@ -357,13 +368,15 @@ class Entity( object ):
     def backend_url( self ):
         return backend_url('entity', self.id)
     
-    def files( self, index=0, size=50 ):
+    def files( self, index=0, size=DEFAULT_SIZE ):
         """Gets all the files in an entity; paging optional.
         """
         files = []
         results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file',
                                       query='id:"%s"' % self.id,
-                                      first=index, size=size, sort='id',)
+                                      fields=FILE_LIST_FIELDS,
+                                      first=index, size=size,
+                                      sort='id',)
         for m in massage_query_results(results):
             o = build_object(File(), m['id'], m)
             files.append(o)
