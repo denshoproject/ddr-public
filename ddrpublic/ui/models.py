@@ -37,6 +37,15 @@ def make_object_id( model, repo, org=None, cid=None, eid=None, role=None, sha1=N
         return repo
     return None
 
+def backend_url( object_type, object_id ):
+    """
+    http://192.168.56.101:9200/documents/collection/ddr-testing-141
+    """
+    if settings.DEBUG:
+        return 'http://%s/%s/%s/%s' % (settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
+                                       object_type, object_id)
+    return None
+
 def massage_query_results( results ):
     """Take data from ES query, make a reasonable facsimile of the original object.
     """
@@ -271,6 +280,9 @@ class Collection( object ):
     def absolute_url( self ):
         return reverse('ui-collection', args=(self.repo, self.org, self.cid))
     
+    def backend_url( self ):
+        return backend_url('collection', self.id)
+    
     def entities( self, index=0, size=50 ):
         entities = []
         results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='entity',
@@ -329,6 +341,9 @@ class Entity( object ):
     def absolute_url( self ):
         return reverse('ui-entity', args=(self.repo, self.org, self.cid, self.eid))
     
+    def backend_url( self ):
+        return backend_url('entity', self.id)
+    
     def files( self, index=0, size=50 ):
         """Gets all the files in an entity; paging optional.
         """
@@ -371,6 +386,9 @@ class File( object ):
         if (status == 200) and (response['found'] or response['exists']):
             return build_object(File(), id, response['_source'])
         return None
+    
+    def backend_url( self ):
+        return backend_url('file', self.id)
     
     def absolute_url( self ):
         return reverse('ui-file', args=(self.repo, self.org, self.cid, self.eid, self.role, self.sha1))

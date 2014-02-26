@@ -45,4 +45,5 @@
 
 {% block footer %}
 ui/files/detail.html
+{% if object.backend_url %}&bull; <a href="{{ object.backend_url }}">json</a>{% endif %}
 {% endblock footer %}
