@@ -35,13 +35,14 @@ def results( request ):
     # prep query for elasticsearch
     model = request.GET.get('model', None)
     q = django_urlquote(request.GET.get('query', ''))
-    #filters = {'public': request.GET.get('public', ''),
-    #           'status': request.GET.get('status', ''),}
     filters = {}
+    fields = models.all_list_fields()
     sort = {'record_created': request.GET.get('record_created', ''),
             'record_lastmod': request.GET.get('record_lastmod', ''),}
     # do the query
-    results = elasticsearch.query(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX, query=q, filters=filters, sort=sort)
+    results = elasticsearch.query(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
+                                  query=q, filters=filters,
+                                  fields=fields, sort=sort)
     hits = models.massage_query_results(results)
     paginator = Paginator(hits, settings.RESULTS_PER_PAGE)
     page = paginator.page(request.GET.get('page', 1))
@@ -61,14 +62,21 @@ def term_query( request, field, term ):
     # prep query for elasticsearch
     terms = {field:term}
     filters = {}
+    fields = models.all_list_fields()
     sort = {'record_created': request.GET.get('record_created', ''),
             'record_lastmod': request.GET.get('record_lastmod', ''),}
     # do the query
-    results = elasticsearch.query(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX, term=terms, filters=filters, sort=sort)
+    results = elasticsearch.query(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
+                                  term=terms, filters=filters,
+                                  fields=fields, sort=sort)
     hits = models.massage_query_results(results)
+    paginator = Paginator(hits, settings.RESULTS_PER_PAGE)
+    page = paginator.page(request.GET.get('page', 1))
     return render_to_response(
         'ui/search/results.html',
-        {'hits': hits,
+        {'paginator': paginator,
+         'page': page,
+         'terms': terms,
          'filters': filters,
          'sort': sort,},
         context_instance=RequestContext(request, processors=[])
