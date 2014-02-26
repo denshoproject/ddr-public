@@ -49,13 +49,26 @@ def backend_url( object_type, object_id ):
 def massage_query_results( results ):
     """Take data from ES query, make a reasonable facsimile of the original object.
     """
+    def unlistify(o, fieldname):
+        if o.get(fieldname, None):
+            if isinstance(o[fieldname], list):
+                o[fieldname] = o[fieldname][0]
+
     objects = []
     for hit in results.get('hits', [])['hits']:
-        o = hit['_source']
+        o = {}
+        if hit.get('fields', None):
+            o = hit['fields']
+        elif hit.get('_source', None):
+            o = hit['_source']
         # copy ES results info to individual object source
         o['index'] = hit['_index']
         o['type'] = hit['_type']
         o['model'] = hit['_type']
+        # some data is getting returned as a list
+        unlistify(o, 'id')
+        unlistify(o, 'title')
+        unlistify(o, 'description')
         # assemble urls for each record type
         if o.get('id', None):
             if o['type'] == 'collection':
