@@ -424,12 +424,19 @@ class Entity( object ):
     def cite_url( self ):
         return cite_url('entity', self.id)
     
-    def files( self, index=0, size=DEFAULT_SIZE ):
+    def files( self, index=0, size=DEFAULT_SIZE, role=None ):
         """Gets all the files in an entity; paging optional.
+        
+        @param index: start on this index in result set
+        @param size: number of results to return
+        @param role: String 'mezzanine' or 'master'
         """
         files = []
+        query = 'id:"%s"' % self.id
+        if role:
+            query = 'id:"%s-%s"' % (self.id, role)
         results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file',
-                                      query='id:"%s"' % self.id,
+                                      query=query,
                                       fields=FILE_LIST_FIELDS,
                                       first=index, size=size,
                                       sort=FILE_LIST_SORT)
@@ -442,8 +449,16 @@ class Entity( object ):
         return Collection.get(self.repo, self.org, self.cid)
     
     def signature( self ):
+        """Signature file for the Entity; first mezzanine is preferred choice.
+        
+        TODO optimize or cache this
+        """
         if self.files() and (not self._signature):
-            self._signature = self.files()[0]
+            mezzanines = self.files(role='mezzanine')
+            if mezzanines:
+                self._signature = mezzanines[0]
+            else:
+                self._signature = self.files()[0]
         return self._signature
 
 
