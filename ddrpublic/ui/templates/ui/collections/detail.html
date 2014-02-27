@@ -5,18 +5,18 @@
 <!--
 <div id="parent">
 <a href="{{ object.parent.absolute_url }}"><span class="label label-default">{{ object.parent.id }}</span></a>
-<a href="{{ object.parent.absolute_url }}">{{ object.parent.title }}</a>
+<a href="{{ object.parent.absolute_url }}">{{ object.parent.title | safe }}</a>
 </div>
 -->
 {% endblock %}
 
 {% block title %}
-{{ object.id }} {% if object.title %}&mdash;{% endif %} {{ object.title }}
+{{ object.id }} {% if object.title %}&mdash;{% endif %} {{ object.title | safe }}
 {% endblock %}
 
 {% block pagetitle %}
 <span class="label label-default">{{ object.id }}</span>
-{{ object.title }}
+{{ object.title | safe }}
 {% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
@@ -64,7 +64,7 @@
     <td>
       <a href="{{ entity.absolute_url }}">
       <span class="label label-default">{{ entity.id }}</span>
-      {{ entity.title }}
+      {{ entity.title | safe }}
       </a>
     </td>
   </tr>

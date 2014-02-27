@@ -23,7 +23,7 @@
 {% endthumbnail %}
     </td>
     <td>
-      <a href="{{ collection.absolute_url }}"><span class="label label-default">{{ collection.id }}</span>{{ collection.title }}</a>
+      <a href="{{ collection.absolute_url }}"><span class="label label-default">{{ collection.id }}</span>{{ collection.title | safe }}</a>
     </td>
   </tr>
   {% endfor %}
