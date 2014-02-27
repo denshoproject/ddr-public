@@ -1,4 +1,5 @@
 from django.conf.urls import patterns, include, url
+from django.views.generic import TemplateView
 
 # /
 # /search/
@@ -20,6 +21,12 @@ from django.conf.urls import patterns, include, url
 urlpatterns = patterns(
     '',
     
+    url(r'^about/', TemplateView.as_view(template_name="ui/about.html"), name='ui-about'),
+    url(r'^contact/$', TemplateView.as_view(template_name='ui/contact.html'), name='ui-contact'),
+    url(r'^faq/$', TemplateView.as_view(template_name='ui/faq.html'), name='ui-faq'),
+    url(r'^terms/$', TemplateView.as_view(template_name='ui/terms.html'), name='ui-terms'),
+    url(r'^using/$', TemplateView.as_view(template_name='ui/using.html'), name='ui-using'),
+
     url(r'^browse/(?P<facet>[\w]+)/$', 'ui.views.browse.facet', name='ui-browse-facet'),
     url(r'^browse/$', 'ui.views.browse.index', name='ui-browse-index'),
     
