@@ -1,5 +1,5 @@
 {% extends "ui/base.html" %}
-{% load thumbnail %}
+{% load thumbnail ui_tags %}
 
 {% block title %}Collections{% endblock %}
 {% block pagetitle %}Collections{% endblock %}
@@ -12,23 +12,12 @@
   <div class="row">
 
 {% for organization in organizations %}
-{% if organization.collections %}
+  {% if organization.collections %}
 <h2>{{ organization.id }}</h2>
-<table>
-  {% for collection in organization.collections %}
-  <tr>
-    <td>
-{% thumbnail collection.signature.access_url "200x200" as img %}
-      <a href="{{ collection.absolute_url }}"><img src="{{ img.url }}" class="img-responsive"></a>
-{% endthumbnail %}
-    </td>
-    <td>
-      <a href="{{ collection.absolute_url }}"><span class="label label-default">{{ collection.id }}</span>{{ collection.title | safe }}</a>
-    </td>
-  </tr>
-  {% endfor %}
-</table>
-{% endif %}
+    {% for collection in organization.collections %}
+{% collection collection %}
+    {% endfor %}
+  {% endif %}
 {% endfor %}{# organizations #}
 
   </div><!-- .row -->

@@ -1,6 +1,5 @@
 {% extends "ui/collections/base.html" %}
-{% load bootstrap_pagination %}
-{% load thumbnail %}
+{% load bootstrap_pagination thumbnail ui_tags %}
 
 {% block parent %}
 <!--
@@ -38,25 +37,9 @@
 {% bootstrap_paginate page range=10 show_first_last="true" %}
 {% endif %}
 
-<table>
 {% for entity in page.object_list %}
-  <tr>
-    <td>
-{% thumbnail entity.signature.access_url "64x64" as img %}
-      <a href="{{ entity.absolute_url }}" class="thumbnail">
-      <img src="{{ img.url }}" class="img-responsive">
-      </a>
-{% endthumbnail %}
-    </td>
-    <td>
-      <a href="{{ entity.absolute_url }}">
-      <span class="label label-default">{{ entity.id }}</span>
-      {{ entity.title }}
-      </a>
-    </td>
-  </tr>
+{% entity entity %}
 {% endfor %}
-</table>
 
 {% if paginator.num_pages > 1 %}
 {% bootstrap_paginate page range=10 show_first_last="true" %}

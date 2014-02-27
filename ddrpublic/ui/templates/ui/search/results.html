@@ -1,5 +1,5 @@
 {% extends "ui/search/base.html" %}
-{% load bootstrap_pagination %}
+{% load bootstrap_pagination ui_tags %}
 
 {% block title %}search results{% endblock %}
 {% block pagetitle %}search results{% endblock %}
@@ -97,29 +97,9 @@
 {% endif %}
 
 {% for hit in page.object_list %}
-<div class="hit {{ hit.type }}">
-
-  <span class="badge badge-info">{{ hit.type }}</span>
-
-  <div class="sort muted">
-    {% if sort.record_created or sort.record_lastmod %}
-    {% if sort.record_created %}created: {{ hit.record_created|date:"Y-m-d H:i:s" }}{% endif %}
-    {% if sort.record_lastmod %}modified: {{ hit.record_lastmod|date:"Y-m-d H:i:s" }}{% endif %}
-    {% endif %}{# sort.record_created or sort.record_lastmod #}
-  </div>
-
-  <h3 style="margin:0">
-  <a href="{{ hit.url }}">{{ hit.id }} - {{ hit.title }}</a>
-  </h3>
-
-  <div class="source muted">
-  {{ hit.description|truncatewords_html:56 }}
-  </div>
-  <div class="url">
-  <a href="{{ hit.url }}">{{ hit.url }}</a>
-  </div>
-
-</div>
+  {% if hit.model == "collection" %}{% collection hit %}{% endif %}
+  {% if hit.model == "entity" %}{% entity hit %}{% endif %}
+  {% if hit.model == "file" %}{% file hit %}{% endif %}
 {% endfor %}
 
 {% if paginator.num_pages > 1 %}

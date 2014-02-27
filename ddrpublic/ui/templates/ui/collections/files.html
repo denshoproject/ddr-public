@@ -1,6 +1,5 @@
 {% extends "ui/collections/base.html" %}
-{% load bootstrap_pagination %}
-{% load thumbnail %}
+{% load bootstrap_pagination thumbnail ui_tags %}
 
 {% block parent %}
 <!--
@@ -38,25 +37,9 @@
 {% bootstrap_paginate page range=10 show_first_last="true" %}
 {% endif %}
 
-<table>
 {% for file in page.object_list %}
-  <tr>
-    <td>
-{% thumbnail file.access_url "64x64" as img %}
-      <a href="{{ file.absolute_url }}" class="thumbnail">
-      <img src="{{ img.url }}" class="img-responsive">
-      </a>
-{% endthumbnail %}
-    </td>
-    <td>
-      <a href="{{ file.absolute_url }}">
-      <span class="label label-default">{{ file.id }}</span>
-      {{ file.label }}
-      </a>
-    </td>
-  </tr>
+{% file file %}
 {% endfor %}
-</table>
 
 {% if paginator.num_pages > 1 %}
 {% bootstrap_paginate page range=10 show_first_last="true" %}

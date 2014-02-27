@@ -48,25 +48,9 @@
 </dl>
 
 <h3>files</h3>
-<table>
 {% for file in object.files %}
-  <tr>
-    <td>
-{% thumbnail file.access_url "64x64" as img %}
-      <a href="{{ file.absolute_url }}" class="thumbnail">
-      <img src="{{ img.url }}" class="img-responsive">
-      </a>
-{% endthumbnail %}
-    </td>
-    <td>
-      <a href="{{ file.absolute_url }}">
-      <span class="label label-default">{{ file.id }}</span>
-      {{ file.label | safe }}
-      </a>
-    </td>
-  </tr>
+{% file file %}
 {% endfor %}
-</table>
 <p>
 <a href="{% url "ui-entity-files" repo org cid eid %}">All files</a>
 </p>
