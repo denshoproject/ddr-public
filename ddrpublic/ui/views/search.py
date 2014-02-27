@@ -29,6 +29,22 @@ def index( request ):
         context_instance=RequestContext(request, processors=[])
     )
 
+
+
+def _prep_results( results ):
+    hits = []
+    for hit in models.massage_query_results(results):
+        hit_type = type(hit)
+        if hit['model'] == 'collection': o = models.build_object(models.Collection(), hit['id'], hit)
+        elif hit['model'] == 'entity': o = models.build_object(models.Entity(), hit['id'], hit)
+        elif hit['model'] == 'file': o = models.build_object(models.File(), hit['id'], hit)
+        if o:
+            hits.append(o)
+        else:
+            hits.append(hit)
+    paginator = Paginator(hits, settings.RESULTS_PER_PAGE)
+    return paginator
+
 def results( request ):
     """Results of a search query.
     """
@@ -43,8 +59,7 @@ def results( request ):
     results = elasticsearch.query(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
                                   query=q, filters=filters,
                                   fields=fields, sort=sort)
-    hits = models.massage_query_results(results)
-    paginator = Paginator(hits, settings.RESULTS_PER_PAGE)
+    paginator = _prep_results(results)
     page = paginator.page(request.GET.get('page', 1))
     return render_to_response(
         'ui/search/results.html',
@@ -78,8 +93,7 @@ def term_query( request, field, term ):
     results = elasticsearch.query(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
                                   term=terms, filters=filters,
                                   fields=fields, sort=sort)
-    hits = models.massage_query_results(results)
-    paginator = Paginator(hits, settings.RESULTS_PER_PAGE)
+    paginator = _prep_results(results)
     page = paginator.page(request.GET.get('page', 1))
     return render_to_response(
         'ui/search/results.html',
