@@ -27,6 +27,8 @@ urlpatterns = patterns(
     url(r'^search/results/$', 'ui.views.search.results', name='ui-search-results'),
     url(r'^search/$', 'ui.views.search.index', name='ui-search-index'),
     
+    url(r'^cite/(?P<model>[\w]+)/(?P<object_id>[\w\d-]+)/$', 'ui.views.cite', name='ui-cite'),
+    
     url(r'^collections/$', 'ui.views.collections.list', name='ui-collections-list'),
     
     url(r'^(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/(?P<role>[\w]+)/(?P<sha1>[\w]+)/$', 'ui.views.files.detail', name='ui-file'),

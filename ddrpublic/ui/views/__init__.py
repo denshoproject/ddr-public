@@ -17,3 +17,10 @@ def index( request ):
         {},
         context_instance=RequestContext(request, processors=[])
     )
+
+def cite( request ):
+    return render_to_response(
+        'ui/cite.html',
+        {},
+        context_instance=RequestContext(request, processors=[])
+    )

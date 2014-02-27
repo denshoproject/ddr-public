@@ -85,6 +85,11 @@ def backend_url( object_type, object_id ):
                                        object_type, object_id)
     return ''
 
+def cite_url( model, object_id ):
+    """Link to object's citation page
+    """
+    return reverse('ui-cite', args=(model, object_id))
+
 def massage_query_results( results ):
     """Take data from ES query, make a reasonable facsimile of the original object.
     """
@@ -264,6 +269,9 @@ class Repository( object ):
     def absolute_url( self ):
         return reverse('ui-repo', args=(self.repo))
     
+    def cite_url( self ):
+        return cite_url('repo', self.id)
+    
     def organizations( self ):
         # TODO add repo to ElasticSearch so we can do this the right way
         #hits = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='organization', query='id:"%s"' % self.id)
@@ -299,6 +307,9 @@ class Organization( object ):
     
     def absolute_url( self ):
         return reverse('ui-organization', args=(self.repo, self.org))
+    
+    def cite_url( self ):
+        return cite_url('org', self.id)
     
     def collections( self ):
         if not self._collections:
@@ -341,6 +352,9 @@ class Collection( object ):
     
     def backend_url( self ):
         return backend_url('collection', self.id)
+    
+    def cite_url( self ):
+        return cite_url('collection', self.id)
     
     def entities( self, index=0, size=DEFAULT_SIZE ):
         entities = []
@@ -407,6 +421,9 @@ class Entity( object ):
     def backend_url( self ):
         return backend_url('entity', self.id)
     
+    def cite_url( self ):
+        return cite_url('entity', self.id)
+    
     def files( self, index=0, size=DEFAULT_SIZE ):
         """Gets all the files in an entity; paging optional.
         """
@@ -452,14 +469,17 @@ class File( object ):
             return build_object(File(), id, response['_source'])
         return None
     
-    def backend_url( self ):
-        return backend_url('file', self.id)
-    
     def absolute_url( self ):
         return reverse('ui-file', args=(self.repo, self.org, self.cid, self.eid, self.role, self.sha1))
     
     def access_url( self ):
         return settings.UI_THUMB_URL(self)
+    
+    def backend_url( self ):
+        return backend_url('file', self.id)
+    
+    def cite_url( self ):
+        return cite_url('file', self.id)
     
     def parent( self ):
         return Entity.get(self.repo, self.org, self.cid, self.eid)
