@@ -1,6 +1,7 @@
 import json
 import logging
 logger = logging.getLogger(__name__)
+import os
 
 from dateutil import parser
 
@@ -482,3 +483,6 @@ class File( object ):
     
     def parent( self ):
         return Entity.get(self.repo, self.org, self.cid, self.eid)
+    
+    def download_url( self ):
+        return settings.UI_DOWNLOAD_URL(self)

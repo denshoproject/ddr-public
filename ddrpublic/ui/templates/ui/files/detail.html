@@ -32,6 +32,9 @@
 {% thumbnail object.access_url "400x400" as img %}
 <a href="{{ object.access_url }}"><img src="{{ img.url }}" class="img-responsive"></a>
 {% endthumbnail %}
+{% if object.download_url %}
+<a href="{{ object.download_url }}">Download ({{ object.size|filesizeformat }})</a>
+{% endif %}
 </div>
 
 <dl class="dl-horizontal clearfix">

@@ -174,6 +174,23 @@ def UI_THUMB_URL(ddrfile):
 #     return 'https://%s.s3.amazonaws.com/%s/%s' % (bucket, folder, object_key)
 
 
+# Local VM, colo
+def UI_DOWNLOAD_URL( ddrfile ):
+    """Construct download URL if this is a mezzanine (no downloads for masters)
+    
+    ex: http://ddr.densho.org/media/ddr-densho-10/ddr-densho-10-2-mezzanine-768fb04ca7.tif
+    
+    TODO include path_rel in the index so we don't have to do all this
+    """
+    if ddrfile.role == u'mezzanine':
+        extension = os.path.splitext(ddrfile.basename_orig)[1]
+        filename = ddrfile.id + extension
+        path_rel = os.path.join(ddrfile.collection_id, filename)
+        url = MEDIA_URL + path_rel
+        return url
+    return None
+
+
 #SESSION_ENGINE = 'redis_sessions.session'
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
