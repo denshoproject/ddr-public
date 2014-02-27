@@ -14,7 +14,7 @@ from django.template import RequestContext
 from django.utils.http import urlquote  as django_urlquote
 
 from DDR import elasticsearch
-from ui import models
+from ui import faceting, models
 
 
 # helpers --------------------------------------------------------------
@@ -62,6 +62,14 @@ def term_query( request, field, term ):
     # prep query for elasticsearch
     terms_display = {'field':field, 'term':term}
     terms = {field:term}
+    facet = faceting.get_facet(field)
+    for t in facet['terms']:
+        if t['id'] == term:
+            try:
+                terms_display['term'] = t['title_display']
+            except:
+                terms_display['term'] = t['title']
+            break
     filters = {}
     fields = models.all_list_fields()
     sort = {'record_created': request.GET.get('record_created', ''),
