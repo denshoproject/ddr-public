@@ -78,13 +78,12 @@ def make_object_id( model, repo, org=None, cid=None, eid=None, role=None, sha1=N
     return None
 
 def backend_url( object_type, object_id ):
-    """
-    http://192.168.56.101:9200/documents/collection/ddr-testing-141
+    """Debug link to ElasticSearch page for the object.
     """
     if settings.DEBUG:
         return 'http://%s/%s/%s/%s' % (settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
                                        object_type, object_id)
-    return None
+    return ''
 
 def massage_query_results( results ):
     """Take data from ES query, make a reasonable facsimile of the original object.
