@@ -35,7 +35,7 @@
 {% if page.object_list %}
 
 {% if paginator.num_pages > 1 %}
-{% bootstrap_paginate page %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
 {% endif %}
 
 <table>
@@ -59,7 +59,7 @@
 </table>
 
 {% if paginator.num_pages > 1 %}
-{% bootstrap_paginate page %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
 {% endif %}
 
 {% endif %}
