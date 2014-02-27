@@ -28,11 +28,17 @@ def facets_list():
     return cached
 
 def get_facet(name):
+    """
+    TODO Rethink this: we are getting all the terms and then throwing them away
+         except for the one we want; just get the one we want.
+    """
     key = 'facets:%s' % name
     cached = cache.get(key)
     if not cached:
         for f in facets_list():
             if f['name'] == name:
+                if f['name'] in ['facility', 'topics']:
+                    f['terms'] = sorted(f['terms'], key=lambda x: x['title'])
                 cached = f
                 cache.set(key, cached, CACHE_TIMEOUT)
     return cached
