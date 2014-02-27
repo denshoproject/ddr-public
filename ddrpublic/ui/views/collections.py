@@ -16,7 +16,12 @@ from ui.models import Repository, Organization, Collection, Entity, File
 # views ----------------------------------------------------------------
 
 def list( request ):
-    organizations = Repository.get('ddr').organizations()
+    organizations = []
+    orgs = Repository.get('ddr').organizations()
+    for org in orgs:
+        collections = org.collections()
+        org.collections = collections
+        organizations.append(org)
     return render_to_response(
         'ui/collections.html',
         {
