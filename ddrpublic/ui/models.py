@@ -7,6 +7,7 @@ from dateutil import parser
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.template import Context, Template
+from django.template.loader import get_template
 from django.utils.http import urlquote  as django_urlquote
 
 from DDR import elasticsearch
@@ -171,6 +172,10 @@ def display_filesize(fieldname, text):
     c = Context({'text':text})
     return t.render(c)
 
+def display_rights(fieldname, text):
+    t = get_template('ui/license-%s.html' % text)
+    return t.render(Context({}))
+
 def display_string(fieldname, text):
     t = Template(STRING_TEMPLATE)
     c = Context({'text':text})
@@ -185,6 +190,7 @@ field_display_handler = {
     'datetime': display_datetime,
     'facet': display_facet,
     'filesize': display_filesize,
+    'rights': display_rights,
     'string': display_string,
     'string_collapsed': display_string_collapsed,
 }
