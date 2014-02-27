@@ -109,10 +109,9 @@ def massage_query_results( results ):
         o['index'] = hit['_index']
         o['type'] = hit['_type']
         o['model'] = hit['_type']
-        # some data is getting returned as a list
-        unlistify(o, 'id')
-        unlistify(o, 'title')
-        unlistify(o, 'description')
+        # ElasticSearch wraps field values in lists when you use a 'fields' array in a query
+        for fieldname in all_list_fields():
+            unlistify(o, fieldname)
         # assemble urls for each record type
         if o.get('id', None):
             if o['type'] == 'collection':
