@@ -60,6 +60,7 @@ def term_query( request, field, term ):
     """Results of a search query.
     """
     # prep query for elasticsearch
+    terms_display = {'field':field, 'term':term}
     terms = {field:term}
     filters = {}
     fields = models.all_list_fields()
@@ -76,7 +77,7 @@ def term_query( request, field, term ):
         'ui/search/results.html',
         {'paginator': paginator,
          'page': page,
-         'terms': terms,
+         'terms': terms_display,
          'filters': filters,
          'sort': sort,},
         context_instance=RequestContext(request, processors=[])

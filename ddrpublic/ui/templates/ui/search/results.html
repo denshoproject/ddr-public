@@ -26,11 +26,22 @@
 
 <div id="querymeta">
 
+{% if query %}
   <div class="query">
     <b>Query</b>
     &mdash;
     {{ query }}
   </div>
+{% endif %}
+
+{% if terms %}
+  <div class="terms">
+    <b>Terms</b>
+    &mdash;
+    <strong><a href="{% url "ui-browse-facet" terms.field %}">{{ terms.field }}</a>:</strong>
+    {{ terms.term }}
+  </div>
+{% endif %}
 
 <!--
   <div class="filters">
