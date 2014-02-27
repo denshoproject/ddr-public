@@ -22,7 +22,7 @@ DEFAULT_SIZE = 10
 ORGANIZATION_LIST_FIELDS = ['id', 'title', 'description',]
 COLLECTION_LIST_FIELDS = ['id', 'title', 'description',]
 ENTITY_LIST_FIELDS = ['id', 'title', 'description',]
-FILE_LIST_FIELDS = ['id', 'basename_orig', 'label',]
+FILE_LIST_FIELDS = ['id', 'basename_orig', 'label', 'access_rel',]
 
 COLLECTION_LIST_SORT = [
     {'repo':'asc'},
