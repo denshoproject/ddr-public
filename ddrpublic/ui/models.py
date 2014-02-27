@@ -23,6 +23,30 @@ COLLECTION_LIST_FIELDS = ['id', 'title', 'description',]
 ENTITY_LIST_FIELDS = ['id', 'title', 'description',]
 FILE_LIST_FIELDS = ['id', 'basename_orig', 'label',]
 
+COLLECTION_LIST_SORT = [
+    {'repo':'asc'},
+    {'org':'asc'},
+    {'cid':'asc'},
+    {'id':'asc'},
+]
+ENTITY_LIST_SORT = [
+    {'repo':'asc'},
+    {'org':'asc'},
+    {'cid':'asc'},
+    {'eid':'asc'},
+    {'id':'asc'},
+]
+FILE_LIST_SORT = [
+    {'repo':'asc'},
+    {'org':'asc'},
+    {'cid':'asc'},
+    {'eid':'asc'},
+    {'role':'asc'},
+    {'sort':'asc'},
+    {'id':'asc'},
+]
+
+
 def all_list_fields():
     LIST_FIELDS = []
     for mf in [COLLECTION_LIST_FIELDS, ENTITY_LIST_FIELDS, FILE_LIST_FIELDS]:
@@ -275,7 +299,9 @@ class Organization( object ):
         if not self._collections:
             self._collections = []
             results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='collection',
-                                          query='id:"%s"' % self.id, sort='id',)
+                                          query='id:"%s"' % self.id,
+                                          fields=COLLECTION_LIST_FIELDS,
+                                          sort=COLLECTION_LIST_SORT,)
             for m in massage_query_results(results):
                 o = build_object(Collection(), m['id'], m)
                 self._collections.append(o)
@@ -317,7 +343,7 @@ class Collection( object ):
                                       query='id:"%s"' % self.id,
                                       fields=ENTITY_LIST_FIELDS,
                                       first=index, size=size,
-                                      sort='id',)
+                                      sort=ENTITY_LIST_SORT,)
         for m in massage_query_results(results):
             o = build_object(Entity(), m['id'], m)
             entities.append(o)
@@ -331,7 +357,7 @@ class Collection( object ):
                                       query='id:"%s"' % self.id,
                                       fields=FILE_LIST_FIELDS,
                                       first=index, size=size,
-                                      sort='id',)
+                                      sort=FILE_LIST_SORT)
         for m in massage_query_results(results):
             o = build_object(File(), m['id'], m)
             files.append(o)
@@ -384,7 +410,7 @@ class Entity( object ):
                                       query='id:"%s"' % self.id,
                                       fields=FILE_LIST_FIELDS,
                                       first=index, size=size,
-                                      sort='id',)
+                                      sort=FILE_LIST_SORT)
         for m in massage_query_results(results):
             o = build_object(File(), m['id'], m)
             files.append(o)
