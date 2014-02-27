@@ -1,6 +1,7 @@
 import json
 import logging
 logger = logging.getLogger(__name__)
+import os
 
 from dateutil import parser
 
@@ -482,3 +483,18 @@ class File( object ):
     
     def parent( self ):
         return Entity.get(self.repo, self.org, self.cid, self.eid)
+    
+    def download_url( self ):
+        """Construct download URL if this is a mezzanine (no downloads for masters)
+        
+        ex: http://ddr.densho.org/media/ddr-densho-10/ddr-densho-10-2-mezzanine-768fb04ca7.tif
+        
+        TODO include path_rel in the index so we don't have to do all this
+        """
+        if self.role == u'mezzanine':
+            extension = os.path.splitext(self.basename_orig)[1]
+            filename = self.id + extension
+            path_rel = os.path.join(self.collection_id, filename)
+            url = settings.MEDIA_URL + path_rel
+            return url
+        return None
