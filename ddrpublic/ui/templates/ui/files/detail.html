@@ -30,7 +30,7 @@
 
 <div style="float:right;">
 {% thumbnail object.access_url "400x400" as img %}
-<img src="{{ img.url }}" class="img-responsive">
+<a href="{{ object.access_url }}"><img src="{{ img.url }}" class="img-responsive"></a>
 {% endthumbnail %}
 </div>
 
