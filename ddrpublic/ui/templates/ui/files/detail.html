@@ -1,5 +1,5 @@
 {% extends "ui/entities/base.html" %}
-{% load thumbnail %}
+{% load thumbnail ui_tags %}
 
 {% block parent %}
 <div id="parent">
@@ -24,6 +24,8 @@
 {% block content %}
 <div class="container-fluid">
   <div class="row">
+
+{% addthis %}
 
 <div style="float:right;">
 {% thumbnail object.access_url "400x400" as img %}
