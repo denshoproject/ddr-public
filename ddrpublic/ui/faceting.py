@@ -40,10 +40,20 @@ def get_facet(name):
 INT_IN_STRING = re.compile(r'^\d+$')
 
 def extract_term_id( text ):
+    """
+    >>> extract_term_id('Manzanar [7]')
+    '7'
+    >>> extract_term_id('[7]')
+    '7'
+    >>> extract_term_id('7')
+    '7'
+    >>> extract_term_id(7)
+    '7'
+    """
     if ('[' in text) and (']' in text):
         term_id = text.split('[')[1].split(']')[0]
     elif re.match(INT_IN_STRING, text):
-        term_id = int(text)
+        term_id = text
     else:
         term_id = text
     return term_id
