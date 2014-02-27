@@ -323,7 +323,7 @@ class Organization( object ):
                 self._collections.append(o)
         return self._collections
     
-    def parent( self ):
+    def repository( self ):
         return None
 
 
@@ -382,7 +382,7 @@ class Collection( object ):
             files.append(o)
         return files
     
-    def parent( self ):
+    def organization( self ):
         return Organization.get(self.repo, self.org)
     
     def signature( self ):
@@ -445,7 +445,7 @@ class Entity( object ):
             files.append(o)
         return files
     
-    def parent( self ):
+    def collection( self ):
         return Collection.get(self.repo, self.org, self.cid)
     
     def signature( self ):
@@ -496,7 +496,7 @@ class File( object ):
     def cite_url( self ):
         return cite_url('file', self.id)
     
-    def parent( self ):
+    def entity( self ):
         return Entity.get(self.repo, self.org, self.cid, self.eid)
     
     def download_url( self ):
