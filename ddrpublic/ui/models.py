@@ -449,7 +449,7 @@ class Entity( object ):
         return Collection.get(self.repo, self.org, self.cid)
     
     def signature( self ):
-        """Signature file for the Entity; first mezzanine is preferred choice.
+        """Signature file for the Entity; mezzanines are preferred over masters.
         
         TODO optimize or cache this
         """
