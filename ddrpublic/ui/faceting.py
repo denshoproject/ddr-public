@@ -7,7 +7,8 @@ from django.core.urlresolvers import reverse
 
 from DDR import elasticsearch
 
-CACHE_TIMEOUT = 30
+CACHE_TIMEOUT = 60 * 60 * 24 # 1 day
+
 
 def facets_list():
     """Returns a list of facets in alphabetical order, with URLs
