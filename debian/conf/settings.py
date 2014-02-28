@@ -1,7 +1,9 @@
 # Django settings for ddrpublic.
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
+THUMBNAIL_DEBUG = DEBUG
+LOG_LEVEL=ERROR
 
 # ----------------------------------------------------------------------
 
@@ -22,7 +24,6 @@ config = ConfigParser.ConfigParser()
 config.read(CONFIG_FILE)
 
 LOG_FILE='/var/log/ddr/public.log'
-LOG_LEVEL=DEBUG
 
 SECRET_KEY='ivb=&yqv^#%_i5v&c*qa@aaa#=z-(t$i=k*geugb_!2ky&j0ca'
 
@@ -128,8 +129,6 @@ DOCUMENT_INDEX = 'documents'
 METADATA_INDEX = 'meta'
 
 # sorl-thumbnail
-THUMBNAIL_DEBUG = DEBUG
-THUMBNAIL_DEBUG = False
 #THUMBNAIL_KVSTORE = 'sorl.thumbnail.kvstores.cached_db_kvstore.KVStore'
 THUMBNAIL_KVSTORE = 'sorl.thumbnail.kvstores.redis_kvstore.KVStore'
 THUMBNAIL_REDIS_PASSWORD = ''
