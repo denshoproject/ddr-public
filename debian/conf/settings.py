@@ -4,6 +4,12 @@ DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 THUMBNAIL_DEBUG = DEBUG
 
+# Hosts/domain names that are valid for this site; required if DEBUG is False
+# See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
+ALLOWED_HOSTS = [
+    'ddr.densho.org',
+]
+
 # ----------------------------------------------------------------------
 
 import ConfigParser
@@ -188,10 +194,6 @@ def UI_DOWNLOAD_URL( ddrfile ):
 
 
 #SESSION_ENGINE = 'redis_sessions.session'
-
-# Hosts/domain names that are valid for this site; required if DEBUG is False
-# See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = []
 
 TEMPLATE_DIRS = (
     '/usr/local/src/ddr-public/ddrpublic/ui/templates',
