@@ -36,7 +36,7 @@ def detail( request, repo, org, cid ):
             'org': org,
             'cid': cid,
             'object': collection,
-            'entities': collection.entities(size=10),
+            'entities': collection.entities(),
         },
         context_instance=RequestContext(request, processors=[])
     )
@@ -45,7 +45,7 @@ def entities( request, repo, org, cid ):
     collection = Collection.get(repo, org, cid)
     if not collection:
         raise Http404
-    paginator = Paginator(collection.entities(size=elasticsearch.MAX_SIZE), settings.RESULTS_PER_PAGE)
+    paginator = Paginator(collection.entities(), settings.RESULTS_PER_PAGE)
     page = paginator.page(request.GET.get('page', 1))
     return render_to_response(
         'ui/collections/entities.html',
@@ -64,7 +64,7 @@ def files( request, repo, org, cid ):
     collection = Collection.get(repo, org, cid)
     if not collection:
         raise Http404
-    paginator = Paginator(collection.files(size=elasticsearch.MAX_SIZE), settings.RESULTS_PER_PAGE)
+    paginator = Paginator(collection.files(), settings.RESULTS_PER_PAGE)
     page = paginator.page(request.GET.get('page', 1))
     return render_to_response(
         'ui/collections/files.html',
