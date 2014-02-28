@@ -3,7 +3,6 @@
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 THUMBNAIL_DEBUG = DEBUG
-LOG_LEVEL=ERROR
 
 # ----------------------------------------------------------------------
 
@@ -22,8 +21,6 @@ if not os.path.exists(CONFIG_FILE):
     raise NoConfigError('No config file!')
 config = ConfigParser.ConfigParser()
 config.read(CONFIG_FILE)
-
-LOG_FILE='/var/log/ddr/public.log'
 
 SECRET_KEY='ivb=&yqv^#%_i5v&c*qa@aaa#=z-(t$i=k*geugb_!2ky&j0ca'
 
@@ -234,9 +231,9 @@ LOGGING = {
             'formatter': 'simple',
         },
         'file': {
-            'level': LOG_LEVEL,
+            'level': 'DEBUG',
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': LOG_FILE,
+            'filename': '/var/log/ddr/public.log',
             'when': 'D',
             'backupCount': 14,
             'formatter': 'verbose',
