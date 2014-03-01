@@ -47,7 +47,23 @@
 <!-- Modernizr -->
 <script type="text/javascript" src="/assets/plugins/modernizr.min.js"></script>
 
-<!--[if lt IE 11]><!-->	
+ <!--[if lt IE 11]>
+    
+      <style type="text/css">
+
+        #header_shadow {
+          filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../images/header_shadow.png', sizingMethod='scale');
+          background:none !important;
+		  background:url('../images/header_shadow.png') no-repeat top center;
+	      position:fixed;
+	      top:92px; left:0; right:0;
+	      height:75px; 
+	      z-index:99; /* same with header#page-title .container */
+        }
+
+        </style>
+    <![endif]-->
+<!-->	
 
 
 <!-- /custom theme -->
