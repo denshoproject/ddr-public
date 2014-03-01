@@ -21,8 +21,8 @@ MODEL_FIELDS = elasticsearch.model_fields()
 DEFAULT_SIZE = 10
 
 ORGANIZATION_LIST_FIELDS = ['id', 'title', 'description',]
-COLLECTION_LIST_FIELDS = ['id', 'title', 'description',]
-ENTITY_LIST_FIELDS = ['id', 'title', 'description',]
+COLLECTION_LIST_FIELDS = ['id', 'title', 'description', 'signature_file',]
+ENTITY_LIST_FIELDS = ['id', 'title', 'description', 'signature_file',]
 FILE_LIST_FIELDS = ['id', 'basename_orig', 'label', 'access_rel',]
 
 COLLECTION_LIST_SORT = [
@@ -247,6 +247,9 @@ def build_object( o, id, source ):
     if o.model in ['file','entity']: o.collection_id = '%s-%s-%s' % (o.repo,o.org,o.cid)
     if o.model in ['file','entity','collection']: o.organization_id = '%s-%s' % (o.repo,o.org)
     if o.model in ['file','entity','collection','organization']: o.repository_id = '%s' % (o.repo)
+    # signature file
+    if source.get('signature_file', None):
+        o.signature_file = source['signature_file']
     return o
 
 
@@ -336,7 +339,7 @@ class Collection( object ):
     org = None
     cid = None
     fieldnames = []
-    _signature = None
+    signature_file = None
     
     @staticmethod
     def get( repo, org, cid ):
@@ -386,13 +389,10 @@ class Collection( object ):
     def organization( self ):
         return Organization.get(self.repo, self.org)
     
-    def signature( self ):
-        if not self._signature:
-            for e in self.entities():
-                if not self._signature:
-                    if e.signature():
-                        self._signature = e.signature()
-        return self._signature
+    def signature_url( self ):
+        if self.signature_file:
+            return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, self.id, self.signature_file)
+        return None
 
 
 class Entity( object ):
@@ -404,7 +404,7 @@ class Entity( object ):
     cid = None
     eid = None
     fieldnames = []
-    _signature = None
+    signature_file = None
     
     @staticmethod
     def get( repo, org, cid, eid ):
@@ -449,18 +449,10 @@ class Entity( object ):
     def collection( self ):
         return Collection.get(self.repo, self.org, self.cid)
     
-    def signature( self ):
-        """Signature file for the Entity; mezzanines are preferred over masters.
-        
-        TODO optimize or cache this
-        """
-        if self.files() and (not self._signature):
-            mezzanines = self.files(role='mezzanine')
-            if mezzanines:
-                self._signature = mezzanines[0]
-            else:
-                self._signature = self.files()[0]
-        return self._signature
+    def signature_url( self ):
+        if self.signature_file:
+            return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, self.collection_id, self.signature_file)
+        return None
 
 
 class File( object ):
