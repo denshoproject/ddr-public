@@ -6,7 +6,6 @@ import os
 from dateutil import parser
 
 from django.conf import settings
-from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.template import Context, Template
 from django.template.loader import get_template
@@ -48,9 +47,6 @@ FILE_LIST_SORT = [
     {'sort':'asc'},
     {'id':'asc'},
 ]
-
-MODEL_SIGNATURE_CACHE_TIMEOUT = 60 * 60 * 24 * 7 * 4  # 1 month
-MODEL_CHILDREN_CACHE_TIMEOUT = 60 * 60 * 24 * 7 * 4  # 1 month
 
 
 def all_list_fields():
@@ -361,38 +357,28 @@ class Collection( object ):
     def cite_url( self ):
         return cite_url('collection', self.id)
     
-    def entities( self ):
-        key = 'collection:entities:%s' % self.id
-        cached = cache.get(key)
-        if not cached:
-            results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='entity',
-                                          query='id:"%s"' % self.id,
-                                          fields=ENTITY_LIST_FIELDS,
-                                          first=0, size=elasticsearch.MAX_SIZE,
-                                          sort=ENTITY_LIST_SORT,)
-            cached = massage_query_results(results)
-            cache.set(key, cached, MODEL_CHILDREN_CACHE_TIMEOUT)
+    def entities( self, index=0, size=DEFAULT_SIZE ):
         entities = []
-        for m in cached:
+        results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='entity',
+                                      query='id:"%s"' % self.id,
+                                      fields=ENTITY_LIST_FIELDS,
+                                      first=index, size=size,
+                                      sort=ENTITY_LIST_SORT,)
+        for m in massage_query_results(results):
             o = build_object(Entity(), m['id'], m)
             entities.append(o)
         return entities
     
-    def files( self ):
+    def files( self, index=0, size=DEFAULT_SIZE ):
         """Gets all the files in a collection; paging optional.
         """
-        key = 'collection:files:%s' % self.id
-        cached = cache.get(key)
-        if not cached:
-            results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file',
-                                          query='id:"%s"' % self.id,
-                                          fields=FILE_LIST_FIELDS,
-                                          first=0, size=elasticsearch.MAX_SIZE,
-                                          sort=FILE_LIST_SORT)
-            cached = massage_query_results(results)
-            cache.set(key, cached, MODEL_CHILDREN_CACHE_TIMEOUT)
         files = []
-        for m in cached:
+        results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file',
+                                      query='id:"%s"' % self.id,
+                                      fields=FILE_LIST_FIELDS,
+                                      first=index, size=size,
+                                      sort=FILE_LIST_SORT)
+        for m in massage_query_results(results):
             o = build_object(File(), m['id'], m)
             files.append(o)
         return files
@@ -401,17 +387,12 @@ class Collection( object ):
         return Organization.get(self.repo, self.org)
     
     def signature( self ):
-        key = 'collection:signature:%s' % self.id
-        cached = cache.get(key)
-        if not cached:
-            if not self._signature:
-                for e in self.entities():
-                    if not self._signature:
-                        if e.signature():
-                            self._signature = e.signature()
-            cached = self._signature
-            cache.set(key, cached, MODEL_SIGNATURE_CACHE_TIMEOUT)
-        return cached
+        if not self._signature:
+            for e in self.entities():
+                if not self._signature:
+                    if e.signature():
+                        self._signature = e.signature()
+        return self._signature
 
 
 class Entity( object ):
@@ -444,29 +425,23 @@ class Entity( object ):
     def cite_url( self ):
         return cite_url('entity', self.id)
     
-    def files( self, role=None ):
+    def files( self, index=0, size=DEFAULT_SIZE, role=None ):
         """Gets all the files in an entity; paging optional.
         
         @param index: start on this index in result set
         @param size: number of results to return
         @param role: String 'mezzanine' or 'master'
         """
-        key = 'entity:files:%s' % (self.id)
+        files = []
         query = 'id:"%s"' % self.id
         if role:
-            key = 'entity:files:%s:%s' % (self.id, role)
             query = 'id:"%s-%s"' % (self.id, role)
-        cached = cache.get(key)
-        if not cached:
-            results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file',
-                                          query=query,
-                                          fields=FILE_LIST_FIELDS,
-                                          first=0, size=elasticsearch.MAX_SIZE,
-                                          sort=FILE_LIST_SORT)
-            cached = massage_query_results(results)
-            cache.set(key, cached, MODEL_CHILDREN_CACHE_TIMEOUT)
-        files = []
-        for m in cached:
+        results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file',
+                                      query=query,
+                                      fields=FILE_LIST_FIELDS,
+                                      first=index, size=size,
+                                      sort=FILE_LIST_SORT)
+        for m in massage_query_results(results):
             o = build_object(File(), m['id'], m)
             files.append(o)
         return files
@@ -479,18 +454,13 @@ class Entity( object ):
         
         TODO optimize or cache this
         """
-        key = 'entity:signature:%s' % self.id
-        cached = cache.get(key)
-        if not cached:
-            if self.files() and (not self._signature):
-                mezzanines = self.files(role='mezzanine')
-                if mezzanines:
-                    self._signature = mezzanines[0]
-                else:
-                    self._signature = self.files()[0]
-            cached = self._signature
-            cache.set(key, cached, MODEL_SIGNATURE_CACHE_TIMEOUT)
-        return cached
+        if self.files() and (not self._signature):
+            mezzanines = self.files(role='mezzanine')
+            if mezzanines:
+                self._signature = mezzanines[0]
+            else:
+                self._signature = self.files()[0]
+        return self._signature
 
 
 class File( object ):
