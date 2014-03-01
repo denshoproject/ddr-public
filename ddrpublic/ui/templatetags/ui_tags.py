@@ -3,7 +3,20 @@ from django import template
 
 register = template.Library()
 
-
+""" DEVELOPMENT
+"""
+@register.filter(name='fixurllocal')
+def fixurllocal( value ):
+	"""fix urls for local vm testing
+	"""
+	return value.replace("ddr.densho.org","192.168.56.101")
+	
+def homeslideitem( url, imgurl ):
+	"""Slide item for homepage gallery
+	"""
+	t = template.loader.get_template('ui/homeslideitem.html')
+	return t.render(template.Context({'url':url,'imgurl':imgurl}))
+	
 def collection( obj ):
     """list-view collection template
     """
@@ -36,6 +49,7 @@ def cite( url ):
     c = template.Context({'url':url})
     return t.render(c)
 
+register.simple_tag(homeslideitem)
 register.simple_tag(collection)
 register.simple_tag(entity)
 register.simple_tag(file)
