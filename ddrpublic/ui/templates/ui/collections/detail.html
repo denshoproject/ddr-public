@@ -31,14 +31,11 @@
 {% addthis %}
 {% cite object.cite_url %}
 
-{% if object.signature %}
+{% if object.signature_url %}
 <div id="signature">
-  <a href="{{ object.signature.absolute_url }}" class="thumbnail">
-{% thumbnail object.signature.access_url "200x200" as img %}
-    <img src="{{ img.url }}" class="img-responsive">
+{% thumbnail object.signature_url "200x200" as img %}
+  <img src="{{ img.url }}" class="img-responsive">
 {% endthumbnail %}
-    {{ object.signature.label|truncatechars:32 }}
-  </a>
 </div>
 {% endif %}
 
