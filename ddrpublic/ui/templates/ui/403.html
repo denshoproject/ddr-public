@@ -1,5 +1,40 @@
-<h1>403 - Forbidden</h1>
+{% extends "ui/base.html" %}
 
-<p>
-The request was a valid request, but the server is refusing to respond to it.
-</p>
+{% block title %}403{% endblock %}
+{% block pagetitle %}{% endblock %}
+{% block pageheader %}{% endblock %}
+
+{% block content %}
+			<section class="container">
+
+				<div class="row">
+
+					<div class="col-md-9">
+						<h2>
+							<strong>Sorry</strong>, You Are Not Permitted to See This Content!
+							
+						</h2>
+						
+						<div class="e404">403</div>
+					</div>
+
+					<aside class="col-md-3">
+
+					<div>403 - Forbidden</div>
+					<div>The request was valid, but the server is refusing to respond to it.</div>
+
+						<div>
+							Questions? Please contact <a href="mailto:info@densho.org?subject='DDR Error 403'">info@densho.org</a>
+						</div>
+
+					</aside>
+
+				</div>
+
+
+			</section>
+
+
+
+{% endblock content %}
+

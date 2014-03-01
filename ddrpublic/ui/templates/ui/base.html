@@ -12,7 +12,7 @@
 <!-- mobile settings -->
 <meta name="viewport" content="width=device-width, maximum-scale=1, initial-scale=1, user-scalable=0" />
 
-<title>{% block title %}{% endblock %} | ddr-public</title>
+<title>{% block title %}{% endblock %} | Densho Digital Repository</title>
 
 {% block headmeta %}{% endblock headmeta %}
 
@@ -154,6 +154,7 @@ deprecated style override //-->
 	<!-- WRAPPER -->
 	<div id="wrapper">
 
+	{% block pageheader %}
 		<!-- PAGE TITLE -->
 		<header id="page-title">
 			<div class="container">
@@ -179,7 +180,7 @@ deprecated style override //-->
 			</div>
 			</div>	
 		</header>
-
+	{% endblock pageheader %}
 <div class="container-fluid">
 <div class="row">
 

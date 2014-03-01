@@ -1,6 +1,27 @@
-<h1>500 - Internal Server Error</h1>
+{% extends "ui/base.html" %}
 
-<p><i>
+{% block title %}500{% endblock %}
+{% block pagetitle %}{% endblock %}
+{% block pageheader %}{% endblock %}
+
+{% block content %}
+			<section class="container">
+
+				<div class="row">
+
+					<div class="col-md-9">
+						<h2>
+							<strong>Uh Oh</strong>, The Server Is Having Problems!
+							
+						</h2>
+						
+						<div class="e404">500</div>
+					</div>
+
+					<aside class="col-md-3">
+
+					<p>500 - Internal Server Error</p>
+					<p><i>
 To have no errors<br/>
 Would be life without meaning<br/>
 No struggle, no joy<br/>
@@ -10,3 +31,18 @@ No struggle, no joy<br/>
 We're sorry, the Densho Digital Repository site is down right now.
 Please try again in 15 minutes.
 </p>
+
+						<p>
+							Questions? Please contact <a href="mailto:info@densho.org?subject='DDR Error 500'">info@densho.org</a>
+						</p>
+
+					</aside>
+
+				</div>
+
+
+			</section>
+
+
+
+{% endblock content %}
