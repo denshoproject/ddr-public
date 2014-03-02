@@ -25,27 +25,25 @@
 
 <section id="portfolio" class="container">
 
-  <div class="row">
+	<div class="row">
 
-  {% if object.signature_url %}
-  <div class="col-sm-6 col-md-6">
-
-  {% thumbnail object.signature_url "480x480" as img %}
-  <img src="{{ img.url }}" class="img-responsive">
- {% endthumbnail %}
-						<div class="divider"><!-- divider -->
-							<i class="fa fa-chevron-down"></i>
-						</div>
-
+		<div class="col-sm-6 col-md-6">
+{% if object.signature_url %}
+			{% thumbnail object.signature_url "480x480" as img %}
+			<img src="{{ img.url }}" class="img-responsive">
+			{% endthumbnail %}
+	{% endif %}		
+		<div class="divider"><!-- divider -->
+			<i class="fa fa-chevron-down"></i>
+		</div>
 	</div>
-{% endif %}
 
-		
+
+<div class="col-sm-6 col-md-6">
+<dl class="dl-horizontal clearfix">		
 {% addthis %}
 {% cite object.cite_url %}
 
-<div class="col-sm-6 col-md-6">
-<dl class="dl-horizontal clearfix">
 {% for f in object.fields %}
   <!-- {{ f.0 }} -->
   <dt>{{ f.1 }}</dt>
