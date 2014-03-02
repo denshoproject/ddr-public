@@ -22,34 +22,43 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
-<div class="container-fluid">
-  <div class="row">
+<section id="portfolio" class="container">
 
-{% addthis %}
-{% cite object.cite_url %}
+	<div class="row">
 
-<div style="float:right;">
-{% thumbnail object.access_url "400x400" as img %}
-<a href="{{ object.access_url }}"><img src="{{ img.url }}" class="img-responsive"></a>
-{% endthumbnail %}
-{% if object.download_url %}
-<a href="{{ object.download_url }}">Download ({{ object.size|filesizeformat }})</a>
-{% endif %}
-</div>
+		<div class="col-sm-6 col-md-6">
+		<h2>{{ object.title }}</h2>
+			 <a href="{{ object.signature_url }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
+			{% thumbnail object.signature_url "480x480" as img %}
+			<img src="{{ img.url }}" class="img-responsive"></a>
+			{% endthumbnail %}
+			<div class="divider"><!-- divider -->
+				<i class="fa fa-chevron-down"></i>
+				
+			{% if object.download_url %}
+			<span class="pull-right"><a href="{{ object.download_url }}" class="btn btn-default btn-xs">Download ({{ object.size|filesizeformat }})</a></span>
+			{% endif %}
+			</div>
+		</div>
 
-<dl class="dl-horizontal clearfix">
-{% for f in object.fields %}
-  <!-- {{ f.0 }} -->
-  <dt>{{ f.1 }}</dt>
-  <dd>{{ f.2 }}</dd>
-{% endfor %}
-</dl>
 
-  </div><!-- .row -->
-</div><!-- .container-fluid -->
+		<div class="col-sm-6 col-md-6">
+			<dl class="dl-horizontal clearfix">		
+			{% addthis %}
+			{% cite object.cite_url %}
+
+			{% for f in object.fields %}
+			<!-- {{ f.0 }} -->
+			<dt>{{ f.1 }}</dt>
+			<dd>{{ f.2 }}</dd>
+			{% endfor %}
+			</dl>
+		</div>
+	</div><!-- //row-->
+
+</section><!-- .container-fluid -->
 {% endblock content %}
 
 {% block footer %}
-ui/files/detail.html
 {% if object.backend_url %}&bull; <a href="{{ object.backend_url }}">json</a>{% endif %}
 {% endblock footer %}
