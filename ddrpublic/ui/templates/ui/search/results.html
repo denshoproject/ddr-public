@@ -2,34 +2,43 @@
 {% load bootstrap_pagination ui_tags %}
 
 {% block title %}Search Results{% endblock %}
-{% block pagetitle %}Search Results{% endblock %}
 
-{% block breadcrumbs %}{{ block.super }}
-<li>Search Results</li>
-{% endblock breadcrumbs %}
+{% block pageheader %}{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-  <div class="row">
 
-<form name="search" class="form-inline" role="form" action="{% url "ui-search-results" %}" method="get">
-  <div class="form-group">
-    <input
-       id="query" name="query" type="text"
-       class="form-control"
-       placeholder="Your search here"
-       value="{{ query }}"
-    />
-    <button type="submit" class="btn btn-default">Search</button>
-  </div><!-- .form-group -->
-</form>
+
+		<!-- PAGE TITLE -->
+		<header id="page-title">
+			<div class="container">
+			<div class="row">
+
+				<div class="col-sm-9 col-md-9">
+						<ul class="breadcrumb">
+							<li><a href="{% url "ui-index" %}">Home</a></li>
+							<li>Search Results</li>
+						</ul>				
+				</div>
+			</div>
+			</div>	
+		</header>
+
+<section class="container">
+
+<p></p>
+					<form action="{% url "ui-search-results" %}" method="get" class="input-group nomargin-bottom">
+						<input type="text" class="form-control" name="query" id="query" value="{{ query }}" placeholder="Search..." />
+						<span class="input-group-btn">
+							<button class="btn btn-primary"><i class="fa fa-search"></i></button>
+						</span>
+					</form>
 
 <div id="querymeta">
 
 {% if query %}
   <div class="query">
-    <b>Query</b>
-    &mdash;
+    <b>You searched for:</b>
+    
     {{ query }}
   </div>
 {% endif %}
@@ -37,7 +46,7 @@
 {% if terms %}
   <div class="terms">
     <b>Terms</b>
-    &mdash;
+    
     <strong><a href="{% url "ui-browse-facet" terms.field %}">{{ terms.field }}</a>:</strong>
     {{ terms.term }}
   </div>
@@ -84,7 +93,7 @@
 -->
 
   <div>
-    {{ paginator.count }} results<br/>
+    {{ paginator.count }} items<br/>
   </div>
 
 </div><!-- .querymeta -->
@@ -107,10 +116,6 @@
 
 {% endif %}
 
-  </div><!-- .row -->
-</div><!-- .container-fluid -->
+  </section>
 {% endblock content %}
 
-{% block footer %}
-ui/search/results.html
-{% endblock footer %}
