@@ -16,9 +16,10 @@
 
 {% block headmeta %}{% endblock headmeta %}
 
-<!-- core bootstrap -->
+<!-- core bootstrap
 <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
 <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap-theme.min.css">
+-->
 
 <!-- custom theme -->
 
@@ -36,14 +37,14 @@
 <link href="/assets/css/superslides.css" rel="stylesheet" type="text/css" />
 
 <!-- SHOP CSS -->
-<link href="/assets/css/densho-shop.css" rel="stylesheet" type="text/css" />
+<link href="/assets/css/shop.css" rel="stylesheet" type="text/css" />
 
 <!-- PORTFOLIO CSS -->
 <link href="/assets/css/portfolio.css" rel="stylesheet" type="text/css" />
 
 <!-- THEME CSS -->
 <link href="/assets/css/essentials.css" rel="stylesheet" type="text/css" />
-<link href="/assets/css/densho-layout.css" rel="stylesheet" type="text/css" />
+<link href="/assets/css/layout.css" rel="stylesheet" type="text/css" />
 <link href="/assets/css/layout-responsive.css" rel="stylesheet" type="text/css" />
 <link href="/assets/css/color_scheme/orange.css" rel="stylesheet" type="text/css" />
 
@@ -117,8 +118,8 @@ deprecated style override //-->
 				<div class="navbar-collapse nav-main-collapse collapse pull-right">
 					<nav class="nav-main mega-menu">
 						<ul class="nav nav-pills nav-main scroll-menu" id="topMain">
-							<li class="dropdown active">
-								<a class="dropdown-toggle" href="/">
+							<li class="active">
+								<a href="/">
 									Home
 								</a>
 							</li>
@@ -132,13 +133,13 @@ deprecated style override //-->
 									<li><a href="{% url "ui-browse-facet" "facility" %}">By Facility</a></li>
 								</ul>
 							</li>
-							<li class="dropdown">
-								<a class="dropdown-toggle" href="{% url "ui-about" %}">
+							<li>
+								<a href="{% url "ui-about" %}">
 									About
 								</a>
 							</li>
-							<li class="dropdown">
-								<a class="dropdown-toggle" href="http://www.densho.org/" target="_blank">
+							<li>
+								<a href="http://www.densho.org/" target="_blank">
 									densho.org
 								</a>
 							</li>
@@ -150,7 +151,7 @@ deprecated style override //-->
 		</div>
 	</header>
 
-	<span style="pointer-events:none;" id="header_shadow"></span>
+<!--	<span id="header_shadow"></span> -->
 	<!-- /TOP NAV -->
 
 
@@ -253,10 +254,10 @@ deprecated style override //-->
 			</footer>
 	<!-- /FOOTER -->
 
-<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins)
 <script src="https://code.jquery.com/jquery.js"></script>
-<!-- Include all compiled plugins (below), or include individual files as needed -->
-<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+Include all compiled plugins (below), or include individual files as needed
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>-->
 
 {% block javascript %}{% endblock %}
 
