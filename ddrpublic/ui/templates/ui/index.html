@@ -20,16 +20,19 @@
 					<h2><strong>Explore</strong> the Digital Repository</h2>
 
 					<p class="lead">See thousands of historic photographs, documents, newspapers, letters and other primary source materials that tell the story of the Japanese American community.</p>
+
+					<p class="lead"><a href="{% url "ui-collections-list" %}">Collections</a>
+<br/>
+<a href="{% url "ui-browse-index" %}">Browse</a>
+<br/>
+<a href="{% url "ui-search-index" %}">Search</a>
+<br/>
+</p>
 				</div>
 
 
 				<div class="row">
-
-					<ul class="sort-destination isotope fullwidth" data-sort-id="isotope-list">
-
-					
-					
-					
+					<ul class="sort-destination isotope fullwidth" data-sort-id="isotope-list1">					
 										{% homeslideitem "/ddr/densho/2/33" "http://ddr.densho.org/media/ddr-densho-2/ddr-densho-2-33-mezzanine-16fe864756-a.jpg" %}
 										{% homeslideitem "/ddr/densho/266/9" "http://ddr.densho.org/media/ddr-densho-266/ddr-densho-266-9-mezzanine-818eb5aa3e-a.jpg" %}
 										{% homeslideitem "/ddr/densho/151/40" "http://ddr.densho.org/media/ddr-densho-151/ddr-densho-151-40-mezzanine-567ff0e8e9-a.jpg" %}
@@ -51,46 +54,31 @@
 										{% homeslideitem "/ddr/densho/242/34" "http://ddr.densho.org/media/ddr-densho-242/ddr-densho-242-34-mezzanine-fd87f91d29-a.jpg" %}
 										{% homeslideitem "/ddr/densho/201/36" "http://ddr.densho.org/media/ddr-densho-201/ddr-densho-201-36-mezzanine-04919d5814-a.jpg" %}
 					</ul>
-
 				</div><!-- /.masonry-container -->
 
-								<div class="container">
 
-					<h2><strong>Explore</strong> our gallery</h2>
-
-					<p class="lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur pellentesque neque eget diam posuere porta. Quisque ut nulla at nunc vehicula lacinia. Proin adipiscing porta tellus, ut feugiat nibh adipiscing sit amet.</p>
-
-					<ul class="nav nav-pills isotope-filter isotope-filter" data-sort-id="isotope-list" data-option-key="filter">
-						<li data-option-value="*" class="active"><a href="#">Show All</a></li>
-						<li data-option-value=".development"><a href="#">Development</a></li>
-						<li data-option-value=".photography"><a href="#">Photography</a></li>
-						<li data-option-value=".design"><a href="#">Design</a></li>
-					</ul>
-
-				</div>
-
-				<div class="container">
-
-					<!-- CALLOUT -->
-					<div class="bs-callout text-center nomargin-bottom">
-						<h3>Do you like what you see? <a href="contact-us.html" target="_blank" class="btn btn-primary btn-lg">Yes, let's work together!</a></h3>
+				
+				<div class="row featured-box-minimal">
+					<div class="col-md-4">
+						<h4><i class="fa fa-group"></i> Customer Support</h4>
+						<p>Lorem ipsum dolor sit amet, consectetur adipiscing metus elit. Quisque rutrum pellentesque imperdiet.</p>
 					</div>
-					<!-- /CALLOUT -->
+					<div class="col-md-4">
+						<h4> <i class="fa fa-book"></i> Sliders</h4>
+						<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque rutrum pellentesque imperdiet. Nulla lacinia iaculis nulla.</p>
+					</div>
+					<div class="col-md-4">
+						<h4><i class="fa fa-trophy"></i> Elite</h4>
+						<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque rutrum pellentesque imperdiet. Nulla lacinia iaculis nulla.</p>
+					</div>
 
 				</div>
-
 
 			</section>
 
 <div class="container-fluid">
   <div class="row">
 
-<a href="{% url "ui-collections-list" %}">Collections</a>
-<br/>
-<a href="{% url "ui-browse-index" %}">Browse</a>
-<br/>
-<a href="{% url "ui-search-index" %}">Search</a>
-<br/>
 
 
   </div><!-- .row -->

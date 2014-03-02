@@ -20,11 +20,9 @@ from django.views.generic import TemplateView
 
 urlpatterns = patterns(
     '',
-
-    url(r'^500/', TemplateView.as_view(template_name="ui/500.html"), name='ui-500'),
     
     url(r'^about/', TemplateView.as_view(template_name="ui/about.html"), name='ui-about'),
-    url(r'^contact/$', TemplateView.as_view(template_name='ui/contact.html'), name='ui-contact'),
+    url(r'^contact/$', TemplateView.as_view(template_name='ui/about.html'), name='ui-contact'),
     url(r'^faq/$', TemplateView.as_view(template_name='ui/faq.html'), name='ui-faq'),
     url(r'^terms/$', TemplateView.as_view(template_name='ui/terms.html'), name='ui-terms'),
     url(r'^using/$', TemplateView.as_view(template_name='ui/using.html'), name='ui-using'),

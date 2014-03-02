@@ -1,16 +1,15 @@
 {% extends "ui/base.html" %}
 
-{% block title %}ABOUT{% endblock %}
-{% block pagetitle %}ABOUT{% endblock %}
+{% block title %}About{% endblock %}
 
-{% block breadcrumbs %}{% endblock breadcrumbs %}
+{% block breadcrumbs %}{{ block.super }}
+<li>About</li>
+{% endblock breadcrumbs %}
 
 {% block content %}
-<div class="container-fluid">
-  <div class="row">
 
-		<section id="overview">
-				<h2>Overview</h2>
+	<section id="overview" class="container">
+		<h2>Overview</h2>
 
 		<p>Abstract and partners overview</p>
 
@@ -25,7 +24,7 @@
 	<div class="toplink"><a href="#top"><i class="icon-chevron-up"></i> Top</a></div>
 	</section>	
 
-	<section id="support">
+	<section id="support" class="container">
 			<h2>Support and funding</h2>
 
 	<p>Major funding for the first phase of the Densho Digital Repository is being provided by grants from the <a href="http://www.nps.gov/history/hps/hpg/JACS/index.html" target="_blank">Japanese American Confinement Sites Grant Program</a>, administered by the National Park Service.</p>
@@ -45,103 +44,24 @@
 	<div class="toplink"><a href="#top"><i class="icon-chevron-up"></i> Top</a></div>
 	</section>	
 
-	<section id="usingandciting">
-			<h2>Using and citing content</h2>
 
-					<p>Densho strongly believes in free and open access to knowledge. We want to make it as easy for you to share and reuse our materials. Most of the digitized images on this sites are offered under a <a href="http://www.creativecommons.org/" target="_blank">Creative Commons</a> license (<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>).</p>
-
-					<p>This means you are free to <strong>use</strong>, <strong>share</strong> and <strong>remix</strong> our content as long as you:
-						<ul>
-							<li>Attribute the work to Densho</li>
-							<li>Only use it for non-commercial purposes</li>
-							<li>Offer any work that builds on Densho's content under these same conditions</li>
-						</ul>		
-					</p>
-					<p>(For more information, see the <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">license details</a> at Creative Commons.)</p>
-
-	<!--				<p>To properly cite articles and primary source content, please use the <i class="icon-bookmark"></i>Cite link located on each page. This will automatically generate citations in several different standard formats (i.e., APA, Chicago, MLA).</p>
-	-->
-						<p>To properly cite articles and primary source content, be sure to include the name of the article, the author(s), the publication name, "Densho Encyclopedia," the url of the article page, and the date/time that you accessed the page. In APA format, an example citation would look like this:
-						<blockquote>Odo, F. (2012). Varsity Victory Volunteers. Densho Encyclopedia. Retrieved on July 31, 2015 from http://encyclopedia.densho.org/Varsity%20Victory%20Volunteers/.</blockquote>
-						</p>
-
-						<p>For more information and examples in other citation formats, click on the <i class="icon-bookmark"></i>Cite Help link located on each page.</p>
-
-					<div class="alert"><p><strong>Careful, please!</strong><br />Where indicated, some primary source content in the Encyclopedia is not under Creative Commons terms. You must contact the original rights-holder directly for permission to license their content.</p></div>
-
-	<div class="toplink"><a href="#top"><i class="icon-chevron-up"></i> Top</a></div>
-	</section>	
-
-	<section id="contact">
+	<section id="contact" class="container">
 		<h2>Contact us</h2>
-		<p>We are interested in hearing your comments, suggestions and questions, especially during this first phase of the Encyclopedia project. You may contact us at: </p>
+		<p>The Digital Repository is a new project so we are especially interested in hearing your comments, suggestions and questions. You may contact us at: </p>
 
-		<p><strong><a href="mailto:info@densho.org">info@densho.org</a></strong></p>
-		<p><address>Densho<br />
-		1416 South Jackson St.<br />
-		Seattle, WA 98144<br /></address></p>
+				<section id="contact" class="container">
+				<span class="block">
+				<p>
+				<strong><i class="fa fa-map-marker"></i> Address:</strong> Densho, 1416 South Jackson St., Seattle, WA 98144, US<br />
+				<strong><i class="fa fa-phone"></i> Phone:</strong> 206-320-0095<br />
+				<strong><i class="fa fa-envelope"></i> Email:</strong> info@densho.org<br />
+				</p>
+				</span>
+				</section>
 
 		<p><a href="http:/www.densho.org/about/default.asp?path=enews.asp" target="_blank">Sign up</a> to receive the Densho eNews, a monthly electronic newsletter highlighting our digital archive of life stories and documents, organizational news, and community items of interest. <a href="http:/www.densho.org/about/default.asp?path=enews.asp" target="_blank">Learn more &raquo;</a></p>
 
 	<div class="toplink"><a href="#top"><i class="icon-chevron-up"></i> Top</a></div>
 	</section>	
 
-	<section id="tosprivacy">
-		<h2>Terms of Use/Privacy Policy</h2>
-			<h3>Terms of Use</h3>
-				<h4>Published or Commercial Work</h4>
-					<p>Unless otherwise noted, all content in the Densho Encyclopedia is offered for use under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License  (CC BY-NC-SA 3.0)</a>. For more information, see <a href="#usingandciting">Using and Citing Articles</a>.</p>
-
-					<p>Some content is the property of third-party owners. Densho is using these materials either by prior arrangement with rights-holders or under the auspices of fair-use doctrine. If you are a rights-holder who believes that your materials are being used improperly, please contact Densho. </p>
-
-				<h4>Warranties</h4>
-					<p>DENSHO DOES NOT MAKE ANY WARRANTY WHATSOEVER, INCLUDING WITHOUT LIMITATION: THAT THE WEBSITE ENCYCLOPEDIA.DENSHO.ORG WILL BE UNINTERRUPTED OR ERROR-FREE; THAT DEFECTS WILL BE CORRECTED; THAT THIS SITE, INCLUDING THE SERVER THAT MAKES IT AVAILABLE, IS FREE OF VIRUSES OR OTHER HARMFUL COMPONENTS; AS TO THE RESULTS THAT MAY BE OBTAINED FROM USE OF THE MATERIAL ON THE SITE; OR AS TO THE ACCURACY, RELIABILITY, AVAILABILITY, SUITABILITY, QUALITY, OR OPERATION OF ANY INFORMATION, SOFTWARE, OR SERVICE PROVIDED ON OR ACCESSIBLE FROM THE SITE.
-				</p><p>THE WEBSITE ENCYCLOPEDIA.DENSHO.ORG AND ALL INFORMATION, PRODUCTS AND CONTENT INCLUDED OR ACCESSIBLE FROM THIS SITE ARE PROVIDED "AS IS" AND WITHOUT WARRANTIES OF ANY KIND (EXPRESS, IMPLIED AND STATUTORY, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF TITLE AND NON-INFRINGEMENT AND THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE), ALL OF WHICH DENSHO DISCLAIMS TO THE FULLEST EXTENT PERMITTED BY LAW. YOUR USE OF ENCYCLOPEDIA.DENSHO.ORG IS AT YOUR SOLE RISK.</p>
-				<h4>Limits of Liability</h4>
-					<p>In no event shall Densho be liable for any direct, indirect, special, incidental, punitive or consequential damages arising out of or related to the use, inability to use, authorized use, performance or nonperformance of this site, even if Densho was previously advised of the possibility of such damages and regardless of whether such damages arise in contract, tort, under statute, in equity, at law or otherwise.</p>
-
-			<h3>Privacy Policy</h3>
-				<p>Your privacy is important to Densho. Our Privacy Policy is your assurance of our commitment. The encyclopedia.densho.org website is owned and operated by Densho, a Washington State not-for-profit corporation. Our address is:
-				</p><address><p>Densho<br />
-				1416 South Jackson St.<br />
-				Seattle, WA 98144<br /></address>
-				</p><p>Densho welcomes comments or questions about its Privacy Policy. Please feel free to <a href="#contact">contact</a> us.
-				</p>
-
-				<h4>What Personal Information is Collected</h4>
-				<p>Personal Information includes, but is not limited to, usage data, along with the name, telephone number, address, and e-mail address. Densho collects information from our users at several different points on our website:
-				</p>
-				<strong>Densho eNews Email Newsletter</strong><br />
-				<p>The Densho eNews email newsletter is an optional monthly bulletin sent to people interested in the Densho project and related activities. Individuals must request to subscribe (i.e., "opt-in") at the Densho web site or through personal contact. Subscribers may choose to unsubscribe at any time and unsubscribe information is located at the bottom of each eNewsletter. Densho uses the Groundspring.org EmailNow service to send and manage the email list.
-				</p>
-				<strong>Cookies, Tracking Codes and Web Traffic Analysis</strong><br />
-				<p>A cookie is a small packet of information that Densho puts on your computer's hard drive whenever a user visits our website. Tracking codes are small pieces of computer code that are passed to your web browser when it requests pages from our website. For each visitor to our website, this allows our servers to automatically recognize the following:
-				</p>
-				<dl><dd>Your IP address which may imply your geographic location
-				</dd><dd>How you were referred to the website
-				</dd><dd>The pages you have viewed, how long you spent on the website and when you visited
-				</dd><dd>Browser type and capabilities (e.g., "Firefox")
-				</dd><dd>Platform dependant information (e.g., "MacOS 10.7")
-				</dd></dl>
-				<p>Densho also uses Google Analytics to analyze traffic to this website. This analytic service does not create individual profiles for visitors; it collects only aggregate data. For information about Google Analytics, <a  href="http://www.google.com/policies/privacy/" target="_blank">click here</a>. 
-				</p><p>In addition, Densho may examine and analyze technical logs created by the servers that operate the website. These logs may contain data similar to that described above.
-				</p>
-				<h4>How the Information is Used</h4>
-				<p>Cookies and tracking codes are used to monitor the traffic on our website so we can determine how content is used and navigated, improve the user experience, and address technical issues with service capacity and availability.
-				</p><p>Comments are used to revise, correct, update, and evaluate the content of our website.
-				</p>
-				<h4>With Whom Do We Share the Information</h4>
-				<p>Densho does not sell, rent, swap or otherwise disclose any Personal Information to third parties. If Densho is required to disclose information collected from our members in response to any legal process issued by a court, Densho will comply with the legal process after giving notice to any members affected by it unless a court order prohibits such notice.
-				</p>
-
-
-	<div class="toplink"><a href="#top"><i class="icon-chevron-up"></i> Top</a></div>
-	</section>	
-
-  </div><!-- .row -->
-</div><!-- .container-fluid -->
 {% endblock content %}
-
-{% block footer %}
-ui/about.html
-{% endblock footer %}
