@@ -28,9 +28,9 @@
   <div class="row">
 
   {% if object.signature_url %}
-  <div class="col-sm-6 col-md-7">
+  <div class="col-sm-6 col-md-6">
 
-  {% thumbnail object.signature_url "450x450" as img %}
+  {% thumbnail object.signature_url "480x480" as img %}
   <img src="{{ img.url }}" class="img-responsive">
  {% endthumbnail %}
 						<div class="divider"><!-- divider -->
@@ -44,7 +44,7 @@
 {% addthis %}
 {% cite object.cite_url %}
 
-
+<div class="col-sm-6 col-md-6">
 <dl class="dl-horizontal clearfix">
 {% for f in object.fields %}
   <!-- {{ f.0 }} -->
@@ -52,16 +52,20 @@
   <dd>{{ f.2 }}</dd>
 {% endfor %}
 </dl>
+</div>
+</div><!-- //row-->
 
-<h3>files</h3>
+<div class="col-sm-12 col-md-12">
+<h3>Files</h3>
 {% for file in object.files %}
 {% file file %}
 {% endfor %}
 <p>
 <a href="{% url "ui-entity-files" repo org cid eid %}">All files</a>
 </p>
+</div>
 
-  </div><!-- .row -->
+</div><!-- .row -->
 
 </section>
 {% endblock content %}
