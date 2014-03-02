@@ -48,6 +48,12 @@ def cite( url ):
     t = template.loader.get_template('ui/cite-tag.html')
     c = template.Context({'url':url})
     return t.render(c)
+	
+def rightspanel( code ):
+	"""Item rights notice
+	"""
+	t = template.loader.get_template('ui/rightspanel-tag.html')
+	c = template.Context({'code':code})
 
 register.simple_tag(homeslideitem)
 register.simple_tag(collection)
@@ -55,3 +61,4 @@ register.simple_tag(entity)
 register.simple_tag(file)
 register.simple_tag(addthis)
 register.simple_tag(cite)
+register.simple_tag(rightspanel)

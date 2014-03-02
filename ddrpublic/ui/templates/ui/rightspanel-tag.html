@@ -1,0 +1,13 @@
+<div class="panel panel-default">
+	<div class="panel-heading">{% ifequal code "nocc" %}<i class="fa fa-warning"></i> Caution{% else %}<i class="fa fa-thumbsup"></i> Free to use{% endif %}
+	</div>
+	<div class="panel-body">
+	{% ifequal code "nocc" %}
+	This object is protected by copyright. You must ask permission from the rights holder if you re-use or publish it elsewhere, unless your project falls under a fair-use exception. 
+	{% else %}{% ifequal code "cc" %}
+	This object is offered under the DDR Creative Commons license.
+	{% else %}
+	This object is in the public domain. You may freely use it for any purpose.
+	{% endifequal %}
+	</div>
+</div><!-- /cite -->
