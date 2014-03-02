@@ -28,6 +28,7 @@
 
 		<div class="col-sm-6 col-md-6">
 		<h2>{{ object.title }}</h2>
+                <h2>{{ object.entity.title }} {% if object.label %}({{ object.label }}){% endif %}</h2>
 			 <a href="{{ object.access_url }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
 			{% thumbnail object.access_url "480x480" as img %}
 			<img src="{{ img.url }}" class="img-responsive"></a>
@@ -45,7 +46,6 @@
 			<dl class="dl-horizontal clearfix">		
 			{% addthis %}
 			{% cite object.cite_url %}
-
 			{% for f in object.fields %}
 			<!-- {{ f.0 }} -->
 			<dt>{{ f.1 }}</dt>
