@@ -29,7 +29,7 @@
 
 		<div class="col-sm-6 col-md-6">
 	{% if object.signature_url %}
-			 <a href="{{ object.access_url }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
+			 <a href="{{ object.signature_url }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
 			{% thumbnail object.signature_url "480x480" as img %}
 			<img src="{{ img.url }}" class="img-responsive"></a>
 			{% endthumbnail %}
