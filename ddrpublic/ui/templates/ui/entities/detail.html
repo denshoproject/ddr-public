@@ -22,19 +22,28 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
-<div class="container-fluid">
+
+<section id="portfolio" class="container">
+
   <div class="row">
 
+  {% if object.signature_url %}
+  <div class="col-sm-6 col-md-7">
+
+  {% thumbnail object.signature_url "200x200" as img %}
+  <img src="{{ img.url }}" class="img-responsive">
+ {% endthumbnail %}
+						<div class="divider"><!-- divider -->
+							<i class="fa fa-chevron-down"></i>
+						</div>
+
+	</div>
+{% endif %}
+
+		
 {% addthis %}
 {% cite object.cite_url %}
 
-{% if object.signature_url %}
-<div id="signature">
-{% thumbnail object.signature_url "200x200" as img %}
-  <img src="{{ img.url }}" class="img-responsive">
-{% endthumbnail %}
-</div>
-{% endif %}
 
 <dl class="dl-horizontal clearfix">
 {% for f in object.fields %}
@@ -53,10 +62,10 @@
 </p>
 
   </div><!-- .row -->
-</div><!-- .container-fluid -->
+
+</section>
 {% endblock content %}
 
 {% block footer %}
-ui/entities/detail.html
 {% if object.backend_url %}&bull; <a href="{{ object.backend_url }}">json</a>{% endif %}
 {% endblock footer %}
