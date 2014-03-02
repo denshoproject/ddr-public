@@ -64,25 +64,24 @@
   </div>
 -->
 
+<!--
   <div class="sort">
     <b>Sort</b>
     &mdash;
-
     <span class="record_created">
       <b>record_created:</b>
 {% if sort.record_created == "asc" %}ascending{% else %}<a href="?query={{ query }}&record_created=asc&record_lastmod={{ sort.record_lastmod }}&public={{ filters.public }}&workflow={{ filters.workflow }}">ascending</a>{% endif %}
 / {% if record_created.date == "desc" %}descending{% else %}<a href="?query={{ query }}&record_created=desc&record_lastmod={{ sort.record_lastmod }}&public={{ filters.public }}&workflow={{ filters.workflow }}">descending</a>{% endif %}
 {% if sort.record_created %}(<a href="?query={{ query }}&record_created=&record_lastmod={{ sort.record_lastmod }}&public={{ filters.public }}&workflow={{ filters.workflow }}">clear</a>){% endif %}
     </span>
-
     <span class="record_lastmod">
       <b>record_lastmod:</b>
 {% if sort.record_lastmod == "asc" %}ascending{% else %}<a href="?query={{ query }}&record_created={{ record_created }}&record_lastmod=asc&public={{ filters.public }}&workflow={{ filters.workflow }}">ascending</a>{% endif %}
 / {% if record_lastmod.date == "desc" %}descending{% else %}<a href="?query={{ query }}&record_created={{ record_created }}&record_lastmod=desc&public={{ filters.public }}&workflow={{ filters.workflow }}">descending</a>{% endif %}
 {% if sort.record_lastmod %}(<a href="?query={{ query }}&record_created={{ record_created }}&record_lastmod=&public={{ filters.public }}&workflow={{ filters.workflow }}">clear</a>){% endif %}
     </span>
-
   </div>
+-->
 
   <div>
     {{ paginator.count }} results<br/>

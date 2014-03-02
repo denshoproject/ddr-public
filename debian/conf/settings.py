@@ -132,8 +132,8 @@ DOCUMENT_INDEX = 'documents'
 METADATA_INDEX = 'meta'
 
 # sorl-thumbnail
-#THUMBNAIL_KVSTORE = 'sorl.thumbnail.kvstores.cached_db_kvstore.KVStore'
-THUMBNAIL_KVSTORE = 'sorl.thumbnail.kvstores.redis_kvstore.KVStore'
+THUMBNAIL_KVSTORE = 'sorl.thumbnail.kvstores.cached_db_kvstore.KVStore'
+#THUMBNAIL_KVSTORE = 'sorl.thumbnail.kvstores.redis_kvstore.KVStore'
 THUMBNAIL_REDIS_PASSWORD = ''
 THUMBNAIL_REDIS_HOST = REDIS_HOST
 THUMBNAIL_REDIS_PORT = int(REDIS_PORT)

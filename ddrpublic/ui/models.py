@@ -65,6 +65,23 @@ HOST = settings.ELASTICSEARCH_HOST_PORT
 
 # functions for GETing object data from ElasticSearch
 
+def split_object_id( object_id=None ):
+    """Very naive function that splits an object ID into its parts
+    TODO make sure it's actually an object ID first!
+    """
+    if object_id and isinstance(object_id, basestring):
+        parts = object_id.strip().split('-')
+        if len(parts) == 6:
+            parts.insert(0, 'file')
+            return parts
+        elif len(parts) == 4:
+            parts.insert(0, 'entity')
+            return parts
+        elif len(parts) == 3:
+            parts.insert(0, 'collection')
+            return parts
+    return None
+
 def make_object_id( model, repo, org=None, cid=None, eid=None, role=None, sha1=None ):
     if   (model == 'file') and repo and org and cid and eid and role and sha1:
         return '%s-%s-%s-%s-%s-%s' % (repo, org, cid, eid, role, sha1)
@@ -76,6 +93,14 @@ def make_object_id( model, repo, org=None, cid=None, eid=None, role=None, sha1=N
         return '%s-%s' % (repo, org)
     elif (model == 'repo') and repo:
         return repo
+    return None
+
+def make_object_url( parts ):
+    """Takes a list of object ID parts and returns URL for that object.
+    """
+    if len(parts) == 6: return reverse('ui-file', args=parts)
+    elif len(parts) == 4: return reverse('ui-entity', args=parts)
+    elif len(parts) == 3: return reverse('ui-collection', args=parts)
     return None
 
 def backend_url( object_type, object_id ):

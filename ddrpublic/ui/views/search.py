@@ -13,7 +13,7 @@ from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 from django.utils.http import urlquote  as django_urlquote
 
-from DDR import elasticsearch
+from DDR import elasticsearch, models
 from ui import faceting, models
 
 
@@ -28,8 +28,6 @@ def index( request ):
         {},
         context_instance=RequestContext(request, processors=[])
     )
-
-
 
 def _prep_results( results ):
     hits = []
@@ -48,9 +46,17 @@ def _prep_results( results ):
 def results( request ):
     """Results of a search query.
     """
+    q = django_urlquote(request.GET.get('query', ''))
+    # if query is a DDR ID go straight to document page
+    object_id_parts = models.split_object_id(q)
+    if object_id_parts and (object_id_parts[0] in ['collection', 'entity', 'file']):
+        object_id_parts.pop(0)
+        object_url = models.make_object_url(object_id_parts)
+	if object_url:
+	    return HttpResponseRedirect(object_url)
+	assert False
     # prep query for elasticsearch
     model = request.GET.get('model', None)
-    q = django_urlquote(request.GET.get('query', ''))
     filters = {}
     fields = models.all_list_fields()
     sort = {'record_created': request.GET.get('record_created', ''),
