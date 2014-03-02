@@ -19,7 +19,7 @@
 {% for term in facet_terms %}
   <li>
     <span class="badge">{% if term.count %}{{ term.count }}{% else %} &nbsp;&nbsp; {% endif %}</span>
-    <a href="{{ term.url }}">{{ term.title }}</a>
+    <a href="{{ term.url }}" class="label label-default">{{ term.title }}</a>
     {# if term.description %}&mdash; {{ term.description }}{% endif #}
   </li>
 {% endfor %}
@@ -29,6 +29,3 @@
 </div><!-- .container-fluid -->
 {% endblock content %}
 
-{% block footer %}
-ui/browse/facet.html
-{% endblock footer %}
