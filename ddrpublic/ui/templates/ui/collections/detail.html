@@ -44,9 +44,28 @@
 
 
 		<div class="col-sm-6 col-md-6">
+
+			{% addthis %}
+			{% cite object.cite_url %}
 			
-			<h3 class="page-header">{{ object.description.name }}</h3>
+			<h3 class="page-header">{{ object.description.label }}</h3>
 			<p>{{ object.description }}</p>
+			
+			<h3 class="page-header">{{ object.unitdateinclusive.label }}</h3>
+			<p>{{ object.unitdateinclusive }}</p>
+
+			<h3 class="page-header">{{ object.unitdatebulk.label }}</h3>
+			<p>{{ object.unitdatebulk }}</p>
+
+			<h3 class="page-header">{{ object.extent.label }}</h3>
+			<p>{{ object.extent }}</p>
+
+
+			<h3 class="page-header">{{ object.prefercite.label }}</h3>
+			<p>{{ object.prefercite }}</p>
+			<h3 class="page-header">{{ object.rights.label }}</h3>
+			<p>{{ object.rights }}</p>
+			
 			<!-- collection.id -->
 			<!-- collection.title -->
 			<!-- collection.record_created -->
@@ -76,17 +95,6 @@
 			<!-- collection.relatedmaterial -->
 			<!-- collection.separatedmaterial -->
 			
-			<dl class="dl-horizontal clearfix">		
-			{% addthis %}
-			{% cite object.cite_url %}
-
-			
-			{% for f in object.fields %}
-			<!-- {{ f.0 }} -->
-			<dt>{{ f.1 }}</dt>
-			<dd>{{ f.2 }}</dd>
-			{% endfor %}
-			</dl>
 		</div>
 	</div><!-- //row-->
 
