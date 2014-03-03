@@ -64,7 +64,7 @@
 			<h3 class="page-header">PREFERRED CITATION{{ object.prefercite.label }}</h3>
 			<p>{{ object.prefercite }}</p>
 			<h3 class="page-header">RIGHTS{{ object.rights.label }}</h3>
-			<p>	{% ifequal object.rights "nocc" %}{% include 'ui/license-nocc.html' %}{% else %}{% ifequal object.rights "cc"}{% include 'ui/license-cc.html' %}{% else %}{% include 'ui/license-pdm.html' %}{% endifequal }{% endifequal }</p>
+			<p>{{ object.rights }}</p>
 			</div>
 			<!-- collection.id -->
 			<!-- collection.title -->
