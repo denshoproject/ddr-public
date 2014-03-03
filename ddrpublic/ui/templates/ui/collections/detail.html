@@ -44,10 +44,41 @@
 
 
 		<div class="col-sm-6 col-md-6">
+			
+			<!-- collection.id -->
+			<!-- collection.title -->
+			<!-- collection.record_created -->
+			<!-- collection.record_lastmod -->
+			
+			<!-- collection.unitdateinclusive -->
+			<!-- collection.unitdatebulk -->
+			
+			<!-- collection.creators -->
+			<!-- collection.extent -->
+			<!-- collection.language -->
+			<!-- collection.contributor -->
+			<!-- collection.description -->
+			
+			<!-- collection.physloc -->
+			<!-- collection.acqinfo -->
+			<!-- collection.custodhist -->
+			<!-- collection.accruals -->
+			<!-- collection.processinfo -->
+			
+			<!-- collection.rights -->
+			<!-- collection.accessrestrict -->
+			<!-- collection.userrestrict -->
+			<!-- collection.prefercite -->
+			<!-- collection.bioghist -->
+			<!-- collection.scopecontent -->
+			<!-- collection.relatedmaterial -->
+			<!-- collection.separatedmaterial -->
+			
 			<dl class="dl-horizontal clearfix">		
 			{% addthis %}
 			{% cite object.cite_url %}
 
+			
 			{% for f in object.fields %}
 			<!-- {{ f.0 }} -->
 			<dt>{{ f.1 }}</dt>
