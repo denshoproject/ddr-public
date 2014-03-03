@@ -43,18 +43,92 @@
 
 
 		<div class="col-sm-6 col-md-6">
-			<dl class="dl-horizontal clearfix">		
+			
+			<!-- entity.title -->	
+
+			<!-- entity.id -->
+			<!-- entity.record_created -->
+			<!-- entity.record_lastmod -->
+			
+			<!-- entity.description -->
+			
+			
+			<!-- entity.creators -->
+			<!-- entity.language -->
+			
+			
+			<!-- entity.extent -->
+			<!-- entity.contributor -->
+			<!-- entity.alternate_id -->
+			<!-- entity.digitize_person -->
+			<!-- entity.digitize_organization -->
+			<!-- entity.digitize_date -->
+			<!-- entity.credit -->
+			<!-- entity.rights -->
+			<!-- entity.rights_statement -->
+			<!-- entity.topics -->
+			<!-- entity.persons -->
+			<!-- entity.facility -->
+			<!-- entity.parent -->
+
+
+
 			{% addthis %}
 			{% cite object.cite_url %}
+			<div class="desc productDescription">
+			<h3 class="page-header">DESCRIPTION{{ object.description.label }}</h3>
+			<p>{{ object.description }}</p>
 
-			{% for f in object.fields %}
-			<!-- {{ f.0 }} -->
-			<dt>{{ f.1 }}</dt>
-			<dd>{{ f.2 }}</dd>
-			{% endfor %}
-			</dl>
-		</div>
-	</div><!-- //row-->
+					<!-- core meta -->
+						<div class="row">
+							<div class="col">
+
+								<div class="col-md-4 col-sm-4">
+									<!-- entity.creation -->
+									<h3 class="page-header">{{ object.creation }}</h3>
+									<p>
+									c. 1927
+									</p>
+
+								</div>
+								
+								<div class="col-md-8 col-sm-8">
+									<!-- entity.location -->
+									<h3 class="page-header">LOCATION</h3>
+									<p>
+									{{ object.location }}
+									</p>
+								</div>
+
+								<div class="col-md-4 col-sm-4">
+									<!-- entity.genre -->
+									<h3 class="page-header">OBJECT GENRE</h3>
+									<p>
+									{{ object.genre }}
+									</p>
+								</div>
+								<div class="col-md-8 col-sm-8">
+									<!-- entity.format -->
+									<h3 class="page-header">OBJECT FORMAT</h3>
+									<p>
+									{{ object.format }}
+									</p>
+								</div>
+
+							</div>
+
+						</div>
+				<!-- /core meta -->		
+				<h3 class="page-header">PREFERRED CITATION</h3>
+				<p>
+				{{ object.credit }}
+				</p>
+				<h3 class="page-header">RIGHTS</h3>
+				<p>
+				{{ object.rights }}
+				</p>
+		</div>	
+	</div>		
 
 	<div class="row">
 		<div class="col-sm-12 col-md-12">
