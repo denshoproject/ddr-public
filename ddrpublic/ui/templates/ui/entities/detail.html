@@ -72,10 +72,11 @@
 			<!-- entity.parent -->
 
 
-
 			{% addthis %}
 			{% cite object.cite_url %}
 			<div class="desc productDescription">
+                        <h3 class="page-header">OBJECT ID</h3>
+                        <p>{{ object.id }}</p>
 			<h3 class="page-header">DESCRIPTION{{ object.description.label }}</h3>
 			<p>{{ object.description }}</p>
 
@@ -85,9 +86,9 @@
 
 								<div class="col-md-4 col-sm-4">
 									<!-- entity.creation -->
-									<h3 class="page-header">{{ object.creation }}</h3>
+									<h3 class="page-header">DATE</h3>
 									<p>
-									c. 1927
+									{{ object.creation }}
 									</p>
 
 								</div>
@@ -104,14 +105,14 @@
 									<!-- entity.genre -->
 									<h3 class="page-header">OBJECT GENRE</h3>
 									<p>
-									{{ object.genre }}
+									{{ object.fields.8.2 }}
 									</p>
 								</div>
 								<div class="col-md-8 col-sm-8">
 									<!-- entity.format -->
 									<h3 class="page-header">OBJECT FORMAT</h3>
 									<p>
-									{{ object.format }}
+									{{ object.fields.9.2 }}
 									</p>
 								</div>
 
@@ -125,7 +126,7 @@
 				</p>
 				<h3 class="page-header">RIGHTS</h3>
 				<p>
-				{{ object.rights }}
+				{{ object.fields.17.2 }}
 				</p>
 		</div>	
 	</div>		
