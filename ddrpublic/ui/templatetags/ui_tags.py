@@ -54,6 +54,7 @@ def rightspanel( code ):
 	"""
 	t = template.loader.get_template('ui/rightspanel-tag.html')
 	c = template.Context({'code':code})
+	return t.render(c)
 
 register.simple_tag(homeslideitem)
 register.simple_tag(collection)

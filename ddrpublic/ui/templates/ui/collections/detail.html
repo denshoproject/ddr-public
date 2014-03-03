@@ -51,10 +51,10 @@
 			<h3 class="page-header">DESCRIPTION{{ object.description.label }}</h3>
 			<p>{{ object.description }}</p>
 			
-			<h3 class="page-header">UNIT DATE INCLUSIVE{{ object.unitdateinclusive.label }}</h3>
+			<h3 class="page-header">INCLUSIVE UNIT DATE{{ object.unitdateinclusive.label }}</h3>
 			<p>{{ object.unitdateinclusive }}</p>
 
-			<h3 class="page-header">UNIT DATE INCLUSIVE{{ object.unitdatebulk.label }}</h3>
+			<h3 class="page-header">BULK UNIT DATE{{ object.unitdatebulk.label }}</h3>
 			<p>{{ object.unitdatebulk }}</p>
 
 			<h3 class="page-header">PHYSICAL DESCRIPTION{{ object.extent.label }}</h3>
@@ -64,7 +64,7 @@
 			<h3 class="page-header">PREFERRED CITATION{{ object.prefercite.label }}</h3>
 			<p>{{ object.prefercite }}</p>
 			<h3 class="page-header">RIGHTS{{ object.rights.label }}</h3>
-			<p>{{ object.rights }}</p>
+			<p>	{% ifequal object.rights "nocc" %}{% include 'ui/license-nocc.html' %}{% else %}{% ifequal object.rights "cc"}{% include 'ui/license-cc.html' %}{% else %}{% include 'ui/license-pdm.html' %}{% endifequal }{% endifequal }</p>
 			</div>
 			<!-- collection.id -->
 			<!-- collection.title -->
