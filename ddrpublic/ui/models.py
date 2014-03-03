@@ -506,7 +506,9 @@ class File( object ):
         return reverse('ui-file', args=(self.repo, self.org, self.cid, self.eid, self.role, self.sha1))
     
     def access_url( self ):
-        return settings.UI_THUMB_URL(self)
+        if hasattr(self, 'access_rel') and self.access_rel:
+            return settings.UI_THUMB_URL(self)
+        return None
     
     def backend_url( self ):
         return backend_url('file', self.id)
