@@ -47,21 +47,21 @@
 			{% addthis %}
 			{% cite object.cite_url %}
 			<div class="desc productDescription">
-			<h3 class="page-header">DESCRIPTION{{ object.description.label }}</h3>
+			<h3 class="page-header">DESCRIPTION</h3>
 			<p>{{ object.description }}</p>
 			
 				<!-- core meta -->
 					<div class="row">
 						<div class="col">
 
-							<div class="col-md-4 col-sm-4">
-								<h3 class="page-header">INCLUSIVE UNIT DATE{{ object.unitdateinclusive.label }}</h3>
+							<div class="col-md-5 col-sm-5">
+								<h3 class="page-header">INCLUSIVE UNIT DATE</h3>
 								<p>{{ object.unitdateinclusive }}</p>
 
 							</div>
 							
-							<div class="col-md-8 col-sm-8">
-								<h3 class="page-header">BULK UNIT DATE{{ object.unitdatebulk.label }}</h3>
+							<div class="col-md-7 col-sm-7">
+								<h3 class="page-header">BULK UNIT DATE</h3>
 								<p>{{ object.unitdatebulk }}</p>
 							</div>
 
@@ -71,11 +71,11 @@
 					</div>
 			<!-- /core meta -->		
 
-			<h3 class="page-header">PHYSICAL DESCRIPTION{{ object.extent.label }}</h3>
+			<h3 class="page-header">PHYSICAL DESCRIPTION</h3>
 			<p>{{ object.extent }}</p>
 
 
-			<h3 class="page-header">PREFERRED CITATION{{ object.prefercite.label }}</h3>
+			<h3 class="page-header">PREFERRED CITATION</h3>
 			<p>{{ object.prefercite }}</p>
 			<h3 class="page-header">RIGHTS</h3>
 			<p>
@@ -122,9 +122,11 @@
 			{% for entity in object.entities %}
 			{% entity entity %}
 			{% endfor %}
+	
 			<p>
 			<a href="{% url "ui-collection-entities" repo org cid %}">All objects</a>
 			</p>
+
 		</div>
 	</div><!-- .row -->
 </section><!-- .container-fluid -->
