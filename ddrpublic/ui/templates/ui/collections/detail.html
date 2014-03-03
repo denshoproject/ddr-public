@@ -25,7 +25,7 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
-<section id="portfolio" class="container">
+<section id="shop" class="container">
 
 	<div class="row">
 
@@ -47,7 +47,7 @@
 
 			{% addthis %}
 			{% cite object.cite_url %}
-			
+			<div class="desc">
 			<h3 class="page-header">{{ object.description.label }}</h3>
 			<p>{{ object.description }}</p>
 			
@@ -65,7 +65,7 @@
 			<p>{{ object.prefercite }}</p>
 			<h3 class="page-header">{{ object.rights.label }}</h3>
 			<p>{{ object.rights }}</p>
-			
+			</div>
 			<!-- collection.id -->
 			<!-- collection.title -->
 			<!-- collection.record_created -->
