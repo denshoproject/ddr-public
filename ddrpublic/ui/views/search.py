@@ -50,11 +50,21 @@ def results( request ):
     # if query is a DDR ID go straight to document page
     object_id_parts = models.split_object_id(q)
     if object_id_parts and (object_id_parts[0] in ['collection', 'entity', 'file']):
-        object_id_parts.pop(0)
-        object_url = models.make_object_url(object_id_parts)
-	if object_url:
-	    return HttpResponseRedirect(object_url)
-	assert False
+        model = object_id_parts.pop(0)
+        document = elasticsearch.get(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
+                                     model, q.strip())
+        if document['status'] == 200:
+            object_url = models.make_object_url(object_id_parts)
+            if object_url:
+                return HttpResponseRedirect(object_url)
+        else:
+            # print error message and go to blank search page
+            return render_to_response(
+                'ui/search/results.html',
+                {'hide_header_search': True,
+                 'id_query_bad': q},
+                context_instance=RequestContext(request, processors=[])
+            )
     # prep query for elasticsearch
     model = request.GET.get('model', None)
     filters = {}
