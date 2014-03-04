@@ -75,9 +75,14 @@
 			{% addthis %}
 			{% cite object.cite_url %}
 			<div class="desc productDescription">
+			<!-- entity.id -->
                         <h3 class="page-header">OBJECT ID</h3>
                         <p>{{ object.id }}</p>
-			<h3 class="page-header">DESCRIPTION</h3>
+			<!-- entity.collection -->
+                        <h3 class="page-header">PARENT COLLECTION</h3>
+                        <p><a href="{{ object.collection.absolute_url }}">{{ object.collection.title }}</a></p>
+                       <!-- entity.description -->
+ 			<h3 class="page-header">DESCRIPTION</h3>
 			<p>{{ object.description }}</p>
 
 					<!-- core meta -->
@@ -116,28 +121,28 @@
 									</p>
 								</div>
 								<div class="col-md-5 col-sm-5">
-									<!-- entity.genre -->
+									<!-- entity.topics -->
 									<h3 class="page-header">TOPICS</h3>
 									<p>
 									{{ object.topics }}
 									</p>
 								</div>
 								<div class="col-md-7 col-sm-7">
-									<!-- entity.format -->
+									<!-- entity.facility -->
 									<h3 class="page-header">FACILITY</h3>
 									<p>
 									{{ object.facility }}
 									</p>
 								</div>
 								<div class="col-md-5 col-sm-5">
-									<!-- entity.format -->
+									<!-- entity.creators -->
 									<h3 class="page-header">CREATORS</h3>
 									<p>
 									{{ object.creators }}
 									</p>
 								</div>
 								<div class="col-md-7 col-sm-7">
-									<!-- entity.genre -->
+									<!-- entity.persons -->
 									<h3 class="page-header">PERSONS/ORGANIZATIONS</h3>
 									<p>
 									{{ object.fields|ddrvalue:"persons" }}
@@ -147,11 +152,13 @@
 							</div>
 
 						</div>
-				<!-- /core meta -->		
+				<!-- /core meta -->	
+				<!-- entity.credit -->
 				<h3 class="page-header">PREFERRED CITATION</h3>
 				<p>
 				{{ object.credit }}
 				</p>
+				<!-- entity.rights -->
 				<h3 class="page-header">RIGHTS</h3>
 				<p>
 				{{ object.fields|ddrvalue:"rights" }}
