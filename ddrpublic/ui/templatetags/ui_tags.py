@@ -11,7 +11,7 @@ def fixurllocal( value ):
 	"""
 	return value.replace("ddr.densho.org","192.168.56.101")
 
-@register.filter(name='ddrval')
+@register.filter(name='ddrvalue')
 def ddrvalue( fields, field ):
 	"""retrieves displayvalue from ddr object fields list matched by fieldname
 	"""
