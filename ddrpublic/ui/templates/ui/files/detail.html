@@ -47,9 +47,13 @@
 			{% cite object.cite_url %}
 			<div class="desc productDescription">
 	        <h3 class="page-header">PARENT OBJECT</h3>
-	        <p><a href="{{ object.entity.cite_url }}">{{ object.entity.title }}</p>
+	        <p><a href="{{ object.entity.cite_url }}">{{ object.entity.title }} ({{ object.entity.title }})</a></p>
             <h3 class="page-header">FILE ID</h3>
             <p>{{ object.id }}</p>
+            <h3 class="page-header">SIZE</h3>
+            <p>{{ object.size|filesizeformat }}</p>
+            <h3 class="page-header">TECHNICAL DETAILS</h3>
+            <p>{{ object.tech_notes }}</p>
 			<h3 class="page-header">RIGHTS</h3>
 			<p>{{ object.fields|ddrvalue:"rights" }}</p>
 			</div>
