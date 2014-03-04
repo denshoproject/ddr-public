@@ -77,14 +77,14 @@
 			<div class="desc productDescription">
                         <h3 class="page-header">OBJECT ID</h3>
                         <p>{{ object.id }}</p>
-			<h3 class="page-header">DESCRIPTION{{ object.description.label }}</h3>
+			<h3 class="page-header">DESCRIPTION</h3>
 			<p>{{ object.description }}</p>
 
 					<!-- core meta -->
 						<div class="row">
 							<div class="col">
 
-								<div class="col-md-4 col-sm-4">
+								<div class="col-md-5 col-sm-5">
 									<!-- entity.creation -->
 									<h3 class="page-header">DATE</h3>
 									<p>
@@ -93,7 +93,7 @@
 
 								</div>
 								
-								<div class="col-md-8 col-sm-8">
+								<div class="col-md-7 col-sm-7">
 									<!-- entity.location -->
 									<h3 class="page-header">LOCATION</h3>
 									<p>
@@ -101,14 +101,14 @@
 									</p>
 								</div>
 
-								<div class="col-md-4 col-sm-4">
+								<div class="col-md-5 col-sm-5">
 									<!-- entity.genre -->
 									<h3 class="page-header">OBJECT GENRE</h3>
 									<p>
 									{{ object.fields.8.2 }}
 									</p>
 								</div>
-								<div class="col-md-8 col-sm-8">
+								<div class="col-md-7 col-sm-7">
 									<!-- entity.format -->
 									<h3 class="page-header">OBJECT FORMAT</h3>
 									<p>
@@ -137,6 +137,7 @@
 			{% for file in object.files %}
 			{% file file %}
 			{% endfor %}
+			
 			<p>
 			<a href="{% url "ui-entity-files" repo org cid eid %}">All files</a>
 			</p>

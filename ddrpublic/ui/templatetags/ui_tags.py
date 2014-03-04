@@ -10,6 +10,13 @@ def fixurllocal( value ):
 	"""fix urls for local vm testing
 	"""
 	return value.replace("ddr.densho.org","192.168.56.101")
+
+@register.filter(name='ddrval')
+def ddrvalue( fields, field ):
+	"""retrieves displayvalue from ddr object fields list matched by fieldname
+	"""
+	val = [item for item in fields if item[0] == ddrval]
+	return val[0][2]
 	
 def homeslideitem( url, imgurl ):
 	"""Slide item for homepage gallery

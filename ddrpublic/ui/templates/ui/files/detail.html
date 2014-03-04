@@ -43,15 +43,15 @@
 
 
 		<div class="col-sm-6 col-md-6">
-			<dl class="dl-horizontal clearfix">		
 			{% addthis %}
 			{% cite object.cite_url %}
-			{% for f in object.fields %}
-			<!-- {{ f.0 }} -->
-			<dt>{{ f.1 }}</dt>
-			<dd>{{ f.2 }}</dd>
-			{% endfor %}
-			</dl>
+			<div class="desc productDescription">
+            <h3 class="page-header">OBJECT ID</h3>
+            <p>{{ object.id }}</p>
+			<h3 class="page-header">RIGHTS</h3>
+			<p>{{ object.rights }}</p>
+			</div>
+
 		</div>
 	</div><!-- //row-->
 
