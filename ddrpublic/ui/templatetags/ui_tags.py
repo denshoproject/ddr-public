@@ -5,19 +5,19 @@ register = template.Library()
 
 @register.filter(name='ddrvalue')
 def ddrvalue( fields, field ):
-	"""retrieves displayvalue from ddr object fields list matched by fieldname
-	"""
-	try:
-	        val = [item for item in fields if item[0] == field]
-		return val[0][2]
-	except:
-		return ''
+    """retrieves displayvalue from ddr object fields list matched by fieldname
+    """
+    try:
+        val = [item for item in fields if item[0] == field]
+        return val[0][2]
+    except:
+        return ''
 	
 def homeslideitem( url, imgurl ):
-	"""Slide item for homepage gallery
-	"""
-	t = template.loader.get_template('ui/homeslideitem.html')
-	return t.render(template.Context({'url':url,'imgurl':imgurl}))
+    """Slide item for homepage gallery
+    """
+    t = template.loader.get_template('ui/homeslideitem.html')
+    return t.render(template.Context({'url':url,'imgurl':imgurl}))
 	
 def collection( obj ):
     """list-view collection template
@@ -37,7 +37,6 @@ def file( obj ):
     t = template.loader.get_template('ui/files/list-object.html')
     return t.render(template.Context({'object':obj}))
 
-
 def addthis():
     """AddThis button
     """
@@ -52,11 +51,11 @@ def cite( url ):
     return t.render(c)
 	
 def rightspanel( code ):
-	"""Item rights notice
-	"""
-	t = template.loader.get_template('ui/rightspanel-tag.html')
-	c = template.Context({'code':code})
-	return t.render(c)
+    """Item rights notice
+    """
+    t = template.loader.get_template('ui/rightspanel-tag.html')
+    c = template.Context({'code':code})
+    return t.render(c)
 
 register.simple_tag(homeslideitem)
 register.simple_tag(collection)
