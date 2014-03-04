@@ -47,7 +47,9 @@
 			{% addthis %}
 			{% cite object.cite_url %}
 			<div class="desc productDescription">
-			<h3 class="page-header">DESCRIPTION</h3>
+			<h3 class="page-header">COLLECTION ID</h3>
+                        <p>{{ object.id }}
+                        <h3 class="page-header">DESCRIPTION</h3>
 			<p>{{ object.description }}</p>
 			
 				<!-- core meta -->
@@ -74,7 +76,8 @@
 			<h3 class="page-header">PHYSICAL DESCRIPTION</h3>
 			<p>{{ object.extent }}</p>
 
-
+                        <h3 class="page-header">CONTRIBUTOR</h3>
+                        <p>{{ object.contributor }}</p>
 			<h3 class="page-header">PREFERRED CITATION</h3>
 			<p>{{ object.prefercite }}</p>
 			<h3 class="page-header">RIGHTS</h3>
@@ -116,7 +119,7 @@
 		</div>
 	</div><!-- //row-->
 
-	<div class="row container">
+	<div class="row">
 		<div class="col-sm-12 col-md-12">
 			<h3>Objects</h3>
 			{% for entity in object.entities %}

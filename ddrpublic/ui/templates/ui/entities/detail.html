@@ -80,7 +80,7 @@
                         <p>{{ object.id }}</p>
 			<!-- entity.collection -->
                         <h3 class="page-header">PARENT COLLECTION</h3>
-                        <p><a href="{{ object.collection.absolute_url }}">{{ object.collection.title }}</a></p>
+                       <p><a href="{{ object.collection.absolute_url }}">{{ object.collection.title }}</a></p>
                        <!-- entity.description -->
  			<h3 class="page-header">DESCRIPTION</h3>
 			<p>{{ object.description }}</p>
@@ -153,7 +153,11 @@
 
 						</div>
 				<!-- /core meta -->	
-				<!-- entity.credit -->
+				<h3 class="page-header">CONTRIBUTOR</h3>
+                                <p>
+                                {{ object.contributor }}
+                                </p>
+                                <!-- entity.credit -->
 				<h3 class="page-header">PREFERRED CITATION</h3>
 				<p>
 				{{ object.credit }}
@@ -164,9 +168,10 @@
 				{{ object.fields|ddrvalue:"rights" }}
 				</p>
 		</div>	
-	</div>		
+	</div>
+</div>		
 
-	<div class="row container">
+	<div class="row">
 		<div class="col-sm-12 col-md-12">
 			<h3>Files</h3>
 			{% for file in object.files %}
@@ -179,7 +184,7 @@
 		</div>
 
 	</div><!-- .row -->
-
+  
 </section>
 {% endblock content %}
 
