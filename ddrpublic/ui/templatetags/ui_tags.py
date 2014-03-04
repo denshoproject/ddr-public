@@ -16,7 +16,10 @@ def ddrvalue( fields, field ):
 	"""retrieves displayvalue from ddr object fields list matched by fieldname
 	"""
 	val = [item for item in fields if item[0] == ddrval]
-	return val[0][2]
+	try:
+		return val[0][2]
+	except AttributeError:
+		return ''
 	
 def homeslideitem( url, imgurl ):
 	"""Slide item for homepage gallery
