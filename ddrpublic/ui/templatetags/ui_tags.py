@@ -8,7 +8,7 @@ def ddrvalue( fields, field ):
 	"""retrieves displayvalue from ddr object fields list matched by fieldname
 	"""
 	try:
-	        val = [item for item in fields if item[0] == field]
+        val = [item for item in fields if item[0] == field]
 		return val[0][2]
 	except:
 		return ''
