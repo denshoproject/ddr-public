@@ -97,7 +97,7 @@
 									<!-- entity.location -->
 									<h3 class="page-header">LOCATION</h3>
 									<p>
-									{{ object.location }}
+									{{ object.fields|ddrvalue:"location" }}
 									</p>
 								</div>
 
@@ -105,14 +105,14 @@
 									<!-- entity.genre -->
 									<h3 class="page-header">OBJECT GENRE</h3>
 									<p>
-									{{ object.fields.8.2 }}
+									{{ object.fields|ddrvalue:"genre" }}
 									</p>
 								</div>
 								<div class="col-md-7 col-sm-7">
 									<!-- entity.format -->
 									<h3 class="page-header">OBJECT FORMAT</h3>
 									<p>
-									{{ object.fields.9.2 }}
+									{{ object.fields|ddrvalue:"format" }}
 									</p>
 								</div>
 
@@ -126,7 +126,7 @@
 				</p>
 				<h3 class="page-header">RIGHTS</h3>
 				<p>
-				{{ object.fields.17.2 }}
+				{{ object.fields|ddrvalue:"rights" }}
 				</p>
 		</div>	
 	</div>		
