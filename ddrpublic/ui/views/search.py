@@ -69,7 +69,8 @@ def results( request ):
     page = paginator.page(request.GET.get('page', 1))
     return render_to_response(
         'ui/search/results.html',
-        {'paginator': paginator,
+        {'hide_header_search': True,
+         'paginator': paginator,
          'page': page,
          'query': q,
          'filters': filters,
@@ -103,7 +104,8 @@ def term_query( request, field, term ):
     page = paginator.page(request.GET.get('page', 1))
     return render_to_response(
         'ui/search/results.html',
-        {'paginator': paginator,
+        {'hide_header_search': True,
+         'paginator': paginator,
          'page': page,
          'terms': terms_display,
          'filters': filters,

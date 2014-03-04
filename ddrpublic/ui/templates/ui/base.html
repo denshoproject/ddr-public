@@ -153,6 +153,7 @@
 						</ul>
 				
 				</div>
+{% if not hide_header_search %}
 				<div class="col-sm-3 col-md-3">
 					<form action="{% url "ui-search-results" %}" method="get" class="input-group nomargin-bottom">
 						<input type="text" class="form-control" name="query" id="query" value="{{ query }}" placeholder="Search..." />
@@ -161,9 +162,10 @@
 						</span>
 					</form>
 				</div>
+{% endif %}
 			</div>
 			</div>	
-		</header>
+		</header><!-- #page-title -->
 	{% endblock pageheader %}
 
 <div id="content">
