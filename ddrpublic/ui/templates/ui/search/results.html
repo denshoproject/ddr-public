@@ -83,9 +83,11 @@
   </div>
 -->
 
+{% if page.object_list %}
   <div>
     {{ paginator.count }} items<br/>
   </div>
+{% endif %}
 
 </div><!-- .querymeta -->
 
