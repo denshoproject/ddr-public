@@ -75,7 +75,7 @@ def results( request ):
     results = elasticsearch.query(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
                                   query=q, filters=filters,
                                   fields=fields, sort=sort)
-    if results['status'] != 200:
+    if results.get('status',None) and results['status'] != 200:
         return render_to_response(
             'ui/search/results.html',
             {'hide_header_search': True,
