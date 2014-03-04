@@ -87,7 +87,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     #'django.contrib.sessions',
     'django.contrib.sites',
-    #'django.contrib.messages',
+    'django.contrib.messages',
     'django.contrib.staticfiles',
     #'django.contrib.admin',
     #
@@ -286,15 +286,16 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     'django.core.context_processors.static',
     'django.core.context_processors.tz',
-    #'django.contrib.messages.context_processors.messages',
+    'django.contrib.messages.context_processors.messages',
+    'ui.context_processors.sitewide',
 )
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
-    #'django.contrib.sessions.middleware.SessionMiddleware',
-    #'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     #'django.contrib.auth.middleware.AuthenticationMiddleware',
-    #'django.contrib.messages.middleware.MessageMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
