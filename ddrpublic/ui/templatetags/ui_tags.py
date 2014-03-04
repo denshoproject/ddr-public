@@ -3,14 +3,6 @@ from django import template
 
 register = template.Library()
 
-""" DEVELOPMENT
-"""
-@register.filter(name='fixurllocal')
-def fixurllocal( value ):
-	"""fix urls for local vm testing
-	"""
-	return value.replace("ddr.densho.org","192.168.56.101")
-
 @register.filter(name='ddrvalue')
 def ddrvalue( fields, field ):
 	"""retrieves displayvalue from ddr object fields list matched by fieldname
