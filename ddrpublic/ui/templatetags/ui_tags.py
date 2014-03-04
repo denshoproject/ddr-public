@@ -15,7 +15,7 @@ def fixurllocal( value ):
 def ddrvalue( fields, field ):
 	"""retrieves displayvalue from ddr object fields list matched by fieldname
 	"""
-	val = [item for item in fields if item[0] == ddrval]
+	val = [item for item in fields if item[0] == field]
 	try:
 		return val[0][2]
 	except AttributeError:
