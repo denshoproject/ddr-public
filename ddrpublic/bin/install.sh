@@ -5,6 +5,7 @@ PACKAGE_SERVER=tank.densho.org
 BOOTSTRAP=bootstrap-3.0.3.zip
 JQUERY=jquery-1.10.2.min.js
 ELASTICSEARCH=elasticsearch-1.0.1.deb
+ASSETS=ddr-public-assets.tar.gz
 
 
 # text color variables
@@ -117,6 +118,11 @@ wget -nc -P /var/www/static http://$PACKAGE_SERVER/$BOOTSTRAP
 echo "${bldgrn}jQuery${txtrst}"
 wget -nc -P /var/www/static/js http://$PACKAGE_SERVER/$JQUERY
 ln -s /var/www/static/js/$JQUERY /var/www/static/js/jquery.js
+
+
+echo "${bldgrn}ddr-public assets${txtrst}"
+wget -nc -P /tmp http://$PACKAGE_SERVER/$ASSETS
+tar xzvf /tmp/ddr-public-assets.tar.gz -C /var/www/
 
 
 echo "${bldgrn}configuration files${txtrst}"
