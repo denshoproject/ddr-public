@@ -22,7 +22,7 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
-<section id="portfolio" class="container">
+<section id="shop" class="container">
 
 	<div class="row">
 
@@ -46,7 +46,9 @@
 			{% addthis %}
 			{% cite object.cite_url %}
 			<div class="desc productDescription">
-            <h3 class="page-header">OBJECT ID</h3>
+	        <h3 class="page-header">PARENT OBJECT</h3>
+	        <p><a href="{{ object.entity.cite_url }}">{{ object.entity.title }}</p>
+            <h3 class="page-header">FILE ID</h3>
             <p>{{ object.id }}</p>
 			<h3 class="page-header">RIGHTS</h3>
 			<p>{{ object.fields|ddrvalue:"rights" }}</p>
