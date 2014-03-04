@@ -62,7 +62,7 @@ def results( request ):
             return render_to_response(
                 'ui/search/results.html',
                 {'hide_header_search': True,
-                 'id_query_bad': q},
+                 'error_message': '"%s" is not a valid DDR object ID.' % q,},
                 context_instance=RequestContext(request, processors=[])
             )
     # prep query for elasticsearch
@@ -75,6 +75,13 @@ def results( request ):
     results = elasticsearch.query(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
                                   query=q, filters=filters,
                                   fields=fields, sort=sort)
+    if results['status'] != 200:
+        return render_to_response(
+            'ui/search/results.html',
+            {'hide_header_search': True,
+             'error_message': 'Search query "%s" caused an error. Please try again.' % q,},
+            context_instance=RequestContext(request, processors=[])
+        )
     paginator = _prep_results(results)
     page = paginator.page(request.GET.get('page', 1))
     return render_to_response(

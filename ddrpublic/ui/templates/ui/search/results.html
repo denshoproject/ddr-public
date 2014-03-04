@@ -7,9 +7,9 @@
 
 <section class="container">
 
-{% if id_query_bad %}
+{% if error_message %}
 <p class="error">
-"{{ id_query_bad }}" is not a valid DDR object ID.
+{{ error_message }}
 </p>
 {% endif %}
 
