@@ -12,11 +12,10 @@ from django.template.loader import get_template
 from django.utils.http import urlquote  as django_urlquote
 
 from DDR import elasticsearch
-from DDR import models as DDRmodels
+from DDR.models import model_fields as ddr_model_fields, MODELS_DIR, MODELS
 
 from ui import faceting
 
-MODEL_FIELDS = elasticsearch.model_fields()
 
 DEFAULT_SIZE = 10
 
@@ -226,7 +225,8 @@ field_display_handler = {
 }
 
 def field_display_style( o, field ):
-    for modelfield in MODEL_FIELDS[o.model]:
+    for modelfield in elasticsearch._model_fields(MODELS_DIR, o.model):
+    #for modelfield in MODEL_FIELDS[o.model]:
         if modelfield['name'] == field:
             return modelfield['elasticsearch']['display']
     return None
@@ -239,7 +239,7 @@ def build_object( o, id, source ):
     """
     o.id = id
     o.fields = []
-    for field in DDRmodels.model_fields(o.model):
+    for field in ddr_model_fields(o.model):
         fieldname = field['name']
         label = field.get('label', field['name'])
         if source.get(fieldname,None):
