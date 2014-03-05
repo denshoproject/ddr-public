@@ -41,7 +41,7 @@ def results( request ):
         if object_id_parts and (object_id_parts[0] in ['collection', 'entity', 'file']):
             model = object_id_parts.pop(0)
             document = elasticsearch.get(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
-                                         model, q.strip())
+                                         model, query.strip())
             if document['status'] == 200:
                 object_url = models.make_object_url(object_id_parts)
                 if object_url:
@@ -51,7 +51,7 @@ def results( request ):
                 return render_to_response(
                     'ui/search/results.html',
                     {'hide_header_search': True,
-                     'error_message': '"%s" is not a valid DDR object ID.' % q,},
+                     'error_message': '"%s" is not a valid DDR object ID.' % query,},
                     context_instance=RequestContext(request, processors=[])
                 )
         # prep query for elasticsearch
@@ -68,7 +68,7 @@ def results( request ):
             return render_to_response(
                 'ui/search/results.html',
                 {'hide_header_search': True,
-                 'error_message': 'Search query "%s" caused an error. Please try again.' % q,
+                 'error_message': 'Search query "%s" caused an error. Please try again.' % query,
                  'search_form': form,},
                 context_instance=RequestContext(request, processors=[])
             )
