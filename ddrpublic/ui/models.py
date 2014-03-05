@@ -115,41 +115,104 @@ def cite_url( model, object_id ):
     """
     return reverse('ui-cite', args=(model, object_id))
 
-def massage_query_results( results ):
-    """Take data from ES query, make a reasonable facsimile of the original object.
+
+class InvalidPage(Exception):
+    pass
+class PageNotAnInteger(InvalidPage):
+    pass
+class EmptyPage(InvalidPage):
+    pass
+
+def _validate_number(number, num_pages):
+        """Validates the given 1-based page number.
+        see django.core.pagination.Paginator.validate_number
+        """
+        try:
+            number = int(number)
+        except (TypeError, ValueError):
+            raise PageNotAnInteger('That page number is not an integer')
+        if number < 1:
+            raise EmptyPage('That page number is less than 1')
+        if number > num_pages:
+            if number == 1:
+                pass
+            else:
+                raise EmptyPage('That page contains no results')
+        return number
+
+def _page_bottom_top(total, index, page_size):
+        """
+        Returns a Page object for the given 1-based page number.
+        """
+        num_pages = total / page_size
+        if total % page_size:
+            num_pages = num_pages + 1
+        number = _validate_number(index, num_pages)
+        bottom = (number - 1) * page_size
+        top = bottom + page_size
+        return bottom,top,num_pages
+
+def massage_query_results( results, thispage, page_size ):
+    """Takes ES query, makes facsimile of original object; pads results for paginator.
+    
+    Problem: Django Paginator only displays current page but needs entire result set.
+    Actually, it just needs a list that is the same size as the actual result set.
+    
+    GOOD:
+    Do an ElasticSearch search, without ES paging.
+    Loop through ES results, building new list, process only the current page's hits
+    hits outside current page added as placeholders
+    
+    BETTER:
+    Do an ElasticSearch search, *with* ES paging.
+    Loop through ES results, building new list, processing all the hits
+    Pad list with empty objects fore and aft.
+    
+    @param results: ElasticSearch result set (non-empty, no errors)
+    @param thispage: Value of GET['page'] or 1
+    @param page_size: Number of objects per page
+    @returns: list of hit dicts, with empty "hits" fore and aft of current page
     """
     def unlistify(o, fieldname):
         if o.get(fieldname, None):
             if isinstance(o[fieldname], list):
                 o[fieldname] = o[fieldname][0]
-
+    
     objects = []
-    for hit in results.get('hits', [])['hits']:
-        o = {}
-        if hit.get('fields', None):
-            o = hit['fields']
-        elif hit.get('_source', None):
-            o = hit['_source']
-        # copy ES results info to individual object source
-        o['index'] = hit['_index']
-        o['type'] = hit['_type']
-        o['model'] = hit['_type']
-        o['id'] = hit['_id']
-        # ElasticSearch wraps field values in lists when you use a 'fields' array in a query
-        for fieldname in all_list_fields():
-            unlistify(o, fieldname)
-        # assemble urls for each record type
-        if o.get('id', None):
-            if o['type'] == 'collection':
-                repo,org,cid = o['id'].split('-')
-                o['url'] = reverse('ui-collection', args=[repo,org,cid])
-            elif o['type'] == 'entity':
-                repo,org,cid,eid = o['id'].split('-')
-                o['url'] = reverse('ui-entity', args=[repo,org,cid,eid])
-            elif o['type'] == 'file':
-                repo,org,cid,eid,role,sha1 = o['id'].split('-')
-                o['url'] = reverse('ui-file', args=[repo,org,cid,eid,role,sha1])
-        objects.append(o)
+    if results and results['hits']:
+        total = results['hits']['total']
+        bottom,top,num_pages = _page_bottom_top(total, thispage, page_size)
+        # only process this page
+        for n,hit in enumerate(results['hits']['hits']):
+            o = {'n':n,
+                 'id': hit['_id'],
+                 'placeholder': True}
+            if (n >= bottom) and (n < top):
+                # if we tell ES to only return certain fields, the object is in 'fields'
+                if hit.get('fields', None):
+                    o = hit['fields']
+                elif hit.get('_source', None):
+                    o = hit['_source']
+                # copy ES results info to individual object source
+                o['index'] = hit['_index']
+                o['type'] = hit['_type']
+                o['model'] = hit['_type']
+                o['id'] = hit['_id']
+                # ElasticSearch wraps field values in lists when you use a 'fields' array in a query
+                for fieldname in all_list_fields():
+                    unlistify(o, fieldname)
+                # assemble urls for each record type
+                if o.get('id', None):
+                    if o['type'] == 'collection':
+                        repo,org,cid = o['id'].split('-')
+                        o['url'] = reverse('ui-collection', args=[repo,org,cid])
+                    elif o['type'] == 'entity':
+                        repo,org,cid,eid = o['id'].split('-')
+                        o['url'] = reverse('ui-entity', args=[repo,org,cid,eid])
+                    elif o['type'] == 'file':
+                        repo,org,cid,eid,role,sha1 = o['id'].split('-')
+                        o['url'] = reverse('ui-file', args=[repo,org,cid,eid,role,sha1])
+            objects.append(o)
     return objects
 
 # ----------------------------------------------------------------------
@@ -277,6 +340,24 @@ def build_object( o, id, source ):
         o.signature_file = source['signature_file']
     return o
 
+def process_query_results( results, page, page_size ):
+    objects = []
+    results = massage_query_results(results, page, page_size)
+    for hit in results:
+        if hit.get('placeholder', None):
+            objects.append(hit)
+        else:
+            hit_type = type(hit)
+            if hit['model'] == 'collection': object_class = Collection()
+            elif hit['model'] == 'entity': object_class = Entity()
+            elif hit['model'] == 'file': object_class = File()
+            o = build_object(object_class, hit['id'], hit)
+            if o:
+                objects.append(o)
+            else:
+                objects.append(hit)
+    return objects
+
 
 class Repository( object ):
     index = settings.DOCUMENT_INDEX
@@ -340,17 +421,13 @@ class Organization( object ):
     def cite_url( self ):
         return cite_url('org', self.id)
     
-    def collections( self ):
-        if not self._collections:
-            self._collections = []
-            results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='collection',
-                                          query='id:"%s"' % self.id,
-                                          fields=COLLECTION_LIST_FIELDS,
-                                          sort=COLLECTION_LIST_SORT,)
-            for m in massage_query_results(results):
-                o = build_object(Collection(), m['id'], m)
-                self._collections.append(o)
-        return self._collections
+    def collections( self, page=1, page_size=DEFAULT_SIZE ):
+        results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='collection',
+                                      query='id:"%s"' % self.id,
+                                      fields=COLLECTION_LIST_FIELDS,
+                                      sort=COLLECTION_LIST_SORT,)
+        objects = process_query_results( results, page, page_size )
+        return objects
     
     def repository( self ):
         return None
@@ -385,31 +462,24 @@ class Collection( object ):
     def cite_url( self ):
         return cite_url('collection', self.id)
     
-    def entities( self, index=0, size=DEFAULT_SIZE ):
-        entities = []
+    def entities( self, page=1, page_size=DEFAULT_SIZE ):
         results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='entity',
                                       query='id:"%s"' % self.id,
                                       fields=ENTITY_LIST_FIELDS,
-                                      first=index, size=size,
                                       sort=ENTITY_LIST_SORT,)
-        for m in massage_query_results(results):
-            o = build_object(Entity(), m['id'], m)
-            entities.append(o)
-        return entities
+        objects = process_query_results( results, page, page_size )
+        return objects
     
-    def files( self, index=0, size=DEFAULT_SIZE ):
+    def files( self, page=1, page_size=DEFAULT_SIZE ):
         """Gets all the files in a collection; paging optional.
         """
         files = []
         results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file',
                                       query='id:"%s"' % self.id,
                                       fields=FILE_LIST_FIELDS,
-                                      first=index, size=size,
                                       sort=FILE_LIST_SORT)
-        for m in massage_query_results(results):
-            o = build_object(File(), m['id'], m)
-            files.append(o)
-        return files
+        objects = process_query_results( results, page, page_size )
+        return objects
     
     def organization( self ):
         return Organization.get(self.repo, self.org)
@@ -450,7 +520,7 @@ class Entity( object ):
     def cite_url( self ):
         return cite_url('entity', self.id)
     
-    def files( self, index=0, size=DEFAULT_SIZE, role=None ):
+    def files( self, page=1, page_size=DEFAULT_SIZE, role=None ):
         """Gets all the files in an entity; paging optional.
         
         @param index: start on this index in result set
@@ -464,12 +534,9 @@ class Entity( object ):
         results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file',
                                       query=query,
                                       fields=FILE_LIST_FIELDS,
-                                      first=index, size=size,
                                       sort=FILE_LIST_SORT)
-        for m in massage_query_results(results):
-            o = build_object(File(), m['id'], m)
-            files.append(o)
-        return files
+        objects = process_query_results( results, page, page_size )
+        return objects
     
     def collection( self ):
         return Collection.get(self.repo, self.org, self.cid)

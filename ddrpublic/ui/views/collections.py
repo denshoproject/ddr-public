@@ -11,6 +11,7 @@ from django.template import RequestContext
 
 from DDR import elasticsearch
 from ui.models import Repository, Organization, Collection, Entity, File
+from ui.models import DEFAULT_SIZE
 
 
 # views ----------------------------------------------------------------
@@ -29,6 +30,10 @@ def detail( request, repo, org, cid ):
     collection = Collection.get(repo, org, cid)
     if not collection:
         raise Http404
+    thispage = 1
+    objects = collection.entities(thispage, DEFAULT_SIZE)
+    paginator = Paginator(objects, DEFAULT_SIZE)
+    page = paginator.page(thispage)
     return render_to_response(
         'ui/collections/detail.html',
         {
@@ -36,7 +41,8 @@ def detail( request, repo, org, cid ):
             'org': org,
             'cid': cid,
             'object': collection,
-            'entities': collection.entities(size=10),
+            'paginator': paginator,
+            'page': page,
         },
         context_instance=RequestContext(request, processors=[])
     )
@@ -45,8 +51,10 @@ def entities( request, repo, org, cid ):
     collection = Collection.get(repo, org, cid)
     if not collection:
         raise Http404
-    paginator = Paginator(collection.entities(size=elasticsearch.MAX_SIZE), settings.RESULTS_PER_PAGE)
-    page = paginator.page(request.GET.get('page', 1))
+    thispage = request.GET.get('page', 1)
+    objects = collection.entities(thispage, settings.RESULTS_PER_PAGE)
+    paginator = Paginator(objects, settings.RESULTS_PER_PAGE)
+    page = paginator.page(thispage)
     return render_to_response(
         'ui/collections/entities.html',
         {
@@ -64,8 +72,10 @@ def files( request, repo, org, cid ):
     collection = Collection.get(repo, org, cid)
     if not collection:
         raise Http404
-    paginator = Paginator(collection.files(size=elasticsearch.MAX_SIZE), settings.RESULTS_PER_PAGE)
-    page = paginator.page(request.GET.get('page', 1))
+    thispage = request.GET.get('page', 1)
+    files = collection.files(thispage, settings.RESULTS_PER_PAGE)
+    paginator = Paginator(files, settings.RESULTS_PER_PAGE)
+    page = paginator.page(thispage)
     return render_to_response(
         'ui/collections/files.html',
         {

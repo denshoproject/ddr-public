@@ -10,6 +10,7 @@ from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 
 from ui.models import Repository, Organization, Collection, Entity, File
+from ui.models import DEFAULT_SIZE
 
 
 # views ----------------------------------------------------------------
@@ -18,6 +19,10 @@ def detail( request, repo, org, cid, eid ):
     entity = Entity.get(repo, org, cid, eid)
     if not entity:
         raise Http404
+    thispage = 1
+    objects = entity.files(thispage, DEFAULT_SIZE)
+    paginator = Paginator(objects, DEFAULT_SIZE)
+    page = paginator.page(thispage)
     return render_to_response(
         'ui/entities/detail.html',
         {
@@ -36,8 +41,10 @@ def files( request, repo, org, cid, eid ):
     entity = Entity.get(repo, org, cid, eid)
     if not entity:
         raise Http404
-    paginator = Paginator(entity.files(), settings.RESULTS_PER_PAGE)
-    page = paginator.page(request.GET.get('page', 1))
+    thispage = request.GET.get('page', 1)
+    objects = entity.files(thispage, settings.RESULTS_PER_PAGE)
+    paginator = Paginator(objects, settings.RESULTS_PER_PAGE)
+    page = paginator.page(thispage)
     return render_to_response(
         'ui/entities/files.html',
         {
