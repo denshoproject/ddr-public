@@ -225,8 +225,8 @@ field_display_handler = {
 }
 
 def field_display_style( o, field ):
-    for modelfield in elasticsearch._model_fields(MODELS_DIR, o.model):
-    #for modelfield in MODEL_FIELDS[o.model]:
+    modelfields = elasticsearch._model_fields(MODELS_DIR, MODELS)
+    for modelfield in modelfields[o.model]:
         if modelfield['name'] == field:
             return modelfield['elasticsearch']['display']
     return None
