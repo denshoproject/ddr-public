@@ -76,6 +76,11 @@ git pull
 echo "./ddrpublic/ddrpublic/settings.py"
 cp /usr/local/src/ddr-public/debian/conf/settings.py /usr/local/src/ddr-public/ddrpublic/ddrpublic
 
+echo "/etc/ddr/ddrpublic-secret-key.txt"
+python -c 'import random; print "".join([random.choice("abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)") for i in range(50)])' > /etc/ddr/ddrpublic-secret-key.txt
+chown ddr.ddr /etc/ddr/ddrpublic-secret-key.txt
+chmod 600 /etc/ddr/ddrpublic-secret-key.txt
+
 echo "/etc/nginx/sites-available/ddrpublic.conf"
 cp /usr/local/src/ddr-public/debian/conf/ddrpublic.conf /etc/nginx/sites-available
 rm /etc/nginx/sites-enabled/ddrpublic.conf

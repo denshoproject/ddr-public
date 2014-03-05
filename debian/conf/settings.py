@@ -28,7 +28,8 @@ if not os.path.exists(CONFIG_FILE):
 config = ConfigParser.ConfigParser()
 config.read(CONFIG_FILE)
 
-SECRET_KEY='ivb=&yqv^#%_i5v&c*qa@aaa#=z-(t$i=k*geugb_!2ky&j0ca'
+with open('/etc/ddr/ddrpublic-secret-key.txt') as f:
+    SECRET_KEY = f.read().strip()
 
 LANGUAGE_CODE='en-us'
 TIME_ZONE='America/Los_Angeles'

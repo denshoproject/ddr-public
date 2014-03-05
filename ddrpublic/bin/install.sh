@@ -109,6 +109,12 @@ chown -R ddr /var/lib/ddr/
 chown -R ddr /var/www/media
 
 
+echo "${bldgrn}Setting secret key${txtrst}"
+python -c 'import random; print "".join([random.choice("abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)") for i in range(50)])' > /etc/ddr/ddrpublic-secret-key.txt
+chown ddr.ddr /etc/ddr/ddrpublic-secret-key.txt
+chmod 600 /etc/ddr/ddrpublic-secret-key.txt
+
+
 echo "${bldgrn}Bootstrap${txtrst}"
 rm /var/www/static/$BOOTSTRAP*
 wget -nc -P /var/www/static http://$PACKAGE_SERVER/$BOOTSTRAP
