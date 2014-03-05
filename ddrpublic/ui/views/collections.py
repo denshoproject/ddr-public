@@ -17,7 +17,10 @@ from ui.models import DEFAULT_SIZE
 # views ----------------------------------------------------------------
 
 def list( request ):
-    organizations = Repository.get('ddr').organizations()
+    organizations = []
+    for org in Repository.get('ddr').organizations():
+        collections = org.collections(1, 1000000)
+        organizations.append( (org,collections) )
     return render_to_response(
         'ui/collections.html',
         {
