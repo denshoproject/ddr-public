@@ -6,6 +6,7 @@ from dateutil import parser
 
 from django.conf import settings
 from django.contrib import messages
+from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
@@ -60,8 +61,8 @@ def results( request ):
         fields = models.all_list_fields()
         sort = {'record_created': request.GET.get('record_created', ''),
                 'record_lastmod': request.GET.get('record_lastmod', ''),}
-        # do the query
-        results = elasticsearch.query(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
+        # do query, cache the results
+        results = models.cached_query(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
                                       query=query, filters=filters,
                                       fields=fields, sort=sort)
         if results.get('status',None) and results['status'] != 200:
@@ -114,8 +115,8 @@ def term_query( request, field, term ):
     sort = {'record_created': request.GET.get('record_created', ''),
             'record_lastmod': request.GET.get('record_lastmod', ''),}
     # do the query
-    results = elasticsearch.query(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
-                                  term=terms, filters=filters,
+    results = models.cached_query(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
+                                  terms=terms, filters=filters,
                                   fields=fields, sort=sort)
     thispage = request.GET.get('page', 1)
     objects = models.process_query_results(results, thispage, settings.RESULTS_PER_PAGE)

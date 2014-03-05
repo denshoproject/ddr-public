@@ -1,3 +1,4 @@
+import hashlib
 import json
 import logging
 logger = logging.getLogger(__name__)
@@ -6,6 +7,7 @@ import os
 from dateutil import parser
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.template import Context, Template
 from django.template.loader import get_template
@@ -358,6 +360,23 @@ def process_query_results( results, page, page_size ):
                 objects.append(hit)
     return objects
 
+def cached_query(host, index, model=None, query=None, terms=None, filters=None, fields=None, sort=None):
+    """Perform an ElasticSearch query and cache it.
+    
+    Cache key consists of a hash of all the query arguments.
+    """
+    query_args = {'host':host, 'index':index, 'model':model,
+                  'query':query, 'terms':terms, 'filters':filters,
+                  'fields':fields, 'sort':sort,}
+    key = hashlib.sha1(json.dumps(query_args)).hexdigest()
+    cached = cache.get(key)
+    if not cached:
+        cached = elasticsearch.query(host=host, index=index, model=model,
+                                     query=query, term=terms, filters=filters,
+                                     fields=fields, sort=sort)
+        cache.set(key, cached, settings.ELASTICSEARCH_QUERY_TIMEOUT)
+    return cached
+
 
 class Repository( object ):
     index = settings.DOCUMENT_INDEX
@@ -422,10 +441,10 @@ class Organization( object ):
         return cite_url('org', self.id)
     
     def collections( self, page=1, page_size=DEFAULT_SIZE ):
-        results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='collection',
-                                      query='id:"%s"' % self.id,
-                                      fields=COLLECTION_LIST_FIELDS,
-                                      sort=COLLECTION_LIST_SORT,)
+        results = cached_query(host=HOST, index=settings.DOCUMENT_INDEX, model='collection',
+                               query='id:"%s"' % self.id,
+                               fields=COLLECTION_LIST_FIELDS,
+                               sort=COLLECTION_LIST_SORT,)
         objects = process_query_results( results, page, page_size )
         return objects
     
@@ -463,10 +482,10 @@ class Collection( object ):
         return cite_url('collection', self.id)
     
     def entities( self, page=1, page_size=DEFAULT_SIZE ):
-        results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='entity',
-                                      query='id:"%s"' % self.id,
-                                      fields=ENTITY_LIST_FIELDS,
-                                      sort=ENTITY_LIST_SORT,)
+        results = cached_query(host=HOST, index=settings.DOCUMENT_INDEX, model='entity',
+                               query='id:"%s"' % self.id,
+                               fields=ENTITY_LIST_FIELDS,
+                               sort=ENTITY_LIST_SORT,)
         objects = process_query_results( results, page, page_size )
         return objects
     
@@ -474,10 +493,10 @@ class Collection( object ):
         """Gets all the files in a collection; paging optional.
         """
         files = []
-        results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file',
-                                      query='id:"%s"' % self.id,
-                                      fields=FILE_LIST_FIELDS,
-                                      sort=FILE_LIST_SORT)
+        results = cached_query(host=HOST, index=settings.DOCUMENT_INDEX, model='file',
+                               query='id:"%s"' % self.id,
+                               fields=FILE_LIST_FIELDS,
+                               sort=FILE_LIST_SORT)
         objects = process_query_results( results, page, page_size )
         return objects
     
@@ -531,10 +550,10 @@ class Entity( object ):
         query = 'id:"%s"' % self.id
         if role:
             query = 'id:"%s-%s"' % (self.id, role)
-        results = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='file',
-                                      query=query,
-                                      fields=FILE_LIST_FIELDS,
-                                      sort=FILE_LIST_SORT)
+        results = cached_query(host=HOST, index=settings.DOCUMENT_INDEX, model='file',
+                               query=query,
+                               fields=FILE_LIST_FIELDS,
+                               sort=FILE_LIST_SORT)
         objects = process_query_results( results, page, page_size )
         return objects
     
