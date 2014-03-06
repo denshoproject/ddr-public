@@ -130,6 +130,11 @@ cp /usr/local/src/ddr-local/debian/conf/ddr.cfg /etc/ddr/
 chown root.root /etc/ddr/ddr.cfg
 chmod 644 /etc/ddr/ddr.cfg
 
+cp /usr/local/src/ddr-public/debian/conf/elasticsearch.yml /etc/elasticsearch/
+chown root.root /etc/elasticsearch/elasticsearch.yml
+chmod 644 /etc/elasticsearch/elasticsearch.yml
+/etc/init.d/elasticsearch restart
+
 cp /usr/local/src/ddr-public/debian/conf/settings.py /usr/local/src/ddr-public/ddrpublic/ddrpublic/
 chown root.root /usr/local/src/ddr-public/ddrpublic/ddrpublic/settings.py
 chmod 644 /usr/local/src/ddr-public/ddrpublic/ddrpublic/settings.py
@@ -145,5 +150,3 @@ rm /etc/nginx/sites-enabled/ddrpublic.conf
 ln -s /etc/nginx/sites-available/ddrpublic.conf /etc/nginx/sites-enabled
 rm /etc/nginx/sites-enabled/default
 /etc/init.d/nginx restart
-
-/etc/init.d/elasticsearch restart

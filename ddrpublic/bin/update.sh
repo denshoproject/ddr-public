@@ -12,6 +12,17 @@
 # NOTE: Does not flush caches.
 
 
+echo "<([ elasticsearch ])>-------------------------------------------------------"
+
+echo "/etc/elasticsearch/elasticsearch.yml"
+cp /usr/local/src/ddr-public/debian/conf/elasticsearch.yml /etc/elasticsearch/
+chown root.root /etc/elasticsearch/elasticsearch.yml
+chmod 644 /etc/elasticsearch/elasticsearch.yml
+
+echo "/etc/init.d/elasticsearch restart"
+/etc/init.d/elasticsearch restart
+
+
 echo "<([ ddr-lint ])>-------------------------------------------------------"
 cd /usr/local/src/ddr-lint
 
@@ -89,9 +100,6 @@ supervisorctl status
 
 echo "/etc/init.d/nginx restart"
 /etc/init.d/nginx restart
-
-echo "/etc/init.d/elasticsearch restart"
-/etc/init.d/elasticsearch restart
 
 
 echo "<([ DONE ])>"
