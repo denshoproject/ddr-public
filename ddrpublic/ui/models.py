@@ -21,11 +21,19 @@ from ui import faceting
 
 DEFAULT_SIZE = 10
 
-ORGANIZATION_LIST_FIELDS = ['id', 'title', 'description',]
+REPOSITORY_LIST_FIELDS = ['id', 'title', 'description', 'url',]
+ORGANIZATION_LIST_FIELDS = ['id', 'title', 'description', 'url',]
 COLLECTION_LIST_FIELDS = ['id', 'title', 'description', 'signature_file',]
 ENTITY_LIST_FIELDS = ['id', 'title', 'description', 'signature_file',]
 FILE_LIST_FIELDS = ['id', 'basename_orig', 'label', 'access_rel',]
 
+REPOSITORY_LIST_SORT = [
+    {'repo':'asc'},
+]
+ORGANIZATION_LIST_SORT = [
+    {'repo':'asc'},
+    {'org':'asc'},
+]
 COLLECTION_LIST_SORT = [
     {'repo':'asc'},
     {'org':'asc'},
@@ -52,7 +60,8 @@ FILE_LIST_SORT = [
 
 def all_list_fields():
     LIST_FIELDS = []
-    for mf in [COLLECTION_LIST_FIELDS, ENTITY_LIST_FIELDS, FILE_LIST_FIELDS]:
+    for mf in [REPOSITORY_LIST_FIELDS, ORGANIZATION_LIST_FIELDS,
+               COLLECTION_LIST_FIELDS, ENTITY_LIST_FIELDS, FILE_LIST_FIELDS]:
         for f in mf:
             if f not in LIST_FIELDS:
                 LIST_FIELDS.append(f)
@@ -90,9 +99,9 @@ def make_object_id( model, repo, org=None, cid=None, eid=None, role=None, sha1=N
         return '%s-%s-%s-%s' % (repo, org, cid, eid)
     elif (model == 'collection') and repo and org and cid:
         return '%s-%s-%s' % (repo, org, cid)
-    elif (model == 'organization') and repo and org:
+    elif (model in ['org', 'organization']) and repo and org:
         return '%s-%s' % (repo, org)
-    elif (model == 'repo') and repo:
+    elif (model in ['repo', 'repository']) and repo:
         return repo
     return None
 
@@ -333,6 +342,7 @@ def build_object( o, id, source ):
     elif o.model == 'entity': o.repo,o.org,o.cid,o.eid = o.id.split('-')
     elif o.model == 'collection': o.repo,o.org,o.cid = o.id.split('-')
     elif o.model == 'organization': o.repo,o.org = o.id.split('-')
+    elif o.model == 'repository': o.repo = o.id.split('-')
     if o.model in ['file']: o.entity_id = '%s-%s-%s-%s' % (o.repo,o.org,o.cid,o.eid)
     if o.model in ['file','entity']: o.collection_id = '%s-%s-%s' % (o.repo,o.org,o.cid)
     if o.model in ['file','entity','collection']: o.organization_id = '%s-%s' % (o.repo,o.org)
@@ -350,7 +360,9 @@ def process_query_results( results, page, page_size ):
             objects.append(hit)
         else:
             hit_type = type(hit)
-            if hit['model'] == 'collection': object_class = Collection()
+            if hit['model'] == 'repository': object_class = Repository()
+            elif hit['model'] == 'organization': object_class = Organization()
+            elif hit['model'] == 'collection': object_class = Collection()
             elif hit['model'] == 'entity': object_class = Entity()
             elif hit['model'] == 'file': object_class = File()
             o = build_object(object_class, hit['id'], hit)
@@ -388,12 +400,16 @@ class Repository( object ):
     
     @staticmethod
     def get( repo ):
-        # TODO add repo to ElasticSearch so we can do this the right way
-        r = Repository()
-        r.repo = repo
-        r.id = make_object_id(r.model, repo)
-        #build_object(r)
-        return r
+        id = make_object_id(Repository.model, repo)
+        raw = elasticsearch.get(HOST, index=settings.DOCUMENT_INDEX, model=Repository.model, id=id)
+        status = raw['status']
+        response = json.loads(raw['response'])
+        if (status == 200) and (response['found'] or response['exists']):
+            o = Repository()
+            for key,value in response['_source'].iteritems():
+                setattr(o, key, value)
+            return o
+        return None
     
     def absolute_url( self ):
         return reverse('ui-repo', args=(self.repo))
@@ -401,18 +417,21 @@ class Repository( object ):
     def cite_url( self ):
         return cite_url('repo', self.id)
     
-    def organizations( self ):
-        # TODO add repo to ElasticSearch so we can do this the right way
-        #hits = elasticsearch.query(HOST, index=settings.DOCUMENT_INDEX, model='organization', query='id:"%s"' % self.id)
-        #organizations = massage_hits(hits)
-        if not self._organizations:
-            org_ids = ['ddr-densho', 'ddr-jamsj', 'ddr-janm', 'ddr-jcch', 'ddr-njpa', 'ddr-one', 'ddr-qumulo', 'ddr-testing',]
-            organizations = []
-            for org_id in org_ids:
-                repo,org = org_id.split('-')
-                o = Organization.get(repo, org)
-                self._organizations.append(o)
-        return self._organizations
+    def organizations( self, page=1, page_size=DEFAULT_SIZE ):
+        results = cached_query(host=HOST, index=settings.DOCUMENT_INDEX, model='organization',
+                               query='id:"%s"' % self.id,
+                               fields=ORGANIZATION_LIST_FIELDS,
+                               sort=ORGANIZATION_LIST_SORT,)
+        objects = process_query_results( results, page, page_size )
+        for o in objects:
+            print(o.id)
+            for hit in results['hits']['hits']:
+                fields = hit['fields']
+                if fields.get('id',None) and fields['id'] == o.id:
+                    o.url = fields.get('url', None)
+                    o.title = fields.get('title', o.id)
+                    o.description = fields.get('description', None)
+        return objects
 
 
 class Organization( object ):
@@ -426,13 +445,16 @@ class Organization( object ):
     
     @staticmethod
     def get( repo, org ):
-        # TODO add repo to ElasticSearch so we can do this the right way
-        o = Organization()
-        o.repo = repo
-        o.org = org
-        o.id = make_object_id(o.model, repo, org)
-        #build_object(o)
-        return o
+        id = make_object_id(Organization.model, repo, org)
+        raw = elasticsearch.get(HOST, index=settings.DOCUMENT_INDEX, model=Organization.model, id=id)
+        status = raw['status']
+        response = json.loads(raw['response'])
+        if (status == 200) and (response['found'] or response['exists']):
+            o = Organization()
+            for key,value in response['_source'].iteritems():
+                setattr(o, key, value)
+            return o
+        return None
     
     def absolute_url( self ):
         return reverse('ui-organization', args=(self.repo, self.org))
