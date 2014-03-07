@@ -1,0 +1,75 @@
+# twill-sh tests/site.twill -n --url http://ddr.densho.org/
+
+echo "\n\n\nddr twill ===========================================================\n"
+
+
+go /
+code 200
+
+
+go /about/
+code 200
+
+
+go /browse/
+code 200
+
+go /browse/topics/
+code 200
+find "Family"
+
+go /browse/facility/
+code 200
+find "Tule Lake"
+
+
+go /collections/
+code 200
+find "Densho"
+
+
+go /ddr/testing/123/
+code 404
+
+go /ddr/densho/10/
+code 200
+find "Kinoshita Collection"
+
+go /ddr/densho/10/objects/
+code 200
+find "Sweetheart Beauty Pageant winners"
+
+go /ddr/densho/10/files/
+code 200
+find "768fb04ca7"
+
+go /ddr/densho/10/2/
+code 200
+find 'Minidoka Irrigator'
+
+go /ddr/densho/10/2/mezzanine/768fb04ca7/
+code 200
+find 'Minidoka Irrigator'
+
+
+go /search/
+code 200
+
+go /search/results/?query=ddr-densho-10-2
+code 200
+find 'Minidoka Irrigator'
+
+go /search/results/?query=family
+code 200
+
+go /search/results/?query=family&page=2
+code 200
+
+
+go /search/results/?query=blat%21
+code 200
+find 'Search query "blat!" caused an error.'
+
+go /search/results/?query=%7Bblat%7D
+code 200
+find 'Search query "blat!" caused an error.'
