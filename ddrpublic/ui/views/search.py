@@ -18,8 +18,16 @@ from DDR import elasticsearch, models
 from ui import faceting, models
 from ui.forms import SearchForm
 
+BAD_CHARS = ('{', '}', '[', ']')
+
 
 # helpers --------------------------------------------------------------
+
+def kosher( query ):
+    for char in BAD_CHARS:
+        if char in query:
+            return False
+    return True
 
 
 # views ----------------------------------------------------------------
@@ -27,73 +35,86 @@ from ui.forms import SearchForm
 def index( request ):
     return render_to_response(
         'ui/search/index.html',
-        {'search_form': SearchForm,},
+        {'hide_header_search': True,
+         'search_form': SearchForm,},
         context_instance=RequestContext(request, processors=[])
     )
 
 def results( request ):
     """Results of a search query or a DDR ID query.
     """
-    query = ''
+    template = 'ui/search/results.html'
+    context = {
+        'hide_header_search': True,
+        'query': '',
+        'error_message': '',
+        'search_form': SearchForm(),
+        'paginator': None,
+        'page': None,
+        'filters': None,
+        'sort': None,
+    }
     if 'query' in request.GET and request.GET['query']:
         query = request.GET['query']
-        # if query is a DDR ID go straight to document page
+        context['query'] = query
+        context['search_form'] = SearchForm({'query': query})
+
+        if not kosher(query):
+            # FAIL -- bad chars
+            bad_chars = ', '.join(BAD_CHARS)
+            context['error_message'] = '"%s" contains one or more characters that are not allowed: %s.' % (
+                query, bad_chars)
+            return render_to_response(
+                template, context, context_instance=RequestContext(request, processors=[])
+            )
+        
         object_id_parts = models.split_object_id(query)
         if object_id_parts and (object_id_parts[0] in ['collection', 'entity', 'file']):
+            # query is a DDR ID -- go straight to document page
             model = object_id_parts.pop(0)
             document = elasticsearch.get(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
                                          model, query.strip())
             if document['status'] == 200:
+                # OK -- redirect to document page
                 object_url = models.make_object_url(object_id_parts)
                 if object_url:
                     return HttpResponseRedirect(object_url)
             else:
-                # print error message and go to blank search page
+                # FAIL -- try again
+                context['error_message'] = '"%s" is not a valid DDR object ID.' % query
                 return render_to_response(
-                    'ui/search/results.html',
-                    {'hide_header_search': True,
-                     'error_message': '"%s" is not a valid DDR object ID.' % query,},
-                    context_instance=RequestContext(request, processors=[])
+                    template, context, context_instance=RequestContext(request, processors=[])
                 )
+            
         # prep query for elasticsearch
         model = request.GET.get('model', None)
         filters = {}
         fields = models.all_list_fields()
         sort = {'record_created': request.GET.get('record_created', ''),
                 'record_lastmod': request.GET.get('record_lastmod', ''),}
-        # do query, cache the results
+        
+        # do query and cache the results
         results = models.cached_query(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
                                       query=query, filters=filters,
                                       fields=fields, sort=sort)
-        if results.get('status',None) and results['status'] != 200:
+        
+        if results.get('hits',None) and not results.get('status',None):
+            # OK -- prep results for display
+            thispage = request.GET.get('page', 1)
+            objects = models.process_query_results(results, thispage, settings.RESULTS_PER_PAGE)
+            paginator = Paginator(objects, settings.RESULTS_PER_PAGE)
+            page = paginator.page(thispage)
+            context['paginator'] = paginator
+            context['page'] = page
+        else:
+            # FAIL -- elasticsearch error
+            context['error_message'] = 'Search query "%s" caused an error. Please try again.' % query
             return render_to_response(
-                'ui/search/results.html',
-                {'hide_header_search': True,
-                 'error_message': 'Search query "%s" caused an error. Please try again.' % query,
-                 'search_form': form,},
-                context_instance=RequestContext(request, processors=[])
+                template, context, context_instance=RequestContext(request, processors=[])
             )
-        thispage = request.GET.get('page', 1)
-        objects = models.process_query_results(results, thispage, settings.RESULTS_PER_PAGE)
-        paginator = Paginator(objects, settings.RESULTS_PER_PAGE)
-        page = paginator.page(thispage)
-        # search form
-        search_form = SearchForm({'query': query})
-        return render_to_response(
-            'ui/search/results.html',
-            {'hide_header_search': True,
-             'paginator': paginator,
-             'page': page,
-             'query': query,
-             'filters': filters,
-             'sort': sort,
-             'search_form': search_form,},
-            context_instance=RequestContext(request, processors=[])
-        )
+    
     return render_to_response(
-        'ui/search/results.html',
-        {'hide_header_search': True,},
-        context_instance=RequestContext(request, processors=[])
+        template, context, context_instance=RequestContext(request, processors=[])
     )
 
 def term_query( request, field, term ):
