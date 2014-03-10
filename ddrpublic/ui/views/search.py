@@ -54,19 +54,14 @@ def results( request ):
         'filters': None,
         'sort': None,
     }
-    if 'query' in request.GET and request.GET['query']:
-        query = request.GET['query']
-        context['query'] = query
+    context['query'] = request.GET.get('query', '')
+    # silently strip out bad chars
+    query = context['query']
+    for char in BAD_CHARS:
+        query = query.replace(char, '')
+        
+    if query:
         context['search_form'] = SearchForm({'query': query})
-
-        if not kosher(query):
-            # FAIL -- bad chars
-            bad_chars = ', '.join(BAD_CHARS)
-            context['error_message'] = '"%s" contains one or more characters that are not allowed: %s.' % (
-                query, bad_chars)
-            return render_to_response(
-                template, context, context_instance=RequestContext(request, processors=[])
-            )
         
         object_id_parts = models.split_object_id(query)
         if object_id_parts and (object_id_parts[0] in ['collection', 'entity', 'file']):
@@ -120,8 +115,15 @@ def results( request ):
 def term_query( request, field, term ):
     """Results of what ElasticSearch calls a 'term query'.
     """
-    # prep query for elasticsearch
     terms_display = {'field':field, 'term':term}
+    filters = {}
+    
+    # silently strip out bad chars
+    for char in BAD_CHARS:
+        field = field.replace(char, '')
+        term = term.replace(char, '')
+    
+    # prep query for elasticsearch
     terms = {field:term}
     facet = faceting.get_facet(field)
     for t in facet['terms']:
@@ -131,7 +133,6 @@ def term_query( request, field, term ):
             except:
                 terms_display['term'] = t['title']
             break
-    filters = {}
     fields = models.all_list_fields()
     sort = {'record_created': request.GET.get('record_created', ''),
             'record_lastmod': request.GET.get('record_lastmod', ''),}
