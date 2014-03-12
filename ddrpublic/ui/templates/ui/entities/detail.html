@@ -33,7 +33,7 @@
 		{% if object.signature_url %}
 			 <a href="{{ object.signature_url }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
 			{% thumbnail object.signature_url "480x480" as img %}
-			<img src="{{ img.url }}" class="img-responsive"></a>
+			<img src="{{ img.url }}" class="img-responsive"></a><br />
 			{% endthumbnail %}
 			{% if object.signature_url %}
 			<a href="{{ object.signature_url }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download large size</a>

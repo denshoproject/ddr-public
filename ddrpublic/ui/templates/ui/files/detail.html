@@ -31,7 +31,7 @@
                 <h2>{{ object.entity.title }} {% if object.label %}({{ object.label }}){% endif %}</h2>
 			 <a href="{{ object.access_url }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
 			{% thumbnail object.access_url "480x480" as img %}
-			<img src="{{ img.url }}" class="img-responsive"></a>
+			<img src="{{ img.url }}" class="img-responsive"></a><br />
 			{% endthumbnail %}
 			{% if object.access_url %}
 			<a href="{{ object.access_url }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download large size</a>
