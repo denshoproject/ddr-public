@@ -44,36 +44,8 @@
 
 		<div class="col-sm-6 col-md-6">
 			
-			<!-- entity.title -->	
-
-			<!-- entity.id -->
-			<!-- entity.record_created -->
-			<!-- entity.record_lastmod -->
-			
-			<!-- entity.description -->
-			
-			
-			<!-- entity.creators -->
-			<!-- entity.language -->
-			
-			
-			<!-- entity.extent -->
-			<!-- entity.contributor -->
-			<!-- entity.alternate_id -->
-			<!-- entity.digitize_person -->
-			<!-- entity.digitize_organization -->
-			<!-- entity.digitize_date -->
-			<!-- entity.credit -->
-			<!-- entity.rights -->
-			<!-- entity.rights_statement -->
-			<!-- entity.topics -->
-			<!-- entity.persons -->
-			<!-- entity.facility -->
-			<!-- entity.parent -->
-
-
 			{% addthis %}
-			{% cite object.cite_url %}
+			
 			<div class="desc productDescription">
 			<!-- entity.id -->
                         <h3 class="page-header">OBJECT ID</h3>
@@ -124,21 +96,21 @@
 									<!-- entity.topics -->
 									<h3 class="page-header">TOPICS</h3>
 									<p>
-									{{ object.topics }}
+									{{ object.fields|ddrvalue:"topics" }}
 									</p>
 								</div>
 								<div class="col-md-7 col-sm-7">
 									<!-- entity.facility -->
 									<h3 class="page-header">FACILITY</h3>
 									<p>
-									{{ object.facility }}
+									{{ object.fields|ddrvalue:"facility" }}
 									</p>
 								</div>
 								<div class="col-md-5 col-sm-5">
 									<!-- entity.creators -->
 									<h3 class="page-header">CREATORS</h3>
 									<p>
-									{{ object.creators }}
+									{{ object.fields|ddrvalue:"creators" }}
 									</p>
 								</div>
 								<div class="col-md-7 col-sm-7">
