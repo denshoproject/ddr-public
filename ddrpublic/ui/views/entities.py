@@ -31,6 +31,8 @@ def detail( request, repo, org, cid, eid ):
             'cid': cid,
             'eid': eid,
             'object': entity,
+            'paginator': paginator,
+            'page': page,
         },
         context_instance=RequestContext(request, processors=[])
     )
