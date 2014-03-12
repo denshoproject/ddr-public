@@ -24,12 +24,12 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
-<div class="container">
+<section id="shop" class="container">
   <div class="row">
-
-    <div>
-      {{ paginator.count }} objects<br/>
-    </div>
+    <div class="col-sm-12 col-md-12">
+      <div>
+        {{ paginator.count }} objects<br/>
+      </div>
 
 {% if page.object_list %}
 
@@ -47,8 +47,9 @@
 
 {% endif %}
 
+    </div><!-- .col-sm-12 col-md-12 -->
   </div><!-- .row -->
-</div><!-- .container -->
+</section><!-- .container-fluid -->
 {% endblock content %}
 
 {% block footer %}

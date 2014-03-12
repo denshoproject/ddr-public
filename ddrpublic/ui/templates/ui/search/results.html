@@ -4,8 +4,9 @@
 {% block title %}Search Results{% endblock %}
 
 {% block content %}
-
-<section class="container">
+<section id="shop" class="container">
+  <div class="row">
+    <div class="col-sm-12 col-md-12">
 
 {% if error_message %}
 <p class="error">
@@ -100,6 +101,8 @@
 
 {% endif %}
 
-  </section>
+    </div><!-- .col-sm-12 col-md-12 -->
+  </div><!-- .row -->
+</section><!-- .container-fluid -->
 {% endblock content %}
 
