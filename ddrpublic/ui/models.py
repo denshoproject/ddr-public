@@ -25,7 +25,7 @@ REPOSITORY_LIST_FIELDS = ['id', 'title', 'description', 'url',]
 ORGANIZATION_LIST_FIELDS = ['id', 'title', 'description', 'url',]
 COLLECTION_LIST_FIELDS = ['id', 'title', 'description', 'signature_file',]
 ENTITY_LIST_FIELDS = ['id', 'title', 'description', 'signature_file',]
-FILE_LIST_FIELDS = ['id', 'basename_orig', 'label', 'access_rel',]
+FILE_LIST_FIELDS = ['id', 'basename_orig', 'label', 'access_rel','sort',]
 
 REPOSITORY_LIST_SORT = [
     {'repo':'asc'},
@@ -52,8 +52,8 @@ FILE_LIST_SORT = [
     {'org':'asc'},
     {'cid':'asc'},
     {'eid':'asc'},
-    {'role':'asc'},
     {'sort':'asc'},
+    {'role':'desc'},
     {'id':'asc'},
 ]
 
