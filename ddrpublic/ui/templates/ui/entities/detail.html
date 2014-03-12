@@ -149,13 +149,14 @@
 
 	<div class="row">
 		<div class="col-sm-12 col-md-12">
-			<h3>Files</h3>
+			<h3>{{ paginator.count }} Files</h3>
 			{% for file in page.object_list %}
 			{% file file %}
 			{% endfor %}
 			
+			<br />
 			<p>
-			<a href="{% url "ui-entity-files" repo org cid eid %}">See all files <i class="fa fa-arrow-circle-right"></i></a>
+			<a class="btn btn-primary btn-md" href="{% url "ui-entity-files" repo org cid eid %}">See all files <i class="fa fa-arrow-circle-right"></i></a>
 			</p>
 		</div>
 
