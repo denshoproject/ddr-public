@@ -65,11 +65,15 @@ code 200
 go /search/results/?query=family&page=2
 code 200
 
-
+# This should fail loudly
 go /search/results/?query=blat%21
 code 200
-find 'Search query "blat!" caused an error.'
+find 'Search query'
+find 'caused an error.'
 
+# This should fail silently
 go /search/results/?query=%7Bblat%7D
 code 200
-find 'Search query "blat!" caused an error.'
+find '{blat}'
+notfind 'Search query'
+notfind 'caused an error.'
