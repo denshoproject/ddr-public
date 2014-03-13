@@ -133,7 +133,7 @@ ELASTICSEARCH_QUERY_TIMEOUT = 60 * 10  # 10 min
 RESULTS_PER_PAGE = 25
 
 DOCUMENT_INDEX = 'documents'
-METADATA_INDEX = 'meta'
+METADATA_INDEX = 'metadata'
 
 # sorl-thumbnail
 THUMBNAIL_KVSTORE = 'sorl.thumbnail.kvstores.cached_db_kvstore.KVStore'
