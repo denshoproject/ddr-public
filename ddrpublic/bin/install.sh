@@ -2,11 +2,12 @@
 
 PACKAGE_SERVER=tank.densho.org
 
+PIP_CACHE_DIR=/usr/local/src/pip-cache
+
 BOOTSTRAP=bootstrap-3.0.3.zip
 JQUERY=jquery-1.10.2.min.js
 ELASTICSEARCH=elasticsearch-1.0.1.deb
 ASSETS=ddr-public-assets.tar.gz
-
 
 # text color variables
 txtund=$(tput sgr 0 1)   # underline
@@ -65,7 +66,7 @@ cd /usr/local/src
 git clone https://github.com/densho/ddr-lint.git
 cd /usr/local/src/ddr-lint/ddrlint
 python setup.py install
-pip install -r /usr/local/src/ddr-lint/ddrlint/requirements/production.tx
+pip install --download-cache=$PIP_CACHE_DIR -r /usr/local/src/ddr-lint/ddrlint/requirements/production.tx
 chown -R root.ddr /usr/local/src/ddr-lint
 
 
@@ -75,7 +76,7 @@ cd /usr/local/src
 git clone https://github.com/densho/ddr-cmdln.git
 cd /usr/local/src/ddr-cmdln/ddr
 python setup.py install
-pip install -r /usr/local/src/ddr-cmdln/ddr/requirements/production.txt
+pip install --download-cache=$PIP_CACHE_DIR -r /usr/local/src/ddr-cmdln/ddr/requirements/production.txt
 chown -R root.ddr /usr/local/src/ddr-cmdln
 
 
@@ -90,7 +91,7 @@ apt-get --assume-yes install imagemagick supervisor
 cd /usr/local/src
 git clone https://github.com/densho/ddr-public.git
 cd /usr/local/src/ddr-public/ddrpublic
-pip install -U -r /usr/local/src/ddr-public/ddrpublic/requirements/production.txt
+pip install --download-cache=$PIP_CACHE_DIR -U -r /usr/local/src/ddr-public/ddrpublic/requirements/production.txt
 chown -R root.ddr /usr/local/src/ddr-public
 chmod +x /usr/local/src/ddr-public/ddrpublic/manage.py
 
