@@ -8,8 +8,6 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 
-from DDR import elasticsearch
-
 from ui import faceting
 
 SHOW_THESE = ['topics', 'facility', 'location', 'format', 'genre',]

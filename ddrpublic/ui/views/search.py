@@ -14,7 +14,7 @@ from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 from django.utils.http import urlquote  as django_urlquote
 
-from DDR import elasticsearch, models
+from DDR import docstore, models
 from ui import faceting, models
 from ui.forms import SearchForm
 
@@ -67,9 +67,9 @@ def results( request ):
         if object_id_parts and (object_id_parts[0] in ['collection', 'entity', 'file']):
             # query is a DDR ID -- go straight to document page
             model = object_id_parts.pop(0)
-            document = elasticsearch.get(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
-                                         model, query.strip())
-            if document['status'] == 200:
+            document = docstore.get(settings.DOCSTORE_HOSTS, settings.DOCSTORE_INDEX,
+                                    model, query.strip())
+            if document and (document['found'] or document['exists']):
                 # OK -- redirect to document page
                 object_url = models.make_object_url(object_id_parts)
                 if object_url:
@@ -89,7 +89,7 @@ def results( request ):
                 'record_lastmod': request.GET.get('record_lastmod', ''),}
         
         # do query and cache the results
-        results = models.cached_query(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
+        results = models.cached_query(settings.DOCSTORE_HOSTS, settings.DOCSTORE_INDEX,
                                       query=query, filters=filters,
                                       fields=fields, sort=sort)
         
@@ -137,7 +137,7 @@ def term_query( request, field, term ):
     sort = {'record_created': request.GET.get('record_created', ''),
             'record_lastmod': request.GET.get('record_lastmod', ''),}
     # do the query
-    results = models.cached_query(settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
+    results = models.cached_query(settings.DOCSTORE_HOSTS, settings.DOCSTORE_INDEX,
                                   terms=terms, filters=filters,
                                   fields=fields, sort=sort)
     thispage = request.GET.get('page', 1)

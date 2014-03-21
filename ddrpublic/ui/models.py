@@ -13,8 +13,9 @@ from django.template import Context, Template
 from django.template.loader import get_template
 from django.utils.http import urlquote  as django_urlquote
 
-from DDR import elasticsearch
+from DDR import docstore
 from DDR.models import model_fields as ddr_model_fields, MODELS_DIR, MODELS
+from DDR.models import make_object_id, split_object_id
 
 from ui import faceting
 
@@ -67,43 +68,14 @@ def all_list_fields():
                 LIST_FIELDS.append(f)
     return LIST_FIELDS
 
-HOST = settings.ELASTICSEARCH_HOST_PORT
+HOSTS = settings.DOCSTORE_HOSTS
+INDEX = settings.DOCSTORE_INDEX
 
 
 # TODO reindex using parents/children (http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/docs-index_.html#parent-children)
 
 
 # functions for GETing object data from ElasticSearch
-
-def split_object_id( object_id=None ):
-    """Very naive function that splits an object ID into its parts
-    TODO make sure it's actually an object ID first!
-    """
-    if object_id and isinstance(object_id, basestring):
-        parts = object_id.strip().split('-')
-        if len(parts) == 6:
-            parts.insert(0, 'file')
-            return parts
-        elif len(parts) == 4:
-            parts.insert(0, 'entity')
-            return parts
-        elif len(parts) == 3:
-            parts.insert(0, 'collection')
-            return parts
-    return None
-
-def make_object_id( model, repo, org=None, cid=None, eid=None, role=None, sha1=None ):
-    if   (model == 'file') and repo and org and cid and eid and role and sha1:
-        return '%s-%s-%s-%s-%s-%s' % (repo, org, cid, eid, role, sha1)
-    elif (model == 'entity') and repo and org and cid and eid:
-        return '%s-%s-%s-%s' % (repo, org, cid, eid)
-    elif (model == 'collection') and repo and org and cid:
-        return '%s-%s-%s' % (repo, org, cid)
-    elif (model in ['org', 'organization']) and repo and org:
-        return '%s-%s' % (repo, org)
-    elif (model in ['repo', 'repository']) and repo:
-        return repo
-    return None
 
 def make_object_url( parts ):
     """Takes a list of object ID parts and returns URL for that object.
@@ -117,8 +89,7 @@ def backend_url( object_type, object_id ):
     """Debug link to ElasticSearch page for the object.
     """
     if settings.DEBUG:
-        return 'http://%s/%s/%s/%s' % (settings.ELASTICSEARCH_HOST_PORT, settings.DOCUMENT_INDEX,
-                                       object_type, object_id)
+        return 'http://%s/%s/%s/%s' % (HOSTS, INDEX, object_type, object_id)
     return ''
 
 def cite_url( model, object_id ):
@@ -184,46 +155,19 @@ def massage_query_results( results, thispage, page_size ):
     @param page_size: Number of objects per page
     @returns: list of hit dicts, with empty "hits" fore and aft of current page
     """
-    def unlistify(o, fieldname):
-        if o.get(fieldname, None):
-            if isinstance(o[fieldname], list):
-                o[fieldname] = o[fieldname][0]
-    
-    objects = []
-    if results and results['hits']:
-        total = results['hits']['total']
-        bottom,top,num_pages = _page_bottom_top(total, thispage, page_size)
-        # only process this page
-        for n,hit in enumerate(results['hits']['hits']):
-            o = {'n':n,
-                 'id': hit['_id'],
-                 'placeholder': True}
-            if (n >= bottom) and (n < top):
-                # if we tell ES to only return certain fields, the object is in 'fields'
-                if hit.get('fields', None):
-                    o = hit['fields']
-                elif hit.get('_source', None):
-                    o = hit['_source']
-                # copy ES results info to individual object source
-                o['index'] = hit['_index']
-                o['type'] = hit['_type']
-                o['model'] = hit['_type']
-                o['id'] = hit['_id']
-                # ElasticSearch wraps field values in lists when you use a 'fields' array in a query
-                for fieldname in all_list_fields():
-                    unlistify(o, fieldname)
-                # assemble urls for each record type
-                if o.get('id', None):
-                    if o['type'] == 'collection':
-                        repo,org,cid = o['id'].split('-')
-                        o['url'] = reverse('ui-collection', args=[repo,org,cid])
-                    elif o['type'] == 'entity':
-                        repo,org,cid,eid = o['id'].split('-')
-                        o['url'] = reverse('ui-entity', args=[repo,org,cid,eid])
-                    elif o['type'] == 'file':
-                        repo,org,cid,eid,role,sha1 = o['id'].split('-')
-                        o['url'] = reverse('ui-file', args=[repo,org,cid,eid,role,sha1])
-            objects.append(o)
+    objects = docstore.massage_query_results(results, thispage, page_size)
+    for o in objects:
+        # assemble urls for each record type
+        if o.get('id', None):
+            if o['type'] == 'collection':
+                repo,org,cid = o['id'].split('-')
+                o['url'] = reverse('ui-collection', args=[repo,org,cid])
+            elif o['type'] == 'entity':
+                repo,org,cid,eid = o['id'].split('-')
+                o['url'] = reverse('ui-entity', args=[repo,org,cid,eid])
+            elif o['type'] == 'file':
+                repo,org,cid,eid,role,sha1 = o['id'].split('-')
+                o['url'] = reverse('ui-file', args=[repo,org,cid,eid,role,sha1])
     return objects
 
 # ----------------------------------------------------------------------
@@ -299,7 +243,7 @@ field_display_handler = {
 }
 
 def field_display_style( o, field ):
-    modelfields = elasticsearch._model_fields(MODELS_DIR, MODELS)
+    modelfields = docstore._model_fields(MODELS_DIR, MODELS)
     for modelfield in modelfields[o.model]:
         if modelfield['name'] == field:
             return modelfield['elasticsearch']['display']
@@ -354,8 +298,8 @@ def build_object( o, id, source ):
 
 def process_query_results( results, page, page_size ):
     objects = []
-    results = massage_query_results(results, page, page_size)
-    for hit in results:
+    massaged = massage_query_results(results, page, page_size)
+    for hit in massaged:
         if hit.get('placeholder', None):
             objects.append(hit)
         else:
@@ -383,15 +327,15 @@ def cached_query(host, index, model=None, query=None, terms=None, filters=None, 
     key = hashlib.sha1(json.dumps(query_args)).hexdigest()
     cached = cache.get(key)
     if not cached:
-        cached = elasticsearch.query(host=host, index=index, model=model,
-                                     query=query, term=terms, filters=filters,
-                                     fields=fields, sort=sort)
+        cached = docstore.search(hosts=HOSTS, index=index, model=model,
+                                 query=query, term=terms, filters=filters,
+                                 fields=fields, sort=sort)
         cache.set(key, cached, settings.ELASTICSEARCH_QUERY_TIMEOUT)
     return cached
 
 
 class Repository( object ):
-    index = settings.DOCUMENT_INDEX
+    index = INDEX
     model = 'repository'
     id = None
     repo = None
@@ -401,12 +345,10 @@ class Repository( object ):
     @staticmethod
     def get( repo ):
         id = make_object_id(Repository.model, repo)
-        raw = elasticsearch.get(HOST, index=settings.DOCUMENT_INDEX, model=Repository.model, id=id)
-        status = raw['status']
-        response = json.loads(raw['response'])
-        if (status == 200) and (response['found'] or response['exists']):
+        document = docstore.get(HOSTS, index=INDEX, model=Repository.model, document_id=id)
+        if document and (document['found'] or document['exists']):
             o = Repository()
-            for key,value in response['_source'].iteritems():
+            for key,value in document['_source'].iteritems():
                 setattr(o, key, value)
             return o
         return None
@@ -418,13 +360,12 @@ class Repository( object ):
         return cite_url('repo', self.id)
     
     def organizations( self, page=1, page_size=DEFAULT_SIZE ):
-        results = cached_query(host=HOST, index=settings.DOCUMENT_INDEX, model='organization',
+        results = cached_query(host=HOSTS, index=INDEX, model='organization',
                                query='id:"%s"' % self.id,
                                fields=ORGANIZATION_LIST_FIELDS,
                                sort=ORGANIZATION_LIST_SORT,)
         objects = process_query_results( results, page, page_size )
         for o in objects:
-            print(o.id)
             for hit in results['hits']['hits']:
                 fields = hit['fields']
                 if fields.get('id',None) and fields['id'] == o.id:
@@ -435,7 +376,7 @@ class Repository( object ):
 
 
 class Organization( object ):
-    index = settings.DOCUMENT_INDEX
+    index = INDEX
     model = 'organization'
     id = None
     repo = None
@@ -446,12 +387,10 @@ class Organization( object ):
     @staticmethod
     def get( repo, org ):
         id = make_object_id(Organization.model, repo, org)
-        raw = elasticsearch.get(HOST, index=settings.DOCUMENT_INDEX, model=Organization.model, id=id)
-        status = raw['status']
-        response = json.loads(raw['response'])
-        if (status == 200) and (response['found'] or response['exists']):
+        document = docstore.get(HOSTS, index=INDEX, model=Organization.model, document_id=id)
+        if document and (document['found'] or document['exists']):
             o = Organization()
-            for key,value in response['_source'].iteritems():
+            for key,value in document['_source'].iteritems():
                 setattr(o, key, value)
             return o
         return None
@@ -463,7 +402,7 @@ class Organization( object ):
         return cite_url('org', self.id)
     
     def collections( self, page=1, page_size=DEFAULT_SIZE ):
-        results = cached_query(host=HOST, index=settings.DOCUMENT_INDEX, model='collection',
+        results = cached_query(host=HOSTS, index=INDEX, model='collection',
                                query='id:"%s"' % self.id,
                                fields=COLLECTION_LIST_FIELDS,
                                sort=COLLECTION_LIST_SORT,)
@@ -475,7 +414,7 @@ class Organization( object ):
 
 
 class Collection( object ):
-    index = settings.DOCUMENT_INDEX
+    index = INDEX
     model = 'collection'
     id = None
     repo = None
@@ -487,11 +426,9 @@ class Collection( object ):
     @staticmethod
     def get( repo, org, cid ):
         id = make_object_id(Collection.model, repo, org, cid)
-        raw = elasticsearch.get(HOST, index=settings.DOCUMENT_INDEX, model=Collection.model, id=id)
-        status = raw['status']
-        response = json.loads(raw['response'])
-        if (status == 200) and (response['found'] or response['exists']):
-            return build_object(Collection(), id, response['_source'])
+        document = docstore.get(HOSTS, index=INDEX, model=Collection.model, document_id=id)
+        if document and (document['found'] or document['exists']):
+            return build_object(Collection(), id, document['_source'])
         return None
     
     def absolute_url( self ):
@@ -504,7 +441,7 @@ class Collection( object ):
         return cite_url('collection', self.id)
     
     def entities( self, page=1, page_size=DEFAULT_SIZE ):
-        results = cached_query(host=HOST, index=settings.DOCUMENT_INDEX, model='entity',
+        results = cached_query(host=HOSTS, index=INDEX, model='entity',
                                query='id:"%s"' % self.id,
                                fields=ENTITY_LIST_FIELDS,
                                sort=ENTITY_LIST_SORT,)
@@ -515,7 +452,7 @@ class Collection( object ):
         """Gets all the files in a collection; paging optional.
         """
         files = []
-        results = cached_query(host=HOST, index=settings.DOCUMENT_INDEX, model='file',
+        results = cached_query(host=HOSTS, index=INDEX, model='file',
                                query='id:"%s"' % self.id,
                                fields=FILE_LIST_FIELDS,
                                sort=FILE_LIST_SORT)
@@ -532,7 +469,7 @@ class Collection( object ):
 
 
 class Entity( object ):
-    index = settings.DOCUMENT_INDEX
+    index = INDEX
     model = 'entity'
     id = None
     repo = None
@@ -545,11 +482,9 @@ class Entity( object ):
     @staticmethod
     def get( repo, org, cid, eid ):
         id = make_object_id(Entity.model, repo, org, cid, eid)
-        raw = elasticsearch.get(HOST, index=settings.DOCUMENT_INDEX, model=Entity.model, id=id)
-        status = raw['status']
-        response = json.loads(raw['response'])
-        if (status == 200) and (response['found'] or response['exists']):
-            return build_object(Entity(), id, response['_source'])
+        document = docstore.get(HOSTS, index=INDEX, model=Entity.model, document_id=id)
+        if document and (document['found'] or document['exists']):
+            return build_object(Entity(), id, document['_source'])
         return None
     
     def absolute_url( self ):
@@ -572,7 +507,7 @@ class Entity( object ):
         query = 'id:"%s"' % self.id
         if role:
             query = 'id:"%s-%s"' % (self.id, role)
-        results = cached_query(host=HOST, index=settings.DOCUMENT_INDEX, model='file',
+        results = cached_query(host=HOSTS, index=INDEX, model='file',
                                query=query,
                                fields=FILE_LIST_FIELDS,
                                sort=FILE_LIST_SORT)
@@ -589,7 +524,7 @@ class Entity( object ):
 
 
 class File( object ):
-    index = settings.DOCUMENT_INDEX
+    index = INDEX
     model = 'file'
     id = None
     repo = None
@@ -603,11 +538,9 @@ class File( object ):
     @staticmethod
     def get( repo, org, cid, eid, role, sha1 ):
         id = make_object_id(File.model, repo, org, cid, eid, role, sha1)
-        raw = elasticsearch.get(HOST, index=settings.DOCUMENT_INDEX, model=File.model, id=id)
-        status = raw['status']
-        response = json.loads(raw['response'])
-        if (status == 200) and (response['found'] or response['exists']):
-            return build_object(File(), id, response['_source'])
+        document = docstore.get(HOSTS, index=INDEX, model=File.model, document_id=id)
+        if document and (document['found'] or document['exists']):
+            return build_object(File(), id, document['_source'])
         return None
     
     def absolute_url( self ):

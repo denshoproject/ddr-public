@@ -5,6 +5,7 @@
 
                            # LICENSE      DEBIAN PKG (WHEEZY)              (JESSIE)
 
+elasticsearch              # Apache       n/a                              n/a                              y
 redis                      # MIT          python-redis (2.4.13-1)          python-redis (2.4.13-2)          y
 django-redis               # BSD          n/a                              n/a                              y
 django                     # MIT          python-django (1.4.5-1)          python-django (1.5.1-2)

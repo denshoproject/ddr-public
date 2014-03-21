@@ -123,17 +123,15 @@ CACHES = {
 }
 
 # ElasticSearch
-ELASTICSEARCH_HOST = 'localhost'
-ELASTICSEARCH_PORT = '9200'
-ELASTICSEARCH_HOST_PORT = ':'.join([ELASTICSEARCH_HOST, ELASTICSEARCH_PORT])
+DOCSTORE_HOSTS = [
+    {'host':'127.0.0.1', 'port':9200}
+]
+DOCSTORE_INDEX = 'documents0'
 ELASTICSEARCH_MAX_SIZE = 1000000
 
 ELASTICSEARCH_QUERY_TIMEOUT = 60 * 10  # 10 min
 
 RESULTS_PER_PAGE = 25
-
-DOCUMENT_INDEX = 'documents'
-METADATA_INDEX = 'metadata'
 
 # sorl-thumbnail
 THUMBNAIL_KVSTORE = 'sorl.thumbnail.kvstores.cached_db_kvstore.KVStore'
