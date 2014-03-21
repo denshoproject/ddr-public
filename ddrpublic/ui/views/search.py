@@ -18,13 +18,14 @@ from DDR import docstore, models
 from ui import faceting, models
 from ui.forms import SearchForm
 
-BAD_CHARS = ('{', '}', '[', ']')
+# TODO We should have a whitelist of chars we *do* accept, not this.
+SEARCH_INPUT_BLACKLIST = ('{', '}', '[', ']')
 
 
 # helpers --------------------------------------------------------------
 
 def kosher( query ):
-    for char in BAD_CHARS:
+    for char in SEARCH_INPUT_BLACKLIST:
         if char in query:
             return False
     return True
@@ -57,7 +58,7 @@ def results( request ):
     context['query'] = request.GET.get('query', '')
     # silently strip out bad chars
     query = context['query']
-    for char in BAD_CHARS:
+    for char in SEARCH_INPUT_BLACKLIST:
         query = query.replace(char, '')
         
     if query:
@@ -119,7 +120,7 @@ def term_query( request, field, term ):
     filters = {}
     
     # silently strip out bad chars
-    for char in BAD_CHARS:
+    for char in SEARCH_INPUT_BLACKLIST:
         field = field.replace(char, '')
         term = term.replace(char, '')
     
