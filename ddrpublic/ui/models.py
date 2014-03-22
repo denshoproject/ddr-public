@@ -156,18 +156,20 @@ def massage_query_results( results, thispage, page_size ):
     @returns: list of hit dicts, with empty "hits" fore and aft of current page
     """
     objects = docstore.massage_query_results(results, thispage, page_size)
+    results = None
     for o in objects:
-        # assemble urls for each record type
-        if o.get('id', None):
-            if o['type'] == 'collection':
-                repo,org,cid = o['id'].split('-')
-                o['url'] = reverse('ui-collection', args=[repo,org,cid])
-            elif o['type'] == 'entity':
-                repo,org,cid,eid = o['id'].split('-')
-                o['url'] = reverse('ui-entity', args=[repo,org,cid,eid])
-            elif o['type'] == 'file':
-                repo,org,cid,eid,role,sha1 = o['id'].split('-')
-                o['url'] = reverse('ui-file', args=[repo,org,cid,eid,role,sha1])
+        if not o.get('placeholder',False):
+            # assemble urls for each record type
+            if o.get('id', None):
+                if o['type'] == 'collection':
+                    repo,org,cid = o['id'].split('-')
+                    o['url'] = reverse('ui-collection', args=[repo,org,cid])
+                elif o['type'] == 'entity':
+                    repo,org,cid,eid = o['id'].split('-')
+                    o['url'] = reverse('ui-entity', args=[repo,org,cid,eid])
+                elif o['type'] == 'file':
+                    repo,org,cid,eid,role,sha1 = o['id'].split('-')
+                    o['url'] = reverse('ui-file', args=[repo,org,cid,eid,role,sha1])
     return objects
 
 # ----------------------------------------------------------------------
