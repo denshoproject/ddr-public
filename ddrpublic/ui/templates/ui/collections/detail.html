@@ -124,12 +124,13 @@
 			{% for entity in page.object_list %}
 			{% entity entity %}
 			{% endfor %}
-	
+			
+            {% if paginator.count > 10 %}
 			<br />
 			<p>
 			<a class="btn btn-primary btn-md" href="{% url "ui-collection-entities" repo org cid %}">See all objects  <i class="fa fa-arrow-circle-right"></i></a>
 			</p>
-
+            {% endif %}
 		</div>
 	</div><!-- .row -->
 </section><!-- .container -->
