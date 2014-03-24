@@ -329,10 +329,13 @@ def cached_query(host, index, model=None, query=None, terms=None, filters=None, 
     key = hashlib.sha1(json.dumps(query_args)).hexdigest()
     cached = cache.get(key)
     if not cached:
-        cached = docstore.search(hosts=HOSTS, index=index, model=model,
-                                 query=query, term=terms, filters=filters,
-                                 fields=fields, sort=sort)
-        cache.set(key, cached, settings.ELASTICSEARCH_QUERY_TIMEOUT)
+        try:
+            cached = docstore.search(hosts=HOSTS, index=index, model=model,
+                                     query=query, term=terms, filters=filters,
+                                     fields=fields, sort=sort)
+            cache.set(key, cached, settings.ELASTICSEARCH_QUERY_TIMEOUT)
+        except Exception as e:
+            cached = {'status':500, 'exception':e, 'hits':[]}
     return cached
 
 
