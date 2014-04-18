@@ -29,33 +29,33 @@ ENTITY_LIST_FIELDS = ['id', 'title', 'description', 'signature_file',]
 FILE_LIST_FIELDS = ['id', 'basename_orig', 'label', 'access_rel','sort',]
 
 REPOSITORY_LIST_SORT = [
-    {'repo':'asc'},
+    ['repo','asc'],
 ]
 ORGANIZATION_LIST_SORT = [
-    {'repo':'asc'},
-    {'org':'asc'},
+    ['repo','asc'],
+    ['org','asc'],
 ]
 COLLECTION_LIST_SORT = [
-    {'repo':'asc'},
-    {'org':'asc'},
-    {'cid':'asc'},
-    {'id':'asc'},
+    ['repo','asc'],
+    ['org','asc'],
+    ['cid','asc'],
+    ['id','asc'],
 ]
 ENTITY_LIST_SORT = [
-    {'repo':'asc'},
-    {'org':'asc'},
-    {'cid':'asc'},
-    {'eid':'asc'},
-    {'id':'asc'},
+    ['repo','asc'],
+    ['org','asc'],
+    ['cid','asc'],
+    ['eid','asc'],
+    ['id','asc'],
 ]
 FILE_LIST_SORT = [
-    {'repo':'asc'},
-    {'org':'asc'},
-    {'cid':'asc'},
-    {'eid':'asc'},
-    {'sort':'asc'},
-    {'role':'desc'},
-    {'id':'asc'},
+    ['repo','asc'],
+    ['org','asc'],
+    ['cid','asc'],
+    ['eid','asc'],
+    ['sort','asc'],
+    ['role','desc'],
+    ['id','asc'],
 ]
 
 
