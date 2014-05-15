@@ -305,17 +305,17 @@ def process_query_results( results, page, page_size ):
         if hit.get('placeholder', None):
             objects.append(hit)
         else:
-            hit_type = type(hit)
-            if hit['model'] == 'repository': object_class = Repository()
-            elif hit['model'] == 'organization': object_class = Organization()
-            elif hit['model'] == 'collection': object_class = Collection()
-            elif hit['model'] == 'entity': object_class = Entity()
-            elif hit['model'] == 'file': object_class = File()
-            o = build_object(object_class, hit['id'], hit)
-            if o:
-                objects.append(o)
-            else:
-                objects.append(hit)
+            if hit['model'] in ['repository', 'organization', 'collection', 'entity', 'file']:
+                if hit['model'] == 'repository': object_class = Repository()
+                elif hit['model'] == 'organization': object_class = Organization()
+                elif hit['model'] == 'collection': object_class = Collection()
+                elif hit['model'] == 'entity': object_class = Entity()
+                elif hit['model'] == 'file': object_class = File()
+                o = build_object(object_class, hit['id'], hit)
+                if o:
+                    objects.append(o)
+                else:
+                    objects.append(hit)
     return objects
 
 def cached_query(host, index, model=None, query=None, terms=None, filters=None, fields=None, sort=None):
