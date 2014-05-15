@@ -65,6 +65,10 @@ code 200
 go /search/results/?query=family&page=2
 code 200
 
+# This returns some facet terms which should be ignored.
+go /search/results/?query=music
+code 200
+
 # This should fail loudly
 go /search/results/?query=blat%21
 code 200
