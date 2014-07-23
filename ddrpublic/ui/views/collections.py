@@ -32,6 +32,7 @@ def detail( request, repo, org, cid ):
     collection = Collection.get(repo, org, cid)
     if not collection:
         raise Http404
+    organization = Organization.get(collection.repo, collection.org)
     thispage = 1
     objects = collection.entities(thispage, DEFAULT_SIZE)
     paginator = Paginator(objects, DEFAULT_SIZE)
@@ -43,6 +44,7 @@ def detail( request, repo, org, cid ):
             'org': org,
             'cid': cid,
             'object': collection,
+            'organization': organization,
             'paginator': paginator,
             'page': page,
         },

@@ -97,6 +97,11 @@ def cite_url( model, object_id ):
     """
     return reverse('ui-cite', args=(model, object_id))
 
+def org_logo_url( organization_id ):
+    """Link to organization logo image
+    """
+    return os.path.join(settings.MEDIA_URL, organization_id, 'logo.png')
+
 
 class InvalidPage(Exception):
     pass
@@ -403,6 +408,9 @@ class Organization( object ):
     def cite_url( self ):
         return cite_url('org', self.id)
     
+    def logo_url( self ):
+        return org_logo_url( self.id )
+    
     def collections( self, page=1, page_size=DEFAULT_SIZE ):
         results = cached_query(host=HOSTS, index=INDEX, model='collection',
                                query='id:"%s"' % self.id,
@@ -463,6 +471,9 @@ class Collection( object ):
     
     def organization( self ):
         return Organization.get(self.repo, self.org)
+
+    def org_logo_url( self ):
+        return org_logo_url( '-'.join([self.repo, self.org]) )
     
     def signature_url( self ):
         if self.signature_file:
@@ -515,6 +526,9 @@ class Entity( object ):
                                sort=FILE_LIST_SORT)
         objects = process_query_results( results, page, page_size )
         return objects
+
+    def org_logo_url( self ):
+        return org_logo_url( '-'.join([self.repo, self.org]) )
     
     def collection( self ):
         return Collection.get(self.repo, self.org, self.cid)
@@ -564,3 +578,6 @@ class File( object ):
     
     def download_url( self ):
         return settings.UI_DOWNLOAD_URL(self)
+
+    def org_logo_url( self ):
+        return org_logo_url( '-'.join([self.repo, self.org]) )

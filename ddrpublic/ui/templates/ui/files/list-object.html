@@ -7,6 +7,9 @@
   </a>
 {% endthumbnail %}
   <div class="media-body">
+    {% if object.repo and object.org %}
+    <a href="{% url "ui-organization" object.repo object.org %}"><img class="logo" src="{{ object.org_logo_url }}" width="20" /></a>
+    {% endif %}
     <h4 class="media-heading">
       <span class="badge badge-info">{{ object.model | capfirst }}</span>
       <a href="{{ object.absolute_url }}">{{ object.id }} - {{ object.label }}</a>
