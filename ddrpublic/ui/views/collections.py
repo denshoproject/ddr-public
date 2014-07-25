@@ -9,17 +9,25 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 
+from ui import domain_org
 from ui.models import Repository, Organization, Collection, Entity, File
 from ui.models import DEFAULT_SIZE
+
 
 
 # views ----------------------------------------------------------------
 
 def list( request ):
     organizations = []
-    for org in Repository.get('ddr').organizations():
+    partner = domain_org(request)
+    if partner:
+        org = Organization.get('ddr', partner)
         collections = org.collections(1, 1000000)
         organizations.append( (org,collections) )
+    else:
+        for org in Repository.get('ddr').organizations():
+            collections = org.collections(1, 1000000)
+            organizations.append( (org,collections) )
     return render_to_response(
         'ui/collections.html',
         {
@@ -29,6 +37,9 @@ def list( request ):
     )
 
 def detail( request, repo, org, cid ):
+    partner = domain_org(request)
+    if partner and (org != partner):
+        raise Http404
     collection = Collection.get(repo, org, cid)
     if not collection:
         raise Http404
@@ -52,6 +63,9 @@ def detail( request, repo, org, cid ):
     )
 
 def entities( request, repo, org, cid ):
+    partner = domain_org(request)
+    if partner and (org != partner):
+        raise Http404
     collection = Collection.get(repo, org, cid)
     if not collection:
         raise Http404
@@ -73,6 +87,9 @@ def entities( request, repo, org, cid ):
     )
 
 def files( request, repo, org, cid ):
+    partner = domain_org(request)
+    if partner and (org != partner):
+        raise Http404
     collection = Collection.get(repo, org, cid)
     if not collection:
         raise Http404

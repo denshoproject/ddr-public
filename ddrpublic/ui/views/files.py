@@ -8,12 +8,16 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 
+from ui import domain_org
 from ui.models import Repository, Organization, Collection, Entity, File
 
 
 # views ----------------------------------------------------------------
 
 def detail( request, repo, org, cid, eid, role, sha1 ):
+    partner = domain_org(request)
+    if partner and (org != partner):
+        raise Http404
     ffile = File.get(repo, org, cid, eid, role, sha1)
     if not ffile:
         raise Http404

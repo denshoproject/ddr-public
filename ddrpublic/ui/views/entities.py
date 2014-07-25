@@ -9,6 +9,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 
+from ui import domain_org
 from ui.models import Repository, Organization, Collection, Entity, File
 from ui.models import DEFAULT_SIZE
 
@@ -16,6 +17,9 @@ from ui.models import DEFAULT_SIZE
 # views ----------------------------------------------------------------
 
 def detail( request, repo, org, cid, eid ):
+    partner = domain_org(request)
+    if partner and (org != partner):
+        raise Http404
     entity = Entity.get(repo, org, cid, eid)
     if not entity:
         raise Http404
@@ -42,6 +46,9 @@ def detail( request, repo, org, cid, eid ):
 def files( request, repo, org, cid, eid ):
     """Lists all the files in an entity.
     """
+    partner = domain_org(request)
+    if partner and (org != partner):
+        raise Http404
     entity = Entity.get(repo, org, cid, eid)
     if not entity:
         raise Http404
