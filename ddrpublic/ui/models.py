@@ -349,6 +349,9 @@ class Repository( object ):
     fieldnames = []
     _organizations = []
     
+    def __repr__( self ):
+        return '<ui.models.Repository %s>' % self.id
+    
     @staticmethod
     def get( repo ):
         id = make_object_id(Repository.model, repo)
@@ -391,6 +394,9 @@ class Organization( object ):
     fieldnames = []
     _collections = []
     
+    def __repr__( self ):
+        return '<ui.models.Organization %s>' % self.id
+    
     @staticmethod
     def get( repo, org ):
         id = make_object_id(Organization.model, repo, org)
@@ -432,6 +438,9 @@ class Collection( object ):
     cid = None
     fieldnames = []
     signature_file = None
+    
+    def __repr__( self ):
+        return '<ui.models.Collection %s>' % self.id
     
     @staticmethod
     def get( repo, org, cid ):
@@ -492,6 +501,9 @@ class Entity( object ):
     fieldnames = []
     signature_file = None
     
+    def __repr__( self ):
+        return '<ui.models.Entity %s>' % self.id
+    
     @staticmethod
     def get( repo, org, cid, eid ):
         id = make_object_id(Entity.model, repo, org, cid, eid)
@@ -550,6 +562,9 @@ class File( object ):
     role = None
     sha1 = None
     fieldnames = []
+    
+    def __repr__( self ):
+        return '<ui.models.File %s>' % self.id
     
     @staticmethod
     def get( repo, org, cid, eid, role, sha1 ):
