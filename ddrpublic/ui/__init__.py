@@ -18,8 +18,12 @@ def git_commit():
 def domain_org(request):
     """Match request domain with org
     
-    Uses settings.PARTNER_DOMAINS
-    TODO cache this in session!
+    Uses settings.ORG_DOMAINS
+    NOTE: "org" is referred to as "partner" in views to avoid
+    confusion with the 'org' argument.
+    
+    @param request
+    @returns: organization keyword or None
     """
     domain = RequestSite(request).domain
     org = None
@@ -27,7 +31,7 @@ def domain_org(request):
         for d in ds:
             if domain == d:
                 org = o
-    return domain,org
+    return org
 
 def choose_base_template(org, default='ui/base.html'):
     """Choose base template given the selected org
@@ -36,6 +40,10 @@ def choose_base_template(org, default='ui/base.html'):
     Uses default if template for org does not exist.
     
     TODO cache this in session!
+    
+    @param org
+    @param default
+    @returns: template name (e.g. 'ui/base.html')
     """
     template_name = 'ui/base-%s.html' % org
     try:

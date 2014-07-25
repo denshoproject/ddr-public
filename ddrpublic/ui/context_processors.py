@@ -10,8 +10,11 @@ from ui.forms import SearchForm
 def sitewide(request):
     """Variables that need to be inserted into all templates.
     """
-    domain,org = domain_org(request)
-    base_template = choose_base_template(org)
+    partner = domain_org(request)
+    base_template = request.session.get('base_template', None)
+    if not (partner or base_template):
+        partner = domain_org(request)
+        base_template = choose_base_template(partner)
     return {
         'request': request,
         'hide_header_search': False,
@@ -20,7 +23,6 @@ def sitewide(request):
         'pid': os.getpid(),
         'host': os.uname()[1],
         'commit': git_commit()[:7],
-        'domain': domain,
-        'org': org,
+        'partner': partner,
         'BASE_TEMPLATE': base_template,
     }
