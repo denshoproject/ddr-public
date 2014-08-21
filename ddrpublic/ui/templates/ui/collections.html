@@ -12,6 +12,18 @@
   <div class="row">
 	<div class="col-sm-10 col-md-10">
 
+
+{% if partner %}
+
+<h2>Collections</h2>
+{% for organization,collections in organizations %}
+{% for collection in collections %}
+{% collection collection %}
+{% endfor %}
+{% endfor %}{# organizations #}
+
+{% else %}
+
 <h2>Organizations</h2>
 <ul id="org-list">
 {% for organization,collections in organizations %}
@@ -30,7 +42,6 @@
 {% if collections %}
       <a name="{{ organization.title }}"></a>
       <div id="{{ organization.id }}">
-
 <h3>
 <img class="logo" src="{{ organization.logo_url }}" width="20" />
 {{ organization.title }}
@@ -40,8 +51,11 @@
 {% endfor %}
 
       </div><!-- .{{ organization.id }} -->
-{% endif %}
+{% endif %}{# collections #}
 {% endfor %}{# organizations #}
+
+{% endif %}{# partner #}
+
 
 	</div>
   </div><!-- .row -->
