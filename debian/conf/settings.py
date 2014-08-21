@@ -4,11 +4,6 @@ DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 THUMBNAIL_DEBUG = DEBUG
 
-PARTNER_DOMAINS = {
-    'hmwf': ['hmwf.ddr.densho.org', 'hmwf.ddr.local',],
-    'janm': ['janm.ddr.densho.org', 'janm.ddr.local',],
-}
-
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = [
@@ -18,12 +13,13 @@ ALLOWED_HOSTS = [
 ]
 
 # partner-branded domains
-ORG_DOMAINS = {
+PARTNER_DOMAINS = {
     'hmwf': ['hmwf.ddr.densho.org', 'hmwf.ddr.local',],
     'janm': ['janm.ddr.densho.org', 'janm.ddr.local',],
     'one': ['one.ddr.densho.org', 'one.ddr.local',],
+    'testing': ['testing.ddr.densho.org', 'testing.ddr.local',],
 }
-for value in ORG_DOMAINS.values():
+for value in PARTNER_DOMAINS.values():
     for domain in value:
         if domain not in ALLOWED_HOSTS:
             ALLOWED_HOSTS.append(domain)

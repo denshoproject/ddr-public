@@ -16,22 +16,23 @@ def git_commit():
     return commit
 
 def domain_org(request):
-    """Match request domain with org
+    """Match request domain with repo,org
     
     Uses settings.ORG_DOMAINS
     NOTE: "org" is referred to as "partner" in views to avoid
     confusion with the 'org' argument.
     
     @param request
-    @returns: organization keyword or None
+    @returns: repo,org (str,str) or None,None
     """
+    repo,org = None,None
     domain = RequestSite(request).domain
-    org = None
-    for o,ds in settings.ORG_DOMAINS.iteritems():
+    for o,ds in settings.PARTNER_DOMAINS.iteritems():
+        repo = 'ddr'
         for d in ds:
             if domain == d:
                 org = o
-    return org
+    return repo,org
 
 def choose_base_template(org, default='ui/base.html'):
     """Choose base template given the selected org
