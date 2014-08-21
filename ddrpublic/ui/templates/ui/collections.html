@@ -11,15 +11,42 @@
 <section class="container">
   <div class="row">
 	<div class="col-sm-10 col-md-10">
+
+<h2>Organizations</h2>
+<ul id="org-list">
 {% for organization,collections in organizations %}
-  {% if collections %}
-<h2>{{ organization.title }}</h2>
-    {% for collection in collections %}
-{% collection collection %}
-    {% endfor %}
-  {% endif %}
+{% if collections %}
+  <li><a href="#{{ organization.id }}">{{ organization.title }}</a></li>
+{% endif %}
 {% endfor %}{# organizations #}
+</ul>
+
+{% for organization,collections in organizations %}
+{% if collections %}
+      <a name="{{ organization.title }}"></a>
+      <div id="{{ organization.id }}">
+
+<h3>
+{{ organization.title }}
+</h3>
+{% for collection in collections %}
+{% collection collection %}
+{% endfor %}
+
+      </div><!-- .{{ organization.id }} -->
+{% endif %}
+{% endfor %}{# organizations #}
+
 	</div>
   </div><!-- .row -->
 </section><!-- .container-fluid -->
 {% endblock content %}
+
+{% block pagecss %}
+<style type="text/css">
+h2 { margin-bottom:10px; }
+h3 { margin-top:30px; margin-bottom:20px; }
+ul#org-list { padding-left:0px; }
+ul#org-list li { list-style-type:none; }
+</style>
+{% endblock pagecss %}
