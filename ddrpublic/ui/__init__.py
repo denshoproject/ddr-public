@@ -41,14 +41,17 @@ def choose_base_template(org, default='ui/base.html'):
     
     TODO cache this in session!
     
-    @param org
-    @param default
+    @param org: str
+    @param default: str
     @returns: template name (e.g. 'ui/base.html')
     """
-    template_name = 'ui/base-%s.html' % org
-    try:
-        get_template(template_name)
-        template = template_name
-    except TemplateDoesNotExist:
+    if org:
+        template_name = 'ui/base-%s.html' % org
+        try:
+            get_template(template_name)
+            template = template_name
+        except TemplateDoesNotExist:
+            template = 'ui/base-partner.html'
+    else:
         template = default
     return template
