@@ -16,7 +16,12 @@
 <ul id="org-list">
 {% for organization,collections in organizations %}
 {% if collections %}
-  <li><a href="#{{ organization.id }}">{{ organization.title }}</a></li>
+  <li>
+    <a href="#{{ organization.id }}">
+    <img class="logo" src="{{ organization.logo_url }}" width="20" />
+    {{ organization.title }}
+    </a>
+  </li>
 {% endif %}
 {% endfor %}{# organizations #}
 </ul>
@@ -27,6 +32,7 @@
       <div id="{{ organization.id }}">
 
 <h3>
+<img class="logo" src="{{ organization.logo_url }}" width="20" />
 {{ organization.title }}
 </h3>
 {% for collection in collections %}
@@ -48,5 +54,6 @@ h2 { margin-bottom:10px; }
 h3 { margin-top:30px; margin-bottom:20px; }
 ul#org-list { padding-left:0px; }
 ul#org-list li { list-style-type:none; }
+ul#org-list li img { margin-right:10px; }
 </style>
 {% endblock pagecss %}
