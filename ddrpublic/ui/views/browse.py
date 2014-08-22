@@ -29,13 +29,11 @@ def index( request ):
     )
 
 def facet( request, facet ):
-    facet = faceting.get_facet(facet)
-    terms = faceting.facet_terms(facet)
+    facet = faceting.Facet(facet)
     return render_to_response(
         'ui/browse/facet.html',
         {
             'facet': facet,
-            'facet_terms': terms,
         },
         context_instance=RequestContext(request, processors=[])
     )

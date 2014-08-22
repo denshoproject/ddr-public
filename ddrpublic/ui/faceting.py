@@ -78,7 +78,42 @@ def get_term_children(facet_id, term_dict):
 
 
 class Facet(object):
-    pass
+    id = None
+    name = None
+    title = None
+    description = None
+    url = None
+    _terms_raw = None
+    _terms = None
+    
+    def __init__(self, id=None):
+        """
+        @param id: str
+        """
+        if id:
+            self.id = id
+            facet = get_facet(id)
+            if facet:
+                self.name = facet.get('name', None)
+                self.title = facet.get('title', None)
+                self.description = facet.get('description', None)
+                self.url = facet.get('url', None)
+                self._terms_raw = facet.get('terms', None)
+    
+    def __repr__(self):
+        return "<Facet [%s] %s>" % (self.id, self.title)
+    
+    def url(self):
+        return reverse('ui-browse-facet', args=(self.id))
+    
+    def terms(self):
+        if not self._terms:
+            self._terms = []
+            for t in self._terms_raw:
+                term = Term(facet_id=self.id, term_id=t['id'])
+                self._terms.append(term)
+            self._terms_raw = None
+        return self._terms
 
 
 class Term(object):
@@ -125,9 +160,7 @@ class Term(object):
         return reverse('ui-browse-term', args=(self.facet_id, self.id))
     
     def facet(self):
-        if not self._facet:
-            self._facet = get_facet(self.facet_id)
-        return self._facet
+        return Facet(self.facet_id)
     
     def parent(self):
         if self.parent_id:
