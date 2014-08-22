@@ -20,7 +20,7 @@
 {% for term in facet_terms %}
   <li>
     <span class="badge">{% if term.count %}{{ term.count }}{% else %} &nbsp;&nbsp; {% endif %}</span>
-    <a href="{{ term.url }}" {% if term.description %}title="{{ term.description }}"{% endif %}>{{ term.title }}</a>
+    <a href="{% url "ui-browse-term" facet.id term.id %}">{% if term.title_display %}{{ term.title_display }}{% else %}{{ term.title }}{% endif %}</a>
   </li>
 {% endfor %}
 </ul>
