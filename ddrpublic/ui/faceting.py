@@ -32,6 +32,8 @@ def get_facet(name):
     """
     TODO Rethink this: we are getting all the terms and then throwing them away
          except for the one we want; just get the one we want.
+    
+    @param facet: str
     """
     key = 'facets:%s' % name
     cached = cache.get(key)
@@ -43,6 +45,99 @@ def get_facet(name):
                 cached = f
                 cache.set(key, cached, CACHE_TIMEOUT)
     return cached
+
+def get_facet_term( facet_id, term_id ):
+    """
+    @param facet: str
+    @param term_id: int
+    """
+    key = 'facets:%s:%s' % (facet_id, term_id)
+    cached = cache.get(key)
+    if not cached:
+        facet = get_facet(facet_id)
+        for t in facet['terms']:
+            if int(t['id']) == int(term_id):
+                cached = t
+        if cached:
+            cache.set(key, cached, CACHE_TIMEOUT)
+    return cached
+
+
+class Facet(object):
+    pass
+
+
+class Term(object):
+    id = None
+    facet_id = None
+    parent_id = None
+    title = None
+    title_display = None
+    description = None
+    weight = None
+    created = None
+    modified = None
+    elinks = None
+    _facet = None
+    _parent = None
+    _children = None
+    
+    def __init__(self, facet_id=None, term_id=None):
+        """
+        @param facet: str
+        @param term_id: int
+        """
+        if facet_id and term_id:
+            self.id = term_id
+            self.facet_id = facet_id
+            term = get_facet_term(facet_id, term_id)
+            if term:
+                self.parent_id = term.get('parent_id', None)
+                self.title = term.get('title', None)
+                self.title_display = term.get('title_display',
+                                              term.get('title', None))
+                self.description = term.get('description', None)
+                self.weight = term.get('weight', None)
+                self.created = term.get('created', None)
+                self.modified = term.get('modified', None)
+                self.elinks = term.get('elinks', None)
+    
+    def __repr__(self):
+        if self.title_display:
+            return "<Term [%s] %s>" % (self.id, self.title_display)
+        return "<Term [%s] %s>" % (self.id, self.title)
+    
+    def url(self):
+        return reverse('ui-browse-term', args=(self.facet_id, self.id))
+    
+    def facet(self):
+        if not self._facet:
+            self._facet = get_facet(self.facet_id)
+        return self._facet
+    
+    def parent(self):
+        if not self._parent and self.parent_id:
+            self._parent = Term(facet_id=self.facet_id, term_id=self.parent_id)
+        return self._parent
+    
+    def children(self):
+        if not self._children:
+            self._children = []
+            facet = get_facet(self.facet_id)
+            for t in facet['terms']:
+                if t.get('parent_id',None) and (int(t['parent_id']) == int(self.id)):
+                    term = Term(facet_id=self.facet_id, term_id=t['id'])
+                    self._children.append(term)
+        return self._children
+    
+    def siblings(self):
+        if not self._siblings:
+            self._siblings = []
+            for t in self.parent().children():
+                term = Term(facet_id=self.facet_id, term_id=t['id'])
+                self._siblings.append(term)
+        return self._siblings
+
 
 INT_IN_STRING = re.compile(r'^\d+$')
 
