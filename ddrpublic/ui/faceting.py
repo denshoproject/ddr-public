@@ -245,7 +245,6 @@ class Term(object):
         return self._siblings
 
 
-
 INT_IN_STRING = re.compile(r'^\d+$')
 
 def extract_term_id( text ):

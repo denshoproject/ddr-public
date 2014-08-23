@@ -78,3 +78,42 @@ def term( request, facet_id, term_id ):
         },
         context_instance=RequestContext(request, processors=[])
     )
+
+def term( request, facet_id, term_id ):
+    term = faceting.Term(facet_id=facet_id, term_id=term_id)
+    # prep query for elasticsearch
+    terms = {facet_id:term_id}
+    facet = faceting.get_facet(facet_id)
+    for t in facet['terms']:
+        if t['id'] == term:
+            try:
+                terms_display['term'] = t['title_display']
+            except:
+                terms_display['term'] = t['title']
+            break
+    # filter by partner
+    filters = {}
+    repo,org = domain_org(request)
+    if repo and org:
+        filters['repo'] = repo
+        filters['org'] = org
+    fields = models.all_list_fields()
+    sort = {'record_created': request.GET.get('record_created', ''),
+            'record_lastmod': request.GET.get('record_lastmod', ''),}
+    # do the query
+    results = models.cached_query(settings.DOCSTORE_HOSTS, settings.DOCSTORE_INDEX,
+                                  terms=terms, filters=filters,
+                                  fields=fields, sort=sort)
+    thispage = request.GET.get('page', 1)
+    objects = models.process_query_results(results, thispage, settings.RESULTS_PER_PAGE)
+    paginator = Paginator(objects, settings.RESULTS_PER_PAGE)
+    page = paginator.page(request.GET.get('page', 1))
+    return render_to_response(
+        'ui/browse/term.html',
+        {
+            'term': term,
+            'paginator': paginator,
+            'page': page,
+        },
+        context_instance=RequestContext(request, processors=[])
+    )
