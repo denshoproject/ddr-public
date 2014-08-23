@@ -1,3 +1,4 @@
+from collections import defaultdict
 import json
 import re
 
@@ -124,6 +125,40 @@ class Facet(object):
                 ancestors.append(term)
         ancestors.sort()
         return ancestors
+    
+    def tree(self):
+        """Tree of terms under this term
+        
+        https://gist.github.com/hrldcpr/2012250
+        """
+        def tree():
+            return defaultdict(tree)
+        
+        def add(t, path):
+            for node in path:
+                t = t[node]
+        
+        lines = []
+        def prnt(t, depth=0):
+            """return list of (term, depth) tuples
+            
+            variation on ptr() from the gist
+            """
+            for k in sorted(t.keys()):
+                term = Term(self.id, int(k))
+                #print("%s %2d %s" % ("".join(depth * indent), depth, term.title))
+                term.depth = depth
+                lines.append(term)
+                depth += 1
+                prnt(t[k], depth)
+                depth -= 1
+        
+        terms = tree()
+        for term in self.terms():
+            path = [int(t.id) for t in term.path()]
+            add(terms, path)
+        prnt(terms)
+        return lines
 
 
 class Term(object):
@@ -208,6 +243,7 @@ class Term(object):
                 term = Term(facet_id=self.facet_id, term_id=t['id'])
                 self._siblings.append(term)
         return self._siblings
+
 
 
 INT_IN_STRING = re.compile(r'^\d+$')

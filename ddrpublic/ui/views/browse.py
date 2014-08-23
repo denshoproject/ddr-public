@@ -30,10 +30,12 @@ def index( request ):
 
 def facet( request, facet ):
     facet = faceting.Facet(facet)
+    terms = facet.tree()
     return render_to_response(
         'ui/browse/facet.html',
         {
             'facet': facet,
+            'terms': terms,
         },
         context_instance=RequestContext(request, processors=[])
     )

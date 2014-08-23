@@ -16,17 +16,24 @@
 {{ facet.description }}
 </p>
 
-<ul class="list-unstyled">
-{% for term in facet.terms %}
-  <li>
-    <span class="badge">{% if term.count %}{{ term.count }}{% else %} &nbsp;&nbsp; {% endif %}</span>
-    <a href="{% url "ui-browse-term" facet.id term.id %}">{% if term.title_display %}{{ term.title_display }}{% else %}{{ term.title }}{% endif %}</a>
-  </li>
+<p>
+{% for term in terms %}
+<a class="indent{{ term.depth }}" href="{{ term.url }}">{{ term.title_display }}</a><br/>
 {% endfor %}
-</ul>
-	</div>
+</p>
 
+	</div>
   </div><!-- .row -->
 </section><!-- .container-fluid -->
 {% endblock content %}
 
+{% block pagecss %}
+<style type="text/css">
+.indent0 { padding-left:0px; }
+.indent1 { padding-left:30px; }
+.indent2 { padding-left:60px; }
+.indent3 { padding-left:90px; }
+.indent4 { padding-left:120px; }
+.indent5 { padding-left:150px; }
+</style>
+{% endblock pagecss %}
