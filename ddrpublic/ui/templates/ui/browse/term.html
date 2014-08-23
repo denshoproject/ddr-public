@@ -14,11 +14,11 @@
   <div class="row">
 	<div class="col-sm-10 col-md-10">
 
-{% if term.parent %}
-<p>
-<a href="{{ term.parent.url }}">{{ term.parent.title }}</a><br/>
-</p>
-{% endif %}
+<ul>
+{% for t in term.path %}
+  {% if t != term %}<li><a href="{{ t.url }}">{{ t.title }}</a></li>{% endif %}
+{% endfor %}
+</ul>
 
 <h1>{{ term.title_display }}</h1>
 <p>

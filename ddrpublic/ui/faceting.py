@@ -114,6 +114,16 @@ class Facet(object):
                 self._terms.append(term)
             self._terms_raw = None
         return self._terms
+    
+    def term_ancestors(self):
+        """List of terms that have no parents.
+        """
+        ancestors = []
+        for term in self.terms():
+            if not term.parent():
+                ancestors.append(term)
+        ancestors.sort()
+        return ancestors
 
 
 class Term(object):
@@ -130,6 +140,7 @@ class Term(object):
     _facet = None
     _parent = None
     _children = None
+    _path = None
     
     def __init__(self, facet_id=None, term_id=None):
         """
@@ -161,6 +172,19 @@ class Term(object):
     
     def facet(self):
         return Facet(self.facet_id)
+    
+    def path(self):
+        if not self._path:
+            term = self
+            self._path = [term]
+            while term.parent():
+                term = term.parent()
+                self._path.append(term)
+            self._path.reverse()
+        return self._path
+    
+    def ancestor(self):
+        return self.path()[0]
     
     def parent(self):
         if self.parent_id:
