@@ -14,11 +14,11 @@
   <div class="row">
 	<div class="col-sm-10 col-md-10">
 
-<ul>
+<ol class="breadcrumb">
 {% for t in term.path %}
   {% if t != term %}<li><a href="{{ t.url }}">{{ t.title }}</a></li>{% endif %}
 {% endfor %}
-</ul>
+</ol>
 
 <h1>{{ term.title }}</h1>
 {% if term.description %}
@@ -28,7 +28,7 @@
 {% endif %}
 
 {% if term.children %}
-<ul>
+<ul id="term-children" class="list-unstyled">
 {% for t in term.children %}
 <li><a href="{{ t.url }}">{{ t.title }}</a></li>
 {% endfor %}
@@ -63,4 +63,3 @@
   </div><!-- .row -->
 </section><!-- .container-fluid -->
 {% endblock content %}
-
