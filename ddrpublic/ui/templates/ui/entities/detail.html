@@ -52,6 +52,8 @@
 			
 			<div class="desc productDescription">
 			<!-- entity.id -->
+                        <h3 class="page-header">PARTNER</h3>
+                        <p>{{ organization.title }} <img src="{{ organization.logo_url }}" class="logo" width="50" /></p>
                         <h3 class="page-header">OBJECT ID</h3>
                         <p>{{ object.id }}</p>
 			<!-- entity.collection -->
@@ -99,9 +101,13 @@
 								<div class="col-md-5 col-sm-5">
 									<!-- entity.topics -->
 									<h3 class="page-header">TOPICS</h3>
-									<p>
-									{{ object.fields|ddrvalue:"topics" }}
-									</p>
+<p>
+<ul class="list-unstyled">
+{% for term in object.topics %}
+  <li><a href="{{ term.url }}">{{ term.title }}</a></li>
+{% endfor %}
+</ul>
+</p>
 								</div>
 								<div class="col-md-7 col-sm-7">
 									<!-- entity.facility -->

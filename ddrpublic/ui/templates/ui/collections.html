@@ -1,4 +1,4 @@
-{% extends "ui/base.html" %}
+{% extends BASE_TEMPLATE %}
 {% load thumbnail ui_tags %}
 
 {% block title %}Collections{% endblock %}
@@ -11,15 +11,63 @@
 <section class="container">
   <div class="row">
 	<div class="col-sm-10 col-md-10">
+
+
+{% if partner %}
+
+<h2>Collections</h2>
 {% for organization,collections in organizations %}
-  {% if collections %}
-<h2>{{ organization.title }}</h2>
-    {% for collection in collections %}
+{% for collection in collections %}
 {% collection collection %}
-    {% endfor %}
-  {% endif %}
+{% endfor %}
 {% endfor %}{# organizations #}
+
+{% else %}
+
+<h2>Partners</h2>
+<ul id="org-list">
+{% for organization,collections in organizations %}
+{% if collections %}
+  <li>
+    <a href="#{{ organization.id }}">
+    <img class="logo" src="{{ organization.logo_url }}" width="20" />
+    {{ organization.title }}
+    </a>
+  </li>
+{% endif %}
+{% endfor %}{# organizations #}
+</ul>
+
+{% for organization,collections in organizations %}
+{% if collections %}
+      <a name="{{ organization.title }}"></a>
+      <div id="{{ organization.id }}">
+<h3>
+<img class="logo" src="{{ organization.logo_url }}" width="20" />
+{{ organization.title }}
+</h3>
+{% for collection in collections %}
+{% collection collection %}
+{% endfor %}
+
+      </div><!-- .{{ organization.id }} -->
+{% endif %}{# collections #}
+{% endfor %}{# organizations #}
+
+{% endif %}{# partner #}
+
+
 	</div>
   </div><!-- .row -->
 </section><!-- .container-fluid -->
 {% endblock content %}
+
+{% block pagecss %}
+<style type="text/css">
+h2 { margin-bottom:10px; }
+h3 { margin-top:30px; margin-bottom:20px; }
+ul#org-list { padding-left:0px; }
+ul#org-list li { list-style-type:none; }
+ul#org-list li img { margin-right:10px; }
+</style>
+{% endblock pagecss %}

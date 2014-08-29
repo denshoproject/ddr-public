@@ -27,6 +27,7 @@ urlpatterns = patterns(
     url(r'^terms/$', TemplateView.as_view(template_name='ui/terms.html'), name='ui-terms'),
     url(r'^using/$', TemplateView.as_view(template_name='ui/using.html'), name='ui-using'),
 
+    url(r'^browse/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/$', 'ui.views.browse.term', name='ui-browse-term'),
     url(r'^browse/(?P<facet>[\w]+)/$', 'ui.views.browse.facet', name='ui-browse-facet'),
     url(r'^browse/$', 'ui.views.browse.index', name='ui-browse-index'),
     

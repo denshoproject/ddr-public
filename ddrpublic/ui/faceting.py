@@ -1,3 +1,4 @@
+from collections import defaultdict
 import json
 import re
 
@@ -32,6 +33,8 @@ def get_facet(name):
     """
     TODO Rethink this: we are getting all the terms and then throwing them away
          except for the one we want; just get the one we want.
+    
+    @param facet: str
     """
     key = 'facets:%s' % name
     cached = cache.get(key)
@@ -43,6 +46,207 @@ def get_facet(name):
                 cached = f
                 cache.set(key, cached, CACHE_TIMEOUT)
     return cached
+
+def get_facet_term( facet_id, term_id ):
+    """
+    @param facet: str
+    @param term_id: int
+    """
+    key = 'facets:%s:%s' % (facet_id, term_id)
+    cached = cache.get(key)
+    if not cached:
+        facet = get_facet(facet_id)
+        for t in facet['terms']:
+            if int(t['id']) == int(term_id):
+                cached = t
+        if cached:
+            cache.set(key, cached, CACHE_TIMEOUT)
+    return cached
+
+def get_term_children(facet_id, term_dict):
+    """
+    @param term_dict: dict NOT a Term object!
+    """
+    assert isinstance(term_dict, dict)
+    if not term_dict.get('_children'):
+        children = []
+        facet = get_facet(facet_id)
+        for t in facet['terms']:
+            if t.get('parent_id',None) and (int(t['parent_id']) == int(term_dict['id'])):
+                children.append(t)
+    return children
+
+
+class Facet(object):
+    id = None
+    name = None
+    title = None
+    description = None
+    url = None
+    _terms_raw = None
+    _terms = None
+    
+    def __init__(self, id=None):
+        """
+        @param id: str
+        """
+        if id:
+            self.id = id
+            facet = get_facet(id)
+            if facet:
+                self.name = facet.get('name', None)
+                self.title = facet.get('title', None)
+                self.description = facet.get('description', None)
+                self.url = facet.get('url', None)
+                self._terms_raw = facet.get('terms', None)
+    
+    def __repr__(self):
+        return "<Facet [%s] %s>" % (self.id, self.title)
+    
+    def url(self):
+        return reverse('ui-browse-facet', args=(self.id))
+    
+    def terms(self):
+        if not self._terms:
+            self._terms = []
+            for t in self._terms_raw:
+                term = Term(facet_id=self.id, term_id=t['id'])
+                self._terms.append(term)
+            self._terms_raw = None
+        return self._terms
+    
+    def term_ancestors(self):
+        """List of terms that have no parents.
+        """
+        ancestors = []
+        for term in self.terms():
+            if not term.parent():
+                ancestors.append(term)
+        ancestors.sort()
+        return ancestors
+    
+    def tree(self):
+        """Tree of terms under this term
+        
+        https://gist.github.com/hrldcpr/2012250
+        """
+        def tree():
+            return defaultdict(tree)
+        
+        def add(t, path):
+            for node in path:
+                t = t[node]
+        
+        lines = []
+        def prnt(t, depth=0):
+            """return list of (term, depth) tuples
+            
+            variation on ptr() from the gist
+            """
+            for k in sorted(t.keys()):
+                term = Term(self.id, int(k))
+                #print("%s %2d %s" % ("".join(depth * indent), depth, term.title))
+                term.depth = depth
+                lines.append(term)
+                depth += 1
+                prnt(t[k], depth)
+                depth -= 1
+        
+        terms = tree()
+        for term in self.terms():
+            path = [int(t.id) for t in term.path()]
+            add(terms, path)
+        prnt(terms)
+        return lines
+
+
+class Term(object):
+    id = None
+    parent_id = None
+    _ancestors = []
+    _siblings = []
+    _children = []
+    _path = None
+    facet_id = None
+    _title = None
+    title = None
+    description = None
+    weight = None
+    created = None
+    modified = None
+    encyc_urls = None
+    _facet = None
+    
+    def __init__(self, facet_id=None, term_id=None):
+        """
+        @param facet: str
+        @param term_id: int
+        """
+        if facet_id and term_id:
+            self.id = term_id
+            self.facet_id = facet_id
+            term = get_facet_term(facet_id, term_id)
+            if term:
+                self.parent_id = term.get('parent_id', None)
+                self._ancestors = term.get('ancestors', [])
+                self._siblings = term.get('siblings', [])
+                self._children = term.get('children', [])
+                self._title = term.get('_title', None)
+                self.title = term.get('title', term.get('_title', None))
+                self.description = term.get('description', None)
+                self.weight = term.get('weight', None)
+                self.created = term.get('created', None)
+                self.modified = term.get('modified', None)
+                self.encyc_urls = term.get('encyc_urls', [])
+    
+    def __repr__(self):
+        if self.title:
+            return "<Term [%s] %s>" % (self.id, self.title)
+        return "<Term [%s] %s>" % (self.id, self._title)
+    
+    def url(self):
+        return reverse('ui-browse-term', args=(self.facet_id, self.id))
+    
+    def facet(self):
+        return Facet(self.facet_id)
+    
+    def path(self):
+        """
+        TODO refactor to use term._ancestors
+        """
+        if not self._path:
+            term = self
+            self._path = [term]
+            while term.parent():
+                term = term.parent()
+                self._path.append(term)
+            self._path.reverse()
+        return self._path
+    
+    def ancestor(self):
+        if self._ancestors:
+            return Term(facet_id=self.facet_id, term_id=self._ancestors[0])
+        return None
+    
+    def parent(self):
+        if self.parent_id:
+            return Term(facet_id=self.facet_id, term_id=self.parent_id)
+        return None
+    
+    def children(self):
+        terms = []
+        for tid in self._children:
+            term = Term(facet_id=self.facet_id, term_id=tid)
+            terms.append(term)
+        return terms
+    
+    def siblings(self):
+        terms = []
+        for tid in self._siblings:
+            term = Term(facet_id=self.facet_id, term_id=tid)
+            terms.append(term)
+        return terms
+
 
 INT_IN_STRING = re.compile(r'^\d+$')
 
