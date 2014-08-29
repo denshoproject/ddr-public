@@ -288,6 +288,13 @@ def build_object( o, id, source ):
             delattr(o, 'files')
         except:
             pass
+    # rename entity.topics -> entity._topics
+    if (o.model == 'entity') and hasattr(o, 'topics'):
+        o._topics = o.topics
+        try:
+            delattr(o, 'topics')
+        except:
+            pass
     # parent object ids
     if o.model == 'file': o.repo,o.org,o.cid,o.eid,o.role,o.sha1 = o.id.split('-')
     elif o.model == 'entity': o.repo,o.org,o.cid,o.eid = o.id.split('-')
@@ -500,6 +507,7 @@ class Entity( object ):
     eid = None
     fieldnames = []
     signature_file = None
+    _topics = []
     
     def __repr__( self ):
         return '<ui.models.Entity %s>' % self.id
@@ -549,6 +557,10 @@ class Entity( object ):
         if self.signature_file:
             return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, self.collection_id, self.signature_file)
         return None
+    
+    def topics( self ):
+        return [faceting.Term('topics', int(tid)) for tid in self._topics]
+
 
 
 class File( object ):
