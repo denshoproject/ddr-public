@@ -68,7 +68,6 @@ def get_term_children(facet_id, term_dict):
     @param term_dict: dict NOT a Term object!
     """
     assert isinstance(term_dict, dict)
-    print('get_term_children(%s, %s)' % (facet_id, term_dict['id']))
     if not term_dict.get('_children'):
         children = []
         facet = get_facet(facet_id)
@@ -163,19 +162,20 @@ class Facet(object):
 
 class Term(object):
     id = None
-    facet_id = None
     parent_id = None
+    _ancestors = []
+    _siblings = []
+    _children = []
+    _path = None
+    facet_id = None
+    _title = None
     title = None
-    title_display = None
     description = None
     weight = None
     created = None
     modified = None
-    elinks = None
+    encyc_urls = None
     _facet = None
-    _parent = None
-    _children = None
-    _path = None
     
     def __init__(self, facet_id=None, term_id=None):
         """
@@ -188,19 +188,21 @@ class Term(object):
             term = get_facet_term(facet_id, term_id)
             if term:
                 self.parent_id = term.get('parent_id', None)
-                self.title = term.get('title', None)
-                self.title_display = term.get('title_display',
-                                              term.get('title', None))
+                self._ancestors = term.get('ancestors', [])
+                self._siblings = term.get('siblings', [])
+                self._children = term.get('children', [])
+                self._title = term.get('_title', None)
+                self.title = term.get('title', term.get('_title', None))
                 self.description = term.get('description', None)
                 self.weight = term.get('weight', None)
                 self.created = term.get('created', None)
                 self.modified = term.get('modified', None)
-                self.elinks = term.get('elinks', None)
+                self.encyc_urls = term.get('encyc_urls', [])
     
     def __repr__(self):
-        if self.title_display:
-            return "<Term [%s] %s>" % (self.id, self.title_display)
-        return "<Term [%s] %s>" % (self.id, self.title)
+        if self.title:
+            return "<Term [%s] %s>" % (self.id, self.title)
+        return "<Term [%s] %s>" % (self.id, self._title)
     
     def url(self):
         return reverse('ui-browse-term', args=(self.facet_id, self.id))
@@ -209,6 +211,9 @@ class Term(object):
         return Facet(self.facet_id)
     
     def path(self):
+        """
+        TODO refactor to use term._ancestors
+        """
         if not self._path:
             term = self
             self._path = [term]
@@ -219,7 +224,9 @@ class Term(object):
         return self._path
     
     def ancestor(self):
-        return self.path()[0]
+        if self._ancestors:
+            return Term(facet_id=self.facet_id, term_id=self._ancestors[0])
+        return None
     
     def parent(self):
         if self.parent_id:
@@ -227,22 +234,18 @@ class Term(object):
         return None
     
     def children(self):
-        if not self._children:
-            self._children = []
-            facet = get_facet(self.facet_id)
-            for t in facet['terms']:
-                if t.get('parent_id',None) and (int(t['parent_id']) == int(self.id)):
-                    term = Term(facet_id=self.facet_id, term_id=t['id'])
-                    self._children.append(term)
-        return self._children
+        terms = []
+        for tid in self._children:
+            term = Term(facet_id=self.facet_id, term_id=tid)
+            terms.append(term)
+        return terms
     
     def siblings(self):
-        if not self._siblings:
-            self._siblings = []
-            for t in self.parent().children():
-                term = Term(facet_id=self.facet_id, term_id=t['id'])
-                self._siblings.append(term)
-        return self._siblings
+        terms = []
+        for tid in self._siblings:
+            term = Term(facet_id=self.facet_id, term_id=tid)
+            terms.append(term)
+        return terms
 
 
 INT_IN_STRING = re.compile(r'^\d+$')

@@ -1,12 +1,12 @@
 {% extends "ui/browse/base.html" %}
 {% load bootstrap_pagination ui_tags %}
 
-{% block title %}{{ term.title_display }}{% endblock %}
-{% block pagetitle %}{{ term.title_display }}{% endblock %}
+{% block title %}{{ term.title }}{% endblock %}
+{% block pagetitle %}{{ term.title }}{% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
 <li><a href="{% url "ui-browse-facet" term.facet.id %}">{{ term.facet.title }}</a></li>
-<li>{{ term.title_display }}</li>
+<li>{{ term.title }}</li>
 {% endblock breadcrumbs %}
 
 {% block content %}
@@ -20,15 +20,17 @@
 {% endfor %}
 </ul>
 
-<h1>{{ term.title_display }}</h1>
+<h1>{{ term.title }}</h1>
+{% if term.description %}
 <p>
 {{ term.description }}
 </p>
+{% endif %}
 
 {% if term.children %}
 <ul>
 {% for t in term.children %}
-<li><a href="{{ t.url }}">{{ t.title_display }}</a></li>
+<li><a href="{{ t.url }}">{{ t.title }}</a></li>
 {% endfor %}
 </ul>
 {% endif %}
