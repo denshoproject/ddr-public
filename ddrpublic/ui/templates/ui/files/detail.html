@@ -49,9 +49,11 @@
 		<div class="col-sm-6 col-md-6">
 			{% addthis %}
 			<div class="desc productDescription">
-            <p>
-            <a href="{{ organization.absolute_url }}"><img class="logo" src="{{ organization.logo_url }}" width="20" />{{ organization.title }}</a>
-            </p>
+                      
+                 <h3 class="page-header">PARTNER</h3>
+                        <p>{{ organization.title }} <img src="{{ organization.logo_url }}" class="logo" width="50" /><br /><a href="{{ organization.url }}" target="_blank"><i class="fa fa-external site></i> Visit partner site</a></p>
+                      
+
 	        <h3 class="page-header">PARENT OBJECT</h3>
 	        <p><a href="{{ object.entity.absolute_url }}">{{ object.entity.title }} ({{ object.entity.id }})</a></p>
             <h3 class="page-header">FILE ID</h3>
