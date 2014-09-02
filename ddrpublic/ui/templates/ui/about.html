@@ -7,8 +7,12 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
+<div class="blog">
 
 	<section id="overview" class="container">
+
+        <div class="row">
+           <div class="col-md-9">
 		<h2>Overview</h2>
 
 		<p>The forced removal and detention of more than 120,000 Americans of Japanese ethnicity during WWII still represents one of the starkest examples of how our civil liberties in the United States can come under attack in times of war or distress. 
@@ -21,18 +25,32 @@
 		<p>The Densho Digital Repository was developed in response to these challenges. Drawing on current standards and practices in the archival community, along with robust open-source technologies, we have built a platform and management processes that can provide for both long-term preservation and user-friendly access to the digital archives. Wherever possible, we have licensed or secured license from third-parties for the majority of materials in the repository to be offered under Creative Commons.</p>
 		
 		<p>During this first phase, we have partnered with four other institutions: <a href="http://www.heartmountain.org" target="_blank">Heart Mountain Wyoming Foundation</a>, <a href="http://www.jamsj.org/" target="_blank">the Japanese American Museum of San Jose</a>, <a href="http://www.jcch.com/" target="_blank">the Japanese Cultural Center of Hawaii</a> and <a href="http://www.oregonnikkei.org/" target="_blank">Oregon Nikkei Endowment</a>. The partner organizations have been provided with training and equipment, and will be adding their digital collections to the repository. In the next phase of the DDR, these initial partners are being joined by two others, the <a href="http://www.janm.org/" target="_blank">Japanese American National Museum</a> and the Nippu Jiji Photographic Archive. Our hope is that the Digital Repository will become a shared platform for even more organizations in our community.</p>
-	
-	<!--
-		<a href="http://www.heartmountain.org" target="_blank"><img src="/assets/images/logo-hmwf.png" alt="Heart Mountain Wyoming Foundation" border="0" /></a>
 
-		<a href="http://www.jamsj.org/" target="_blank"><img src="/assets/images/logo-jamsj.png" alt="Japanese American Museum of San Jose" border="0" /></a>
-
-		<a href="http://www.jcch.com/" target="_blank"><img src="/assets/images/logo-jcch.png" alt="Japanese Cultural Center of Hawaii" border="0" /></a>
-
-		<a href="http://www.oregonnikkei.org/" target="_blank"><img src="/assets/images/logo-one.png" alt="Oregon Nikkei Endowment" border="0" /></a>
--->
 		<p>Densho is a 501(c)(3) non-profit organization based in Seattle, Washington. For more information, <a href="http://www.densho.org/about" target="_blank">visit Densho.org <i class="fa fa-arrow-right"></i></a></p>
 		<div class="toTop"><a href="#top">Back to Top <i class="fa fa-arrow-circle-up"></i></a></div>
+           </div> <!-- .col-md-9 -->
+           <div class="col-md-3">
+                <div class="widget">
+                   <h3>PARTNERS</h3>
+                   <p>
+  		   <a href="http://www.heartmountain.org" target="_blank"><img src="/media/ddr-hmwf/logo.png" height="150" alt="Heart Mountain Wyoming Foundation" border="0" /></a>
+                   </p>
+                   <p>		   
+<a href="http://www.janm.org/" target="_blank"><img src="/media/ddr-janm/logo.png" width="120" alt="The Japanese American National Museum" border="0" /></a>
+</p>
+<p>                   
+<a href="http://www.jamsj.org/" target="_blank"><img src="/assets/images/logo-jamsj.png" width="120" alt="Japanese American Museum of San Jose" border="0" /></a>
+</p>
+<p>
+		   <a href="http://www.jcch.com/" target="_blank"><img src="/assets/images/logo-jcch.png" width="120" alt="Japanese Cultural Center of Hawaii" border="0" /></a>
+</p>
+<p>
+		   <a href="http://www.oregonnikkei.org/" target="_blank"><img src="/media/ddr-one/logo.png" width="120" alt="Oregon Nikkei Endowment" border="0" /></a> 
+</p>
+                </div>
+           </div> <!-- .col-md-3 -->
+        </div> <!-- .row -->
+
 	</section>	
 
 	<hr class="half-margin" />
@@ -40,7 +58,7 @@
 	<section id="support" class="container">
 			<h2>Support and funding</h2>
 
-	<p>Major funding for the first phase of the Densho Digital Repository is being provided by grants from the <a href="http://www.nps.gov/history/hps/hpg/JACS/index.html" target="_blank">Japanese American Confinement Sites Grant Program</a>, administered by the National Park Service.</p>
+	<p>Major funding for the Densho Digital Repository is being provided by grants from the <a href="http://www.nps.gov/history/hps/hpg/JACS/index.html" target="_blank">Japanese American Confinement Sites Grant Program</a>, administered by the National Park Service.</p>
 
 	<a href="http://www.nps.gov/history/hps/hpg/JACS/index.html" target="_blank"><img src="/assets/images/logo-nps.gif" alt="icon-NPSLogo"  width="110" height="137" style="margin:15px; float:right;" border="0" /></a>
 
@@ -78,4 +96,5 @@
 		<div class="toTop"><a href="#top">Back to Top <i class="fa fa-arrow-circle-up"></i></a></div>
 	</section>	
 
+</div> 
 {% endblock content %}
