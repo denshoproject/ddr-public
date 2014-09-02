@@ -9,7 +9,7 @@ elasticsearch==1.0.0       # Apache       n/a                              n/a  
 redis==2.9.1               # MIT          python-redis (2.4.13-1)          python-redis (2.4.13-2)          y
 django-redis==3.6.2        # BSD          n/a                              n/a                              y
 django==1.6.5              # MIT          python-django (1.4.5-1)          python-django (1.5.1-2)
-gunicorn18.0               # MIT          gunicorn (0.14.5-3+deb7u1)       gunicorn (0.15.0-1)
+gunicorn<=0.15             # MIT          gunicorn (0.14.5-3+deb7u1)       gunicorn (18.0-3)                y
 
 sorl-thumbnail==11.12      # BSD          python-sorl-thumbnail (11.12-4)  python-sorl-thumbnail (11.12-5)
 
