@@ -46,7 +46,7 @@ echo "${bldgrn}Package update${txtrst}"
 apt-get --assume-yes update
 
 echo "${bldgrn}Installing miscellaneous tools${txtrst}"
-apt-get --assume-yes install ack-grep byobu bzip2 curl elinks gdebi-core htop logrotate mg multitail p7zip-full wget
+apt-get --assume-yes install ack-grep byobu bzip2 curl elinks gdebi-core htop logrotate mg multitail ntp p7zip-full wget
 
 echo "${bldgrn}www server${txtrst}"
 apt-get --assume-yes install nginx
