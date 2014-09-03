@@ -1,23 +1,6 @@
 from django.conf.urls import patterns, include, url
 from django.views.generic import TemplateView
 
-# /
-# /search/
-# /browse/
-# /browse/creators/
-# /browse/facilities/
-# /browse/formats/
-# /browse/genres/
-# /browse/languages/
-# /browse/locations/
-# /browse/persons/
-# /browse/topics/
-# /ddr/
-# /ddr/testing/
-# /ddr/testing/123/
-# /ddr/testing/123/1/
-# /ddr/testing/123/1/master/a1b2c3d4e5/
-
 urlpatterns = patterns(
     '',
     
