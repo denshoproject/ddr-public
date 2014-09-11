@@ -1,23 +1,6 @@
 from django.conf.urls import patterns, include, url
 from django.views.generic import TemplateView
 
-# /
-# /search/
-# /browse/
-# /browse/creators/
-# /browse/facilities/
-# /browse/formats/
-# /browse/genres/
-# /browse/languages/
-# /browse/locations/
-# /browse/persons/
-# /browse/topics/
-# /ddr/
-# /ddr/testing/
-# /ddr/testing/123/
-# /ddr/testing/123/1/
-# /ddr/testing/123/1/master/a1b2c3d4e5/
-
 urlpatterns = patterns(
     '',
     
@@ -27,6 +10,7 @@ urlpatterns = patterns(
     url(r'^terms/$', TemplateView.as_view(template_name='ui/terms.html'), name='ui-terms'),
     url(r'^using/$', TemplateView.as_view(template_name='ui/using.html'), name='ui-using'),
 
+    url(r'^browse/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/$', 'ui.views.browse.term', name='ui-browse-term'),
     url(r'^browse/(?P<facet>[\w]+)/$', 'ui.views.browse.facet', name='ui-browse-facet'),
     url(r'^browse/$', 'ui.views.browse.index', name='ui-browse-index'),
     

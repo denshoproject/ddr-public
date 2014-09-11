@@ -48,8 +48,17 @@
 
 		<div class="col-sm-6 col-md-6">
 			{% addthis %}
-
 			<div class="desc productDescription">
+                      
+                 <h3 class="page-header">PARTNER</h3>
+                 <div class="media">
+                   <div class="media-object">
+                     <a class="pull-right" href="{{organization.url }}" target="_blank"><img src="{{ organization.logo_url }}" class="logo" width="50" /></a>
+                   </div>
+                   <div class="media-body">
+                     <p>{{ organization.title }}<br /><span class="small"><a href="{{ organization.url }}" target="_blank"><i class="fa fa-external-link"></i> Visit partner</a></span></p>
+                   </div>
+                 </div>
 	        <h3 class="page-header">PARENT OBJECT</h3>
 	        <p><a href="{{ object.entity.absolute_url }}">{{ object.entity.title }} ({{ object.entity.id }})</a></p>
             <h3 class="page-header">FILE ID</h3>

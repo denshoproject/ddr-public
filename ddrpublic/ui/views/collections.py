@@ -9,17 +9,27 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 
+from ui import domain_org
 from ui.models import Repository, Organization, Collection, Entity, File
 from ui.models import DEFAULT_SIZE
-
+from ui.views import filter_if_branded
+    
 
 # views ----------------------------------------------------------------
 
 def list( request ):
     organizations = []
-    for org in Repository.get('ddr').organizations():
-        collections = org.collections(1, 1000000)
-        organizations.append( (org,collections) )
+    repo,org = domain_org(request)
+    if repo and org:
+        # partner site
+        organization = Organization.get(repo, org)
+        collections = organization.collections(1, 1000000)
+        organizations.append( (organization,collections) )
+    else:
+        # default site
+        for organization in Repository.get('ddr').organizations():
+            collections = organization.collections(1, 1000000)
+            organizations.append( (organization,collections) )
     return render_to_response(
         'ui/collections.html',
         {
@@ -29,9 +39,11 @@ def list( request ):
     )
 
 def detail( request, repo, org, cid ):
+    filter_if_branded(request, repo, org)
     collection = Collection.get(repo, org, cid)
     if not collection:
         raise Http404
+    organization = Organization.get(collection.repo, collection.org)
     thispage = 1
     objects = collection.entities(thispage, DEFAULT_SIZE)
     paginator = Paginator(objects, DEFAULT_SIZE)
@@ -43,6 +55,7 @@ def detail( request, repo, org, cid ):
             'org': org,
             'cid': cid,
             'object': collection,
+            'organization': organization,
             'paginator': paginator,
             'page': page,
         },
@@ -50,6 +63,7 @@ def detail( request, repo, org, cid ):
     )
 
 def entities( request, repo, org, cid ):
+    filter_if_branded(request, repo, org)
     collection = Collection.get(repo, org, cid)
     if not collection:
         raise Http404
@@ -71,6 +85,7 @@ def entities( request, repo, org, cid ):
     )
 
 def files( request, repo, org, cid ):
+    filter_if_branded(request, repo, org)
     collection = Collection.get(repo, org, cid)
     if not collection:
         raise Http404

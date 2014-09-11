@@ -97,6 +97,11 @@ def cite_url( model, object_id ):
     """
     return reverse('ui-cite', args=(model, object_id))
 
+def org_logo_url( organization_id ):
+    """Link to organization logo image
+    """
+    return os.path.join(settings.MEDIA_URL, organization_id, 'logo.png')
+
 
 class InvalidPage(Exception):
     pass
@@ -283,6 +288,13 @@ def build_object( o, id, source ):
             delattr(o, 'files')
         except:
             pass
+    # rename entity.topics -> entity._topics
+    if (o.model == 'entity') and hasattr(o, 'topics'):
+        o._topics = o.topics
+        try:
+            delattr(o, 'topics')
+        except:
+            pass
     # parent object ids
     if o.model == 'file': o.repo,o.org,o.cid,o.eid,o.role,o.sha1 = o.id.split('-')
     elif o.model == 'entity': o.repo,o.org,o.cid,o.eid = o.id.split('-')
@@ -344,6 +356,9 @@ class Repository( object ):
     fieldnames = []
     _organizations = []
     
+    def __repr__( self ):
+        return '<ui.models.Repository %s>' % self.id
+    
     @staticmethod
     def get( repo ):
         id = make_object_id(Repository.model, repo)
@@ -386,6 +401,9 @@ class Organization( object ):
     fieldnames = []
     _collections = []
     
+    def __repr__( self ):
+        return '<ui.models.Organization %s>' % self.id
+    
     @staticmethod
     def get( repo, org ):
         id = make_object_id(Organization.model, repo, org)
@@ -402,6 +420,9 @@ class Organization( object ):
     
     def cite_url( self ):
         return cite_url('org', self.id)
+    
+    def logo_url( self ):
+        return org_logo_url( self.id )
     
     def collections( self, page=1, page_size=DEFAULT_SIZE ):
         results = cached_query(host=HOSTS, index=INDEX, model='collection',
@@ -424,6 +445,9 @@ class Collection( object ):
     cid = None
     fieldnames = []
     signature_file = None
+    
+    def __repr__( self ):
+        return '<ui.models.Collection %s>' % self.id
     
     @staticmethod
     def get( repo, org, cid ):
@@ -463,6 +487,9 @@ class Collection( object ):
     
     def organization( self ):
         return Organization.get(self.repo, self.org)
+
+    def org_logo_url( self ):
+        return org_logo_url( '-'.join([self.repo, self.org]) )
     
     def signature_url( self ):
         if self.signature_file:
@@ -480,6 +507,10 @@ class Entity( object ):
     eid = None
     fieldnames = []
     signature_file = None
+    _topics = []
+    
+    def __repr__( self ):
+        return '<ui.models.Entity %s>' % self.id
     
     @staticmethod
     def get( repo, org, cid, eid ):
@@ -515,6 +546,9 @@ class Entity( object ):
                                sort=FILE_LIST_SORT)
         objects = process_query_results( results, page, page_size )
         return objects
+
+    def org_logo_url( self ):
+        return org_logo_url( '-'.join([self.repo, self.org]) )
     
     def collection( self ):
         return Collection.get(self.repo, self.org, self.cid)
@@ -523,6 +557,10 @@ class Entity( object ):
         if self.signature_file:
             return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, self.collection_id, self.signature_file)
         return None
+    
+    def topics( self ):
+        return [faceting.Term('topics', int(tid)) for tid in self._topics]
+
 
 
 class File( object ):
@@ -536,6 +574,9 @@ class File( object ):
     role = None
     sha1 = None
     fieldnames = []
+    
+    def __repr__( self ):
+        return '<ui.models.File %s>' % self.id
     
     @staticmethod
     def get( repo, org, cid, eid, role, sha1 ):
@@ -564,3 +605,6 @@ class File( object ):
     
     def download_url( self ):
         return settings.UI_DOWNLOAD_URL(self)
+
+    def org_logo_url( self ):
+        return org_logo_url( '-'.join([self.repo, self.org]) )

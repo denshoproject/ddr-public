@@ -15,7 +15,9 @@ from django.template import RequestContext
 from django.utils.http import urlquote  as django_urlquote
 
 from DDR import docstore, models
-from ui import faceting, models
+from ui import domain_org
+from ui import faceting
+from ui import models
 from ui.forms import SearchForm
 
 # TODO We should have a whitelist of chars we *do* accept, not this.
@@ -60,10 +62,8 @@ def results( request ):
     query = context['query']
     for char in SEARCH_INPUT_BLACKLIST:
         query = query.replace(char, '')
-        
     if query:
         context['search_form'] = SearchForm({'query': query})
-        
         object_id_parts = models.split_object_id(query)
         if object_id_parts and (object_id_parts[0] in ['collection', 'entity', 'file']):
             # query is a DDR ID -- go straight to document page
@@ -88,6 +88,11 @@ def results( request ):
         fields = models.all_list_fields()
         sort = {'record_created': request.GET.get('record_created', ''),
                 'record_lastmod': request.GET.get('record_lastmod', ''),}
+        # filter by partner
+        repo,org = domain_org(request)
+        if repo and org:
+            filters['repo'] = repo
+            filters['org'] = org
         
         # do query and cache the results
         results = models.cached_query(settings.DOCSTORE_HOSTS, settings.DOCSTORE_INDEX,
@@ -134,9 +139,17 @@ def term_query( request, field, term ):
             except:
                 terms_display['term'] = t['title']
             break
+    
+    # filter by partner
+    repo,org = domain_org(request)
+    if repo and org:
+        filters['repo'] = repo
+        filters['org'] = org
+    
     fields = models.all_list_fields()
     sort = {'record_created': request.GET.get('record_created', ''),
             'record_lastmod': request.GET.get('record_lastmod', ''),}
+    
     # do the query
     results = models.cached_query(settings.DOCSTORE_HOSTS, settings.DOCSTORE_INDEX,
                                   terms=terms, filters=filters,

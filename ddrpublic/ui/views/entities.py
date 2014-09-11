@@ -11,14 +11,17 @@ from django.template import RequestContext
 
 from ui.models import Repository, Organization, Collection, Entity, File
 from ui.models import DEFAULT_SIZE
+from ui.views import filter_if_branded
 
 
 # views ----------------------------------------------------------------
 
 def detail( request, repo, org, cid, eid ):
+    filter_if_branded(request, repo, org)
     entity = Entity.get(repo, org, cid, eid)
     if not entity:
         raise Http404
+    organization = Organization.get(entity.repo, entity.org)
     thispage = 1
     objects = entity.files(thispage, DEFAULT_SIZE)
     paginator = Paginator(objects, DEFAULT_SIZE)
@@ -31,6 +34,7 @@ def detail( request, repo, org, cid, eid ):
             'cid': cid,
             'eid': eid,
             'object': entity,
+            'organization': organization,
             'paginator': paginator,
             'page': page,
         },
@@ -40,6 +44,7 @@ def detail( request, repo, org, cid, eid ):
 def files( request, repo, org, cid, eid ):
     """Lists all the files in an entity.
     """
+    filter_if_branded(request, repo, org)
     entity = Entity.get(repo, org, cid, eid)
     if not entity:
         raise Http404

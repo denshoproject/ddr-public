@@ -12,21 +12,30 @@
   <div class="row">
 	<div class="col-sm-10 col-md-10">
 
+{% if facet.description %}
 <p>
 {{ facet.description }}
 </p>
+{% endif %}
 
-<ul class="list-unstyled">
-{% for term in facet_terms %}
-  <li>
-    <span class="badge">{% if term.count %}{{ term.count }}{% else %} &nbsp;&nbsp; {% endif %}</span>
-    <a href="{{ term.url }}" {% if term.description %}title="{{ term.description }}"{% endif %}>{{ term.title }}</a>
-  </li>
+<p>
+{% for term in terms %}
+<a class="indent{{ term.depth }}" href="{{ term.url }}">{{ term.title }}</a><br/>
 {% endfor %}
-</ul>
-	</div>
+</p>
 
+	</div>
   </div><!-- .row -->
 </section><!-- .container-fluid -->
 {% endblock content %}
 
+{% block pagecss %}
+<style type="text/css">
+.indent0 { padding-left:0px; }
+.indent1 { padding-left:30px; }
+.indent2 { padding-left:60px; }
+.indent3 { padding-left:90px; }
+.indent4 { padding-left:120px; }
+.indent5 { padding-left:150px; }
+</style>
+{% endblock pagecss %}

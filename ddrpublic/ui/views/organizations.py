@@ -23,16 +23,16 @@ def list( request, repo ):
     )
 
 def detail( request, repo, org ):
-    return redirect('ui-collections-list')
-    #organization = Organization.get(repo, org)
-    #collections = organization.collections()
-    #return render_to_response(
-    #    'ui/organizations/detail.html',
-    #    {
-    #        'repo': repo,
-    #        'org': org,
-    #        'organization': organization,
-    #        'collections': collections,
-    #    },
-    #    context_instance=RequestContext(request, processors=[])
-    #)
+    organization = Organization.get(repo, org)
+    collections = organization.collections()
+    return render_to_response(
+        'ui/organizations/detail.html',
+        {
+            'repo': repo,
+            'org': org,
+            'organization': organization,
+            'object': organization,
+            'collections': collections,
+        },
+        context_instance=RequestContext(request, processors=[])
+    )
