@@ -508,7 +508,7 @@ class Collection( object ):
             return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, self.id, self.signature_file)
         return None
     
-    def signature_url( self ):
+    def signature_url_local( self ):
         return media_url_local(self.signature_url())
 
 
@@ -573,7 +573,7 @@ class Entity( object ):
             return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, self.collection_id, self.signature_file)
         return None
     
-    def signature_url( self ):
+    def signature_url_local( self ):
         return media_url_local(self.signature_url())
     
     def topics( self ):
@@ -612,7 +612,7 @@ class File( object ):
             return settings.UI_THUMB_URL(self)
         return None
     
-    def access_url( self ):
+    def access_url_local( self ):
         return media_url_local(self.access_url())
     
     def backend_url( self ):
