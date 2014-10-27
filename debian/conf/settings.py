@@ -56,6 +56,11 @@ STATIC_URL='/static/'
 # (collection repositories, thumbnail cache, etc).
 MEDIA_ROOT='/var/www/media'
 MEDIA_URL='http://ddr.densho.org/media/'
+# URL of local media server ("local" = in the same cluster).
+# Use this for sorl.thumbnail so it doesn't have to go through
+# a CDN and get blocked for not including a User-Agent header.
+# TODO Hard-coded! Replace with value from ddr.cfg.
+MEDIA_URL_LOCAL='http://192.168.0.30/media/'
 
 ACCESS_FILE_APPEND='-a'
 ACCESS_FILE_EXTENSION='.jpg'
