@@ -2,7 +2,7 @@
 
 <!-- {{ object.id }} -->
 <div class="media {{ object.model }}">
-{% thumbnail object.signature_url "110x110" as img %}
+{% thumbnail object.signature_url_local "110x110" as img %}
   <a class="pull-left" href="{{ object.absolute_url }}">
     <img class="media-object" src="{{ img.url }}" class="img-responsive">
   </a>

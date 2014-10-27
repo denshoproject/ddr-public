@@ -102,6 +102,18 @@ def org_logo_url( organization_id ):
     """
     return os.path.join(settings.MEDIA_URL, organization_id, 'logo.png')
 
+def media_url_local( url ):
+    """Replace media_url with one that points to "local" media server
+    
+    MEDIA_URLs contain a domain name and thus have to go through DNS
+    and possibly a trying-to-be-helpful CDN that blocks urllib2 requests
+    with no User-agent headers.  Replaces the MEDIA_URL portion with
+    MEDIA_URL_LOCAL, which should contain the IP address of the local
+    media server.
+    """
+    if url:
+        return url.replace(settings.MEDIA_URL, settings.MEDIA_URL_LOCAL)
+    return None
 
 class InvalidPage(Exception):
     pass
@@ -495,6 +507,9 @@ class Collection( object ):
         if self.signature_file:
             return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, self.id, self.signature_file)
         return None
+    
+    def signature_url_local( self ):
+        return media_url_local(self.signature_url())
 
 
 class Entity( object ):
@@ -558,6 +573,9 @@ class Entity( object ):
             return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, self.collection_id, self.signature_file)
         return None
     
+    def signature_url_local( self ):
+        return media_url_local(self.signature_url())
+    
     def topics( self ):
         return [faceting.Term('topics', int(tid)) for tid in self._topics]
 
@@ -593,6 +611,9 @@ class File( object ):
         if hasattr(self, 'access_rel') and self.access_rel:
             return settings.UI_THUMB_URL(self)
         return None
+    
+    def access_url_local( self ):
+        return media_url_local(self.access_url())
     
     def backend_url( self ):
         return backend_url('file', self.id)
