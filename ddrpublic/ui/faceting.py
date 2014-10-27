@@ -8,13 +8,15 @@ from django.core.urlresolvers import reverse
 
 from DDR import docstore
 
-CACHE_TIMEOUT = 60 * 60 * 24 # 1 day
+FACETS_LIST_CACHE_KEY = 'facets:list'
+FACETS_FACET_CACHE_KEY = 'facets:{name}'
+FACETS_TERM_CACHE_KEY = 'facets:{facet_id}:{term_id}'
 
 
 def facets_list():
     """Returns a list of facets in alphabetical order, with URLs
     """
-    key = 'facets:list'
+    key = FACETS_LIST_CACHE_KEY
     cached = cache.get(key)
     if not cached:
         facets_list = []
@@ -26,7 +28,7 @@ def facets_list():
             f['url'] = reverse('ui-browse-facet', args=[name])
             facets_list.append(f)
         cached = facets_list
-        cache.set(key, cached, CACHE_TIMEOUT)
+        cache.set(key, cached, settings.ELASTICSEARCH_FACETS_TIMEOUT)
     return cached
 
 def get_facet(name):
@@ -36,7 +38,7 @@ def get_facet(name):
     
     @param facet: str
     """
-    key = 'facets:%s' % name
+    key = FACETS_FACET_CACHE_KEY.format(name=name)
     cached = cache.get(key)
     if not cached:
         for f in facets_list():
@@ -44,7 +46,7 @@ def get_facet(name):
                 if f['name'] in ['facility', 'topics']:
                     f['terms'] = sorted(f['terms'], key=lambda x: x['title'])
                 cached = f
-                cache.set(key, cached, CACHE_TIMEOUT)
+                cache.set(key, cached, settings.ELASTICSEARCH_FACETS_TIMEOUT)
     return cached
 
 def get_facet_term( facet_id, term_id ):
@@ -52,7 +54,7 @@ def get_facet_term( facet_id, term_id ):
     @param facet: str
     @param term_id: int
     """
-    key = 'facets:%s:%s' % (facet_id, term_id)
+    key = FACETS_TERM_CACHE_KEY.format(facet_id=facet_id, term_id=term_id)
     cached = cache.get(key)
     if not cached:
         facet = get_facet(facet_id)
@@ -60,7 +62,7 @@ def get_facet_term( facet_id, term_id ):
             if int(t['id']) == int(term_id):
                 cached = t
         if cached:
-            cache.set(key, cached, CACHE_TIMEOUT)
+            cache.set(key, cached, settings.ELASTICSEARCH_FACETS_TIMEOUT)
     return cached
 
 def get_term_children(facet_id, term_dict):
