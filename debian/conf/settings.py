@@ -145,7 +145,7 @@ CACHES = {
 DOCSTORE_HOSTS = [
     {'host':'127.0.0.1', 'port':9200}
 ]
-DOCSTORE_INDEX = 'documents0'
+DOCSTORE_INDEX = config.get('public', 'docstore_index')
 ELASTICSEARCH_MAX_SIZE = 1000000
 
 ELASTICSEARCH_QUERY_TIMEOUT = 60 * 10  # 10 min
