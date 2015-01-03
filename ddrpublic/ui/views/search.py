@@ -5,7 +5,6 @@ logger = logging.getLogger(__name__)
 from dateutil import parser
 
 from django.conf import settings
-from django.contrib import messages
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
