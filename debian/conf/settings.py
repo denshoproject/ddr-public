@@ -36,11 +36,11 @@ class NoConfigError(Exception):
     def __str__(self):
         return repr(self.value)
 
-CONFIG_FILE = '/etc/ddr/ddr.cfg'
-if not os.path.exists(CONFIG_FILE):
-    raise NoConfigError('No config file!')
+CONFIG_FILES = ['/etc/ddr/ddr.cfg', '/etc/ddr/local.cfg']
 config = ConfigParser.ConfigParser()
-config.read(CONFIG_FILE)
+configs_read = config.read(CONFIG_FILES)
+if not configs_read:
+    raise NoConfigError('No config file!')
 
 with open('/etc/ddr/ddrpublic-secret-key.txt') as f:
     SECRET_KEY = f.read().strip()
