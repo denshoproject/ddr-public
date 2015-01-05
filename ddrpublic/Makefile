@@ -234,7 +234,9 @@ install-ddr-public:
 syncdb:
 	cd /usr/local/src/ddr-public/ddrpublic && python manage.py syncdb --noinput
 	chown -R ddr.root /var/lib/ddr
-	chmod -R 755 /var/lib/ddr
+	chmod -R 750 /var/lib/ddr
+	chown -R ddr.root /var/log/ddr
+	chmod -R 755 /var/log/ddr
 
 update-ddr-public:
 	@echo ""
