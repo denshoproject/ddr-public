@@ -250,6 +250,9 @@ uninstall-ddr-public:
 	-rm /usr/local/lib/python2.7/dist-packages/ddrpublic-*
 	-rm -Rf /usr/local/lib/python2.7/dist-packages/ddrpublic
 
+restart-ddrpublic:
+	/etc/init.d/supervisor restart ddrpublic
+
 clean-ddr-public:
 	-rm -Rf /usr/local/src/ddr-public/ddrpublic/src
 
