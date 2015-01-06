@@ -86,12 +86,17 @@ uninstall: uninstall-ddr
 clean: clean-ddr
 
 
-install-prep: apt-update apt-upgrade install-core git-config install-misc-tools
+install-prep: apt-update install-core git-config install-misc-tools
 
 apt-update:
 	@echo ""
 	@echo "Package update ---------------------------------------------------------"
 	apt-get --assume-yes update
+
+apt-upgrade:
+	@echo ""
+	@echo "Package upgrade --------------------------------------------------------"
+	apt-get --assume-yes upgrade
 
 install-core:
 	apt-get --assume-yes install bzip2 curl gdebi-core git-core logrotate ntp p7zip-full wget
