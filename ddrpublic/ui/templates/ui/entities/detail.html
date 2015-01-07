@@ -55,7 +55,7 @@
 			<div class="desc productDescription">
 			<!-- entity.id -->
                         <h3 class="page-header">PARTNER</h3>
-                        <p>{{ organization.title }} <img src="{{ organization.logo_url }}" class="logo" width="50" /></p>
+                        {% include "ui/partnerlogolink.html" %}
                         <h3 class="page-header">OBJECT ID</h3>
                         <p>{{ object.id }}</p>
 			<!-- entity.collection -->
