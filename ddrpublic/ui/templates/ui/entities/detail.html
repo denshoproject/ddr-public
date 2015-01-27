@@ -110,6 +110,18 @@
 {% endfor %}
 </ul>
 </p>
+
+<div style="border:5px dashed orange;">
+<h3>Encyclopedia Pages</h3>
+<dl>
+{% for term in object.topics %}
+  <dt><a href="{{ term.url }}">{{ term.title }}</a></dt>
+  {% for url in term.encyc_urls %}
+  <dd><a href="{{ ENCYC_BASE }}{{ url }}">{{ url }}</a></dd>
+  {% endfor %}
+{% endfor %}
+</ul>
+</div>
 								</div>
 								<div class="col-md-7 col-sm-7">
 									<!-- entity.facility -->

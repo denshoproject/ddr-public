@@ -29,4 +29,5 @@ def sitewide(request):
         'commit': git_commit()[:7],
         'partner': partner,
         'BASE_TEMPLATE': base_template,
+        'ENCYC_BASE': settings.ENCYC_BASE,
     }

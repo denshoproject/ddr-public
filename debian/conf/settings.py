@@ -24,6 +24,8 @@ for value in PARTNER_DOMAINS.values():
         if domain not in ALLOWED_HOSTS:
             ALLOWED_HOSTS.append(domain)
 
+ENCYC_BASE = 'http://encyclopedia.densho.org'
+
 # ----------------------------------------------------------------------
 
 import ConfigParser

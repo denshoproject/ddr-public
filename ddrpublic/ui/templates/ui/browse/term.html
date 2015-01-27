@@ -27,6 +27,17 @@
 </p>
 {% endif %}
 
+
+<div style="border:5px dashed orange;">
+<h3>Encyclopedia Pages</h3>
+<ul>
+{% for url in term.encyc_urls %}
+<li><a href="{{ ENCYC_BASE }}{{ url }}">{{ url }}</a></li>
+{% endfor %}
+</ul>
+</div>
+
+
 {% if term.children %}
 <ul id="term-children" class="list-unstyled">
 {% for t in term.children %}
