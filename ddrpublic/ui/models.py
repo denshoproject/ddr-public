@@ -523,6 +523,7 @@ class Entity( object ):
     fieldnames = []
     signature_file = None
     _topics = []
+    _encyc_articles = []
     
     def __repr__( self ):
         return '<ui.models.Entity %s>' % self.id
@@ -579,6 +580,13 @@ class Entity( object ):
     def topics( self ):
         return [faceting.Term('topics', int(tid)) for tid in self._topics]
 
+    def encyc_articles( self ):
+        if not self._encyc_articles:
+            self._encyc_articles = []
+            for term in self.topics():
+                for article in term.encyc_articles():
+                    self._encyc_articles.append(article)
+        return self._encyc_articles
 
 
 class File( object ):

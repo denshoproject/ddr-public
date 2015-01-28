@@ -1,6 +1,7 @@
 from collections import defaultdict
 import json
 import re
+import urllib
 
 from django.conf import settings
 from django.core.cache import cache
@@ -177,6 +178,7 @@ class Term(object):
     created = None
     modified = None
     encyc_urls = None
+    _encyc_articles = []
     _facet = None
     
     def __init__(self, facet_id=None, term_id=None):
@@ -248,6 +250,17 @@ class Term(object):
             term = Term(facet_id=self.facet_id, term_id=tid)
             terms.append(term)
         return terms
+    
+    def encyc_articles(self):
+        if not self._encyc_articles:
+            self._encyc_articles = [
+                {
+                    'url': '%s%s' % (settings.ENCYC_BASE, uri),
+                    'title': urllib.unquote(uri).replace('/', '')
+                }
+                for uri in self.encyc_urls
+            ]
+        return self._encyc_articles
 
 
 INT_IN_STRING = re.compile(r'^\d+$')
