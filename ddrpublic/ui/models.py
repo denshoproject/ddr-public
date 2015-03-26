@@ -407,18 +407,15 @@ class Repository( object ):
         return cite_url('repo', self.id)
     
     def organizations( self, page=1, page_size=DEFAULT_SIZE ):
+        objects = []
         results = cached_query(host=HOSTS, index=INDEX, model='organization',
                                query='id:"%s"' % self.id,
                                fields=ORGANIZATION_LIST_FIELDS,
                                sort=ORGANIZATION_LIST_SORT,)
-        objects = process_query_results( results, page, page_size )
-        for o in objects:
-            for hit in results['hits']['hits']:
-                fields = hit['fields']
-                if fields.get('id',None) and fields['id'] == o.id:
-                    o.url = fields.get('url', None)
-                    o.title = fields.get('title', o.id)
-                    o.description = fields.get('description', None)
+        for hit in results['hits']['hits']:
+            model,repo,org = Identity.split_object_id(hit['_id'])
+            org = Organization.get(repo, org)
+            objects.append(org)
         return objects
 
 
