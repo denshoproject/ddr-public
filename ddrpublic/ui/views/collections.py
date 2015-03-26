@@ -26,9 +26,11 @@ def list( request ):
         organizations.append( (organization,collections) )
     else:
         # default site
-        for organization in Repository.get('ddr').organizations():
-            collections = organization.collections(1, 1000000)
-            organizations.append( (organization,collections) )
+        repository = Repository.get('ddr')
+        organizations = []
+        for org in repository.organizations():
+            collections = org.collections(1, 1000000)
+            organizations.append( (org,collections) )
     return render_to_response(
         'ui/collections.html',
         {
