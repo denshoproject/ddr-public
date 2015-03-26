@@ -14,7 +14,7 @@ from django.template.loader import get_template
 from django.utils.http import urlquote  as django_urlquote
 
 from DDR import docstore
-from DDR.models import model_fields as ddr_model_fields, MODELS_DIR, MODELS
+from DDR.models import MODELS_DIR, MODELS, MODULES
 from DDR.models import Identity
 
 from ui import faceting
@@ -260,21 +260,36 @@ field_display_handler = {
 }
 
 def field_display_style( o, field ):
-    modelfields = docstore._model_fields(MODELS_DIR, MODELS)
-    for modelfield in modelfields[o.model]:
+    for modelfield in model_fields(o.model):
         if modelfield['name'] == field:
             return modelfield['elasticsearch']['display']
     return None
 
 # ----------------------------------------------------------------------
 
+def model_fields(model):
+    """Get list of fields from ES
+    
+    @param model: str Name of model
+    @returns: list of field names
+    """
+    key = 'ddrpublic:%s:fields' % model
+    cached = cache.get(key)
+    if not cached:
+        for m,module in MODULES.iteritems():
+            if m == model:
+                cached = module.FIELDS
+        cache.set(key, cached, 60*1)
+    return cached
 
 def build_object( o, id, source ):
     """Build object from ES GET data.
+    
+    NOTE: This only works on object types listed in DDR.models.MODULES.
     """
     o.id = id
     o.fields = []
-    for field in ddr_model_fields(o.model):
+    for field in model_fields(o.model):
         fieldname = field['name']
         label = field.get('label', field['name'])
         if source.get(fieldname,None):
