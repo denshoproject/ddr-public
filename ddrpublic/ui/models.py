@@ -15,7 +15,7 @@ from django.utils.http import urlquote  as django_urlquote
 
 from DDR import docstore
 from DDR.models import model_fields as ddr_model_fields, MODELS_DIR, MODELS
-from DDR.models import make_object_id, split_object_id
+from DDR.models import Identity
 
 from ui import faceting
 
@@ -178,15 +178,13 @@ def massage_query_results( results, thispage, page_size ):
         if not o.get('placeholder',False):
             # assemble urls for each record type
             if o.get('id', None):
+                oid = Identity.split_object_id(o['id'])
                 if o['type'] == 'collection':
-                    repo,org,cid = o['id'].split('-')
-                    o['url'] = reverse('ui-collection', args=[repo,org,cid])
+                    o['url'] = reverse('ui-collection', args=oid[1:])
                 elif o['type'] == 'entity':
-                    repo,org,cid,eid = o['id'].split('-')
-                    o['url'] = reverse('ui-entity', args=[repo,org,cid,eid])
+                    o['url'] = reverse('ui-entity', args=oid[1:])
                 elif o['type'] == 'file':
-                    repo,org,cid,eid,role,sha1 = o['id'].split('-')
-                    o['url'] = reverse('ui-file', args=[repo,org,cid,eid,role,sha1])
+                    o['url'] = reverse('ui-file', args=oid[1:])
     return objects
 
 # ----------------------------------------------------------------------
@@ -308,15 +306,20 @@ def build_object( o, id, source ):
         except:
             pass
     # parent object ids
-    if o.model == 'file': o.repo,o.org,o.cid,o.eid,o.role,o.sha1 = o.id.split('-')
-    elif o.model == 'entity': o.repo,o.org,o.cid,o.eid = o.id.split('-')
-    elif o.model == 'collection': o.repo,o.org,o.cid = o.id.split('-')
-    elif o.model == 'organization': o.repo,o.org = o.id.split('-')
-    elif o.model == 'repository': o.repo = o.id.split('-')
-    if o.model in ['file']: o.entity_id = '%s-%s-%s-%s' % (o.repo,o.org,o.cid,o.eid)
-    if o.model in ['file','entity']: o.collection_id = '%s-%s-%s' % (o.repo,o.org,o.cid)
-    if o.model in ['file','entity','collection']: o.organization_id = '%s-%s' % (o.repo,o.org)
-    if o.model in ['file','entity','collection','organization']: o.repository_id = '%s' % (o.repo)
+    oid = Identity.split_object_id(o.id)
+    if o.model == 'file': m, o.repo,o.org,o.cid,o.eid,o.role,o.sha1 = oid
+    elif o.model == 'entity': m, o.repo,o.org,o.cid,o.eid = oid
+    elif o.model == 'collection': m, o.repo,o.org,o.cid = oid
+    elif o.model == 'organization': m, o.repo,o.org = oid
+    elif o.model == 'repository': m, o.repo = oid
+    if o.model in ['file']:
+        o.entity_id = Identity.make_object_id('entity', o.repo,o.org,o.cid,o.eid,o.role,o.sha1)
+    if o.model in ['file','entity']:
+        o.collection_id = Identity.make_object_id('collection', o.repo, o.org, o.cid)
+    if o.model in ['file','entity','collection']:
+        o.organization_id = Identity.make_object_id('org', o.repo,o.org)
+    if o.model in ['file','entity','collection','organization']:
+        o.repository_id = Identity.make_object_id('repo', o.repo)
     # signature file
     if source.get('signature_file', None):
         o.signature_file = source['signature_file']
@@ -373,7 +376,7 @@ class Repository( object ):
     
     @staticmethod
     def get( repo ):
-        id = make_object_id(Repository.model, repo)
+        id = Identity.make_object_id(Repository.model, repo)
         document = docstore.get(HOSTS, index=INDEX, model=Repository.model, document_id=id)
         if document and (document['found'] or document['exists']):
             o = Repository()
@@ -418,7 +421,7 @@ class Organization( object ):
     
     @staticmethod
     def get( repo, org ):
-        id = make_object_id(Organization.model, repo, org)
+        id = Identity.make_object_id(Organization.model, repo, org)
         document = docstore.get(HOSTS, index=INDEX, model=Organization.model, document_id=id)
         if document and (document['found'] or document['exists']):
             o = Organization()
@@ -463,7 +466,7 @@ class Collection( object ):
     
     @staticmethod
     def get( repo, org, cid ):
-        id = make_object_id(Collection.model, repo, org, cid)
+        id = Identity.make_object_id(Collection.model, repo, org, cid)
         document = docstore.get(HOSTS, index=INDEX, model=Collection.model, document_id=id)
         if document and (document['found'] or document['exists']):
             return build_object(Collection(), id, document['_source'])
@@ -530,7 +533,7 @@ class Entity( object ):
     
     @staticmethod
     def get( repo, org, cid, eid ):
-        id = make_object_id(Entity.model, repo, org, cid, eid)
+        id = Identity.make_object_id(Entity.model, repo, org, cid, eid)
         document = docstore.get(HOSTS, index=INDEX, model=Entity.model, document_id=id)
         if document and (document['found'] or document['exists']):
             return build_object(Entity(), id, document['_source'])
@@ -606,7 +609,7 @@ class File( object ):
     
     @staticmethod
     def get( repo, org, cid, eid, role, sha1 ):
-        id = make_object_id(File.model, repo, org, cid, eid, role, sha1)
+        id = Identity.make_object_id(File.model, repo, org, cid, eid, role, sha1)
         document = docstore.get(HOSTS, index=INDEX, model=File.model, document_id=id)
         if document and (document['found'] or document['exists']):
             return build_object(File(), id, document['_source'])

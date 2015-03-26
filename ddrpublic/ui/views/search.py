@@ -13,7 +13,8 @@ from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 from django.utils.http import urlquote  as django_urlquote
 
-from DDR import docstore, models
+from DDR import docstore
+from DDR.models import Identity
 from ui import domain_org
 from ui import faceting
 from ui import models
@@ -63,7 +64,7 @@ def results( request ):
         query = query.replace(char, '')
     if query:
         context['search_form'] = SearchForm({'query': query})
-        object_id_parts = models.split_object_id(query)
+        object_id_parts = Identity.split_object_id(query)
         if object_id_parts and (object_id_parts[0] in ['collection', 'entity', 'file']):
             # query is a DDR ID -- go straight to document page
             model = object_id_parts.pop(0)
