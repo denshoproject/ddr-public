@@ -28,16 +28,6 @@
 {% endif %}
 
 
-{% if term.encyc_articles %}
-<div style="border:5px dashed orange;">
-  <h3>Encyclopedia Pages</h3>
-  <ul>
-    {% for article in term.encyc_articles %}
-    <li><a href="{{ article.url }}">{{ article.title }}</a></li>
-    {% endfor %}
-  </ul>
-</div>
-{% endif %}
 
 
 {% if term.children %}
@@ -47,6 +37,19 @@
 {% endfor %}
 </ul>
 {% endif %}
+
+
+{% if term.encyc_articles %}
+<!-- topic.encycarticles -->
+<p>
+Related articles from the
+<a href="http://encyclopedia.densho.org/">Densho Encyclopedia</a>:
+{% for article in term.encyc_articles %}
+  <a href="{{ article.url }}">{{ article.title }}</a>{% if not forloop.last %},{% endif %}
+{% endfor %}
+</p>
+{% endif %}
+
 
 {% if page.object_list %}
   <div>

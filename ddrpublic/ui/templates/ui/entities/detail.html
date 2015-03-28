@@ -111,17 +111,6 @@
 </ul>
 </p>
 
-{% if object.encyc_articles %}
-<div style="border:5px dashed orange;">
-  <h3>Encyclopedia Pages</h3>
-  <ul>
-    {% for article in object.encyc_articles %}
-    <li><a href="{{ article.url }}">{{ article.title }}</a></li>
-    {% endfor %}
-  </ul>
-</div>
-{% endif %}
-
 								</div>
 								<div class="col-md-7 col-sm-7">
 									<!-- entity.facility -->
@@ -163,6 +152,21 @@
 				<p>
 				{{ object.fields|ddrvalue:"rights" }}
 				</p>
+
+{% if object.encyc_articles %}
+				<!-- entity.encycarticles -->
+				<h3 class="page-header">FOR MORE INFORMATION</h3>
+				<p class="small">
+                Related articles from the
+                <a href="http://encyclopedia.densho.org/">Densho Encyclopedia</a>
+                </p>
+                <ul class="list-unstyled">
+  {% for article in object.encyc_articles %}
+				    <li><a href="{{ article.url }}">{{ article.title }}</a></li>
+  {% endfor %}
+				</ul>
+{% endif %}
+
 		</div>	
 	</div>
 </div>		
