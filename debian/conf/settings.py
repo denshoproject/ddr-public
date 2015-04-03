@@ -115,6 +115,7 @@ INSTALLED_APPS = (
     #'django.contrib.admin',
     #
     'bootstrap_pagination',
+    'rest_framework',
     'sorl.thumbnail',
     #
     'ddrpublic',

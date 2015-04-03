@@ -1,8 +1,35 @@
 from django.conf.urls import patterns, include, url
 from django.views.generic import TemplateView
 
+from rest_framework.urlpatterns import format_suffix_patterns
+
 urlpatterns = patterns(
     '',
+    url(
+        r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/(?P<role>[\w]+)/(?P<sha1>[\w]+)/$',
+        'ui.views.api.file_detail',
+        name='ui-api-file'
+    ),
+    url(
+        r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/$',
+        'ui.views.api.entity_detail',
+        name='ui-api-entity'
+    ),
+    url(
+        r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/$',
+        'ui.views.api.collection_detail',
+        name='ui-api-collection'
+    ),
+    url(
+        r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/$',
+        'ui.views.api.organization_detail',
+        name='ui-api-organization'
+    ),
+    url(
+        r'^api/0.1/(?P<repo>[\w]+)$',
+        'ui.views.api.repository_detail',
+        name='ui-api-repository'
+    ),
     
     url(r'^about/', TemplateView.as_view(template_name="ui/about.html"), name='ui-about'),
     url(r'^contact/$', TemplateView.as_view(template_name='ui/about.html'), name='ui-contact'),
@@ -37,3 +64,5 @@ urlpatterns = patterns(
     
     url(r'^$', 'ui.views.index', name='ui-index'),
 )
+
+urlpatterns = format_suffix_patterns(urlpatterns)

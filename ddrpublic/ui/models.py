@@ -400,8 +400,19 @@ class Repository( object ):
             return o
         return None
     
+    @staticmethod
+    def api_get( repo ):
+        id = Identity.make_object_id(Repository.model, repo)
+        document = docstore.get(HOSTS, index=INDEX, model=Repository.model, document_id=id)
+        if document and (document['found'] or document['exists']):
+            return document['_source']
+        return None
+    
     def absolute_url( self ):
         return reverse('ui-repo', args=(self.repo))
+    
+    def api_url( self ):
+        return reverse('ui-api-repo', args=(self.repo))
     
     def cite_url( self ):
         return cite_url('repo', self.id)
@@ -442,8 +453,26 @@ class Organization( object ):
             return o
         return None
     
+    @staticmethod
+    def api_get( repo, org ):
+        id = Identity.make_object_id(Organization.model, repo, org)
+        document = docstore.get(HOSTS, index=INDEX, model=Organization.model, document_id=id)
+        if document and (document['found'] or document['exists']):
+            data = document['_source']
+            o = Organization()
+            for key,value in document['_source'].iteritems():
+                setattr(o, key, value)
+            data['url'] = o.absolute_url()
+            data['api_url'] = o.api_url()
+            data['logo_url'] = o.logo_url()
+            return data
+        return None
+    
     def absolute_url( self ):
         return reverse('ui-organization', args=(self.repo, self.org))
+    
+    def api_url( self ):
+        return reverse('ui-api-organization', args=(self.repo, self.org))
     
     def cite_url( self ):
         return cite_url('org', self.id)
@@ -484,8 +513,40 @@ class Collection( object ):
             return build_object(Collection(), id, document['_source'])
         return None
     
+    @staticmethod
+    def api_get( repo, org, cid ):
+        id = Identity.make_object_id(Collection.model, repo, org, cid)
+        document = docstore.get(HOSTS, index=INDEX, model=Collection.model, document_id=id)
+        if document and (document['found'] or document['exists']):
+            data = document['_source']
+            o = build_object(Collection(), id, data)
+            data['url'] = o.absolute_url()
+            data['api_url'] = o.api_url()
+            data['signature_url'] = o.signature_url()
+            data['entities'] = []
+            for e in o.entities():
+                if type(e) == type({}):
+                    repo,org,cid,eid = e['id'].split('-')
+                    e['url'] = reverse('ui-entity', args=(repo, org, cid, eid))
+                    e['api_url'] = reverse('ui-api-entity', args=(repo, org, cid, eid))
+                    data['entities'].append(e)
+                else:
+                    d = {
+                        'id': e.id,
+                        'title': e.title,
+                        'url': e.absolute_url(),
+                        'api_url': e.api_url(),
+                        'signature_url': e.signature_url(),
+                    }
+                    data['entities'].append(d)
+            return data
+        return None
+    
     def absolute_url( self ):
         return reverse('ui-collection', args=(self.repo, self.org, self.cid))
+    
+    def api_url( self ):
+        return reverse('ui-api-collection', args=(self.repo, self.org, self.cid))
     
     def backend_url( self ):
         return backend_url('collection', self.id)
@@ -551,8 +612,31 @@ class Entity( object ):
             return build_object(Entity(), id, document['_source'])
         return None
     
+    @staticmethod
+    def api_get( repo, org, cid, eid ):
+        id = Identity.make_object_id(Entity.model, repo, org, cid, eid)
+        document = docstore.get(HOSTS, index=INDEX, model=Entity.model, document_id=id)
+        if document and (document['found'] or document['exists']):
+            data = document['_source']
+            o = build_object(Entity(), id, data)
+            data['url'] = o.absolute_url()
+            data['api_url'] = o.api_url()
+            data['signature_url'] = o.signature_url()
+            for f in data['files']:
+                args = (
+                    data['repo'], data['org'], data['cid'], data['eid'],
+                    f['role'], f['sha1'][:10]
+                )
+                f['url'] = reverse('ui-file', args=args)
+                f['api_url'] = reverse('ui-api-file', args=args)
+            return data
+        return None
+    
     def absolute_url( self ):
         return reverse('ui-entity', args=(self.repo, self.org, self.cid, self.eid))
+    
+    def api_url( self ):
+        return reverse('ui-api-entity', args=(self.repo, self.org, self.cid, self.eid))
     
     def backend_url( self ):
         return backend_url('entity', self.id)
@@ -627,8 +711,28 @@ class File( object ):
             return build_object(File(), id, document['_source'])
         return None
     
+    @staticmethod
+    def api_get( repo, org, cid, eid, role, sha1 ):
+        id = Identity.make_object_id(File.model, repo, org, cid, eid, role, sha1)
+        document = docstore.get(HOSTS, index=INDEX, model=File.model, document_id=id)
+        if document and (document['found'] or document['exists']):
+            data = document['_source']
+            o = build_object(File(), id, data)
+            data['url'] = o.absolute_url()
+            data['api_url'] = o.api_url()
+            data['access_url'] = o.access_url()
+            #data['download_url'] = os.path.join(
+            #    os.path.dirname(o.access_url()),
+            #    o.basename_orig)
+            data['download_url'] = o.download_url()
+            return data
+        return None
+    
     def absolute_url( self ):
         return reverse('ui-file', args=(self.repo, self.org, self.cid, self.eid, self.role, self.sha1))
+    
+    def api_url( self ):
+        return reverse('ui-api-file', args=(self.repo, self.org, self.cid, self.eid, self.role, self.sha1))
     
     def access_url( self ):
         if hasattr(self, 'access_rel') and self.access_rel:
