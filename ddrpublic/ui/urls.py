@@ -6,18 +6,18 @@ from rest_framework.urlpatterns import format_suffix_patterns
 urlpatterns = patterns(
     '',
     # lists
-    url(r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/files/$', 'ui.views.api.files', name='ui-api-files'),
-    url(r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/entities/$', 'ui.views.api.entities', name='ui-api-entities'),
-    url(r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/collections/$', 'ui.views.api.collections', name='ui-api-collections'),
-    url(r'^api/0.1/(?P<repo>[\w]+)/organizations/$', 'ui.views.api.organizations', name='ui-api-organizations'),
+    url(r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/files/$', 'ui.api.files', name='ui-api-files'),
+    url(r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/entities/$', 'ui.api.entities', name='ui-api-entities'),
+    url(r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/collections/$', 'ui.api.collections', name='ui-api-collections'),
+    url(r'^api/0.1/(?P<repo>[\w]+)/organizations/$', 'ui.api.organizations', name='ui-api-organizations'),
     # nodes
-    url(r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/(?P<role>[\w]+)/(?P<sha1>[\w]+)/$', 'ui.views.api.file', name='ui-api-file'),
-    url(r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/$', 'ui.views.api.entity', name='ui-api-entity'),
-    url(r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/$', 'ui.views.api.collection', name='ui-api-collection'),
-    url(r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/$', 'ui.views.api.organization', name='ui-api-organization'),
-    url(r'^api/0.1/(?P<repo>[\w]+)$', 'ui.views.api.repository', name='ui-api-repository'),
+    url(r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/(?P<role>[\w]+)/(?P<sha1>[\w]+)/$', 'ui.api.file', name='ui-api-file'),
+    url(r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/$', 'ui.api.entity', name='ui-api-entity'),
+    url(r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/$', 'ui.api.collection', name='ui-api-collection'),
+    url(r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/$', 'ui.api.organization', name='ui-api-organization'),
+    url(r'^api/0.1/(?P<repo>[\w]+)$', 'ui.api.repository', name='ui-api-repository'),
     #
-    url(r'^api/0.1/$', 'ui.views.api.index', name='ui-api-index'),
+    url(r'^api/0.1/$', 'ui.api.index', name='ui-api-index'),
     
     url(r'^about/', TemplateView.as_view(template_name="ui/about.html"), name='ui-about'),
     url(r'^contact/$', TemplateView.as_view(template_name='ui/about.html'), name='ui-contact'),
