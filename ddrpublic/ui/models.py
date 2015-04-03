@@ -405,14 +405,35 @@ class Repository( object ):
         id = Identity.make_object_id(Repository.model, repo)
         document = docstore.get(HOSTS, index=INDEX, model=Repository.model, document_id=id)
         if document and (document['found'] or document['exists']):
-            return document['_source']
+            d = document['_source']
+            d['repository_url'] = d['url']
+            d['url'] = reverse('ui-api-repository', args=(repo,))
+            d['absolute_url'] = reverse('ui-repo', args=(repo,))
+            d['children'] = reverse('ui-api-organizations', args=(repo,))
+            return d
         return None
     
-    def absolute_url( self ):
-        return reverse('ui-repo', args=(self.repo))
+    def api_children( self, page=1, page_size=DEFAULT_SIZE ):
+        results = cached_query(
+            host=HOSTS, index=INDEX, model='organization',
+            query='id:"%s"' % self.id,
+            fields=ORGANIZATION_LIST_FIELDS,
+            sort=ORGANIZATION_LIST_SORT,
+        )
+        documents = [hit['_source'] for hit in results['hits']['hits']]
+        for d in documents:
+            model,repo,org = Identity.split_object_id(d['id'])
+            d['organization_url'] = d['url']
+            d['url'] = reverse('ui-api-organization', args=(repo, org))
+            d['absolute_url'] = reverse('ui-organization', args=(repo, org))
+            d['logo_url'] = org_logo_url(d['id'])
+        return documents
     
     def api_url( self ):
         return reverse('ui-api-repo', args=(self.repo))
+    
+    def absolute_url( self ):
+        return reverse('ui-repo', args=(self.repo))
     
     def cite_url( self ):
         return cite_url('repo', self.id)
@@ -462,17 +483,32 @@ class Organization( object ):
             o = Organization()
             for key,value in document['_source'].iteritems():
                 setattr(o, key, value)
-            data['url'] = o.absolute_url()
-            data['api_url'] = o.api_url()
+            data['url'] = o.api_url()
+            data['absolute_url'] = o.absolute_url()
             data['logo_url'] = o.logo_url()
+            data['children'] = reverse('ui-api-collections', args=(repo,org))
             return data
         return None
     
-    def absolute_url( self ):
-        return reverse('ui-organization', args=(self.repo, self.org))
+    def api_children( self, page=1, page_size=DEFAULT_SIZE ):
+        results = cached_query(
+            host=HOSTS, index=INDEX, model='collection',
+            query='id:"%s"' % self.id,
+            fields=COLLECTION_LIST_FIELDS,
+            sort=COLLECTION_LIST_SORT,
+        )
+        documents = [hit['_source'] for hit in results['hits']['hits']]
+        for d in documents:
+            model,repo,org,cid = Identity.split_object_id(d['id'])
+            d['url'] = reverse('ui-api-collection', args=(repo, org, cid))
+            d['absolute_url'] = reverse('ui-collection', args=(repo, org, cid))
+        return documents
     
     def api_url( self ):
         return reverse('ui-api-organization', args=(self.repo, self.org))
+    
+    def absolute_url( self ):
+        return reverse('ui-organization', args=(self.repo, self.org))
     
     def cite_url( self ):
         return cite_url('org', self.id)
@@ -520,33 +556,36 @@ class Collection( object ):
         if document and (document['found'] or document['exists']):
             data = document['_source']
             o = build_object(Collection(), id, data)
-            data['url'] = o.absolute_url()
-            data['api_url'] = o.api_url()
+            data['url'] = o.api_url()
+            data['absolute_url'] = o.absolute_url()
             data['signature_url'] = o.signature_url()
-            data['entities'] = []
-            for e in o.entities():
-                if type(e) == type({}):
-                    repo,org,cid,eid = e['id'].split('-')
-                    e['url'] = reverse('ui-entity', args=(repo, org, cid, eid))
-                    e['api_url'] = reverse('ui-api-entity', args=(repo, org, cid, eid))
-                    data['entities'].append(e)
-                else:
-                    d = {
-                        'id': e.id,
-                        'title': e.title,
-                        'url': e.absolute_url(),
-                        'api_url': e.api_url(),
-                        'signature_url': e.signature_url(),
-                    }
-                    data['entities'].append(d)
+            data['children'] = reverse('ui-api-entities', args=(repo,org,cid))
             return data
         return None
     
-    def absolute_url( self ):
-        return reverse('ui-collection', args=(self.repo, self.org, self.cid))
+    def api_children( self, page=1, page_size=DEFAULT_SIZE ):
+        results = cached_query(
+            host=HOSTS, index=INDEX, model='entity',
+            query='id:"%s"' % self.id,
+            fields=ENTITY_LIST_FIELDS,
+            sort=ENTITY_LIST_SORT,
+        )
+        documents = [hit['_source'] for hit in results['hits']['hits']]
+        for d in documents:
+            model,repo,org,cid,eid = Identity.split_object_id(d['id'])
+            collection_id = Identity.make_object_id('collection', repo,org,cid)
+            d['url'] = reverse('ui-api-entity', args=(repo, org, cid, eid))
+            d['absolute_url'] = reverse('ui-entity', args=(repo, org, cid, eid))
+            if d['signature_file']:
+                d['img_url'] = '%s%s/%s-a.jpg' % (
+                    settings.MEDIA_URL, collection_id, d['signature_file'])
+        return documents
     
     def api_url( self ):
         return reverse('ui-api-collection', args=(self.repo, self.org, self.cid))
+    
+    def absolute_url( self ):
+        return reverse('ui-collection', args=(self.repo, self.org, self.cid))
     
     def backend_url( self ):
         return backend_url('collection', self.id)
@@ -619,24 +658,42 @@ class Entity( object ):
         if document and (document['found'] or document['exists']):
             data = document['_source']
             o = build_object(Entity(), id, data)
-            data['url'] = o.absolute_url()
-            data['api_url'] = o.api_url()
-            data['signature_url'] = o.signature_url()
-            for f in data['files']:
-                args = (
-                    data['repo'], data['org'], data['cid'], data['eid'],
-                    f['role'], f['sha1'][:10]
-                )
-                f['url'] = reverse('ui-file', args=args)
-                f['api_url'] = reverse('ui-api-file', args=args)
+            data['url'] = o.api_url()
+            data['absolute_url'] = o.absolute_url()
+            data['img_url'] = o.signature_url()
+            data['children'] = reverse('ui-api-files', args=(repo,org,cid,eid))
+            data.pop('files')
             return data
         return None
     
-    def absolute_url( self ):
-        return reverse('ui-entity', args=(self.repo, self.org, self.cid, self.eid))
+    def api_children( self, page=1, page_size=DEFAULT_SIZE ):
+        results = cached_query(
+            host=HOSTS, index=INDEX, model='file',
+            query='id:"%s"' % self.id,
+            fields=FILE_LIST_FIELDS,
+            sort=FILE_LIST_SORT,
+        )
+        documents = [hit['_source'] for hit in results['hits']['hits']]
+        for d in documents:
+            model,repo,org,cid,eid,role,sha1 = Identity.split_object_id(d['id'])
+            collection_id = Identity.make_object_id('collection', repo,org,cid)
+            d['url'] = reverse('ui-api-file', args=(repo, org, cid, eid, role, sha1))
+            d['absolute_url'] = reverse('ui-file', args=(repo, org, cid, eid, role, sha1))
+            d['img_url'] = '%s%s/%s' % (
+                settings.MEDIA_URL, collection_id, d['access_rel'])
+            if role == 'mezzanine':
+                extension = os.path.splitext(d['basename_orig'])[1]
+                filename = d['id'] + extension
+                path_rel = os.path.join(collection_id, filename)
+                url = settings.MEDIA_URL + path_rel
+                d['download_url'] = url
+        return documents
     
     def api_url( self ):
         return reverse('ui-api-entity', args=(self.repo, self.org, self.cid, self.eid))
+    
+    def absolute_url( self ):
+        return reverse('ui-entity', args=(self.repo, self.org, self.cid, self.eid))
     
     def backend_url( self ):
         return backend_url('entity', self.id)
@@ -718,21 +775,21 @@ class File( object ):
         if document and (document['found'] or document['exists']):
             data = document['_source']
             o = build_object(File(), id, data)
-            data['url'] = o.absolute_url()
-            data['api_url'] = o.api_url()
-            data['access_url'] = o.access_url()
+            data['url'] = o.api_url()
+            data['absolute_url'] = o.absolute_url()
+            data['img_url'] = o.access_url()
+            data['download_url'] = o.download_url()
             #data['download_url'] = os.path.join(
             #    os.path.dirname(o.access_url()),
             #    o.basename_orig)
-            data['download_url'] = o.download_url()
             return data
         return None
     
-    def absolute_url( self ):
-        return reverse('ui-file', args=(self.repo, self.org, self.cid, self.eid, self.role, self.sha1))
-    
     def api_url( self ):
         return reverse('ui-api-file', args=(self.repo, self.org, self.cid, self.eid, self.role, self.sha1))
+    
+    def absolute_url( self ):
+        return reverse('ui-file', args=(self.repo, self.org, self.cid, self.eid, self.role, self.sha1))
     
     def access_url( self ):
         if hasattr(self, 'access_rel') and self.access_rel:
