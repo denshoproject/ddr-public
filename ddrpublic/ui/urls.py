@@ -5,6 +5,10 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = patterns(
     '',
+    #
+    url(r'^api/0.1/facet/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/$', 'ui.api.term', name='ui-api-term'),
+    url(r'^api/0.1/facet/(?P<facet>[\w]+)/$', 'ui.api.facet', name='ui-api-facet'),
+    url(r'^api/0.1/facet/$', 'ui.api.facet_index', name='ui-api-facets'),
     # lists
     url(r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/files/$', 'ui.api.files', name='ui-api-files'),
     url(r'^api/0.1/(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/entities/$', 'ui.api.entities', name='ui-api-entities'),

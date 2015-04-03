@@ -106,8 +106,11 @@ class Facet(object):
     def __repr__(self):
         return "<Facet [%s] %s>" % (self.id, self.title)
     
+    def api_url(self):
+        return reverse('ui-api-facet', args=[self.id,])
+    
     def url(self):
-        return reverse('ui-browse-facet', args=(self.id))
+        return reverse('ui-browse-facet', args=[self.id,])
     
     def terms(self):
         if not self._terms:
@@ -162,6 +165,26 @@ class Facet(object):
         prnt(terms)
         return lines
 
+    def api_data(self):
+        data = {
+            'id': self.id,
+            'name': self.name,
+            'title': self.title,
+            'description': self.description,
+            'url': self.api_url(),
+            'absolute_url': reverse('ui-browse-facet', args=[self.id,]),
+            'terms': [],
+        }
+        for term in self.terms():
+            d = {
+                'id': term.id,
+                'title': term.title,
+                'url': term.api_url(),
+                'absolute_url': term.url(),
+            }
+            data['terms'].append(d)
+        return data
+
 
 class Term(object):
     id = None
@@ -202,11 +225,48 @@ class Term(object):
                 self.created = term.get('created', None)
                 self.modified = term.get('modified', None)
                 self.encyc_urls = term.get('encyc_urls', [])
+
+    def api_data(self):
+        data = {
+            'id': self.id,
+            'parent_id': self.parent_id,
+            'parent_url': '',
+            'facet_id': self.facet_id,
+            'title': self.title,
+            'description': self.description,
+            'weight': self.weight,
+            'created': self.created,
+            'modified': self.modified,
+            'encyclopedia': self.encyc_urls,
+            'url': self.api_url(),
+            'absolute_url': self.url(),
+            'ancestors': [],
+            'siblings': [],
+            'children': [],
+        }
+        if self.parent_id:
+            data['parent_url'] = reverse('ui-api-term', args=[self.facet_id, self.parent_id])
+        data['ancestors'] = [
+            reverse('ui-api-term', args=[self.facet_id, tid])
+            for tid in self._ancestors
+        ]
+        data['siblings'] = [
+            reverse('ui-api-term', args=[self.facet_id, tid])
+            for tid in self._siblings
+        ]
+        data['children'] = [
+            reverse('ui-api-term', args=[self.facet_id, tid])
+            for tid in self._children
+        ]
+        return data
     
     def __repr__(self):
         if self.title:
             return "<Term [%s] %s>" % (self.id, self.title)
         return "<Term [%s] %s>" % (self.id, self._title)
+
+    def api_url(self):
+        return reverse('ui-api-term', args=(self.facet_id, self.id))
     
     def url(self):
         return reverse('ui-browse-term', args=(self.facet_id, self.id))
