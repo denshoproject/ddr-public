@@ -282,10 +282,18 @@ def model_fields(model):
         cache.set(key, cached, 60*1)
     return cached
 
-def build_object( o, id, source ):
+def build_object( o, id, source, rename={} ):
     """Build object from ES GET data.
     
     NOTE: This only works on object types listed in DDR.models.MODULES.
+    
+    'rename' contains fields in 'source' that are to be given alternate names.
+    Entity.files() and .topics() methods override the original fields.
+    
+    @param o: Blank object to build on.
+    @param id: str DDR ID of the object.
+    @param source: dict Contents of Elasticsearch document (document['_source']).
+    @param rename: dict of {'fieldnames': 'alternate_names'}.
     """
     o.id = id
     o.fields = []
@@ -293,8 +301,13 @@ def build_object( o, id, source ):
         fieldname = field['name']
         label = field.get('label', field['name'])
         if source.get(fieldname,None):
+            # use a different attribute name if requested
+            if fieldname in rename.keys():
+                fname = rename[fieldname]
+            else:
+                fname = fieldname
             # direct attribute
-            setattr(o, fieldname, source[fieldname])
+            setattr(o, fname, source[fieldname])
             # fieldname,label,value tuple for use in template
             contents = source[fieldname]
             style = field_display_style(o, fieldname)
@@ -305,21 +318,6 @@ def build_object( o, id, source ):
                 else:
                     contents_display = field_display_handler[style](fieldname, contents)
                 o.fields.append( (fieldname, label, contents_display) )
-    # rename entity.files to entity._files
-    ohasattr = hasattr(o, 'files')
-    if (o.model == 'entity') and hasattr(o, 'files'):
-        o._files = o.files
-        try:
-            delattr(o, 'files')
-        except:
-            pass
-    # rename entity.topics -> entity._topics
-    if (o.model == 'entity') and hasattr(o, 'topics'):
-        o._topics = o.topics
-        try:
-            delattr(o, 'topics')
-        except:
-            pass
     # parent object ids
     oid = Identity.split_object_id(o.id)
     if o.model == 'file': m, o.repo,o.org,o.cid,o.eid,o.role,o.sha1 = oid
@@ -627,6 +625,11 @@ class Collection( object ):
         return media_url_local(self.signature_url())
 
 
+ENTITY_OVERRIDDEN_FIELDS = {
+    'topics': '_topics',
+    'files': '_files',
+}
+
 class Entity( object ):
     index = INDEX
     model = 'entity'
@@ -648,7 +651,7 @@ class Entity( object ):
         id = Identity.make_object_id(Entity.model, repo, org, cid, eid)
         document = docstore.get(HOSTS, index=INDEX, model=Entity.model, document_id=id)
         if document and (document['found'] or document['exists']):
-            return build_object(Entity(), id, document['_source'])
+            return build_object(Entity(), id, document['_source'], ENTITY_OVERRIDDEN_FIELDS)
         return None
     
     @staticmethod
@@ -657,7 +660,7 @@ class Entity( object ):
         document = docstore.get(HOSTS, index=INDEX, model=Entity.model, document_id=id)
         if document and (document['found'] or document['exists']):
             data = document['_source']
-            o = build_object(Entity(), id, data)
+            o = build_object(Entity(), id, data, ENTITY_OVERRIDDEN_FIELDS)
             data['url'] = o.api_url()
             data['absolute_url'] = o.absolute_url()
             data['img_url'] = o.signature_url()
