@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 
@@ -5,9 +6,11 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from DDR.models import Identity
 from ui.models import Repository, Organization, Collection, Entity, File
 from ui.views import filter_if_branded
 from ui import faceting
+from ui import models
 
 
 # helpers --------------------------------------------------------------
@@ -87,6 +90,36 @@ def files(request, repo, org, cid, eid, format=None):
     entity = Entity.get(repo, org, cid, eid)
     results = entity.api_children(page=1)
     return _list(request, results)
+
+@api_view(['GET'])
+def term_objects(request, facet_id, term_id, format=None):
+    terms = {facet_id:term_id}
+    fields = models.all_list_fields()
+    sort = {'record_created': request.GET.get('record_created', ''),
+            'record_lastmod': request.GET.get('record_lastmod', ''),}
+    # filter by partner
+    filters = {}
+    repo,org = None,None
+    if repo and org:
+        filters['repo'] = repo
+        filters['org'] = org
+    # do the query
+    results = models.cached_query(
+        settings.DOCSTORE_HOSTS, settings.DOCSTORE_INDEX,
+        terms=terms, filters=filters,
+        fields=fields,
+        sort=sort
+    )
+    # post-processing. See *.api_children methods in .models.py
+    documents = [hit['_source'] for hit in results['hits']['hits']]
+    for d in documents:
+        idparts = Identity.split_object_id(d['id'])
+        model = idparts.pop(0)
+        d['url'] = reverse('ui-api-%s' % model, args=(idparts))
+        d['absolute_url'] = reverse('ui-%s' % model, args=(idparts))
+        if d['signature_file']:
+            d['signature_url'] = models.signature_url(d['signature_file'])
+    return _list(request, documents)
 
 
 def _detail(request, data):
