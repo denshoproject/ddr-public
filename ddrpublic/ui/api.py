@@ -136,7 +136,7 @@ def term_objects(request, facet_id, term_id, format=None):
         d['url'] = reverse('ui-api-%s' % model, args=(idparts))
         d['absolute_url'] = reverse('ui-%s' % model, args=(idparts))
         if d['signature_file']:
-            d['signature_url'] = models.signature_url(d['signature_file'])
+            d['img_url'] = models.signature_url(d['signature_file'])
     return _list(request, documents)
 
 
