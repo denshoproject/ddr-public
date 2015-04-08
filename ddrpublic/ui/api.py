@@ -40,6 +40,17 @@ def add_host_list(request, data):
         new.append(val)
     return new
 
+def term_urls(request, data, facet_id, fieldname):
+    """Convert facet term IDs to links to term API nodes.
+    """
+    host = http_host(request)
+    topics_urls = []
+    for tid in data[fieldname]:
+        if tid:
+            url = '%s%s' % (host, reverse('ui-api-term', args=(facet_id, tid)))
+            topics_urls.append(url)
+    data[fieldname] = topics_urls
+
 def encyc_urls(data):
     encyc_urls = [
         '%s%s' % (settings.ENCYC_BASE, url)
@@ -152,7 +163,10 @@ def collection(request, repo, org, cid, format=None):
 
 @api_view(['GET'])
 def entity(request, repo, org, cid, eid, format=None):
-    return _detail(request, Entity.api_get(repo, org, cid, eid))
+    data = Entity.api_get(repo, org, cid, eid)
+    term_urls(request, data, 'topics', 'topics')
+    term_urls(request, data, 'facility', 'facility')
+    return _detail(request, data)
 
 @api_view(['GET'])
 def file(request, repo, org, cid, eid, role, sha1, format=None):
