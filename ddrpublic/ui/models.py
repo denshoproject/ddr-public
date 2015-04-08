@@ -102,6 +102,15 @@ def org_logo_url( organization_id ):
     """
     return os.path.join(settings.MEDIA_URL, organization_id, 'logo.png')
 
+def signature_url( signature_file ):
+    """
+    @param signature_file: str File ID
+    """
+    oid = Identity.split_object_id(signature_file)
+    model = oid.pop(0)
+    cid = Identity.make_object_id('collection', oid[0], oid[1], oid[2])
+    return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, cid, signature_file)
+
 def media_url_local( url ):
     """Replace media_url with one that points to "local" media server
     
@@ -618,7 +627,7 @@ class Collection( object ):
     
     def signature_url( self ):
         if self.signature_file:
-            return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, self.id, self.signature_file)
+            return signature_url(self.signature_file)
         return None
     
     def signature_url_local( self ):
@@ -730,7 +739,7 @@ class Entity( object ):
     
     def signature_url( self ):
         if self.signature_file:
-            return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, self.collection_id, self.signature_file)
+            return signature_url(self.signature_file)
         return None
     
     def signature_url_local( self ):
