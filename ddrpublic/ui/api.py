@@ -40,6 +40,13 @@ def add_host_list(request, data):
         new.append(val)
     return new
 
+def encyc_urls(data):
+    encyc_urls = [
+        '%s%s' % (settings.ENCYC_BASE, url)
+        for url in data['encyclopedia']
+    ]
+    data['encyclopedia'] = encyc_urls
+
 
 # views ----------------------------------------------------------------
 
@@ -178,4 +185,5 @@ def term(request, facet_id, term_id, format=None):
     data['ancestors'] = add_host_list(request, data['ancestors'])
     data['siblings'] = add_host_list(request, data['siblings'])
     data['children'] = add_host_list(request, data['children'])
+    encyc_urls(data)
     return Response(data)
