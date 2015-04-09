@@ -45,7 +45,7 @@ def term_urls(request, data, facet_id, fieldname):
     """
     host = http_host(request)
     topics_urls = []
-    for tid in data[fieldname]:
+    for tid in data.get(fieldname, []):
         if tid:
             url = '%s%s' % (host, reverse('ui-api-term', args=(facet_id, tid)))
             topics_urls.append(url)
