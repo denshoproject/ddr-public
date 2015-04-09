@@ -565,7 +565,7 @@ class Collection( object ):
             o = build_object(Collection(), id, data)
             data['url'] = o.api_url()
             data['absolute_url'] = o.absolute_url()
-            data['signature_url'] = o.signature_url()
+            data['img_url'] = o.signature_url()
             data['children'] = reverse('ui-api-entities', args=(repo,org,cid))
             return data
         return None
@@ -584,8 +584,7 @@ class Collection( object ):
             d['url'] = reverse('ui-api-entity', args=(repo, org, cid, eid))
             d['absolute_url'] = reverse('ui-entity', args=(repo, org, cid, eid))
             if d['signature_file']:
-                d['img_url'] = '%s%s/%s-a.jpg' % (
-                    settings.MEDIA_URL, collection_id, d['signature_file'])
+                d['img_url'] = signature_url(d['signature_file'])
         return documents
     
     def api_url( self ):
