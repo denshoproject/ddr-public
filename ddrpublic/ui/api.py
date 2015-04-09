@@ -74,36 +74,40 @@ def index(request, format=None):
     return Response(data)
 
 
-def _list(request, results):
-    data = {
-        "count": len(results),
-        "next": None,
-        "previous": None,
-        "results": results
-    }
+def _list(request, data):
+    host = http_host(request)
+    path = request.META['PATH_INFO']
+    if data['previous']:
+        data['previous'] = '%s%s%s' % (host, path, data['previous'])
+    if data['next']:
+        data['next'] = '%s%s%s' % (host, path, data['next'])
     for d in data['results']:
         add_url_host(request, d)
     return Response(data)
     
 @api_view(['GET'])
 def organizations(request, repo, format=None):
-    results = Repository.api_children(repo, page=1)
-    return _list(request, results)
+    offset = int(request.GET.get('offset', 0))
+    data = Repository.api_children(repo, offset=offset)
+    return _list(request, data)
 
 @api_view(['GET'])
 def collections(request, repo, org, format=None):
-    results = Organization.api_children(repo, org, page=1)
-    return _list(request, results)
+    offset = int(request.GET.get('offset', 0))
+    data = Organization.api_children(repo, org, offset=offset)
+    return _list(request, data)
 
 @api_view(['GET'])
 def entities(request, repo, org, cid, format=None):
-    results = Collection.api_children(repo, org, cid, page=1)
-    return _list(request, results)
+    offset = int(request.GET.get('offset', 0))
+    data = Collection.api_children(repo, org, cid, offset=offset)
+    return _list(request, data)
 
 @api_view(['GET'])
 def files(request, repo, org, cid, eid, format=None):
-    results = Entity.api_children(repo, org, cid, eid, page=1)
-    return _list(request, results)
+    offset = int(request.GET.get('offset', 0))
+    data = Entity.api_children(repo, org, cid, eid, offset=offset)
+    return _list(request, data)
 
 @api_view(['GET'])
 def term_objects(request, facet_id, term_id, format=None):

@@ -391,16 +391,52 @@ def cached_query(host, index, model='', query='', terms={}, filters={}, fields=[
         cache.set(key, cached, settings.ELASTICSEARCH_QUERY_TIMEOUT)
     return cached
 
-def api_children(model, object_id, page=1, page_size=DEFAULT_SIZE):
-    results = docstore.search(
-        hosts=HOSTS, index=INDEX,
-        model=model,
-        query='id:"%s"' % object_id,
-        fields=MODEL_LIST_SETTINGS[model]['fields'],
-        sort=MODEL_LIST_SETTINGS[model]['sort'],
+
+# ----------------------------------------------------------------------
+# functions to support Django REST Framework API
+
+def api_children(model, object_id, limit=DEFAULT_SIZE, offset=0):
+    """Return object children list in Django REST Framework format.
+    
+    Returns a paged list with count/previous/next metadata
+    
+    @returns: dict
+    """
+    q = 'id:"%s"' % object_id
+    sort = docstore._clean_sort(MODEL_LIST_SETTINGS[model]['sort'])
+    fields = ','.join(MODEL_LIST_SETTINGS[model]['fields'])
+    es = docstore._get_connection(HOSTS)
+    results = es.search(
+        index=INDEX,
+        doc_type=model,
+        q=q,
+        body={},
+        sort=sort,
+        _source_include=fields,
+        from_=offset,
+        size=limit,
     )
-    documents = [hit['_source'] for hit in results['hits']['hits']]
-    return documents
+    #
+    count = results['hits']['total']
+    previous,next_ = None,None
+    p = offset - limit
+    n = offset + limit
+    if p < 0:
+        p = None
+    if n >= count:
+        n = None
+    if p is not None:
+        previous = '?limit=%s&offset=%s' % (limit, p)
+    if n:
+        next_ = '?limit=%s&offset=%s' % (limit, n)
+    #
+    data = {
+        "count": count,
+        "previous": previous,
+        "next": next_,
+        "results": [hit['_source'] for hit in results['hits']['hits']],
+    }
+    return data
 
 
 class Repository( object ):
@@ -439,16 +475,16 @@ class Repository( object ):
         return None
 
     @staticmethod
-    def api_children( repo, page=1, page_size=DEFAULT_SIZE ):
+    def api_children( repo, limit=DEFAULT_SIZE, offset=0 ):
         object_id = Identity.make_object_id(Repository.model, repo)
-        documents = api_children(Organization.model, object_id, page=page, page_size=page_size)
-        for d in documents:
+        data = api_children(Organization.model, object_id, limit=limit, offset=offset)
+        for d in data['results']:
             model,repo,org = Identity.split_object_id(d['id'])
             d['organization_url'] = d['url']
             d['url'] = reverse('ui-api-organization', args=(repo, org))
             d['absolute_url'] = reverse('ui-organization', args=(repo, org))
             d['logo_url'] = org_logo_url(d['id'])
-        return documents
+        return data
     
     def api_url( self ):
         return reverse('ui-api-repo', args=(self.repo))
@@ -512,14 +548,14 @@ class Organization( object ):
         return None
 
     @staticmethod
-    def api_children( repo, org, page=1, page_size=DEFAULT_SIZE ):
+    def api_children( repo, org, limit=DEFAULT_SIZE, offset=0 ):
         object_id = Identity.make_object_id(Organization.model, repo, org)
-        documents = api_children(Collection.model, object_id, page=page, page_size=page_size)
-        for d in documents:
+        data = api_children(Collection.model, object_id, limit=limit, offset=offset)
+        for d in data['results']:
             model,repo,org,cid = Identity.split_object_id (d['id'])
             d['url'] = reverse('ui-api-collection', args=(repo, org, cid))
             d['absolute_url'] = reverse('ui-collection', args=(repo, org, cid))
-        return documents
+        return data
     
     def api_url( self ):
         return reverse('ui-api-organization', args=(self.repo, self.org))
@@ -581,17 +617,17 @@ class Collection( object ):
         return None
 
     @staticmethod
-    def api_children( repo, org, cid, page=1, page_size=DEFAULT_SIZE ):
+    def api_children( repo, org, cid, limit=DEFAULT_SIZE, offset=0 ):
         object_id = Identity.make_object_id(Collection.model, repo, org, cid)
         collection_id = object_id
-        documents = api_children(Entity.model, object_id, page=page, page_size=page_size)
-        for d in documents:
+        data = api_children(Entity.model, object_id, limit=limit, offset=offset)
+        for d in data['results']:
             model,repo,org,cid,eid = Identity.split_object_id(d['id'])
             d['url'] = reverse('ui-api-entity', args=(repo, org, cid, eid))
             d['absolute_url'] = reverse('ui-entity', args=(repo, org, cid, eid))
             if d['signature_file']:
                 d['img_url'] = signature_url(d['signature_file'])
-        return documents
+        return data
     
     def api_url( self ):
         return reverse('ui-api-collection', args=(self.repo, self.org, self.cid))
@@ -684,11 +720,11 @@ class Entity( object ):
         return None
 
     @staticmethod
-    def api_children( repo, org, cid, eid, page=1, page_size=DEFAULT_SIZE ):
+    def api_children( repo, org, cid, eid, limit=DEFAULT_SIZE, offset=0 ):
         object_id = Identity.make_object_id(Entity.model, repo, org, cid, eid)
         collection_id = Identity.make_object_id(Collection.model, repo,org,cid)
-        documents = api_children(model, object_id, page=page, page_size=page_size)
-        for d in documents:
+        data = api_children(File.model, object_id, limit=limit, offset=offset)
+        for d in data['results']:
             model,repo,org,cid,eid,role,sha1 = Identity.split_object_id(d['id'])
             d['url'] = reverse('ui-api-file', args=(repo, org, cid, eid, role, sha1))
             d['absolute_url'] = reverse('ui-file', args=(repo, org, cid, eid, role, sha1))
@@ -700,7 +736,7 @@ class Entity( object ):
                 path_rel = os.path.join(collection_id, filename)
                 url = settings.MEDIA_URL + path_rel
                 d['download_url'] = url
-        return documents
+        return data
     
     def api_url( self ):
         return reverse('ui-api-entity', args=(self.repo, self.org, self.cid, self.eid))
