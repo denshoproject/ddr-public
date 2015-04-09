@@ -30,4 +30,6 @@ def sitewide(request):
         'partner': partner,
         'BASE_TEMPLATE': base_template,
         'ENCYC_BASE': settings.ENCYC_BASE,
+        'DOCSTORE_HOSTS': settings.DOCSTORE_HOSTS,
+        'DOCSTORE_INDEX': settings.DOCSTORE_INDEX,
     }
