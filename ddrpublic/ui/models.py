@@ -58,6 +58,13 @@ FILE_LIST_SORT = [
     ['id','asc'],
 ]
 
+MODEL_LIST_SETTINGS = {
+    'repository': {'fields': REPOSITORY_LIST_FIELDS, 'sort': REPOSITORY_LIST_SORT},
+    'organization': {'fields': ORGANIZATION_LIST_FIELDS, 'sort': ORGANIZATION_LIST_SORT},
+    'collection': {'fields': COLLECTION_LIST_FIELDS, 'sort': COLLECTION_LIST_SORT},
+    'entity': {'fields': ENTITY_LIST_FIELDS, 'sort': ENTITY_LIST_SORT},
+    'file': {'fields': FILE_LIST_FIELDS, 'sort': FILE_LIST_SORT},
+}
 
 def all_list_fields():
     LIST_FIELDS = []
@@ -384,6 +391,17 @@ def cached_query(host, index, model='', query='', terms={}, filters={}, fields=[
         cache.set(key, cached, settings.ELASTICSEARCH_QUERY_TIMEOUT)
     return cached
 
+def api_children(model, object_id, page=1, page_size=DEFAULT_SIZE):
+    results = docstore.search(
+        hosts=HOSTS, index=INDEX,
+        model=model,
+        query='id:"%s"' % object_id,
+        fields=MODEL_LIST_SETTINGS[model]['fields'],
+        sort=MODEL_LIST_SETTINGS[model]['sort'],
+    )
+    documents = [hit['_source'] for hit in results['hits']['hits']]
+    return documents
+
 
 class Repository( object ):
     index = INDEX
@@ -419,15 +437,11 @@ class Repository( object ):
             d['children'] = reverse('ui-api-organizations', args=(repo,))
             return d
         return None
-    
-    def api_children( self, page=1, page_size=DEFAULT_SIZE ):
-        results = cached_query(
-            host=HOSTS, index=INDEX, model='organization',
-            query='id:"%s"' % self.id,
-            fields=ORGANIZATION_LIST_FIELDS,
-            sort=ORGANIZATION_LIST_SORT,
-        )
-        documents = [hit['_source'] for hit in results['hits']['hits']]
+
+    @staticmethod
+    def api_children( repo, page=1, page_size=DEFAULT_SIZE ):
+        object_id = Identity.make_object_id(Repository.model, repo)
+        documents = api_children(Organization.model, object_id, page=page, page_size=page_size)
         for d in documents:
             model,repo,org = Identity.split_object_id(d['id'])
             d['organization_url'] = d['url']
@@ -496,17 +510,13 @@ class Organization( object ):
             data['children'] = reverse('ui-api-collections', args=(repo,org))
             return data
         return None
-    
-    def api_children( self, page=1, page_size=DEFAULT_SIZE ):
-        results = cached_query(
-            host=HOSTS, index=INDEX, model='collection',
-            query='id:"%s"' % self.id,
-            fields=COLLECTION_LIST_FIELDS,
-            sort=COLLECTION_LIST_SORT,
-        )
-        documents = [hit['_source'] for hit in results['hits']['hits']]
+
+    @staticmethod
+    def api_children( repo, org, page=1, page_size=DEFAULT_SIZE ):
+        object_id = Identity.make_object_id(Organization.model, repo, org)
+        documents = api_children(Collection.model, object_id, page=page, page_size=page_size)
         for d in documents:
-            model,repo,org,cid = Identity.split_object_id(d['id'])
+            model,repo,org,cid = Identity.split_object_id (d['id'])
             d['url'] = reverse('ui-api-collection', args=(repo, org, cid))
             d['absolute_url'] = reverse('ui-collection', args=(repo, org, cid))
         return documents
@@ -569,18 +579,14 @@ class Collection( object ):
             data['children'] = reverse('ui-api-entities', args=(repo,org,cid))
             return data
         return None
-    
-    def api_children( self, page=1, page_size=DEFAULT_SIZE ):
-        results = cached_query(
-            host=HOSTS, index=INDEX, model='entity',
-            query='id:"%s"' % self.id,
-            fields=ENTITY_LIST_FIELDS,
-            sort=ENTITY_LIST_SORT,
-        )
-        documents = [hit['_source'] for hit in results['hits']['hits']]
+
+    @staticmethod
+    def api_children( repo, org, cid, page=1, page_size=DEFAULT_SIZE ):
+        object_id = Identity.make_object_id(Collection.model, repo, org, cid)
+        collection_id = object_id
+        documents = api_children(Entity.model, object_id, page=page, page_size=page_size)
         for d in documents:
             model,repo,org,cid,eid = Identity.split_object_id(d['id'])
-            collection_id = Identity.make_object_id('collection', repo,org,cid)
             d['url'] = reverse('ui-api-entity', args=(repo, org, cid, eid))
             d['absolute_url'] = reverse('ui-entity', args=(repo, org, cid, eid))
             if d['signature_file']:
@@ -676,18 +682,14 @@ class Entity( object ):
             data.pop('files')
             return data
         return None
-    
-    def api_children( self, page=1, page_size=DEFAULT_SIZE ):
-        results = cached_query(
-            host=HOSTS, index=INDEX, model='file',
-            query='id:"%s"' % self.id,
-            fields=FILE_LIST_FIELDS,
-            sort=FILE_LIST_SORT,
-        )
-        documents = [hit['_source'] for hit in results['hits']['hits']]
+
+    @staticmethod
+    def api_children( repo, org, cid, eid, page=1, page_size=DEFAULT_SIZE ):
+        object_id = Identity.make_object_id(Entity.model, repo, org, cid, eid)
+        collection_id = Identity.make_object_id(Collection.model, repo,org,cid)
+        documents = api_children(model, object_id, page=page, page_size=page_size)
         for d in documents:
             model,repo,org,cid,eid,role,sha1 = Identity.split_object_id(d['id'])
-            collection_id = Identity.make_object_id('collection', repo,org,cid)
             d['url'] = reverse('ui-api-file', args=(repo, org, cid, eid, role, sha1))
             d['absolute_url'] = reverse('ui-file', args=(repo, org, cid, eid, role, sha1))
             d['img_url'] = '%s%s/%s' % (

@@ -87,26 +87,22 @@ def _list(request, results):
     
 @api_view(['GET'])
 def organizations(request, repo, format=None):
-    repository = Repository.get(repo)
-    results = repository.api_children(page=1)
+    results = Repository.api_children(repo, page=1)
     return _list(request, results)
 
 @api_view(['GET'])
 def collections(request, repo, org, format=None):
-    organization = Organization.get(repo, org)
-    results = organization.api_children(page=1)
+    results = Organization.api_children(repo, org, page=1)
     return _list(request, results)
 
 @api_view(['GET'])
 def entities(request, repo, org, cid, format=None):
-    collection = Collection.get(repo, org, cid)
-    results = collection.api_children(page=1)
+    results = Collection.api_children(repo, org, cid, page=1)
     return _list(request, results)
 
 @api_view(['GET'])
 def files(request, repo, org, cid, eid, format=None):
-    entity = Entity.get(repo, org, cid, eid)
-    results = entity.api_children(page=1)
+    results = Entity.api_children(repo, org, cid, eid, page=1)
     return _list(request, results)
 
 @api_view(['GET'])
