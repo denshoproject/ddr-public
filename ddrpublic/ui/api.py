@@ -77,9 +77,9 @@ def index(request, format=None):
 def _list(request, data):
     host = http_host(request)
     path = request.META['PATH_INFO']
-    if data['previous']:
+    if data.get('previous'):
         data['previous'] = '%s%s%s' % (host, path, data['previous'])
-    if data['next']:
+    if data.get('next'):
         data['next'] = '%s%s%s' % (host, path, data['next'])
     for d in data['results']:
         add_url_host(request, d)
@@ -137,7 +137,10 @@ def term_objects(request, facet_id, term_id, format=None):
         d['absolute_url'] = reverse('ui-%s' % model, args=(idparts))
         if d['signature_file']:
             d['img_url'] = models.signature_url(d['signature_file'])
-    return _list(request, documents)
+    
+    for d in documents:
+        add_url_host(request, d)
+    return Response(documents)
 
 
 def _detail(request, data):
