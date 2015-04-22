@@ -1,16 +1,21 @@
+import os
+
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.reverse import reverse
 
+from DDR import docstore
 from DDR.models import Identity
 from ui.models import Repository, Organization, Collection, Entity, File
 from ui.views import filter_if_branded
 from ui import faceting
 from ui import models
+
+DEFAULT_LIMIT = 25
 
 
 # helpers --------------------------------------------------------------
@@ -43,20 +48,296 @@ def add_host_list(request, data):
 def term_urls(request, data, facet_id, fieldname):
     """Convert facet term IDs to links to term API nodes.
     """
-    host = http_host(request)
-    topics_urls = []
-    for tid in data.get(fieldname, []):
-        if tid:
-            url = '%s%s' % (host, reverse('ui-api-term', args=(facet_id, tid)))
-            topics_urls.append(url)
+    topics_urls = [
+        reverse('ui-api-term', args=(facet_id, tid), request=request)
+        for tid in data.get(fieldname, [])
+        if tid
+    ]
     data[fieldname] = topics_urls
 
-def encyc_urls(data):
-    encyc_urls = [
-        '%s%s' % (settings.ENCYC_BASE, url)
-        for url in data['encyclopedia']
-    ]
-    data['encyclopedia'] = encyc_urls
+def api_children(model, object_id, request, limit=DEFAULT_LIMIT, offset=0):
+    """Return object children list in Django REST Framework format.
+    
+    Returns a paged list with count/previous/next metadata
+    
+    @returns: dict
+    """
+    q = 'id:"%s"' % object_id
+    sort = docstore._clean_sort(models.MODEL_LIST_SETTINGS[model]['sort'])
+    fields = ','.join(models.MODEL_LIST_SETTINGS[model]['fields'])
+    es = docstore._get_connection(settings.DOCSTORE_HOSTS)
+    results = es.search(
+        index=settings.DOCSTORE_INDEX,
+        doc_type=model,
+        q=q,
+        body={},
+        sort=sort,
+        _source_include=fields,
+        from_=offset,
+        size=limit,
+    )
+    #
+    count = results['hits']['total']
+    previous,next_ = None,None
+    p = offset - limit
+    n = offset + limit
+    if p < 0:
+        p = None
+    if n >= count:
+        n = None
+    if p is not None:
+        previous = '?limit=%s&offset=%s' % (limit, p)
+    if n:
+        next_ = '?limit=%s&offset=%s' % (limit, n)
+    #
+    data = {
+        "count": count,
+        "previous": previous,
+        "next": next_,
+        "results": [hit['_source'] for hit in results['hits']['hits']],
+    }
+    return data
+
+
+# classes --------------------------------------------------------------
+
+class ApiRepository(Repository):
+    
+    @staticmethod
+    def api_get(repo, request):
+        id = Identity.make_object_id(Repository.model, repo)
+        document = docstore.get(
+            settings.DOCSTORE_HOSTS, index=settings.DOCSTORE_INDEX,
+            model=Repository.model, document_id=id)
+        if document and (document['found'] or document['exists']):
+            d = document['_source']
+            d['repository_url'] = d['url']
+            d['url'] = reverse('ui-api-repository', args=(repo,), request=request)
+            d['absolute_url'] = reverse('ui-repo', args=(repo,), request=request)
+            d['children'] = reverse('ui-api-organizations', args=(repo,), request=request)
+            return d
+        return None
+
+    @staticmethod
+    def api_children(repo, request, limit=DEFAULT_LIMIT, offset=0):
+        object_id = Identity.make_object_id(Repository.model, repo)
+        data = api_children(Organization.model, object_id, request, limit=limit, offset=offset)
+        for d in data['results']:
+            oidparts = Identity.split_object_id(d['id'])
+            oidparts.pop(0)
+            d['organization_url'] = d['url']
+            d['url'] = reverse('ui-api-organization', args=oidparts, request=request)
+            d['absolute_url'] = reverse('ui-organization', args=oidparts, request=request)
+            d['logo_url'] = models.org_logo_url(d['id'])
+        return data
+
+class ApiOrganization(Organization):
+    
+    @staticmethod
+    def api_get(repo, org, request):
+        oidparts = [repo,org]
+        id = Identity.make_object_id(Organization.model, repo,org)
+        document = docstore.get(
+            settings.DOCSTORE_HOSTS, index=settings.DOCSTORE_INDEX,
+            model=Organization.model, document_id=id)
+        if document and (document['found'] or document['exists']):
+            data = document['_source']
+            o = ApiOrganization()
+            for key,value in document['_source'].iteritems():
+                setattr(o, key, value)
+            data['url'] = reverse('ui-api-organization', args=oidparts, request=request)
+            data['absolute_url'] = reverse('ui-organization', args=oidparts, request=request)
+            data['logo_url'] = o.logo_url()
+            data['children'] = reverse('ui-api-collections', args=oidparts, request=request)
+            return data
+        return None
+
+    @staticmethod
+    def api_children(repo, org, request, limit=DEFAULT_LIMIT, offset=0):
+        object_id = Identity.make_object_id(Organization.model, repo,org)
+        data = api_children(Collection.model, object_id, request, limit=limit, offset=offset)
+        for d in data['results']:
+            cidparts = Identity.split_object_id (d['id'])
+            cidparts.pop(0)
+            d['url'] = reverse('ui-api-collection', args=cidparts, request=request)
+            d['absolute_url'] = reverse('ui-collection', args=cidparts, request=request)
+        return data
+
+class ApiCollection(Collection):
+    
+    @staticmethod
+    def api_get(repo, org, cid, request):
+        cidparts = [repo,org,cid]
+        id = Identity.make_object_id(Collection.model, repo, org, cid)
+        document = docstore.get(
+            settings.DOCSTORE_HOSTS, index=settings.DOCSTORE_INDEX,
+            model=Collection.model, document_id=id)
+        if document and (document['found'] or document['exists']):
+            data = document['_source']
+            o = models.build_object(ApiCollection(), id, data)
+            data['url'] = reverse('ui-api-collection', args=cidparts, request=request)
+            data['absolute_url'] = reverse('ui-collection', args=cidparts, request=request)
+            data['img_url'] = o.signature_url()
+            data['children'] = reverse('ui-api-entities', args=cidparts, request=request)
+            data.pop('notes')
+            return data
+        return None
+
+    @staticmethod
+    def api_children(repo, org, cid, request, limit=DEFAULT_LIMIT, offset=0):
+        cidparts = [repo,org,cid]
+        object_id = Identity.make_object_id(Collection.model, repo,org,cid)
+        collection_id = object_id
+        data = api_children(Entity.model, object_id, request, limit=limit, offset=offset)
+        for d in data['results']:
+            eidparts = Identity.split_object_id(d['id'])
+            eidparts.pop(0)
+            d['url'] = reverse('ui-api-entity', args=eidparts, request=request)
+            d['absolute_url'] = reverse('ui-entity', args=eidparts, request=request)
+            if d['signature_file']:
+                d['img_url'] = models.signature_url(d['signature_file'])
+        return data
+
+class ApiEntity(Entity):
+    
+    @staticmethod
+    def api_get(repo, org, cid, eid, request):
+        eidparts = [repo, org, cid, eid]
+        id = Identity.make_object_id(Entity.model, repo, org, cid, eid)
+        document = docstore.get(
+            settings.DOCSTORE_HOSTS, index=settings.DOCSTORE_INDEX,
+            model=Entity.model, document_id=id)
+        if document and (document['found'] or document['exists']):
+            data = document['_source']
+            o = models.build_object(ApiEntity(), id, data, models.ENTITY_OVERRIDDEN_FIELDS)
+            data['url'] = reverse('ui-api-entity', args=eidparts, request=request)
+            data['absolute_url'] = reverse('ui-entity', args=eidparts, request=request)
+            data['img_url'] = o.signature_url()
+            data['children'] = reverse('ui-api-files', args=eidparts, request=request)
+            data['facility'] = [
+                reverse('ui-api-term', args=('facility', oid), request=request)
+                for oid in document['_source']['facility']
+            ]
+            data['topics'] = [
+                reverse('ui-api-term', args=('topics', oid), request=request)
+                for oid in document['_source']['topics']
+            ]
+            #persons
+            data.pop('files')
+            data.pop('notes')
+            data.pop('parent')
+            data.pop('status')
+            data.pop('public')
+            return data
+        return None
+
+    @staticmethod
+    def api_children(repo, org, cid, eid, request, limit=DEFAULT_LIMIT, offset=0):
+        eidparts = [repo,org,cid,eid]
+        object_id = Identity.make_object_id(Entity.model, repo,org,cid,eid)
+        collection_id = Identity.make_object_id(Collection.model, repo,org,cid)
+        data = api_children(File.model, object_id, request, limit=limit, offset=offset)
+        for d in data['results']:
+            fidparts = Identity.split_object_id(d['id'])
+            fidparts.pop(0)
+            d['url'] = reverse('ui-api-file', args=fidparts, request=request)
+            d['absolute_url'] = reverse('ui-file', args=fidparts, request=request)
+            d['img_url'] = '%s%s/%s' % (
+                settings.MEDIA_URL, collection_id, d['access_rel'])
+            if role == 'mezzanine':
+                extension = os.path.splitext(d['basename_orig'])[1]
+                filename = d['id'] + extension
+                path_rel = os.path.join(collection_id, filename)
+                url = settings.MEDIA_URL + path_rel
+                d['download_url'] = url
+        return data
+
+class ApiFile(File):
+    
+    @staticmethod
+    def api_get(repo, org, cid, eid, role, sha1, request):
+        fidparts = [repo,org,cid,eid,role,sha1]
+        id = Identity.make_object_id(File.model, repo,org,cid,eid,role,sha1)
+        document = docstore.get(
+            settings.DOCSTORE_HOSTS, index=settings.DOCSTORE_INDEX,
+            model=File.model, document_id=id)
+        if document and (document['found'] or document['exists']):
+            data = document['_source']
+            o = models.build_object(ApiFile(), id, data)
+            data['url'] = reverse('ui-api-file', args=fidparts, request=request)
+            data['absolute_url'] = reverse('ui-file', args=fidparts, request=request)
+            data['img_url'] = o.access_url()
+            data['download_url'] = o.download_url()
+            data.pop('public')
+            return data
+        return None
+
+class ApiFacet(faceting.Facet):
+
+    def api_data(self, request):
+        data = {
+            'id': self.id,
+            'name': self.name,
+            'title': self.title,
+            'description': self.description,
+            'url': reverse('ui-api-facet', args=[self.id,], request=request),
+            'absolute_url': reverse('ui-browse-facet', args=[self.id,], request=request),
+        }
+        data['terms'] = [
+            {
+                'id': term.id,
+                'title': term.title,
+                'url': reverse('ui-api-term', args=(term.facet_id, term.id), request=request),
+                'absolute_url': reverse('ui-browse-term', args=(term.facet_id, term.id), request=request),
+            }
+            for term in self.terms()
+        ]
+        return data
+    
+    def terms(self):
+        if not self._terms:
+            self._terms = []
+            for t in self._terms_raw:
+                term = ApiTerm(facet_id=self.id, term_id=t['id'])
+                self._terms.append(term)
+            self._terms_raw = None
+        return self._terms
+
+class ApiTerm(faceting.Term):
+        
+    def api_data(self, request):
+        data = {
+            'id': self.id,
+            'parent_id': self.parent_id,
+            'parent_url': '',
+            'facet_id': self.facet_id,
+            'title': self.title,
+            'description': self.description,
+            'weight': self.weight,
+            'created': self.created,
+            'modified': self.modified,
+            'encyclopedia': self.encyc_urls,
+            'url': reverse('ui-api-term', args=(self.facet_id, self.id), request=request),
+            'absolute_url': self.url(),
+        }
+        if self.parent_id:
+            data['parent_url'] = reverse(
+                'ui-api-term',
+                args=[self.facet_id, self.parent_id],
+                request=request)
+        data['ancestors'] = [
+            reverse('ui-api-term', args=[self.facet_id, tid], request=request)
+            for tid in self._ancestors
+        ]
+        data['siblings'] = [
+            reverse('ui-api-term', args=[self.facet_id, tid], request=request)
+            for tid in self._siblings
+        ]
+        data['children'] = [
+            reverse('ui-api-term', args=[self.facet_id, tid], request=request)
+            for tid in self._children
+        ]
+        return data
 
 
 # views ----------------------------------------------------------------
@@ -65,49 +346,99 @@ def encyc_urls(data):
 def index(request, format=None):
     repo = 'ddr'
     data = {
-        'repository': reverse('ui-api-repository', args=[repo,]),
-        'facets': reverse('ui-api-facets'),
+        'repository': reverse('ui-api-repository', args=[repo,], request=request),
+        'facets': reverse('ui-api-facets', request=request),
     }
-    host = http_host(request)
-    for key,val in data.iteritems():
-        data[key] = '%s%s' % (host, val)
     return Response(data)
 
 
 def _list(request, data):
-    host = http_host(request)
     path = request.META['PATH_INFO']
     if data.get('previous'):
         data['previous'] = '%s%s%s' % (host, path, data['previous'])
     if data.get('next'):
         data['next'] = '%s%s%s' % (host, path, data['next'])
-    for d in data['results']:
-        add_url_host(request, d)
     return Response(data)
     
 @api_view(['GET'])
 def organizations(request, repo, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = Repository.api_children(repo, offset=offset)
+    data = ApiRepository.api_children(repo, request, offset=offset)
     return _list(request, data)
 
 @api_view(['GET'])
 def collections(request, repo, org, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = Organization.api_children(repo, org, offset=offset)
+    data = ApiOrganization.api_children(repo, org, request, offset=offset)
     return _list(request, data)
 
 @api_view(['GET'])
 def entities(request, repo, org, cid, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = Collection.api_children(repo, org, cid, offset=offset)
+    data = ApiCollection.api_children(repo, org, cid, request, offset=offset)
     return _list(request, data)
 
 @api_view(['GET'])
 def files(request, repo, org, cid, eid, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = Entity.api_children(repo, org, cid, eid, offset=offset)
+    data = ApiEntity.api_children(repo, org, cid, eid, request, offset=offset)
     return _list(request, data)
+
+
+def _detail(request, data):
+    """Common function for detail views.
+    """
+    if not data:
+	return Response(status=status.HTTP_404_NOT_FOUND)
+    return Response(data)
+
+@api_view(['GET'])
+def repository(request, repo, format=None):
+    data = ApiRepository.api_get(repo, request)
+    return _detail(request, data)
+
+@api_view(['GET'])
+def organization(request, repo, org, format=None):
+    data = ApiOrganization.api_get(repo, org, request)
+    return _detail(request, data)
+
+@api_view(['GET'])
+def collection(request, repo, org, cid, format=None):
+    filter_if_branded(request, repo, org)
+    data = ApiCollection.api_get(repo, org, cid, request)
+    return _detail(request, data)
+
+@api_view(['GET'])
+def entity(request, repo, org, cid, eid, format=None):
+    filter_if_branded(request, repo, org)
+    data = ApiEntity.api_get(repo, org, cid, eid, request)
+    return _detail(request, data)
+
+@api_view(['GET'])
+def file(request, repo, org, cid, eid, role, sha1, format=None):
+    filter_if_branded(request, repo, org)
+    data = ApiFile.api_get(repo, org, cid, eid, role, sha1, request)
+    return _detail(request, data)
+
+@api_view(['GET'])
+def facet_index(request, format=None):
+    data = {
+        'topics': reverse('ui-api-facet', args=['topics',], request=request),
+        'facility': reverse('ui-api-facet', args=['facility',], request=request),
+    }
+    return Response(data)
+
+@api_view(['GET'])
+def facet(request, facet, format=None):
+    facet = ApiFacet(facet)
+    data = facet.api_data(request)
+    return Response(data)
+
+@api_view(['GET'])
+def term(request, facet_id, term_id, format=None):
+    term = ApiTerm(facet_id=facet_id, term_id=term_id)
+    data = term.api_data(request)
+    return Response(data)
 
 @api_view(['GET'])
 def term_objects(request, facet_id, term_id, format=None):
@@ -133,74 +464,10 @@ def term_objects(request, facet_id, term_id, format=None):
     for d in documents:
         idparts = Identity.split_object_id(d['id'])
         model = idparts.pop(0)
-        d['url'] = reverse('ui-api-%s' % model, args=(idparts))
-        d['absolute_url'] = reverse('ui-%s' % model, args=(idparts))
+        d['url'] = reverse('ui-api-%s' % model, args=idparts, request=request)
+        d['absolute_url'] = reverse('ui-%s' % model, args=idparts, request=request)
         if d['signature_file']:
             d['img_url'] = models.signature_url(d['signature_file'])
-    
-    for d in documents:
-        add_url_host(request, d)
+            img_url = models.signature_url(d['signature_file']).replace(
+                settings.MEDIA_URL, settings.MEDIA_URL_LOCAL)
     return Response(documents)
-
-
-def _detail(request, data):
-    """Common function for detail views.
-    """
-    if not data:
-	return Response(status=status.HTTP_404_NOT_FOUND)
-    add_url_host(request, data)
-    return Response(data)
-
-@api_view(['GET'])
-def repository(request, repo, format=None):
-    return _detail(request, Repository.api_get(repo))
-
-@api_view(['GET'])
-def organization(request, repo, org, format=None):
-    return _detail(request, Organization.api_get(repo, org))
-
-@api_view(['GET'])
-def collection(request, repo, org, cid, format=None):
-    filter_if_branded(request, repo, org)
-    return _detail(request, Collection.api_get(repo, org, cid))
-
-@api_view(['GET'])
-def entity(request, repo, org, cid, eid, format=None):
-    data = Entity.api_get(repo, org, cid, eid)
-    term_urls(request, data, 'topics', 'topics')
-    term_urls(request, data, 'facility', 'facility')
-    return _detail(request, data)
-
-@api_view(['GET'])
-def file(request, repo, org, cid, eid, role, sha1, format=None):
-    return _detail(request, File.api_get(repo, org, cid, eid, role, sha1))
-
-
-@api_view(['GET'])
-def facet_index(request, format=None):
-    host = http_host(request)
-    data = {
-        'topics': '%s%s' % (host, reverse('ui-api-facet', args=['topics',])),
-        'facility': '%s%s' % (host, reverse('ui-api-facet', args=['facility',])),
-    }
-    return Response(data)
-
-@api_view(['GET'])
-def facet(request, facet, format=None):
-    facet = faceting.Facet(facet)
-    data = facet.api_data()
-    add_url_host(request, data)
-    for d in data['terms']:
-        add_url_host(request, d)
-    return Response(data)
-
-@api_view(['GET'])
-def term(request, facet_id, term_id, format=None):
-    term = faceting.Term(facet_id=facet_id, term_id=term_id)
-    data = term.api_data()
-    add_url_host(request, data)
-    data['ancestors'] = add_host_list(request, data['ancestors'])
-    data['siblings'] = add_host_list(request, data['siblings'])
-    data['children'] = add_host_list(request, data['children'])
-    encyc_urls(data)
-    return Response(data)
