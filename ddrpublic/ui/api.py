@@ -142,13 +142,13 @@ class ApiOrganization(Organization):
             model=Organization.model, document_id=id)
         if document and (document['found'] or document['exists']):
             data = document['_source']
+            data['url'] = reverse('ui-api-organization', args=oidparts, request=request)
+            data['absolute_url'] = reverse('ui-organization', args=oidparts, request=request)
+            data['children'] = reverse('ui-api-collections', args=oidparts, request=request)
             o = ApiOrganization()
             for key,value in document['_source'].iteritems():
                 setattr(o, key, value)
-            data['url'] = reverse('ui-api-organization', args=oidparts, request=request)
-            data['absolute_url'] = reverse('ui-organization', args=oidparts, request=request)
             data['logo_url'] = o.logo_url()
-            data['children'] = reverse('ui-api-collections', args=oidparts, request=request)
             return data
         return None
 
@@ -174,11 +174,11 @@ class ApiCollection(Collection):
             model=Collection.model, document_id=id)
         if document and (document['found'] or document['exists']):
             data = document['_source']
-            o = models.build_object(ApiCollection(), id, data)
             data['url'] = reverse('ui-api-collection', args=cidparts, request=request)
             data['absolute_url'] = reverse('ui-collection', args=cidparts, request=request)
-            data['img_url'] = o.signature_url()
             data['children'] = reverse('ui-api-entities', args=cidparts, request=request)
+            o = models.build_object(ApiCollection(), id, data)
+            data['img_url'] = o.signature_url()
             data.pop('notes')
             return data
         return None
@@ -209,10 +209,8 @@ class ApiEntity(Entity):
             model=Entity.model, document_id=id)
         if document and (document['found'] or document['exists']):
             data = document['_source']
-            o = models.build_object(ApiEntity(), id, data, models.ENTITY_OVERRIDDEN_FIELDS)
             data['url'] = reverse('ui-api-entity', args=eidparts, request=request)
             data['absolute_url'] = reverse('ui-entity', args=eidparts, request=request)
-            data['img_url'] = o.signature_url()
             data['children'] = reverse('ui-api-files', args=eidparts, request=request)
             data['facility'] = [
                 reverse('ui-api-term', args=('facility', oid), request=request)
@@ -223,6 +221,8 @@ class ApiEntity(Entity):
                 for oid in document['_source'].get('topics', [])
             ]
             #persons
+            o = models.build_object(ApiEntity(), id, data, models.ENTITY_OVERRIDDEN_FIELDS)
+            data['img_url'] = o.signature_url()
             data.pop('files')
             data.pop('notes')
             data.pop('parent')
@@ -263,9 +263,9 @@ class ApiFile(File):
             model=File.model, document_id=id)
         if document and (document['found'] or document['exists']):
             data = document['_source']
-            o = models.build_object(ApiFile(), id, data)
             data['url'] = reverse('ui-api-file', args=fidparts, request=request)
             data['absolute_url'] = reverse('ui-file', args=fidparts, request=request)
+            o = models.build_object(ApiFile(), id, data)
             data['img_url'] = o.access_url()
             data['download_url'] = o.download_url()
             data.pop('public')
