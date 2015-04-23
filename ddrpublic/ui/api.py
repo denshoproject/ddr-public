@@ -98,6 +98,31 @@ def api_children(model, object_id, request, limit=DEFAULT_LIMIT, offset=0):
     }
     return data
 
+def access_filename(file_id):
+    """
+    TODO This is probably redundant. D-R-Y!
+    """
+    if file_id:
+        return '%s-a.jpg' % file_id
+    return file_id
+
+def img_url(bucket, filename):
+    """Generate sorl.thumbnail-friendly image URL.
+
+    sorl.thumbnail can make thumbnails from images on external systems,
+    but not when the source URL is mediated by CloudFlare.
+    
+    TODO add flag so external requestor can turn off MEDIA_URL_LOCAL
+    External users won't be able to access the internal IP address
+    that sorl requires.
+    
+    @param bucket
+    @param filename
+    """
+    if bucket and filename:
+        return '%s%s/%s' % (settings.MEDIA_URL_LOCAL, bucket, filename)
+    return None
+
 
 # classes --------------------------------------------------------------
 
@@ -128,7 +153,7 @@ class ApiRepository(Repository):
             d['organization_url'] = d['url']
             d['url'] = reverse('ui-api-organization', args=oidparts, request=request)
             d['absolute_url'] = reverse('ui-organization', args=oidparts, request=request)
-            d['logo_url'] = models.org_logo_url(d['id'])
+            d['logo_url'] = img_url(d['id'], 'logo.png')
         return data
 
 class ApiOrganization(Organization):
@@ -145,10 +170,7 @@ class ApiOrganization(Organization):
             data['url'] = reverse('ui-api-organization', args=oidparts, request=request)
             data['absolute_url'] = reverse('ui-organization', args=oidparts, request=request)
             data['children'] = reverse('ui-api-collections', args=oidparts, request=request)
-            o = ApiOrganization()
-            for key,value in document['_source'].iteritems():
-                setattr(o, key, value)
-            data['logo_url'] = o.logo_url()
+            data['logo_url'] = img_url(id, 'logo.png')
             return data
         return None
 
@@ -161,6 +183,7 @@ class ApiOrganization(Organization):
             cidparts.pop(0)
             d['url'] = reverse('ui-api-collection', args=cidparts, request=request)
             d['absolute_url'] = reverse('ui-collection', args=cidparts, request=request)
+            d['img_url'] = img_url(d['id'], access_filename(d.get('signature_file')))
         return data
 
 class ApiCollection(Collection):
@@ -177,8 +200,7 @@ class ApiCollection(Collection):
             data['url'] = reverse('ui-api-collection', args=cidparts, request=request)
             data['absolute_url'] = reverse('ui-collection', args=cidparts, request=request)
             data['children'] = reverse('ui-api-entities', args=cidparts, request=request)
-            o = models.build_object(ApiCollection(), id, data)
-            data['img_url'] = o.signature_url()
+            data['img_url'] = img_url(id, access_filename(data.get('signature_file')))
             data.pop('notes')
             return data
         return None
@@ -194,8 +216,7 @@ class ApiCollection(Collection):
             eidparts.pop(0)
             d['url'] = reverse('ui-api-entity', args=eidparts, request=request)
             d['absolute_url'] = reverse('ui-entity', args=eidparts, request=request)
-            if d['signature_file']:
-                d['img_url'] = models.signature_url(d['signature_file'])
+            d['img_url'] = img_url(collection_id, access_filename(d.get('signature_file')))
         return data
 
 class ApiEntity(Entity):
@@ -204,6 +225,7 @@ class ApiEntity(Entity):
     def api_get(repo, org, cid, eid, request):
         eidparts = [repo, org, cid, eid]
         id = Identity.make_object_id(Entity.model, repo, org, cid, eid)
+        collection_id = Identity.make_object_id(Collection.model, repo,org,cid)
         document = docstore.get(
             settings.DOCSTORE_HOSTS, index=settings.DOCSTORE_INDEX,
             model=Entity.model, document_id=id)
@@ -223,8 +245,7 @@ class ApiEntity(Entity):
                 if oid
             ]
             #persons
-            o = models.build_object(ApiEntity(), id, data, models.ENTITY_OVERRIDDEN_FIELDS)
-            data['img_url'] = o.signature_url()
+            data['img_url'] = img_url(collection_id, access_filename(data.get('signature_file')))
             data.pop('files')
             data.pop('notes')
             data.pop('parent')
@@ -244,8 +265,7 @@ class ApiEntity(Entity):
             fidparts = [repo,org,cid,eid,role,sha1]
             d['url'] = reverse('ui-api-file', args=fidparts, request=request)
             d['absolute_url'] = reverse('ui-file', args=fidparts, request=request)
-            d['img_url'] = '%s%s/%s' % (
-                settings.MEDIA_URL, collection_id, d['access_rel'])
+            d['img_url'] = img_url(collection_id, d['access_rel'])
             if role == 'mezzanine':
                 extension = os.path.splitext(d['basename_orig'])[1]
                 filename = d['id'] + extension
@@ -260,6 +280,7 @@ class ApiFile(File):
     def api_get(repo, org, cid, eid, role, sha1, request):
         fidparts = [repo,org,cid,eid,role,sha1]
         id = Identity.make_object_id(File.model, repo,org,cid,eid,role,sha1)
+        collection_id = Identity.make_object_id(Collection.model, repo,org,cid)
         document = docstore.get(
             settings.DOCSTORE_HOSTS, index=settings.DOCSTORE_INDEX,
             model=File.model, document_id=id)
@@ -267,8 +288,8 @@ class ApiFile(File):
             data = document['_source']
             data['url'] = reverse('ui-api-file', args=fidparts, request=request)
             data['absolute_url'] = reverse('ui-file', args=fidparts, request=request)
+            data['img_url'] = img_url(collection_id, data.get('access_rel'))
             o = models.build_object(ApiFile(), id, data)
-            data['img_url'] = o.access_url()
             data['download_url'] = o.download_url()
             data.pop('public')
             return data
@@ -466,10 +487,8 @@ def term_objects(request, facet_id, term_id, format=None):
     for d in documents:
         idparts = Identity.split_object_id(d['id'])
         model = idparts.pop(0)
+        collection_id = Identity.make_object_id(Collection.model, idparts[0], idparts[1], idparts[2])
         d['url'] = reverse('ui-api-%s' % model, args=idparts, request=request)
         d['absolute_url'] = reverse('ui-%s' % model, args=idparts, request=request)
-        if d['signature_file']:
-            d['img_url'] = models.signature_url(d['signature_file'])
-            img_url = models.signature_url(d['signature_file']).replace(
-                settings.MEDIA_URL, settings.MEDIA_URL_LOCAL)
+        d['img_url'] = img_url(collection_id, access_filename(d['signature_file']))
     return Response(documents)
