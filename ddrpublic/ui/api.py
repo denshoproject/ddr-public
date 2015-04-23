@@ -240,8 +240,8 @@ class ApiEntity(Entity):
         collection_id = Identity.make_object_id(Collection.model, repo,org,cid)
         data = api_children(File.model, object_id, request, limit=limit, offset=offset)
         for d in data['results']:
-            fidparts = Identity.split_object_id(d['id'])
-            fidparts.pop(0)
+            model,repo,org,cid,eid,role,sha1 = Identity.split_object_id(d['id'])
+            fidparts = [repo,org,cid,eid,role,sha1]
             d['url'] = reverse('ui-api-file', args=fidparts, request=request)
             d['absolute_url'] = reverse('ui-file', args=fidparts, request=request)
             d['img_url'] = '%s%s/%s' % (
