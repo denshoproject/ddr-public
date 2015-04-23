@@ -106,21 +106,28 @@ def access_filename(file_id):
         return '%s-a.jpg' % file_id
     return file_id
 
-def img_url(bucket, filename):
-    """Generate sorl.thumbnail-friendly image URL.
+def img_url(bucket, filename, request):
+    """Constructs URL; sorl.thumbnail-friendly if request contains flag.
 
     sorl.thumbnail can make thumbnails from images on external systems,
-    but not when the source URL is mediated by CloudFlare.
+    but fails when the source URL is behind a proxy e.g. CloudFlare.
     
-    TODO add flag so external requestor can turn off MEDIA_URL_LOCAL
-    External users won't be able to access the internal IP address
-    that sorl requires.
+    URLs are constructed from MEDIA_URL by default for the convenience
+    of external users of the API.  MEDIA_URL_LOCAL is used if the request
+    contains settings.MEDIA_URL_LOCAL_MARKER.
     
-    @param bucket
-    @param filename
+    @param bucket: str S3-style bucket, usually the collection ID.
+    @param filename: str File name within the bucket.
+    @param request: Django request object.
+    @returns: URL or None
     """
-    if bucket and filename:
+    internal = request.GET.get(settings.MEDIA_URL_LOCAL_MARKER, 0)
+    if internal and isinstance(internal, basestring) and internal.isdigit():
+        internal = int(internal)
+    if bucket and filename and internal:
         return '%s%s/%s' % (settings.MEDIA_URL_LOCAL, bucket, filename)
+    elif bucket and filename:
+        return '%s%s/%s' % (settings.MEDIA_URL, bucket, filename)
     return None
 
 
@@ -153,7 +160,7 @@ class ApiRepository(Repository):
             d['organization_url'] = d['url']
             d['url'] = reverse('ui-api-organization', args=oidparts, request=request)
             d['absolute_url'] = reverse('ui-organization', args=oidparts, request=request)
-            d['logo_url'] = img_url(d['id'], 'logo.png')
+            d['logo_url'] = img_url(d['id'], 'logo.png', request)
         return data
 
 class ApiOrganization(Organization):
@@ -170,7 +177,7 @@ class ApiOrganization(Organization):
             data['url'] = reverse('ui-api-organization', args=oidparts, request=request)
             data['absolute_url'] = reverse('ui-organization', args=oidparts, request=request)
             data['children'] = reverse('ui-api-collections', args=oidparts, request=request)
-            data['logo_url'] = img_url(id, 'logo.png')
+            data['logo_url'] = img_url(id, 'logo.png', request)
             return data
         return None
 
@@ -183,7 +190,7 @@ class ApiOrganization(Organization):
             cidparts.pop(0)
             d['url'] = reverse('ui-api-collection', args=cidparts, request=request)
             d['absolute_url'] = reverse('ui-collection', args=cidparts, request=request)
-            d['img_url'] = img_url(d['id'], access_filename(d.get('signature_file')))
+            d['img_url'] = img_url(d['id'], access_filename(d.get('signature_file')), request)
         return data
 
 class ApiCollection(Collection):
@@ -200,7 +207,7 @@ class ApiCollection(Collection):
             data['url'] = reverse('ui-api-collection', args=cidparts, request=request)
             data['absolute_url'] = reverse('ui-collection', args=cidparts, request=request)
             data['children'] = reverse('ui-api-entities', args=cidparts, request=request)
-            data['img_url'] = img_url(id, access_filename(data.get('signature_file')))
+            data['img_url'] = img_url(id, access_filename(data.get('signature_file')), request)
             data.pop('notes')
             return data
         return None
@@ -216,7 +223,7 @@ class ApiCollection(Collection):
             eidparts.pop(0)
             d['url'] = reverse('ui-api-entity', args=eidparts, request=request)
             d['absolute_url'] = reverse('ui-entity', args=eidparts, request=request)
-            d['img_url'] = img_url(collection_id, access_filename(d.get('signature_file')))
+            d['img_url'] = img_url(collection_id, access_filename(d.get('signature_file')), request)
         return data
 
 class ApiEntity(Entity):
@@ -245,7 +252,7 @@ class ApiEntity(Entity):
                 if oid
             ]
             #persons
-            data['img_url'] = img_url(collection_id, access_filename(data.get('signature_file')))
+            data['img_url'] = img_url(collection_id, access_filename(data.get('signature_file')), request)
             data.pop('files')
             data.pop('notes')
             data.pop('parent')
@@ -265,7 +272,7 @@ class ApiEntity(Entity):
             fidparts = [repo,org,cid,eid,role,sha1]
             d['url'] = reverse('ui-api-file', args=fidparts, request=request)
             d['absolute_url'] = reverse('ui-file', args=fidparts, request=request)
-            d['img_url'] = img_url(collection_id, d['access_rel'])
+            d['img_url'] = img_url(collection_id, d['access_rel'], request)
             if role == 'mezzanine':
                 extension = os.path.splitext(d['basename_orig'])[1]
                 filename = d['id'] + extension
@@ -288,7 +295,7 @@ class ApiFile(File):
             data = document['_source']
             data['url'] = reverse('ui-api-file', args=fidparts, request=request)
             data['absolute_url'] = reverse('ui-file', args=fidparts, request=request)
-            data['img_url'] = img_url(collection_id, data.get('access_rel'))
+            data['img_url'] = img_url(collection_id, data.get('access_rel'), request)
             o = models.build_object(ApiFile(), id, data)
             data['download_url'] = o.download_url()
             data.pop('public')
@@ -490,5 +497,5 @@ def term_objects(request, facet_id, term_id, format=None):
         collection_id = Identity.make_object_id(Collection.model, idparts[0], idparts[1], idparts[2])
         d['url'] = reverse('ui-api-%s' % model, args=idparts, request=request)
         d['absolute_url'] = reverse('ui-%s' % model, args=idparts, request=request)
-        d['img_url'] = img_url(collection_id, access_filename(d['signature_file']))
+        d['img_url'] = img_url(collection_id, access_filename(d['signature_file']), request)
     return Response(documents)

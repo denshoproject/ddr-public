@@ -63,6 +63,9 @@ MEDIA_URL = config.get('public', 'media_url')
 # a CDN and get blocked for not including a User-Agent header.
 # TODO Hard-coded! Replace with value from ddr.cfg.
 MEDIA_URL_LOCAL = config.get('public', 'media_url_local')
+# The REST API will use MEDIA_URL_LOCAL for image URLs
+# if this query argument is present with a truthy value.
+MEDIA_URL_LOCAL_MARKER = 'internal'
 
 ACCESS_FILE_APPEND='-a'
 ACCESS_FILE_EXTENSION='.jpg'
