@@ -122,7 +122,7 @@ class ApiRepository(Repository):
     def api_children(repo, request, limit=DEFAULT_LIMIT, offset=0):
         object_id = Identity.make_object_id(Repository.model, repo)
         data = api_children(Organization.model, object_id, request, limit=limit, offset=offset)
-        for d in data['results']:
+        for d in data.get('results', []):
             oidparts = Identity.split_object_id(d['id'])
             oidparts.pop(0)
             d['organization_url'] = d['url']
@@ -156,7 +156,7 @@ class ApiOrganization(Organization):
     def api_children(repo, org, request, limit=DEFAULT_LIMIT, offset=0):
         object_id = Identity.make_object_id(Organization.model, repo,org)
         data = api_children(Collection.model, object_id, request, limit=limit, offset=offset)
-        for d in data['results']:
+        for d in data.get('results', []):
             cidparts = Identity.split_object_id (d['id'])
             cidparts.pop(0)
             d['url'] = reverse('ui-api-collection', args=cidparts, request=request)
@@ -189,7 +189,7 @@ class ApiCollection(Collection):
         object_id = Identity.make_object_id(Collection.model, repo,org,cid)
         collection_id = object_id
         data = api_children(Entity.model, object_id, request, limit=limit, offset=offset)
-        for d in data['results']:
+        for d in data.get('results', []):
             eidparts = Identity.split_object_id(d['id'])
             eidparts.pop(0)
             d['url'] = reverse('ui-api-entity', args=eidparts, request=request)
@@ -216,11 +216,11 @@ class ApiEntity(Entity):
             data['children'] = reverse('ui-api-files', args=eidparts, request=request)
             data['facility'] = [
                 reverse('ui-api-term', args=('facility', oid), request=request)
-                for oid in document['_source']['facility']
+                for oid in document['_source'].get('facility', [])
             ]
             data['topics'] = [
                 reverse('ui-api-term', args=('topics', oid), request=request)
-                for oid in document['_source']['topics']
+                for oid in document['_source'].get('topics', [])
             ]
             #persons
             data.pop('files')
