@@ -215,10 +215,12 @@ class ApiEntity(Entity):
             data['facility'] = [
                 reverse('ui-api-term', args=('facility', oid), request=request)
                 for oid in document['_source'].get('facility', [])
+                if oid
             ]
             data['topics'] = [
                 reverse('ui-api-term', args=('topics', oid), request=request)
                 for oid in document['_source'].get('topics', [])
+                if oid
             ]
             #persons
             o = models.build_object(ApiEntity(), id, data, models.ENTITY_OVERRIDDEN_FIELDS)
