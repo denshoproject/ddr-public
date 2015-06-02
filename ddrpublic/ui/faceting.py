@@ -107,7 +107,7 @@ class Facet(object):
         return "<Facet [%s] %s>" % (self.id, self.title)
     
     def url(self):
-        return reverse('ui-browse-facet', args=(self.id))
+        return reverse('ui-browse-facet', args=[self.id,])
     
     def terms(self):
         if not self._terms:
