@@ -1,5 +1,12 @@
 import datetime
+
 from django import template
+from django.conf import settings
+from django.core.cache import cache
+
+from DDR.models import Identity
+from ui.models import make_object_url
+
 
 register = template.Library()
 
@@ -12,12 +19,33 @@ def ddrvalue( fields, field ):
         return val[0][2]
     except:
         return ''
-	
-def homeslideitem( url, imgurl ):
+
+def homeslideitem( fid ):
     """Slide item for homepage gallery
     """
-    t = template.loader.get_template('ui/homeslideitem.html')
-    return t.render(template.Context({'url':url,'imgurl':imgurl}))
+    key = 'ddrpublic:index_slides:%s' % fid
+    timeout = 60*5
+    cached = cache.get(key)
+    if not cached:
+        parts = Identity.split_object_id(fid)
+        model = parts.pop(0)
+        
+        class FakeFile(object):
+            pass
+        fake_file = FakeFile()
+        fake_file.collection_id = Identity.make_object_id(
+            'collection', parts[0], parts[1], parts[2]
+        )
+        fake_file.access_rel = '%s-a.jpg' % fid
+        img_url = settings.UI_THUMB_URL(fake_file)
+        
+        t = template.loader.get_template('ui/homeslideitem.html')
+        cached = t.render(template.Context({
+            'url': make_object_url(parts[:3]),
+            'imgurl': img_url
+        }))
+        cache.set(key, cached, timeout)
+    return cached
 	
 def collection( obj ):
     """list-view collection template
