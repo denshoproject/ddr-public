@@ -472,10 +472,14 @@ def term(request, facet_id, term_id, format=None):
 
 @api_view(['GET'])
 def term_objects(request, facet_id, term_id, format=None):
+    """
+    http://DOMAIN/api/0.1/facet/{facet_id}/{term_id}/objects/?{internal=1}&{limit=5}
+    """
     terms = {facet_id:term_id}
     fields = models.all_list_fields()
     sort = {'record_created': request.GET.get('record_created', ''),
             'record_lastmod': request.GET.get('record_lastmod', ''),}
+    limit = request.GET.get('limit', '')
     # filter by partner
     filters = {}
     repo,org = None,None
@@ -487,7 +491,8 @@ def term_objects(request, facet_id, term_id, format=None):
         settings.DOCSTORE_HOSTS, settings.DOCSTORE_INDEX,
         terms=terms, filters=filters,
         fields=fields,
-        sort=sort
+        sort=sort,
+        size=limit,
     )
     # post-processing. See *.api_children methods in .models.py
     documents = [hit['_source'] for hit in results['hits']['hits']]

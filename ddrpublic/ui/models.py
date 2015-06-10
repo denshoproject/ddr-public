@@ -374,7 +374,7 @@ def process_query_results( results, page, page_size ):
                     objects.append(hit)
     return objects
 
-def cached_query(host, index, model='', query='', terms={}, filters={}, fields=[], sort=[]):
+def cached_query(host, index, model='', query='', terms={}, filters={}, fields=[], sort=[], size=10000):
     """Perform an ElasticSearch query and cache it.
     
     Cache key consists of a hash of all the query arguments.
@@ -387,7 +387,7 @@ def cached_query(host, index, model='', query='', terms={}, filters={}, fields=[
     if not cached:
         cached = docstore.search(hosts=HOSTS, index=index, model=model,
                                  query=query, term=terms, filters=filters,
-                                 fields=fields, sort=sort)
+                                 fields=fields, sort=sort, size=size)
         cache.set(key, cached, settings.ELASTICSEARCH_QUERY_TIMEOUT)
     return cached
 
