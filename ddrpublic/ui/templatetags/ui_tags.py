@@ -1,11 +1,8 @@
 import datetime
+import os
 
 from django import template
 from django.conf import settings
-from django.core.cache import cache
-
-from DDR.models import Identity
-from ui.models import make_object_url
 
 
 register = template.Library()
@@ -20,32 +17,19 @@ def ddrvalue( fields, field ):
     except:
         return ''
 
-def homeslideitem( fid ):
+def homeslideitem( target_url, img_src ):
     """Slide item for homepage gallery
+    
+    @param target_url: str Target URL path, no domain.
+    @param img_src: str Source img path, MEDIA_URL_LOCAL will be prepended.
     """
-    key = 'ddrpublic:index_slides:%s' % fid
-    timeout = 60*5
-    cached = cache.get(key)
-    if not cached:
-        parts = Identity.split_object_id(fid)
-        model = parts.pop(0)
-        
-        class FakeFile(object):
-            pass
-        fake_file = FakeFile()
-        fake_file.collection_id = Identity.make_object_id(
-            'collection', parts[0], parts[1], parts[2]
-        )
-        fake_file.access_rel = '%s-a.jpg' % fid
-        img_url = settings.UI_THUMB_URL(fake_file)
-        
-        t = template.loader.get_template('ui/homeslideitem.html')
-        cached = t.render(template.Context({
-            'url': make_object_url(parts[:3]),
-            'imgurl': img_url
-        }))
-        cache.set(key, cached, timeout)
-    return cached
+    img_url = os.path.join(settings.MEDIA_URL_LOCAL, img_src)
+    t = template.loader.get_template('ui/homeslideitem.html')
+    return t.render(template.Context({
+        'target_url': target_url,
+        'img_url': img_url,
+        'MEDIA_URL': settings.MEDIA_URL,
+    }))
 	
 def collection( obj ):
     """list-view collection template
