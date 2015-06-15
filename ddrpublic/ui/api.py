@@ -207,6 +207,7 @@ class ApiCollection(Collection):
             data['url'] = reverse('ui-api-collection', args=cidparts, request=request)
             data['absolute_url'] = reverse('ui-collection', args=cidparts, request=request)
             data['children'] = reverse('ui-api-entities', args=cidparts, request=request)
+            data['img_path'] = os.path.join(id, access_filename(data.get('signature_file')))
             data['img_url'] = img_url(id, access_filename(data.get('signature_file')), request)
             data.pop('notes')
             return data
@@ -223,6 +224,7 @@ class ApiCollection(Collection):
             eidparts.pop(0)
             d['url'] = reverse('ui-api-entity', args=eidparts, request=request)
             d['absolute_url'] = reverse('ui-entity', args=eidparts, request=request)
+            d['img_path'] = os.path.join(collection_id, access_filename(d.get('signature_file')))
             d['img_url'] = img_url(collection_id, access_filename(d.get('signature_file')), request)
         return data
 
@@ -252,6 +254,7 @@ class ApiEntity(Entity):
                 if oid
             ]
             #persons
+            data['img_path'] = os.path.join(collection_id, access_filename(data.get('signature_file')))
             data['img_url'] = img_url(collection_id, access_filename(data.get('signature_file')), request)
             data.pop('files')
             data.pop('notes')
@@ -272,6 +275,7 @@ class ApiEntity(Entity):
             fidparts = [repo,org,cid,eid,role,sha1]
             d['url'] = reverse('ui-api-file', args=fidparts, request=request)
             d['absolute_url'] = reverse('ui-file', args=fidparts, request=request)
+            d['img_path'] = os.path.join(collection_id, d['access_rel'])
             d['img_url'] = img_url(collection_id, d['access_rel'], request)
             if role == 'mezzanine':
                 extension = os.path.splitext(d['basename_orig'])[1]
@@ -295,6 +299,7 @@ class ApiFile(File):
             data = document['_source']
             data['url'] = reverse('ui-api-file', args=fidparts, request=request)
             data['absolute_url'] = reverse('ui-file', args=fidparts, request=request)
+            data['img_path'] = os.path.join(collection_id, data.get('access_rel'))
             data['img_url'] = img_url(collection_id, data.get('access_rel'), request)
             o = models.build_object(ApiFile(), id, data)
             data['download_url'] = o.download_url()
