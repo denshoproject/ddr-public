@@ -484,7 +484,7 @@ def term_objects(request, facet_id, term_id, format=None):
     fields = models.all_list_fields()
     sort = {'record_created': request.GET.get('record_created', ''),
             'record_lastmod': request.GET.get('record_lastmod', ''),}
-    limit = request.GET.get('limit', '')
+    limit = request.GET.get('limit', 100)
     # filter by partner
     filters = {}
     repo,org = None,None
