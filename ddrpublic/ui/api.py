@@ -503,4 +503,5 @@ def term_objects(request, facet_id, term_id, format=None):
         d['url'] = reverse('ui-api-%s' % model, args=idparts, request=request)
         d['absolute_url'] = reverse('ui-%s' % model, args=idparts, request=request)
         d['img_url'] = img_url(collection_id, access_filename(d['signature_file']), request)
+        d['img_path'] = os.path.join(collection_id, access_filename(d['signature_file']))
     return Response(documents)
