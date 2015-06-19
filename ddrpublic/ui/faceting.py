@@ -1,6 +1,7 @@
 from collections import defaultdict
 import json
 import re
+import urllib
 
 from django.conf import settings
 from django.core.cache import cache
@@ -8,13 +9,15 @@ from django.core.urlresolvers import reverse
 
 from DDR import docstore
 
-CACHE_TIMEOUT = 60 * 60 * 24 # 1 day
+FACETS_LIST_CACHE_KEY = 'facets:list'
+FACETS_FACET_CACHE_KEY = 'facets:{name}'
+FACETS_TERM_CACHE_KEY = 'facets:{facet_id}:{term_id}'
 
 
 def facets_list():
     """Returns a list of facets in alphabetical order, with URLs
     """
-    key = 'facets:list'
+    key = FACETS_LIST_CACHE_KEY
     cached = cache.get(key)
     if not cached:
         facets_list = []
@@ -26,7 +29,7 @@ def facets_list():
             f['url'] = reverse('ui-browse-facet', args=[name])
             facets_list.append(f)
         cached = facets_list
-        cache.set(key, cached, CACHE_TIMEOUT)
+        cache.set(key, cached, settings.ELASTICSEARCH_FACETS_TIMEOUT)
     return cached
 
 def get_facet(name):
@@ -36,7 +39,7 @@ def get_facet(name):
     
     @param facet: str
     """
-    key = 'facets:%s' % name
+    key = FACETS_FACET_CACHE_KEY.format(name=name)
     cached = cache.get(key)
     if not cached:
         for f in facets_list():
@@ -44,7 +47,7 @@ def get_facet(name):
                 if f['name'] in ['facility', 'topics']:
                     f['terms'] = sorted(f['terms'], key=lambda x: x['title'])
                 cached = f
-                cache.set(key, cached, CACHE_TIMEOUT)
+                cache.set(key, cached, settings.ELASTICSEARCH_FACETS_TIMEOUT)
     return cached
 
 def get_facet_term( facet_id, term_id ):
@@ -52,7 +55,7 @@ def get_facet_term( facet_id, term_id ):
     @param facet: str
     @param term_id: int
     """
-    key = 'facets:%s:%s' % (facet_id, term_id)
+    key = FACETS_TERM_CACHE_KEY.format(facet_id=facet_id, term_id=term_id)
     cached = cache.get(key)
     if not cached:
         facet = get_facet(facet_id)
@@ -60,7 +63,7 @@ def get_facet_term( facet_id, term_id ):
             if int(t['id']) == int(term_id):
                 cached = t
         if cached:
-            cache.set(key, cached, CACHE_TIMEOUT)
+            cache.set(key, cached, settings.ELASTICSEARCH_FACETS_TIMEOUT)
     return cached
 
 def get_term_children(facet_id, term_dict):
@@ -104,7 +107,7 @@ class Facet(object):
         return "<Facet [%s] %s>" % (self.id, self.title)
     
     def url(self):
-        return reverse('ui-browse-facet', args=(self.id))
+        return reverse('ui-browse-facet', args=[self.id,])
     
     def terms(self):
         if not self._terms:
@@ -175,6 +178,7 @@ class Term(object):
     created = None
     modified = None
     encyc_urls = None
+    _encyc_articles = []
     _facet = None
     
     def __init__(self, facet_id=None, term_id=None):
@@ -246,6 +250,17 @@ class Term(object):
             term = Term(facet_id=self.facet_id, term_id=tid)
             terms.append(term)
         return terms
+    
+    def encyc_articles(self):
+        if not self._encyc_articles:
+            self._encyc_articles = [
+                {
+                    'url': '%s%s' % (settings.ENCYC_BASE, uri),
+                    'title': urllib.unquote(uri).replace('/', '')
+                }
+                for uri in self.encyc_urls
+            ]
+        return self._encyc_articles
 
 
 INT_IN_STRING = re.compile(r'^\d+$')

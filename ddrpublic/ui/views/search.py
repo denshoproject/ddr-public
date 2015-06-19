@@ -5,7 +5,6 @@ logger = logging.getLogger(__name__)
 from dateutil import parser
 
 from django.conf import settings
-from django.contrib import messages
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
@@ -14,7 +13,8 @@ from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 from django.utils.http import urlquote  as django_urlquote
 
-from DDR import docstore, models
+from DDR import docstore
+from DDR.models import Identity
 from ui import domain_org
 from ui import faceting
 from ui import models
@@ -57,19 +57,20 @@ def results( request ):
         'filters': None,
         'sort': None,
     }
-    context['query'] = request.GET.get('query', '')
+    context['query'] = request.GET.get('query', '').strip()
     # silently strip out bad chars
     query = context['query']
     for char in SEARCH_INPUT_BLACKLIST:
         query = query.replace(char, '')
     if query:
         context['search_form'] = SearchForm({'query': query})
-        object_id_parts = models.split_object_id(query)
+        
+        # if query is DDR ID just go to document page
+        object_id_parts = Identity.split_object_id(query)
         if object_id_parts and (object_id_parts[0] in ['collection', 'entity', 'file']):
-            # query is a DDR ID -- go straight to document page
             model = object_id_parts.pop(0)
             document = docstore.get(settings.DOCSTORE_HOSTS, settings.DOCSTORE_INDEX,
-                                    model, query.strip())
+                                    model, query)
             if document and (document['found'] or document['exists']):
                 # OK -- redirect to document page
                 object_url = models.make_object_url(object_id_parts)

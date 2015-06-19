@@ -24,6 +24,8 @@ for value in PARTNER_DOMAINS.values():
         if domain not in ALLOWED_HOSTS:
             ALLOWED_HOSTS.append(domain)
 
+ENCYC_BASE = 'http://encyclopedia.densho.org'
+
 # ----------------------------------------------------------------------
 
 import ConfigParser
@@ -36,11 +38,11 @@ class NoConfigError(Exception):
     def __str__(self):
         return repr(self.value)
 
-CONFIG_FILE = '/etc/ddr/ddr.cfg'
-if not os.path.exists(CONFIG_FILE):
-    raise NoConfigError('No config file!')
+CONFIG_FILES = ['/etc/ddr/ddr.cfg', '/etc/ddr/local.cfg']
 config = ConfigParser.ConfigParser()
-config.read(CONFIG_FILE)
+configs_read = config.read(CONFIG_FILES)
+if not configs_read:
+    raise NoConfigError('No config file!')
 
 with open('/etc/ddr/ddrpublic-secret-key.txt') as f:
     SECRET_KEY = f.read().strip()
@@ -55,12 +57,15 @@ STATIC_URL='/static/'
 # Filesystem path and URL for media to be manipulated by ddrlocal
 # (collection repositories, thumbnail cache, etc).
 MEDIA_ROOT='/var/www/media'
-MEDIA_URL='http://ddr.densho.org/media/'
+MEDIA_URL = config.get('public', 'media_url')
 # URL of local media server ("local" = in the same cluster).
 # Use this for sorl.thumbnail so it doesn't have to go through
 # a CDN and get blocked for not including a User-Agent header.
 # TODO Hard-coded! Replace with value from ddr.cfg.
-MEDIA_URL_LOCAL='http://192.168.0.30/media/'
+MEDIA_URL_LOCAL = config.get('public', 'media_url_local')
+# The REST API will use MEDIA_URL_LOCAL for image URLs
+# if this query argument is present with a truthy value.
+MEDIA_URL_LOCAL_MARKER = 'internal'
 
 ACCESS_FILE_APPEND='-a'
 ACCESS_FILE_EXTENSION='.jpg'
@@ -106,13 +111,14 @@ SITE_ID = 1
 INSTALLED_APPS = (
     #'django.contrib.auth',
     'django.contrib.contenttypes',
-    #'django.contrib.sessions',
+    'django.contrib.sessions',
     'django.contrib.sites',
-    'django.contrib.messages',
+    #'django.contrib.messages',
     'django.contrib.staticfiles',
     #'django.contrib.admin',
     #
     'bootstrap_pagination',
+    'rest_framework',
     'sorl.thumbnail',
     #
     'ddrpublic',
@@ -142,13 +148,15 @@ CACHES = {
 }
 
 # ElasticSearch
+docstore_host,docstore_port = config.get('public', 'docstore_host').split(':')
 DOCSTORE_HOSTS = [
-    {'host':'127.0.0.1', 'port':9200}
+    {'host':docstore_host, 'port':docstore_port}
 ]
-DOCSTORE_INDEX = 'documents0'
-ELASTICSEARCH_MAX_SIZE = 1000000
+DOCSTORE_INDEX = config.get('public', 'docstore_index')
 
+ELASTICSEARCH_MAX_SIZE = 1000000
 ELASTICSEARCH_QUERY_TIMEOUT = 60 * 10  # 10 min
+ELASTICSEARCH_FACETS_TIMEOUT = 60*60*1  # 1 hour
 
 RESULTS_PER_PAGE = 25
 
@@ -307,7 +315,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     'django.core.context_processors.static',
     'django.core.context_processors.tz',
-    'django.contrib.messages.context_processors.messages',
+    #'django.contrib.messages.context_processors.messages',
     'ui.context_processors.sitewide',
 )
 
@@ -316,7 +324,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     #'django.middleware.csrf.CsrfViewMiddleware',
     #'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
+    #'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 

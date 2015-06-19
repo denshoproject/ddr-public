@@ -4,17 +4,17 @@
 {% block parent %}
 <div id="parent">
 <a href="{{ object.collection.absolute_url }}"><span class="label label-default">{{ object.collection.id }}</span></a>
-<a href="{{ object.collection.absolute_url }}">{{ object.collection.title | safe }}</a>
+<a href="{{ object.collection.absolute_url }}">{{ object.collection.title|safe }}</a>
 </div>
 {% endblock %}
 
 {% block title %}
-{{ object.id }} {% if object.title %}&mdash;{% endif %} {{ object.title | safe }}
+{{ object.id }} {% if object.title %}&mdash;{% endif %} {{ object.title|safe }}
 {% endblock %}
 
 {% block pagetitle %}
 <span class="label label-default">{{ object.id }}</span>
-{{ object.title | safe }}
+{{ object.title|safe }}
 {% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
@@ -28,7 +28,7 @@
 	<div class="row">
 
 		<div class="col-sm-6 col-md-6">
-		<h2>{{ object.title }}</h2>
+		<h2>{{ object.title|safe }}</h2>
 
 {% if object.signature_url %}
   {% thumbnail object.signature_url_local "480x480" as img %}
@@ -55,7 +55,7 @@
 			<div class="desc productDescription">
 			<!-- entity.id -->
                         <h3 class="page-header">PARTNER</h3>
-                        <p>{{ organization.title }} <img src="{{ organization.logo_url }}" class="logo" width="50" /></p>
+                        {% include "ui/partnerlogolink.html" %}
                         <h3 class="page-header">OBJECT ID</h3>
                         <p>{{ object.id }}</p>
 			<!-- entity.collection -->
@@ -63,7 +63,7 @@
                        <p><a href="{{ object.collection.absolute_url }}">{{ object.collection.title }}</a></p>
                        <!-- entity.description -->
  			<h3 class="page-header">DESCRIPTION</h3>
-			<p>{{ object.description }}</p>
+			<p>{{ object.description|safe }}</p>
 
 					<!-- core meta -->
 						<div class="row">
@@ -110,6 +110,7 @@
 {% endfor %}
 </ul>
 </p>
+
 								</div>
 								<div class="col-md-7 col-sm-7">
 									<!-- entity.facility -->
@@ -151,6 +152,21 @@
 				<p>
 				{{ object.fields|ddrvalue:"rights" }}
 				</p>
+
+{% if object.encyc_articles %}
+				<!-- entity.encycarticles -->
+				<h3 class="page-header">FOR MORE INFORMATION</h3>
+				<p class="small">
+                Related articles from the
+                <a href="http://encyclopedia.densho.org/">Densho Encyclopedia</a>
+                </p>
+                <ul class="list-unstyled">
+  {% for article in object.encyc_articles %}
+				    <li><a href="{{ article.url }}">{{ article.title }}</a></li>
+  {% endfor %}
+				</ul>
+{% endif %}
+
 		</div>	
 	</div>
 </div>		

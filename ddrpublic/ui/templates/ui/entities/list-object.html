@@ -17,7 +17,7 @@
     </div>
     {% endif %}
     <div class="source muted">
-      {{ object.description|truncatewords_html:56 }}
+      {{ object.description|safe|truncatewords_html:56 }}
     </div>
     <div class="url">
       <a href="{{ object.absolute_url }}">{{ object.absolute_url }}</a>

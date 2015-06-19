@@ -14,8 +14,8 @@ from django.template.loader import get_template
 from django.utils.http import urlquote  as django_urlquote
 
 from DDR import docstore
-from DDR.models import model_fields as ddr_model_fields, MODELS_DIR, MODELS
-from DDR.models import make_object_id, split_object_id
+from DDR.models import MODELS_DIR, MODELS, MODULES
+from DDR.models import Identity
 
 from ui import faceting
 
@@ -58,6 +58,13 @@ FILE_LIST_SORT = [
     ['id','asc'],
 ]
 
+MODEL_LIST_SETTINGS = {
+    'repository': {'fields': REPOSITORY_LIST_FIELDS, 'sort': REPOSITORY_LIST_SORT},
+    'organization': {'fields': ORGANIZATION_LIST_FIELDS, 'sort': ORGANIZATION_LIST_SORT},
+    'collection': {'fields': COLLECTION_LIST_FIELDS, 'sort': COLLECTION_LIST_SORT},
+    'entity': {'fields': ENTITY_LIST_FIELDS, 'sort': ENTITY_LIST_SORT},
+    'file': {'fields': FILE_LIST_FIELDS, 'sort': FILE_LIST_SORT},
+}
 
 def all_list_fields():
     LIST_FIELDS = []
@@ -101,6 +108,15 @@ def org_logo_url( organization_id ):
     """Link to organization logo image
     """
     return os.path.join(settings.MEDIA_URL, organization_id, 'logo.png')
+
+def signature_url( signature_file ):
+    """
+    @param signature_file: str File ID
+    """
+    oid = Identity.split_object_id(signature_file)
+    model = oid.pop(0)
+    cid = Identity.make_object_id('collection', oid[0], oid[1], oid[2])
+    return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, cid, signature_file)
 
 def media_url_local( url ):
     """Replace media_url with one that points to "local" media server
@@ -178,15 +194,13 @@ def massage_query_results( results, thispage, page_size ):
         if not o.get('placeholder',False):
             # assemble urls for each record type
             if o.get('id', None):
+                oid = Identity.split_object_id(o['id'])
                 if o['type'] == 'collection':
-                    repo,org,cid = o['id'].split('-')
-                    o['url'] = reverse('ui-collection', args=[repo,org,cid])
+                    o['url'] = reverse('ui-collection', args=oid[1:])
                 elif o['type'] == 'entity':
-                    repo,org,cid,eid = o['id'].split('-')
-                    o['url'] = reverse('ui-entity', args=[repo,org,cid,eid])
+                    o['url'] = reverse('ui-entity', args=oid[1:])
                 elif o['type'] == 'file':
-                    repo,org,cid,eid,role,sha1 = o['id'].split('-')
-                    o['url'] = reverse('ui-file', args=[repo,org,cid,eid,role,sha1])
+                    o['url'] = reverse('ui-file', args=oid[1:])
     return objects
 
 # ----------------------------------------------------------------------
@@ -262,26 +276,54 @@ field_display_handler = {
 }
 
 def field_display_style( o, field ):
-    modelfields = docstore._model_fields(MODELS_DIR, MODELS)
-    for modelfield in modelfields[o.model]:
+    for modelfield in model_fields(o.model):
         if modelfield['name'] == field:
             return modelfield['elasticsearch']['display']
     return None
 
 # ----------------------------------------------------------------------
 
+def model_fields(model):
+    """Get list of fields from ES
+    
+    @param model: str Name of model
+    @returns: list of field names
+    """
+    key = 'ddrpublic:%s:fields' % model
+    cached = cache.get(key)
+    if not cached:
+        for m,module in MODULES.iteritems():
+            if m == model:
+                cached = module.FIELDS
+        cache.set(key, cached, 60*1)
+    return cached
 
-def build_object( o, id, source ):
+def build_object( o, id, source, rename={} ):
     """Build object from ES GET data.
+    
+    NOTE: This only works on object types listed in DDR.models.MODULES.
+    
+    'rename' contains fields in 'source' that are to be given alternate names.
+    Entity.files() and .topics() methods override the original fields.
+    
+    @param o: Blank object to build on.
+    @param id: str DDR ID of the object.
+    @param source: dict Contents of Elasticsearch document (document['_source']).
+    @param rename: dict of {'fieldnames': 'alternate_names'}.
     """
     o.id = id
     o.fields = []
-    for field in ddr_model_fields(o.model):
+    for field in model_fields(o.model):
         fieldname = field['name']
         label = field.get('label', field['name'])
         if source.get(fieldname,None):
+            # use a different attribute name if requested
+            if fieldname in rename.keys():
+                fname = rename[fieldname]
+            else:
+                fname = fieldname
             # direct attribute
-            setattr(o, fieldname, source[fieldname])
+            setattr(o, fname, source[fieldname])
             # fieldname,label,value tuple for use in template
             contents = source[fieldname]
             style = field_display_style(o, fieldname)
@@ -292,31 +334,21 @@ def build_object( o, id, source ):
                 else:
                     contents_display = field_display_handler[style](fieldname, contents)
                 o.fields.append( (fieldname, label, contents_display) )
-    # rename entity.files to entity._files
-    ohasattr = hasattr(o, 'files')
-    if (o.model == 'entity') and hasattr(o, 'files'):
-        o._files = o.files
-        try:
-            delattr(o, 'files')
-        except:
-            pass
-    # rename entity.topics -> entity._topics
-    if (o.model == 'entity') and hasattr(o, 'topics'):
-        o._topics = o.topics
-        try:
-            delattr(o, 'topics')
-        except:
-            pass
     # parent object ids
-    if o.model == 'file': o.repo,o.org,o.cid,o.eid,o.role,o.sha1 = o.id.split('-')
-    elif o.model == 'entity': o.repo,o.org,o.cid,o.eid = o.id.split('-')
-    elif o.model == 'collection': o.repo,o.org,o.cid = o.id.split('-')
-    elif o.model == 'organization': o.repo,o.org = o.id.split('-')
-    elif o.model == 'repository': o.repo = o.id.split('-')
-    if o.model in ['file']: o.entity_id = '%s-%s-%s-%s' % (o.repo,o.org,o.cid,o.eid)
-    if o.model in ['file','entity']: o.collection_id = '%s-%s-%s' % (o.repo,o.org,o.cid)
-    if o.model in ['file','entity','collection']: o.organization_id = '%s-%s' % (o.repo,o.org)
-    if o.model in ['file','entity','collection','organization']: o.repository_id = '%s' % (o.repo)
+    oid = Identity.split_object_id(o.id)
+    if o.model == 'file': m, o.repo,o.org,o.cid,o.eid,o.role,o.sha1 = oid
+    elif o.model == 'entity': m, o.repo,o.org,o.cid,o.eid = oid
+    elif o.model == 'collection': m, o.repo,o.org,o.cid = oid
+    elif o.model == 'organization': m, o.repo,o.org = oid
+    elif o.model == 'repository': m, o.repo = oid
+    if o.model in ['file']:
+        o.entity_id = Identity.make_object_id('entity', o.repo,o.org,o.cid,o.eid,o.role,o.sha1)
+    if o.model in ['file','entity']:
+        o.collection_id = Identity.make_object_id('collection', o.repo, o.org, o.cid)
+    if o.model in ['file','entity','collection']:
+        o.organization_id = Identity.make_object_id('org', o.repo,o.org)
+    if o.model in ['file','entity','collection','organization']:
+        o.repository_id = Identity.make_object_id('repo', o.repo)
     # signature file
     if source.get('signature_file', None):
         o.signature_file = source['signature_file']
@@ -342,7 +374,7 @@ def process_query_results( results, page, page_size ):
                     objects.append(hit)
     return objects
 
-def cached_query(host, index, model='', query='', terms={}, filters={}, fields=[], sort=[]):
+def cached_query(host, index, model='', query='', terms={}, filters={}, fields=[], sort=[], size=10000):
     """Perform an ElasticSearch query and cache it.
     
     Cache key consists of a hash of all the query arguments.
@@ -355,9 +387,12 @@ def cached_query(host, index, model='', query='', terms={}, filters={}, fields=[
     if not cached:
         cached = docstore.search(hosts=HOSTS, index=index, model=model,
                                  query=query, term=terms, filters=filters,
-                                 fields=fields, sort=sort)
+                                 fields=fields, sort=sort, size=size)
         cache.set(key, cached, settings.ELASTICSEARCH_QUERY_TIMEOUT)
     return cached
+
+
+# ----------------------------------------------------------------------
 
 
 class Repository( object ):
@@ -373,7 +408,7 @@ class Repository( object ):
     
     @staticmethod
     def get( repo ):
-        id = make_object_id(Repository.model, repo)
+        id = Identity.make_object_id(Repository.model, repo)
         document = docstore.get(HOSTS, index=INDEX, model=Repository.model, document_id=id)
         if document and (document['found'] or document['exists']):
             o = Repository()
@@ -389,18 +424,15 @@ class Repository( object ):
         return cite_url('repo', self.id)
     
     def organizations( self, page=1, page_size=DEFAULT_SIZE ):
+        objects = []
         results = cached_query(host=HOSTS, index=INDEX, model='organization',
                                query='id:"%s"' % self.id,
                                fields=ORGANIZATION_LIST_FIELDS,
                                sort=ORGANIZATION_LIST_SORT,)
-        objects = process_query_results( results, page, page_size )
-        for o in objects:
-            for hit in results['hits']['hits']:
-                fields = hit['fields']
-                if fields.get('id',None) and fields['id'] == o.id:
-                    o.url = fields.get('url', None)
-                    o.title = fields.get('title', o.id)
-                    o.description = fields.get('description', None)
+        for hit in results['hits']['hits']:
+            model,repo,org = Identity.split_object_id(hit['_id'])
+            org = Organization.get(repo, org)
+            objects.append(org)
         return objects
 
 
@@ -418,7 +450,7 @@ class Organization( object ):
     
     @staticmethod
     def get( repo, org ):
-        id = make_object_id(Organization.model, repo, org)
+        id = Identity.make_object_id(Organization.model, repo, org)
         document = docstore.get(HOSTS, index=INDEX, model=Organization.model, document_id=id)
         if document and (document['found'] or document['exists']):
             o = Organization()
@@ -463,7 +495,7 @@ class Collection( object ):
     
     @staticmethod
     def get( repo, org, cid ):
-        id = make_object_id(Collection.model, repo, org, cid)
+        id = Identity.make_object_id(Collection.model, repo, org, cid)
         document = docstore.get(HOSTS, index=INDEX, model=Collection.model, document_id=id)
         if document and (document['found'] or document['exists']):
             return build_object(Collection(), id, document['_source'])
@@ -505,12 +537,17 @@ class Collection( object ):
     
     def signature_url( self ):
         if self.signature_file:
-            return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, self.id, self.signature_file)
+            return signature_url(self.signature_file)
         return None
     
     def signature_url_local( self ):
         return media_url_local(self.signature_url())
 
+
+ENTITY_OVERRIDDEN_FIELDS = {
+    'topics': '_topics',
+    'files': '_files',
+}
 
 class Entity( object ):
     index = INDEX
@@ -523,16 +560,17 @@ class Entity( object ):
     fieldnames = []
     signature_file = None
     _topics = []
+    _encyc_articles = []
     
     def __repr__( self ):
         return '<ui.models.Entity %s>' % self.id
     
     @staticmethod
     def get( repo, org, cid, eid ):
-        id = make_object_id(Entity.model, repo, org, cid, eid)
+        id = Identity.make_object_id(Entity.model, repo, org, cid, eid)
         document = docstore.get(HOSTS, index=INDEX, model=Entity.model, document_id=id)
         if document and (document['found'] or document['exists']):
-            return build_object(Entity(), id, document['_source'])
+            return build_object(Entity(), id, document['_source'], ENTITY_OVERRIDDEN_FIELDS)
         return None
     
     def absolute_url( self ):
@@ -570,7 +608,7 @@ class Entity( object ):
     
     def signature_url( self ):
         if self.signature_file:
-            return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, self.collection_id, self.signature_file)
+            return signature_url(self.signature_file)
         return None
     
     def signature_url_local( self ):
@@ -579,6 +617,13 @@ class Entity( object ):
     def topics( self ):
         return [faceting.Term('topics', int(tid)) for tid in self._topics]
 
+    def encyc_articles( self ):
+        if not self._encyc_articles:
+            self._encyc_articles = []
+            for term in self.topics():
+                for article in term.encyc_articles():
+                    self._encyc_articles.append(article)
+        return self._encyc_articles
 
 
 class File( object ):
@@ -598,7 +643,7 @@ class File( object ):
     
     @staticmethod
     def get( repo, org, cid, eid, role, sha1 ):
-        id = make_object_id(File.model, repo, org, cid, eid, role, sha1)
+        id = Identity.make_object_id(File.model, repo, org, cid, eid, role, sha1)
         document = docstore.get(HOSTS, index=INDEX, model=File.model, document_id=id)
         if document and (document['found'] or document['exists']):
             return build_object(File(), id, document['_source'])

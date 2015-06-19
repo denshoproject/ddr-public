@@ -1,5 +1,9 @@
 import datetime
+import os
+
 from django import template
+from django.conf import settings
+
 
 register = template.Library()
 
@@ -12,12 +16,20 @@ def ddrvalue( fields, field ):
         return val[0][2]
     except:
         return ''
-	
-def homeslideitem( url, imgurl ):
+
+def homeslideitem( target_url, img_src ):
     """Slide item for homepage gallery
+    
+    @param target_url: str Target URL path, no domain.
+    @param img_src: str Source img path, MEDIA_URL_LOCAL will be prepended.
     """
+    img_url = os.path.join(settings.MEDIA_URL_LOCAL, img_src)
     t = template.loader.get_template('ui/homeslideitem.html')
-    return t.render(template.Context({'url':url,'imgurl':imgurl}))
+    return t.render(template.Context({
+        'target_url': target_url,
+        'img_url': img_url,
+        'MEDIA_URL': settings.MEDIA_URL,
+    }))
 	
 def collection( obj ):
     """list-view collection template

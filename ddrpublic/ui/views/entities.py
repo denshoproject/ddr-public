@@ -2,7 +2,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 from django.conf import settings
-from django.contrib import messages
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect

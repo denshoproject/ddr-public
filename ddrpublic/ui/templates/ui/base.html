@@ -274,7 +274,11 @@ Include all compiled plugins (below), or include individual files as needed
   ga('send', 'pageview');
 </script>
 
-<!-- Rendered at {{ time }} by {{ pid }} on {{ host }} running {{ commit }}. -->
+<!--
+Rendered at {{ time }} by {{ pid }} on {{ host }} running {{ commit }}.
+DOCSTORE_HOSTS: {{ DOCSTORE_HOSTS|safe }}
+DOCSTORE_INDEX: {{ DOCSTORE_INDEX|safe }}
+-->
 
 </body>
 </html>

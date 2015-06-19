@@ -1,16 +1,18 @@
 {% load thumbnail ui_tags %}
-
-					<li class="isotope-item"><!-- slide item -->
-							<div class="item-box">
-								<figure>
-									<a class="item-hover" href="{{url}}" data-plugin-options='{"type":"image"}'>
-										<span class="overlay color2"></span>
-										<span class="inner">
-											<span class="block fa fa-eye fsize20"></span>
-											<strong>VIEW</strong> OBJECT
-										</span>
-									</a>
-									<img class="img-responsive" src="{% thumbnail imgurl "480x323" crop="0px 0px" as img %}{{ img.url }}{% endthumbnail %}" width="260" height="260" alt="">
-								</figure>
-							</div>
-					</li>					
+{% thumbnail img_url "480x323" crop="0px 0px" as img %}
+<li class="isotope-item"><!-- slide item -->
+  <div class="item-box">
+    <figure>
+      <a class="item-hover" href="{{ target_url }}" data-plugin-options='{"type":"image"}'>
+        <span class="overlay color2"></span>
+        <span class="inner">
+        <span class="block fa fa-eye fsize20"></span>
+          <strong>VIEW</strong> OBJECT
+        </span>
+      </a>
+      <!-- src: {{ img_url }} -->
+      <img src="{{ MEDIA_URL }}{{ img }}" class="img-responsive" width="260" height="260" alt="">
+    </figure>
+  </div>
+</li>
+{% endthumbnail %}

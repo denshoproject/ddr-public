@@ -1,1 +1,192 @@
-Watch this space!
+================
+ddr-public Setup
+================
+
+This page documents the process of installing and configuring `ddr-public` on an existing Debian Linux machine.
+
+Most of the commands you will type will be entered as `root`.  To become `root`, type the following at a command prompt::
+
+    $ su - root
+    [enter root password]
+
+As per convention, variables in this documentation are written in upper case with underscores, starting with a "$" sign.
+
+
+
+DDR Applications and Dependencies - Automated Installation
+==========================================================
+
+In this section we will use a script to automatically install the DDR code and its supporting applications.
+
+Log in to your VM and become `root`.  Then add a `ddr` user, install the prerequisites, and install the `ddr-public` app itself.::
+
+    # adduser ddr
+    [enter info]
+    # apt-get install git-core
+    # git clone https://github.com/densho/ddr-public.git /usr/local/src/ddr-public
+    # cd /usr/local/src/ddr-public/ddrpublic
+
+    # If you are testing a branch, switch to that branch.
+    # git checkout -b BRANCHNAME origin/BRANCHNAME
+    
+    # make install
+
+Wait as Make installs Debian packages and Python code and builds up your system.  On a basic VM this takes between 5-10 minutes.
+
+
+
+Configuration
+=============
+
+Repository-wide specifications and configurations are stored in a `ddr` repo, which you must obtain from the Hub server (e.g. `mits.densho.org`).  Create a base directory and clone the `ddr` repo to it.::
+
+    # mkdir /var/www/media/base/
+    # git clone USER@HOST:PATH/ddr.git /var/www/media/base/ddr/
+
+The default settings in `/etc/ddr/ddr.cfg` are specific to the Densho production system.  Settings in `/etc/ddr/local.cfg` will override the defaults.
+
+Edit `/etc/ddr/local.cfg` to include the following text.::
+
+    [public]
+
+    # IP address and port of the Elasticsearch node.
+    docstore_host=127.0.0.1:9200
+    # Name of the index you wish to use (e.g. "encyc-production", "encyc-stage", "encyc-dev").
+    docstore_index=encyc-dev
+
+    # Thumbnail module looks here for full-size images.
+    # Should be a direct link, with no redirects or CDNs in the way.
+    media_url_local=http://192.168.56.101/media/public/
+    # Base URL for media links. See "Uploading Media" section below.
+    media_url=http://192.168.56.144/media/
+
+To get the nice Django error messages edit `/usr/local/src/ddr-public/ddrpublic/ddrpublic/settings.py`.  **WARNING: setting `DEBUG = True` in a production environment is a security risk!**::
+
+    DEBUG = True
+    THUMBNAIL_DEBUG = False
+
+`ddr-public` uses the Django ORM to store data about locally-created thumbnail images in a SQLite3 database.  Create database tables for installed applications.::
+
+    # make syncdb
+
+Restart the servers and the web application to see the effects of your edits.::
+
+    # make restart
+
+At this point `ddr-public` is installed but the Elasticsearch database contains no data.
+
+
+
+Pre-Publication Filtering
+=========================
+
+NOTE: Steps in this section are performed on a machine that has access to the collection repos you wish to publish.
+
+
+
+Uploading Media
+===============
+
+NOTE: Steps in this section are performed on a machine that has access to the collection repos you wish to publish.
+
+Copy media files to a publicly-accessible directory.  Files will be placed in a simple Amazon-S3-friendly bucket-and-file hierarchy.::
+
+    $ ddrpubcopy -amM -c /PATH/TO/SOURCES/REPO-ORG-CID -d /PATH/TO/DEST/
+
+Currently `ddrpubcopy` can only copy between local directories; if your media server is on a different machine you'll have to move them yourself.
+
+    
+
+Populating the Elasticsearch database
+=====================================
+
+The following steps should be run on a machine with `ddr-local` that has local access to the collections you want `ddr-public` to make visible.
+
+IMPORTANT: If your collections contain information or media that you do not want public, STOP and perform the steps in the **Pre-Publication Filtering** section above.
+
+IMPORTANT: Use the value of `docstore_index` from `/etc/ddr/ddr.cfg` or `/etc/ddr/local.cfg` in place of `INDEX` below.::
+
+    $ export INDEX=stage
+    $ export HOST=192.168.56.144
+    $ export PORT=9200
+
+Create a new Elasticsearch index::
+
+    $ ddrindex index -i $INDEX -H $HOST:$PORT --create
+
+Facets, mappings, and Metadata for the repository as a whole::
+
+    $ ddrindex mappings -i $INDEX -H $HOST:$PORT -p /var/www/media/base/ddr/docstore/mappings.json
+    $ ddrindex facets -i $INDEX -H $HOST:$PORT -p /var/www/media/base/ddr/vocab/
+    $ ddrindex repo -i $INDEX -H $HOST:$PORT -p /var/www/media/base/ddr/repository.json
+
+Metadata for each organization::
+
+    $ ddrindex org -i $INDEX -H $HOST:$PORT -p /var/www/media/base/REPO-ORG/organization.json
+
+Metadata for individual collections::
+
+    $ ddrindex index -i $INDEX --recursive -H $HOST:$PORT -p /var/www/media/base/REPO-ORG-ID
+
+
+
+Media Display Setup
+===================
+
+The best setup is to serve the media files from a simple static file server, separate from your `ddr-public` application server.  Thumbnails are automatically generated by `sorl.thumbnail` on the app server.  The app server must be able to write to the directory containing the thumbnails, so until there is a better option thumbnails must reside on the app server itself.
+
+**IMPORTANT**: for `sorl.thumbnail` to work, the application server **MUST** be able to access the media source files *directly* and *without* a password.  If `sorl.thumbnail` cannot access the source files, it will cause pages to take forever to load and then *fail silently*.
+
+The following settings are used for thumbnails::
+
+    media_url
+    media_url_local
+
+These settings may be found in the following files.  Later files override earlier ones.::
+
+    /etc/ddr/ddr.cfg
+    /etc/ddr/local.cfg
+    /usr/local/src/ddr-public/ddrpublic/ddrpublic/settings.py
+
+If you run the `Makefile`, the master `ddr.cfg` file will be copied from `ddr-local`::
+
+    /usr/local/src/ddr-local/debian/conf/ddr.cfg
+
+If you have problems with thumbnails, start by checking the final values of settings::
+
+    $ sudo su ddr
+    $ cd /usr/local/src/ddr-public/ddrpublic
+    $ python manage.py shell
+    >>> from django.conf import settings
+    >>> settings.MEDIA_URL
+    ...
+    >>> settings.MEDIA_URL_LOCAL
+    ...
+
+Make sure that the *application server* can see the *media server*.  *You* may be able to see the media server, but the *app server* may not.  Log in to the app server and connect to the media server using a command-line browser.  You should be able to browse directories and download media files.::
+
+    $ elinks http://192.168.0.30/media/
+
+If you cannot browse directories on the media server, you may need to edit the *media server's* Nginx config and set `autoindex on` for the media directories.::
+
+    # vi /etc/nginx/sites-enabled/tulie.conf
+    ...
+    location / {
+        root  /var/www;
+        autoindex on;
+    }
+    ...
+    # /etc/init.d/nginx configtest
+    # /etc/init.d/nginx reload
+
+Removing thumbnails from the database may help in some cases::
+
+    $ sudo su ddr
+    $ cd /usr/local/src/ddr-public/ddrpublic
+    $ python manage.py dbshell
+    sqlite> DELETE FROM thumbnail_kvstore;
+
+Removing thumbnails from the filesystem may also help::
+
+    $ sudo rm -Rf /var/www/media/cache/*
+
