@@ -177,7 +177,7 @@ class Term(object):
     weight = None
     created = None
     modified = None
-    encyc_urls = None
+    encyc_urls = []
     _encyc_articles = []
     _facet = None
     
@@ -252,7 +252,7 @@ class Term(object):
         return terms
     
     def encyc_articles(self):
-        if not self._encyc_articles:
+        if self.encyc_urls and not self._encyc_articles:
             self._encyc_articles = [
                 {
                     'url': '%s%s' % (settings.ENCYC_BASE, uri),
