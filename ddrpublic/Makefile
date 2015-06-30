@@ -313,12 +313,17 @@ install-configs:
 	@echo ""
 	@echo "configuring ddr-public -------------------------------------------------"
 # base settings file (from ddr-local)
+# /etc/ddr/ddr.cfg must be readable by all
+# /etc/ddr/local.cfg must be readable by ddr but contains sensitive info
 	-mkdir /etc/ddr
 	cp /usr/local/src/ddr-local/debian/conf/ddr.cfg /etc/ddr/
-	chown root.root /etc/ddr/ddr.cfg
-	chmod 644 /etc/ddr/ddr.cfg
+	touch /etc/ddr/local.cfg
 	python -c 'import random; print "".join([random.choice("abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)") for i in range(50)])' > /etc/ddr/ddrpublic-secret-key.txt
+	chown root.root /etc/ddr/ddr.cfg
+	chown root.ddr /etc/ddr/local.cfg
 	chown ddr.ddr /etc/ddr/ddrpublic-secret-key.txt
+	chmod 644 /etc/ddr/ddr.cfg
+	chmod 640 /etc/ddr/local.cfg
 	chmod 600 /etc/ddr/ddrpublic-secret-key.txt
 # web app settings
 	cp /usr/local/src/ddr-public/debian/conf/settings.py /usr/local/src/ddr-public/ddrpublic/ddrpublic/
