@@ -130,6 +130,15 @@ def img_url(bucket, filename, request):
         return '%s%s/%s' % (settings.MEDIA_URL, bucket, filename)
     return None
 
+def pop_field(obj, fieldname):
+    """Safely remove fields from objects.
+    
+    @param obj: dict
+    @param fieldname: str
+    """
+    if obj.get(fieldname):
+        obj.pop(fieldname)
+
 
 # classes --------------------------------------------------------------
 
@@ -209,7 +218,7 @@ class ApiCollection(Collection):
             data['children'] = reverse('ui-api-entities', args=cidparts, request=request)
             data['img_path'] = os.path.join(id, access_filename(data.get('signature_file')))
             data['img_url'] = img_url(id, access_filename(data.get('signature_file')), request)
-            data.pop('notes')
+            pop_field(data, 'notes')
             return data
         return None
 
@@ -256,11 +265,11 @@ class ApiEntity(Entity):
             #persons
             data['img_path'] = os.path.join(collection_id, access_filename(data.get('signature_file')))
             data['img_url'] = img_url(collection_id, access_filename(data.get('signature_file')), request)
-            data.pop('files')
-            data.pop('notes')
-            data.pop('parent')
-            data.pop('status')
-            data.pop('public')
+            pop_field(data, 'files')
+            pop_field(data, 'notes')
+            pop_field(data, 'parent')
+            pop_field(data, 'status')
+            pop_field(data, 'public')
             return data
         return None
 
@@ -303,7 +312,7 @@ class ApiFile(File):
             data['img_url'] = img_url(collection_id, data.get('access_rel'), request)
             o = models.build_object(ApiFile(), id, data)
             data['download_url'] = o.download_url()
-            data.pop('public')
+            pop_field(data, 'public')
             return data
         return None
 
