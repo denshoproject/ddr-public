@@ -372,6 +372,10 @@ class ApiTerm(faceting.Term):
             reverse('ui-api-term', args=[self.facet_id, tid], request=request)
             for tid in self._children
         ]
+        data['objects'] = [
+            reverse('ui-api-term-objects', args=[self.facet_id, tid], request=request)
+            for tid in self._children
+        ]
         return data
 
 
