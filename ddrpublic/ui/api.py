@@ -392,11 +392,12 @@ def index(request, format=None):
 
 
 def _list(request, data):
+    host = request.META['HTTP_HOST']
     path = request.META['PATH_INFO']
     if data.get('previous'):
-        data['previous'] = '%s%s%s' % (host, path, data['previous'])
+        data['previous'] = 'http://%s%s%s' % (host, path, data['previous'])
     if data.get('next'):
-        data['next'] = '%s%s%s' % (host, path, data['next'])
+        data['next'] = 'http://%s%s%s' % (host, path, data['next'])
     return Response(data)
     
 @api_view(['GET'])
