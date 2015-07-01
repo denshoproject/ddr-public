@@ -158,11 +158,11 @@
 				<h3 class="page-header">FOR MORE INFORMATION</h3>
 				<p class="small">
                 Related articles from the
-                <a href="http://encyclopedia.densho.org/">Densho Encyclopedia</a>
+                <a target="encyc" href="http://encyclopedia.densho.org/">Densho Encyclopedia</a>
                 </p>
                 <ul class="list-unstyled">
   {% for article in object.encyc_articles %}
-				    <li><a href="{{ article.url }}">{{ article.title }}</a></li>
+				    <li><a target="encyc" href="{{ article.url }}">{{ article.title }}</a></li>
   {% endfor %}
 				</ul>
 {% endif %}
