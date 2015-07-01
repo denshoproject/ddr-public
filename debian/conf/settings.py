@@ -67,6 +67,16 @@ MEDIA_URL_LOCAL = config.get('public', 'media_url_local')
 # if this query argument is present with a truthy value.
 MEDIA_URL_LOCAL_MARKER = 'internal'
 
+# URL for full-size images and other downloadables.
+# Clicking this should bring up the browser's "Save As..." dialog.
+# Requires extra config on the web server!
+# Nginx example (see https://gist.github.com/un33k/7119264):
+#     if ($request_filename ~ "^.*/(.+\.(doc|docx|jpg|jpeg|pdf|tif|tiff|xls))$") {
+#       set $fname $1;
+#       add_header Content-Disposition 'attachment; filename="$fname"';
+#     }
+DOWNLOAD_URL = config.get('public', 'download_url')
+
 ACCESS_FILE_APPEND='-a'
 ACCESS_FILE_EXTENSION='.jpg'
 ACCESS_FILE_GEOMETRY='1024x1024>'
@@ -217,7 +227,7 @@ def UI_DOWNLOAD_URL( ddrfile ):
         extension = os.path.splitext(ddrfile.basename_orig)[1]
         filename = ddrfile.id + extension
         path_rel = os.path.join(ddrfile.collection_id, filename)
-        url = MEDIA_URL + path_rel
+        url = DOWNLOAD_URL + path_rel
         return url
     return None
 
