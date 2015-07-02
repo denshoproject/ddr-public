@@ -263,8 +263,12 @@ class ApiEntity(Entity):
                 if oid
             ]
             #persons
-            data['img_path'] = os.path.join(collection_id, access_filename(data.get('signature_file')))
-            data['img_url'] = img_url(collection_id, access_filename(data.get('signature_file')), request)
+            if d.get('access_rel'):
+                d['img_path'] = os.path.join(collection_id, d['access_rel'])
+                d['img_url'] = img_url(collection_id, d['access_rel'], request)
+            else:
+                d['img_path'] = None
+                d['img_url'] = None
             pop_field(data, 'files')
             pop_field(data, 'notes')
             pop_field(data, 'parent')
@@ -284,8 +288,12 @@ class ApiEntity(Entity):
             fidparts = [repo,org,cid,eid,role,sha1]
             d['url'] = reverse('ui-api-file', args=fidparts, request=request)
             d['absolute_url'] = reverse('ui-file', args=fidparts, request=request)
-            d['img_path'] = os.path.join(collection_id, d['access_rel'])
-            d['img_url'] = img_url(collection_id, d['access_rel'], request)
+            if d.get('access_rel'):
+                d['img_path'] = os.path.join(collection_id, d['access_rel'])
+                d['img_url'] = img_url(collection_id, d['access_rel'], request)
+            else:
+                d['img_path'] = None
+                d['img_url'] = None
             if role == 'mezzanine':
                 extension = os.path.splitext(d['basename_orig'])[1]
                 filename = d['id'] + extension
@@ -308,8 +316,12 @@ class ApiFile(File):
             data = document['_source']
             data['url'] = reverse('ui-api-file', args=fidparts, request=request)
             data['absolute_url'] = reverse('ui-file', args=fidparts, request=request)
-            data['img_path'] = os.path.join(collection_id, data.get('access_rel'))
-            data['img_url'] = img_url(collection_id, data.get('access_rel'), request)
+            if data.get('access_rel'):
+                data['img_path'] = os.path.join(collection_id, data.get('access_rel'))
+                data['img_url'] = img_url(collection_id, data.get('access_rel'), request)
+            else:
+                data['img_path'] = None
+                data['img_url'] = None
             o = models.build_object(ApiFile(), id, data)
             data['download_url'] = o.download_url()
             pop_field(data, 'public')
