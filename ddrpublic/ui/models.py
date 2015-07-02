@@ -646,6 +646,8 @@ class File( object ):
     role = None
     sha1 = None
     fieldnames = []
+    _file_path = None
+    _access_path = None
     
     def __repr__( self ):
         return '<ui.models.File %s>' % self.id
@@ -660,6 +662,13 @@ class File( object ):
     
     def absolute_url( self ):
         return reverse('ui-file', args=(self.repo, self.org, self.cid, self.eid, self.role, self.sha1))
+    
+    def access_path( self ):
+        """S3 bucket-style path to access file, suitable for appending to MEDIA_URL
+        """
+        if hasattr(self, 'access_rel') and self.access_rel and not self._access_path:
+            self._access_path = '%s/%s' % (self.collection_id, self.access_rel)
+        return self._access_path
     
     def access_url( self ):
         if hasattr(self, 'access_rel') and self.access_rel:
@@ -683,3 +692,12 @@ class File( object ):
 
     def org_logo_url( self ):
         return org_logo_url( '-'.join([self.repo, self.org]) )
+    
+    def file_path(self):
+        """S3 bucket-style path to original file, suitable for appending to MEDIA_URL
+        """
+        if hasattr(self, 'basename_orig') and self.basename_orig and not self._file_path:
+            extension = os.path.splitext(self.basename_orig)[1]
+            filename = self.id + extension
+            self._file_path = os.path.join(self.collection_id, filename)
+        return self._file_path
