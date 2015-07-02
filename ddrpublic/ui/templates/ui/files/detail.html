@@ -34,12 +34,12 @@
             <img src="{{ img.url }}" class="img-responsive">
           </a><br />
 {% endthumbnail %}
-			{% if object.access_url %}
-			<a href="{{ object.access_url }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download large size</a>
-			{% endif %}
-			{% if object.download_url %}
-			<a href="{{ object.download_url }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download fullsize ({{ object.size|filesizeformat }})</a>
-			{% endif %}
+{% if object.access_path %}
+          <a href="{{ DOWNLOAD_URL }}{{ object.access_path }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download large size</a>
+{% endif %}
+{% if object.file_path %}
+          <a href="{{ DOWNLOAD_URL }}{{ object.file_path }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download fullsize ({{ object.size|filesizeformat }})</a>
+{% endif %}
 			<div class="divider"><!-- divider -->
 				<i class="fa fa-chevron-down"></i>
 			</div>
