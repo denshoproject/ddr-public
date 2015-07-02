@@ -559,6 +559,7 @@ class Entity( object ):
     eid = None
     fieldnames = []
     signature_file = None
+    _signature = None
     _topics = []
     _encyc_articles = []
     
@@ -605,6 +606,14 @@ class Entity( object ):
     
     def collection( self ):
         return Collection.get(self.repo, self.org, self.cid)
+    
+    def signature(self):
+        if self.signature_file and not self._signature:
+            oid = Identity.split_object_id(self.signature_file)
+            self._signature = File.get(oid[1], oid[2], oid[3], oid[4], oid[5], oid[6])
+        if self._signature:
+            return self._signature
+        return None
     
     def signature_url( self ):
         if self.signature_file:
