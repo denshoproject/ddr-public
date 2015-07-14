@@ -151,7 +151,8 @@ clean-ddr: clean-ddr-cmdln clean-ddr-local clean-ddr-manual
 install-ddr-cmdln:
 	@echo ""
 	@echo "ddr-cmdln --------------------------------------------------------------"
-	apt-get --assume-yes install git-core git-annex libxml2-dev libxslt1-dev libz-dev pmount udisks python-dev python-pip
+	apt-get --assume-yes install git-core git-annex libexempi3 libxml2-dev libxslt1-dev libz-dev pmount udisks python-dev python-pip
+
 	if test -d /usr/local/src/ddr-cmdln; \
 	then cd /usr/local/src/ddr-cmdln && git pull; \
 	else cd /usr/local/src && git clone https://github.com/densho/ddr-cmdln.git; \
