@@ -6,6 +6,10 @@ INSTALL_BASE=/usr/local/src
 INSTALLDIR=$(INSTALL_BASE)/ddr-public
 PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
 
+MEDIA_BASE=/var/www/ddrpublic
+MEDIA_ROOT=$(MEDIA_BASE)/media
+STATIC_ROOT=$(MEDIA_BASE)/static
+
 ELASTICSEARCH=elasticsearch-1.0.1.deb
 MODERNIZR=modernizr-2.6.2.js
 JQUERY=jquery-1.11.0.min.js
@@ -212,9 +216,9 @@ install-ddr-local:
 #	chown -R ddr.root /var/lib/ddr
 #	chmod -R 755 /var/lib/ddr
 # media dir
-	-mkdir -p /var/www/media
-	chown -R ddr.root /var/www/media
-	chmod -R 755 /var/www/media
+	-mkdir -p $(MEDIA_ROOT)
+	chown -R ddr.root $(MEDIA_ROOT)
+	chmod -R 755 $(MEDIA_ROOT)
 
 update-ddr-local:
 	@echo ""
@@ -285,37 +289,37 @@ clean-static: clean-modernizr clean-bootstrap clean-jquery
 get-ddrpublic-assets:
 	@echo ""
 	@echo "get assets --------------------------------------------------------------"
-	-mkdir /var/www
+	-mkdir $(MEDIA_BASE)
 	wget -nc -P /tmp http://$(PACKAGE_SERVER)/$(ASSETS)
-	tar xzvf /tmp/ddr-public-assets.tar.gz -C /var/www/
+	tar xzvf /tmp/ddr-public-assets.tar.gz -C $(MEDIA_BASE)/
 
 install-modernizr:
 	@echo ""
 	@echo "Modernizr --------------------------------------------------------------"
-	-rm /var/www/static/js/$(MODERNIZR)*
-	wget -nc -P /var/www/static/js http://$(PACKAGE_SERVER)/$(MODERNIZR)
+	-rm $(STATIC_ROOT)/js/$(MODERNIZR)*
+	wget -nc -P $(STATIC_ROOT)/js http://$(PACKAGE_SERVER)/$(MODERNIZR)
 
 clean-modernizr:
-	-rm /var/www/static/js/$(MODERNIZR)*
+	-rm $(STATIC_ROOT)/js/$(MODERNIZR)*
 
 install-bootstrap:
 	@echo ""
 	@echo "Bootstrap --------------------------------------------------------------"
-	wget -nc -P /var/www/static http://$(PACKAGE_SERVER)/$(BOOTSTRAP)
-	7z x -y -o/var/www/static /var/www/static/$(BOOTSTRAP)
+	wget -nc -P $(STATIC_ROOT) http://$(PACKAGE_SERVER)/$(BOOTSTRAP)
+	7z x -y -o$(STATIC_ROOT) $(STATIC_ROOT)/$(BOOTSTRAP)
 
 clean-bootstrap:
-	-rm -Rf /var/www/static/$(BOOTSTRAP)
+	-rm -Rf $(STATIC_ROOT)/$(BOOTSTRAP)
 
 install-jquery:
 	@echo ""
 	@echo "jQuery -----------------------------------------------------------------"
-	wget -nc -P /var/www/static/js http://$(PACKAGE_SERVER)/$(JQUERY)
-	-ln -s /var/www/static/js/$(JQUERY) /var/www/static/js/jquery.js
+	wget -nc -P $(STATIC_ROOT)/js http://$(PACKAGE_SERVER)/$(JQUERY)
+	-ln -s $(STATIC_ROOT)/js/$(JQUERY) $(STATIC_ROOT)/js/jquery.js
 
 clean-jquery:
-	-rm -Rf /var/www/static/js/$(JQUERY)
-	-rm /var/www/static/js/jquery.js
+	-rm -Rf $(STATIC_ROOT)/js/$(JQUERY)
+	-rm $(STATIC_ROOT)/js/jquery.js
 
 
 install-configs:
