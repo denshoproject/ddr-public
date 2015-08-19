@@ -365,7 +365,7 @@ install-configs:
 	chown ddr.ddr /etc/ddr/ddrpublic-secret-key.txt
 	chmod 644 /etc/ddr/ddr.cfg
 	chmod 640 /etc/ddr/local.cfg
-	chmod 600 /etc/ddr/ddrpublic-secret-key.txt
+	chmod 640 /etc/ddr/ddrpublic-secret-key.txt
 # web app settings
 	cp $(INSTALLDIR)/debian/conf/settings.py $(INSTALLDIR)/ddrpublic/ddrpublic/
 	chown root.root $(INSTALLDIR)/ddrpublic/ddrpublic/settings.py
