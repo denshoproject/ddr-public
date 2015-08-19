@@ -5,6 +5,7 @@ PACKAGE_SERVER=tank.densho.org
 INSTALL_BASE=/usr/local/src
 INSTALLDIR=$(INSTALL_BASE)/ddr-public
 PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
+VIRTUALENV=$(INSTALL_BASE)/env/ddrpublic
 
 MEDIA_BASE=/var/www/ddrpublic
 MEDIA_ROOT=$(MEDIA_BASE)/media
@@ -150,6 +151,14 @@ install-elasticsearch:
 # 	@echo "${bldgrn}search engine (re)start${txtrst}"
 	/etc/init.d/elasticsearch restart
 
+install-virtualenv:
+	apt-get --assume-yes install python-pip python-virtualenv
+	test -d $(VIRTUALENV) || virtualenv --distribute --setuptools $(VIRTUALENV)
+
+install-setuptools: install-virtualenv
+	source $(VIRTUALENV)/bin/activate; \
+	pip install -U --download-cache=$(PIP_CACHE_DIR) bpython setuptools
+
 
 install-ddr: install-ddr-cmdln install-ddr-local install-ddr-public
 
@@ -160,30 +169,39 @@ uninstall-ddr: uninstall-ddr-cmdln uninstall-ddr-local uninstall-ddr-manual
 clean-ddr: clean-ddr-cmdln clean-ddr-local clean-ddr-manual
 
 
-install-ddr-cmdln:
+install-ddr-cmdln: install-virtualenv install-setuptools
 	@echo ""
 	@echo "ddr-cmdln --------------------------------------------------------------"
-	apt-get --assume-yes install git-core git-annex libexempi3 libxml2-dev libxslt1-dev libz-dev pmount udisks python-dev python-pip
+	apt-get --assume-yes install git-core git-annex libexempi3 libxml2-dev libxslt1-dev libz-dev pmount udisks python-dev
 
 	if test -d $(INSTALL_BASE)/ddr-cmdln; \
 	then cd $(INSTALL_BASE)/ddr-cmdln && git pull; \
 	else cd $(INSTALL_BASE) && git clone https://github.com/densho/ddr-cmdln.git; \
 	fi
+
+	cd $(INSTALL_BASE)/ddr-cmdln/ddr
+	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_BASE)/ddr-cmdln/ddr && python setup.py install
-	cd $(INSTALL_BASE)/ddr-cmdln/ddr && pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALL_BASE)/ddr-cmdln/ddr/requirements/production.txt
+	source $(VIRTUALENV)/bin/activate; \
+	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALL_BASE)/ddr-cmdln/ddr/requirements/production.txt
+
 	-mkdir /var/log/ddr
 	chown -R ddr.root /var/log/ddr
 	chmod -R 755 /var/log/ddr
 
-update-ddr-cmdln:
+update-ddr-cmdln: install-virtualenv install-setuptools
 	@echo ""
 	@echo "ddr-cmdln --------------------------------------------------------------"
 	cd $(INSTALL_BASE)/ddr-cmdln && git fetch && git pull
-	cd $(INSTALL_BASE)/ddr-cmdln/ddr && python setup.py install
-	cd $(INSTALL_BASE)/ddr-cmdln/ddr && pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALL_BASE)/ddr-cmdln/ddr/requirements/production.txt
-
-uninstall-ddr-cmdln:
 	cd $(INSTALL_BASE)/ddr-cmdln/ddr
+	source $(VIRTUALENV)/bin/activate; \
+	python setup.py install
+	source $(VIRTUALENV)/bin/activate; \
+	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALL_BASE)/ddr-cmdln/ddr/requirements/production.txt
+
+uninstall-ddr-cmdln: install-virtualenv
+	cd $(INSTALL_BASE)/ddr-cmdln/ddr
+	source $(VIRTUALENV)/bin/activate; \
 	-pip uninstall -r $(INSTALL_BASE)/ddr-cmdln/ddr/requirements/production.txt
 	-rm /usr/local/bin/ddrindex
 	-rm /usr/local/bin/ddrdensho255fix
@@ -198,7 +216,7 @@ clean-ddr-cmdln:
 	-rm -Rf $(INSTALL_BASE)/ddr-cmdln/ddr/build
 
 # ddr-local is only used because it contains ddr.cfg
-install-ddr-local:
+install-ddr-local: install-virtualenv
 	@echo ""
 	@echo "ddr-local --------------------------------------------------------------"
 #	apt-get --assume-yes install imagemagick libexempi3 libssl-dev python-dev libxml2 libxml2-dev libxslt1-dev supervisor
@@ -206,6 +224,7 @@ install-ddr-local:
 	then cd $(INSTALL_BASE)/ddr-local && git pull; \
 	else cd $(INSTALL_BASE) && git clone https://github.com/densho/ddr-local.git; \
 	fi
+#	source $(VIRTUALENV)/bin/activate; \
 #	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALL_BASE)/ddr-local/ddrlocal/requirements/production.txt
 # logs dir
 	-mkdir /var/log/ddr
@@ -224,10 +243,12 @@ update-ddr-local:
 	@echo ""
 	@echo "ddr-local --------------------------------------------------------------"
 	git fetch && git pull
+#	source $(VIRTUALENV)/bin/activate; \
 #	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALL_BASE)/ddr-local/ddrlocal/requirements/production.txt
 
 uninstall-ddr-local:
 	cd $(INSTALL_BASE)/ddr-local/ddrlocal
+#	source $(VIRTUALENV)/bin/activate; \
 #	-pip uninstall -r $(INSTALL_BASE)/ddr-local/ddrlocal/requirements/production.txt
 	-rm /usr/local/lib/python2.7/dist-packages/ddrlocal-*
 	-rm -Rf /usr/local/lib/python2.7/dist-packages/ddrlocal
@@ -235,11 +256,12 @@ uninstall-ddr-local:
 clean-ddr-local:
 	-rm -Rf $(INSTALL_BASE)/ddr-local/ddrlocal/src
 
-install-ddr-public:
+install-ddr-public: install-virtualenv
 	@echo ""
 	@echo "ddr-public --------------------------------------------------------------"
 	apt-get --assume-yes install imagemagick supervisor
 	git pull
+	source $(VIRTUALENV)/bin/activate; \
 	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALLDIR)/ddrpublic/requirements/production.txt
 	-mkdir /var/log/ddr
 	chown -R ddr.root /var/log/ddr
@@ -250,6 +272,7 @@ install-ddr-public:
 	chmod -R 755 /var/lib/ddr
 
 syncdb:
+	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALLDIR)/ddrpublic && python manage.py syncdb --noinput
 	chown -R ddr.root /var/lib/ddr
 	chmod -R 750 /var/lib/ddr
@@ -260,10 +283,12 @@ update-ddr-public:
 	@echo ""
 	@echo "ddr-public --------------------------------------------------------------"
 	git fetch && git pull
+	source $(VIRTUALENV)/bin/activate; \
 	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALLDIR)/ddrpublic/requirements/production.txt
 
 uninstall-ddr-public:
 	cd $(INSTALLDIR)/ddrpublic
+	source $(VIRTUALENV)/bin/activate; \
 	-pip uninstall -r $(INSTALLDIR)/ddrpublic/requirements/production.txt
 	-rm /usr/local/lib/python2.7/dist-packages/ddrpublic-*
 	-rm -Rf /usr/local/lib/python2.7/dist-packages/ddrpublic
