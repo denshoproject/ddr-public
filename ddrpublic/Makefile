@@ -1,8 +1,17 @@
-SHELL = /bin/sh
+SHELL = /bin/bash
 
 PACKAGE_SERVER=tank.densho.org
 
-PIP_CACHE_DIR=/usr/local/src/pip-cache
+INSTALL_BASE=/usr/local/src
+INSTALLDIR=$(INSTALL_BASE)/ddr-public
+PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
+VIRTUALENV=$(INSTALL_BASE)/env/ddrpublic
+
+DDR_REPO_BASE=/var/www/media
+
+MEDIA_BASE=/var/www/ddrpublic
+MEDIA_ROOT=$(MEDIA_BASE)/media
+STATIC_ROOT=$(MEDIA_BASE)/static
 
 ELASTICSEARCH=elasticsearch-1.0.1.deb
 MODERNIZR=modernizr-2.6.2.js
@@ -69,8 +78,8 @@ howto-install:
 	@echo "- # ufw enable"
 	@echo "- # apt-get install make"
 	@echo "- # adduser ddr"
-	@echo "- # git clone https://github.com/densho/ddr-public.git /usr/local/src/ddr-public"
-	@echo "- # cd /usr/local/src/ddr-public/ddrpublic"
+	@echo "- # git clone https://github.com/densho/ddr-public.git $(INSTALLDIR)"
+	@echo "- # cd $(INSTALLDIR)/ddrpublic"
 	@echo "- # make install"
 	@echo "- [Install ddr repo (must be done manually)]"
 	@echo "- [Confirm that ddr-cmdln,ddr-local, and ddr repo are on correct branches]"
@@ -138,11 +147,19 @@ install-elasticsearch:
 	apt-get --assume-yes install openjdk-7-jre
 	wget -nc -P /tmp/downloads http://$(PACKAGE_SERVER)/$(ELASTICSEARCH)
 	gdebi --non-interactive /tmp/downloads/$(ELASTICSEARCH)
-	cp /usr/local/src/ddr-public/debian/conf/elasticsearch.yml /etc/elasticsearch/
+	cp $(INSTALLDIR)/debian/conf/elasticsearch.yml /etc/elasticsearch/
 	chown root.root /etc/elasticsearch/elasticsearch.yml
 	chmod 644 /etc/elasticsearch/elasticsearch.yml
 # 	@echo "${bldgrn}search engine (re)start${txtrst}"
 	/etc/init.d/elasticsearch restart
+
+install-virtualenv:
+	apt-get --assume-yes install python-pip python-virtualenv
+	test -d $(VIRTUALENV) || virtualenv --distribute --setuptools $(VIRTUALENV)
+
+install-setuptools: install-virtualenv
+	source $(VIRTUALENV)/bin/activate; \
+	pip install -U --download-cache=$(PIP_CACHE_DIR) bpython setuptools
 
 
 install-ddr: install-ddr-cmdln install-ddr-local install-ddr-public
@@ -154,31 +171,41 @@ uninstall-ddr: uninstall-ddr-cmdln uninstall-ddr-local uninstall-ddr-manual
 clean-ddr: clean-ddr-cmdln clean-ddr-local clean-ddr-manual
 
 
-install-ddr-cmdln:
+install-ddr-cmdln: install-virtualenv install-setuptools
 	@echo ""
 	@echo "ddr-cmdln --------------------------------------------------------------"
-	apt-get --assume-yes install git-core git-annex libexempi3 libxml2-dev libxslt1-dev libz-dev pmount udisks python-dev python-pip
+	apt-get --assume-yes install git-core git-annex libexempi3 libxml2-dev libxslt1-dev libz-dev pmount udisks python-dev
 
-	if test -d /usr/local/src/ddr-cmdln; \
-	then cd /usr/local/src/ddr-cmdln && git pull; \
-	else cd /usr/local/src && git clone https://github.com/densho/ddr-cmdln.git; \
+	if test -d $(INSTALL_BASE)/ddr-cmdln; \
+	then cd $(INSTALL_BASE)/ddr-cmdln && git pull; \
+	else cd $(INSTALL_BASE) && git clone https://github.com/densho/ddr-cmdln.git; \
 	fi
-	cd /usr/local/src/ddr-cmdln/ddr && python setup.py install
-	cd /usr/local/src/ddr-cmdln/ddr && pip install -U --download-cache=$(PIP_CACHE_DIR) -r /usr/local/src/ddr-cmdln/ddr/requirements/production.txt
+
+	cd $(INSTALL_BASE)/ddr-cmdln/ddr
+	source $(VIRTUALENV)/bin/activate; \
+	cd $(INSTALL_BASE)/ddr-cmdln/ddr && python setup.py install
+	source $(VIRTUALENV)/bin/activate; \
+	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALL_BASE)/ddr-cmdln/ddr/requirements/production.txt
+
+	-mkdir $(DDR_REPO_BASE)
 	-mkdir /var/log/ddr
 	chown -R ddr.root /var/log/ddr
 	chmod -R 755 /var/log/ddr
 
-update-ddr-cmdln:
+update-ddr-cmdln: install-virtualenv install-setuptools
 	@echo ""
 	@echo "ddr-cmdln --------------------------------------------------------------"
-	cd /usr/local/src/ddr-cmdln && git fetch && git pull
-	cd /usr/local/src/ddr-cmdln/ddr && python setup.py install
-	cd /usr/local/src/ddr-cmdln/ddr && pip install -U --download-cache=$(PIP_CACHE_DIR) -r /usr/local/src/ddr-cmdln/ddr/requirements/production.txt
+	cd $(INSTALL_BASE)/ddr-cmdln && git fetch && git pull
+	cd $(INSTALL_BASE)/ddr-cmdln/ddr
+	source $(VIRTUALENV)/bin/activate; \
+	python setup.py install
+	source $(VIRTUALENV)/bin/activate; \
+	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALL_BASE)/ddr-cmdln/ddr/requirements/production.txt
 
-uninstall-ddr-cmdln:
-	cd /usr/local/src/ddr-cmdln/ddr
-	-pip uninstall -r /usr/local/src/ddr-cmdln/ddr/requirements/production.txt
+uninstall-ddr-cmdln: install-virtualenv
+	cd $(INSTALL_BASE)/ddr-cmdln/ddr
+	source $(VIRTUALENV)/bin/activate; \
+	-pip uninstall -r $(INSTALL_BASE)/ddr-cmdln/ddr/requirements/production.txt
 	-rm /usr/local/bin/ddrindex
 	-rm /usr/local/bin/ddrdensho255fix
 	-rm /usr/local/bin/ddrmassupdate
@@ -189,18 +216,19 @@ uninstall-ddr-cmdln:
 	-rm -Rf /usr/local/lib/python2.7/dist-packages/ddr-*
 
 clean-ddr-cmdln:
-	-rm -Rf /usr/local/src/ddr-cmdln/ddr/build
+	-rm -Rf $(INSTALL_BASE)/ddr-cmdln/ddr/build
 
 # ddr-local is only used because it contains ddr.cfg
-install-ddr-local:
+install-ddr-local: install-virtualenv
 	@echo ""
 	@echo "ddr-local --------------------------------------------------------------"
 #	apt-get --assume-yes install imagemagick libexempi3 libssl-dev python-dev libxml2 libxml2-dev libxslt1-dev supervisor
-	if test -d /usr/local/src/ddr-local; \
-	then cd /usr/local/src/ddr-local && git pull; \
-	else cd /usr/local/src && git clone https://github.com/densho/ddr-local.git; \
+	if test -d $(INSTALL_BASE)/ddr-local; \
+	then cd $(INSTALL_BASE)/ddr-local && git pull; \
+	else cd $(INSTALL_BASE) && git clone https://github.com/densho/ddr-local.git; \
 	fi
-#	pip install -U --download-cache=$(PIP_CACHE_DIR) -r /usr/local/src/ddr-local/ddrlocal/requirements/production.txt
+#	source $(VIRTUALENV)/bin/activate; \
+#	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALL_BASE)/ddr-local/ddrlocal/requirements/production.txt
 # logs dir
 	-mkdir /var/log/ddr
 	chown -R ddr.root /var/log/ddr
@@ -210,31 +238,34 @@ install-ddr-local:
 #	chown -R ddr.root /var/lib/ddr
 #	chmod -R 755 /var/lib/ddr
 # media dir
-	-mkdir -p /var/www/media
-	chown -R ddr.root /var/www/media
-	chmod -R 755 /var/www/media
+	-mkdir -p $(MEDIA_ROOT)
+	chown -R ddr.root $(MEDIA_ROOT)
+	chmod -R 755 $(MEDIA_ROOT)
 
 update-ddr-local:
 	@echo ""
 	@echo "ddr-local --------------------------------------------------------------"
 	git fetch && git pull
-#	pip install -U --download-cache=$(PIP_CACHE_DIR) -r /usr/local/src/ddr-local/ddrlocal/requirements/production.txt
+#	source $(VIRTUALENV)/bin/activate; \
+#	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALL_BASE)/ddr-local/ddrlocal/requirements/production.txt
 
 uninstall-ddr-local:
-	cd /usr/local/src/ddr-local/ddrlocal
-#	-pip uninstall -r /usr/local/src/ddr-local/ddrlocal/requirements/production.txt
+	cd $(INSTALL_BASE)/ddr-local/ddrlocal
+#	source $(VIRTUALENV)/bin/activate; \
+#	-pip uninstall -r $(INSTALL_BASE)/ddr-local/ddrlocal/requirements/production.txt
 	-rm /usr/local/lib/python2.7/dist-packages/ddrlocal-*
 	-rm -Rf /usr/local/lib/python2.7/dist-packages/ddrlocal
 
 clean-ddr-local:
-	-rm -Rf /usr/local/src/ddr-local/ddrlocal/src
+	-rm -Rf $(INSTALL_BASE)/ddr-local/ddrlocal/src
 
-install-ddr-public:
+install-ddr-public: install-virtualenv
 	@echo ""
 	@echo "ddr-public --------------------------------------------------------------"
 	apt-get --assume-yes install imagemagick supervisor
 	git pull
-	pip install -U --download-cache=$(PIP_CACHE_DIR) -r /usr/local/src/ddr-public/ddrpublic/requirements/production.txt
+	source $(VIRTUALENV)/bin/activate; \
+	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALLDIR)/ddrpublic/requirements/production.txt
 	-mkdir /var/log/ddr
 	chown -R ddr.root /var/log/ddr
 	chmod -R 755 /var/log/ddr
@@ -244,7 +275,8 @@ install-ddr-public:
 	chmod -R 755 /var/lib/ddr
 
 syncdb:
-	cd /usr/local/src/ddr-public/ddrpublic && python manage.py syncdb --noinput
+	source $(VIRTUALENV)/bin/activate; \
+	cd $(INSTALLDIR)/ddrpublic && python manage.py syncdb --noinput
 	chown -R ddr.root /var/lib/ddr
 	chmod -R 750 /var/lib/ddr
 	chown -R ddr.root /var/log/ddr
@@ -254,11 +286,13 @@ update-ddr-public:
 	@echo ""
 	@echo "ddr-public --------------------------------------------------------------"
 	git fetch && git pull
-	pip install -U --download-cache=$(PIP_CACHE_DIR) -r /usr/local/src/ddr-public/ddrpublic/requirements/production.txt
+	source $(VIRTUALENV)/bin/activate; \
+	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALLDIR)/ddrpublic/requirements/production.txt
 
 uninstall-ddr-public:
-	cd /usr/local/src/ddr-public/ddrpublic
-	-pip uninstall -r /usr/local/src/ddr-public/ddrpublic/requirements/production.txt
+	cd $(INSTALLDIR)/ddrpublic
+	source $(VIRTUALENV)/bin/activate; \
+	-pip uninstall -r $(INSTALLDIR)/ddrpublic/requirements/production.txt
 	-rm /usr/local/lib/python2.7/dist-packages/ddrpublic-*
 	-rm -Rf /usr/local/lib/python2.7/dist-packages/ddrpublic
 
@@ -266,14 +300,14 @@ restart-ddrpublic:
 	/etc/init.d/supervisor restart ddrpublic
 
 clean-ddr-public:
-	-rm -Rf /usr/local/src/ddr-public/ddrpublic/src
+	-rm -Rf $(INSTALLDIR)/ddrpublic/src
 
 clean-pip:
 	-rm -Rf $(PIP_CACHE_DIR)/*
 
 
 branch:
-	cd /usr/local/src/ddr-public/ddrpublic; python ./bin/git-checkout-branch.py $(BRANCH)
+	cd $(INSTALLDIR)/ddrpublic; python ./bin/git-checkout-branch.py $(BRANCH)
 
 
 install-static: get-ddrpublic-assets install-modernizr install-bootstrap install-jquery
@@ -283,37 +317,37 @@ clean-static: clean-modernizr clean-bootstrap clean-jquery
 get-ddrpublic-assets:
 	@echo ""
 	@echo "get assets --------------------------------------------------------------"
-	-mkdir /var/www
+	-mkdir $(MEDIA_BASE)
 	wget -nc -P /tmp http://$(PACKAGE_SERVER)/$(ASSETS)
-	tar xzvf /tmp/ddr-public-assets.tar.gz -C /var/www/
+	tar xzvf /tmp/ddr-public-assets.tar.gz -C $(MEDIA_BASE)/
 
 install-modernizr:
 	@echo ""
 	@echo "Modernizr --------------------------------------------------------------"
-	-rm /var/www/static/js/$(MODERNIZR)*
-	wget -nc -P /var/www/static/js http://$(PACKAGE_SERVER)/$(MODERNIZR)
+	-rm $(STATIC_ROOT)/js/$(MODERNIZR)*
+	wget -nc -P $(STATIC_ROOT)/js http://$(PACKAGE_SERVER)/$(MODERNIZR)
 
 clean-modernizr:
-	-rm /var/www/static/js/$(MODERNIZR)*
+	-rm $(STATIC_ROOT)/js/$(MODERNIZR)*
 
 install-bootstrap:
 	@echo ""
 	@echo "Bootstrap --------------------------------------------------------------"
-	wget -nc -P /var/www/static http://$(PACKAGE_SERVER)/$(BOOTSTRAP)
-	7z x -y -o/var/www/static /var/www/static/$(BOOTSTRAP)
+	wget -nc -P $(STATIC_ROOT) http://$(PACKAGE_SERVER)/$(BOOTSTRAP)
+	7z x -y -o$(STATIC_ROOT) $(STATIC_ROOT)/$(BOOTSTRAP)
 
 clean-bootstrap:
-	-rm -Rf /var/www/static/$(BOOTSTRAP)
+	-rm -Rf $(STATIC_ROOT)/$(BOOTSTRAP)
 
 install-jquery:
 	@echo ""
 	@echo "jQuery -----------------------------------------------------------------"
-	wget -nc -P /var/www/static/js http://$(PACKAGE_SERVER)/$(JQUERY)
-	-ln -s /var/www/static/js/$(JQUERY) /var/www/static/js/jquery.js
+	wget -nc -P $(STATIC_ROOT)/js http://$(PACKAGE_SERVER)/$(JQUERY)
+	-ln -s $(STATIC_ROOT)/js/$(JQUERY) $(STATIC_ROOT)/js/jquery.js
 
 clean-jquery:
-	-rm -Rf /var/www/static/js/$(JQUERY)
-	-rm /var/www/static/js/jquery.js
+	-rm -Rf $(STATIC_ROOT)/js/$(JQUERY)
+	-rm $(STATIC_ROOT)/js/jquery.js
 
 
 install-configs:
@@ -323,7 +357,7 @@ install-configs:
 # /etc/ddr/ddr.cfg must be readable by all
 # /etc/ddr/local.cfg must be readable by ddr but contains sensitive info
 	-mkdir /etc/ddr
-	cp /usr/local/src/ddr-local/debian/conf/ddr.cfg /etc/ddr/
+	cp $(INSTALL_BASE)/ddr-local/debian/conf/ddr.cfg /etc/ddr/
 	touch /etc/ddr/local.cfg
 	python -c 'import random; print "".join([random.choice("abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)") for i in range(50)])' > /etc/ddr/ddrpublic-secret-key.txt
 	chown root.root /etc/ddr/ddr.cfg
@@ -331,20 +365,20 @@ install-configs:
 	chown ddr.ddr /etc/ddr/ddrpublic-secret-key.txt
 	chmod 644 /etc/ddr/ddr.cfg
 	chmod 640 /etc/ddr/local.cfg
-	chmod 600 /etc/ddr/ddrpublic-secret-key.txt
+	chmod 640 /etc/ddr/ddrpublic-secret-key.txt
 # web app settings
-	cp /usr/local/src/ddr-public/debian/conf/settings.py /usr/local/src/ddr-public/ddrpublic/ddrpublic/
-	chown root.root /usr/local/src/ddr-public/ddrpublic/ddrpublic/settings.py
-	chmod 644 /usr/local/src/ddr-public/ddrpublic/ddrpublic/settings.py
+	cp $(INSTALLDIR)/debian/conf/settings.py $(INSTALLDIR)/ddrpublic/ddrpublic/
+	chown root.root $(INSTALLDIR)/ddrpublic/ddrpublic/settings.py
+	chmod 644 $(INSTALLDIR)/ddrpublic/ddrpublic/settings.py
 # nginx settings
-	cp /usr/local/src/ddr-public/debian/conf/ddrpublic.conf /etc/nginx/sites-available
+	cp $(INSTALLDIR)/debian/conf/ddrpublic.conf /etc/nginx/sites-available
 	chown root.root /etc/nginx/sites-available/ddrpublic.conf
 	chmod 644 /etc/nginx/sites-available/ddrpublic.conf
 	-ln -s /etc/nginx/sites-available/ddrpublic.conf /etc/nginx/sites-enabled/ddrpublic.conf
 	-rm /etc/nginx/sites-enabled/default
 # supervisord
-	cp /usr/local/src/ddr-public/debian/conf/supervisord.conf /etc/supervisor/
-	cp /usr/local/src/ddr-public/debian/conf/gunicorn_ddrpublic.conf /etc/supervisor/conf.d/
+	cp $(INSTALLDIR)/debian/conf/supervisord.conf /etc/supervisor/
+	cp $(INSTALLDIR)/debian/conf/gunicorn_ddrpublic.conf /etc/supervisor/conf.d/
 	chown root.root /etc/supervisor/conf.d/gunicorn_ddrpublic.conf
 	chmod 644 /etc/supervisor/conf.d/gunicorn_ddrpublic.conf
 
@@ -352,7 +386,7 @@ uninstall-configs:
 	-rm /etc/nginx/sites-available/ddrpublic.conf
 	-rm /etc/nginx/sites-enabled/ddrpublic.conf
 	-rm /etc/supervisor/conf.d/gunicorn_ddrpublic.conf
-	-rm /usr/local/src/ddr-local/ddrpublic/ddrpublic/settings.py
+	-rm $(INSTALL_BASE)/ddr-local/ddrpublic/ddrpublic/settings.py
 	-rm /etc/ddr/ddrpublic-secret-key.txt
 	-rm /etc/ddr/ddr.cfg
 
@@ -389,31 +423,31 @@ status:
 
 git-status:
 	@echo "------------------------------------------------------------------------"
-	cd /usr/local/src/ddr-cmdln && git status
+	cd $(INSTALL_BASE)/ddr-cmdln && git status
 	@echo "------------------------------------------------------------------------"
-	cd /usr/local/src/ddr-local && git status
+	cd $(INSTALL_BASE)/ddr-local && git status
 	@echo "------------------------------------------------------------------------"
-	cd /usr/local/src/ddr-public && git status
+	cd $(INSTALLDIR) && git status
 
 
 install-ddr-manual:
 	@echo ""
 	@echo "ddr-manual --------------------------------------------------------------"
 	pip install -U --download-cache=$(PIP_CACHE_DIR) sphinx
-	if test -d /usr/local/src/ddr-manual; \
-	then cd /usr/local/src/ddr-manual && git pull; \
-	else cd /usr/local/src && git clone https://github.com/densho/ddr-manual.git; \
+	if test -d $(INSTALL_BASE)/ddr-manual; \
+	then cd $(INSTALL_BASE)/ddr-manual && git pull; \
+	else cd $(INSTALL_BASE) && git clone https://github.com/densho/ddr-manual.git; \
 	fi
-	cd /usr/local/src/ddr-manual && make html
+	cd $(INSTALL_BASE)/ddr-manual && make html
 
 update-ddr-manual:
 	@echo ""
 	@echo "ddr-manual --------------------------------------------------------------"
-	cd /usr/local/src/ddr-manual && git fetch && git pull
-	cd /usr/local/src/ddr-manual && make html
+	cd $(INSTALL_BASE)/ddr-manual && git fetch && git pull
+	cd $(INSTALL_BASE)/ddr-manual && make html
 
 uninstall-ddr-manual:
 	-pip uninstall sphinx
 
 clean-ddr-manual:
-	-rm -Rf /usr/local/src/ddr-manual/build
+	-rm -Rf $(INSTALL_BASE)/ddr-manual/build
