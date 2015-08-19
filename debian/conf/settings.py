@@ -133,6 +133,7 @@ INSTALLED_APPS = (
     #
     'ddrpublic',
     'ui',
+    'names',
 )
 
 DATABASES = {
@@ -235,6 +236,7 @@ def UI_DOWNLOAD_URL( ddrfile ):
 #SESSION_ENGINE = 'redis_sessions.session'
 
 TEMPLATE_DIRS = (
+    '/usr/local/src/ddr-public/ddrpublic/names/templates',
     '/usr/local/src/ddr-public/ddrpublic/ui/templates',
 )
 

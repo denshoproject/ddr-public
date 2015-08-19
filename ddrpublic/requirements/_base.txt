@@ -3,6 +3,10 @@
 # Non-Python dependencies
 # sudo apt-get install python2.7, supervisor, imagemagick
 
+#-e git+git@github.com:densho/ddr-cmdln.git#egg=DDR
+#-e git+git@github.com:densho/ddr-local.git#egg=ddrlocal
+-e git+git@github.com:densho/namesdb.git#egg=namesdb
+
                                    # LICENSE  Python3
 Django==1.8                        # MIT      y
 django-bootstrap-pagination==1.5.1 # MIT      ???
@@ -15,6 +19,3 @@ redis==2.10.3                      # MIT      y
 requests==2.6.0                    # Apache2  y
 djangorestframework==3.1.1         # BSD      y
 sorl-thumbnail==12.2               # BSD      y
-
-#-e git://github.com/densho/ddr-cmdln.git#egg=DDR
-#-e git://github.com/densho/ddr-local.git#egg=ddrlocal
