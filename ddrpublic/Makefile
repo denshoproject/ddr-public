@@ -7,6 +7,8 @@ INSTALLDIR=$(INSTALL_BASE)/ddr-public
 PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
 VIRTUALENV=$(INSTALL_BASE)/env/ddrpublic
 
+DDR_REPO_BASE=/var/www/media
+
 MEDIA_BASE=/var/www/ddrpublic
 MEDIA_ROOT=$(MEDIA_BASE)/media
 STATIC_ROOT=$(MEDIA_BASE)/static
@@ -185,6 +187,7 @@ install-ddr-cmdln: install-virtualenv install-setuptools
 	source $(VIRTUALENV)/bin/activate; \
 	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALL_BASE)/ddr-cmdln/ddr/requirements/production.txt
 
+	-mkdir $(DDR_REPO_BASE)
 	-mkdir /var/log/ddr
 	chown -R ddr.root /var/log/ddr
 	chmod -R 755 /var/log/ddr
