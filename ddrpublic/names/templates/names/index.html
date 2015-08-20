@@ -1,4 +1,5 @@
 {% extends "ui/base.html" %}
+{% load names_tags %}
 
 {% block title %}Names Database{% endblock %}
 
@@ -47,7 +48,9 @@
 {{ records|length }} records
 </p>
 {% for record in records %}
-{{ record }}<br/>
+<p>
+{% record record %}
+</p>
 {% endfor %}
 {% else %}
 <p>
