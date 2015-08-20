@@ -18,6 +18,9 @@
     <td>{{ x.0 }}</td>
     <td>{{ x.1 }}</td>
     <td>{{ x.2 }}</td>
+    <td>
+      <a href="{% url "names-search" %}?query=&{{ x.0 }}={{ x.2 }}">search</a>
+    </td>
   </tr>
 {% endfor %}
 </table>

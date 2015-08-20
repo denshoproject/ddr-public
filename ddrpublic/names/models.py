@@ -128,6 +128,9 @@ def search(
         hosts, index, query_type='multi_match', query='', filters={},
         sort='m_pseudoid', limit=1000
 ):
+    """
+    This function allows any combination of filters, even illogical ones
+    """
     # remove empty filter args
     filters = {key:val for key,val in filters.iteritems() if val}
     if not (query or filters):

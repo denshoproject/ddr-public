@@ -3,6 +3,7 @@ logger = logging.getLogger(__name__)
 
 from django import forms
 from django.conf import settings
+from django.utils.datastructures import SortedDict
 
 from namesdb.definitions import FIELD_DEFINITIONS
 from names import models
@@ -51,3 +52,27 @@ class SearchForm(forms.Form):
         self.fields['m_originalstate'].choices = field_choices(hosts, index, 'm_originalstate')
         self.fields['m_gender'].choices = field_choices(hosts, index, 'm_gender')
         self.fields['m_birthyear'].choices = field_choices(hosts, index, 'm_birthyear')
+
+
+def construct_form(hosts, index, filters):
+    fields = []
+    fields.append(('query', forms.CharField(required=False, max_length=255)))
+    for field_name in filters:
+        fobject = forms.MultipleChoiceField(
+            required=False,
+            choices=field_choices(hosts, index, field_name),
+            widget=forms.CheckboxSelectMultiple
+        )
+        fields.append((field_name, fobject))
+    fields = SortedDict(fields)
+    return fields
+
+class FlexiSearchForm(forms.Form):
+    """Construct form from any combination of Record filter fields.
+    """
+    def __init__( self, *args, **kwargs ):
+        hosts = kwargs.pop('hosts')
+        index = kwargs.pop('index')
+        filters = kwargs.pop('filters')
+        super(FlexiSearchForm, self).__init__(*args, **kwargs)
+        self.fields = construct_form(hosts, index, filters)
