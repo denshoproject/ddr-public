@@ -1,1 +1,44 @@
-names/detail.html
+{% extends "ui/base.html" %}
+{% load names_tags %}
+
+{% block title %}{{ record }}{% endblock %}
+
+{% block breadcrumbs %}{{ block.super }}
+<li>{{ record }}</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+<section class="container">
+
+<h2>{{ record.m_lastname }} {{ record.m_firstname }}</h2>
+
+<table border=1>
+{% for x in record.details %}
+  <tr>
+    <td>{{ x.0 }}</td>
+    <td>{{ x.1 }}</td>
+    <td>{{ x.2 }}</td>
+  </tr>
+{% endfor %}
+</table>
+
+{% if record.other_datasets %}
+<div id="other_datasets">
+<h3>other_datasets</h3>
+{% for r in record.other_datasets %}
+{% record r %}<br/>
+{% endfor %}
+</div>
+{% endif %}
+
+{% if record.family_members %}
+<div id="family">
+<h3>Family ID {{ record.m_familyno }}</h3>
+{% for r in record.family_members %}
+{% record r %}<br/>
+{% endfor %}
+</div>
+{% endif %}
+
+</section><!-- .container -->
+{% endblock content %}
