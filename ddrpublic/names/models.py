@@ -9,9 +9,12 @@ from elasticsearch_dsl import Search, F
 from elasticsearch_dsl.query import MultiMatch
 from elasticsearch_dsl.connections import connections
 
+from django.conf import settings
+from django.core.urlresolvers import reverse
+
 from namesdb import sourcefile
 from namesdb import definitions
-from namesdb.models import Record
+from namesdb.models import Record, DOC_TYPE
 
 
 def make_hosts(text):
@@ -26,6 +29,52 @@ def set_hosts_index(hosts, index):
     connections.create_connection(hosts=hosts)
     logging.debug('Index %s' % index)
     return Index(index)
+
+
+class Rcrd(Record):
+    
+    class Meta:
+        index = settings.NAMESDB_DOCSTORE_INDEX
+        doc_type = DOC_TYPE
+
+    def details(self):
+        """
+        Returns a list of (field, value) tuples for displaying values
+        """
+        details = []
+        for field in definitions.DATASETS[self.m_dataset]:
+            try:
+                label = definitions.FIELD_DEFINITIONS[field]['label']
+            except:
+                pass
+            if not label:
+                label = field
+            value = getattr(self, field, None)
+            if value:
+                details.append((field, label, value))
+        return details
+    
+    def absolute_url(self):
+        return reverse(
+            'names-detail',
+            kwargs={'id': self.meta.id}
+        )
+
+def same_familyno(hosts, index, record):
+    if record.m_familyno:
+        body,records = search(
+            hosts, index, filters={'m_familyno':[record.m_familyno]},
+        )
+        not_this_record = [r for r in records if not (r.m_pseudoid == record.m_pseudoid)]
+        return not_this_record
+    return []
+
+def other_datasets(hosts, index, record):
+    body,records = search(
+        hosts, index, filters={'m_pseudoid':[record.m_pseudoid]},
+    )
+    not_this_record = [r for r in records if not (r.meta.id == record.meta.id)]
+    return not_this_record
 
 
 def field_values(hosts, index, field):
@@ -66,7 +115,7 @@ def _from_hit(hit):
     m_pseudoid = _hitvalue(hit_d, 'm_pseudoid')
     m_dataset = _hitvalue(hit_d, 'm_dataset')
     if m_dataset and m_pseudoid:
-        record = Record(
+        record = Rcrd(
             meta={'id': ':'.join([m_dataset, m_pseudoid])}
         )
         for field in definitions.FIELDS_MASTER:

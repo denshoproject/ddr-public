@@ -43,10 +43,14 @@ def index(request, template_name='names/index.html'):
     )
 
 @require_http_methods(['GET',])
-def detail(request, template_name='names/detail.html'):
+def detail(request, id, template_name='names/detail.html'):
+    record = models.Rcrd.get(id=id)
+    record.other_datasets = models.other_datasets(HOSTS, INDEX, record)
+    record.family_members = models.same_familyno(HOSTS, INDEX, record)
     return render_to_response(
         template_name,
         {
+            'record': record,
         },
         context_instance=RequestContext(request)
     )
