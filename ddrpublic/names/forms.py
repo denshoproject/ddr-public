@@ -35,19 +35,19 @@ def field_choices(hosts, index, field):
 
 
 class SearchForm(forms.Form):
-    dataset = forms.MultipleChoiceField(choices=[], widget=forms.CheckboxSelectMultiple)
-    camps = forms.MultipleChoiceField(choices=[], widget=forms.CheckboxSelectMultiple)
-    originalstate = forms.MultipleChoiceField(choices=[], widget=forms.CheckboxSelectMultiple)
-    gender = forms.MultipleChoiceField(choices=[], widget=forms.CheckboxSelectMultiple)
-    birthyear = forms.MultipleChoiceField(choices=[], widget=forms.CheckboxSelectMultiple)
-    query = forms.CharField(max_length=255)
+    m_dataset = forms.MultipleChoiceField(required=False, choices=[], widget=forms.CheckboxSelectMultiple)
+    m_camp = forms.MultipleChoiceField(required=False, choices=[], widget=forms.CheckboxSelectMultiple)
+    m_originalstate = forms.MultipleChoiceField(required=False, choices=[], widget=forms.CheckboxSelectMultiple)
+    m_gender = forms.MultipleChoiceField(required=False, choices=[], widget=forms.CheckboxSelectMultiple)
+    m_birthyear = forms.MultipleChoiceField(required=False, choices=[], widget=forms.CheckboxSelectMultiple)
+    query = forms.CharField(required=False, max_length=255)
     
     def __init__( self, *args, **kwargs ):
+        hosts = kwargs.pop('hosts')
+        index = kwargs.pop('index')
         super(SearchForm, self).__init__(*args, **kwargs)
-        hosts = settings.NAMESDB_DOCSTORE_HOSTS
-        index = models.set_hosts_index(hosts, settings.NAMESDB_DOCSTORE_INDEX)
-        self.fields['dataset'].choices = field_choices(hosts, index, 'm_dataset')
-        self.fields['camps'].choices = field_choices(hosts, index, 'm_camp')
-        self.fields['originalstate'].choices = field_choices(hosts, index, 'm_originalstate')
-        self.fields['gender'].choices = field_choices(hosts, index, 'm_gender')
-        self.fields['birthyear'].choices = field_choices(hosts, index, 'm_birthyear')
+        self.fields['m_dataset'].choices = field_choices(hosts, index, 'm_dataset')
+        self.fields['m_camp'].choices = field_choices(hosts, index, 'm_camp')
+        self.fields['m_originalstate'].choices = field_choices(hosts, index, 'm_originalstate')
+        self.fields['m_gender'].choices = field_choices(hosts, index, 'm_gender')
+        self.fields['m_birthyear'].choices = field_choices(hosts, index, 'm_birthyear')

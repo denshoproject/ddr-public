@@ -11,20 +11,56 @@
 
 <h2>Names Database</h2>
 
-<table border="1">
+<table border="1" width="100%">
 <form name="search" action="" method="get">
-
-{{ form.as_table }}
-
   <tr>
-    <td>
+    <td width="40%" valign="top">
+
+<strong>dataset</strong>
+{{ form.m_dataset }}
+
+<strong>camp</strong>
+{{ form.m_camp }}
+
+<strong>originalstate</strong>
+{{ form.m_originalstate }}
+
+<strong>gender</strong>
+{{ form.m_gender }}
+
+<strong>birthyear</strong>
+{{ form.m_birthyear }}
+      
     </td>
-    <td>
-      <input type="submit" value="submit" />
+    <td valign="top">
+
+{{ form.query }}
+<input type="submit" value="submit" />
+
+{% if body %}
+<pre>{{ body }}</pre>
+{% endif %}
+
+<div id="records">
+{% if records %}
+<p>
+{{ records|length }} records
+</p>
+{% for record in records %}
+{{ record }}<br/>
+{% endfor %}
+{% else %}
+<p>
+No records (try searching for something)
+</p>
+{% endif %}{# records #}
+</div><!-- #records -->
+
     </td>
   </tr>
 </form>
 </table>
+
 
 </section><!-- .container -->
 {% endblock content %}
