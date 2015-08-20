@@ -165,6 +165,12 @@ DOCSTORE_HOSTS = [
 ]
 DOCSTORE_INDEX = config.get('public', 'docstore_index')
 
+namesdb_docstore_host,namesdb_docstore_port = config.get('public', 'namesdb_docstore_host').split(':')
+NAMESDB_DOCSTORE_HOSTS = [
+    {'host':namesdb_docstore_host, 'port':namesdb_docstore_port}
+]
+NAMESDB_DOCSTORE_INDEX = config.get('public', 'namesdb_docstore_index')
+
 ELASTICSEARCH_MAX_SIZE = 1000000
 ELASTICSEARCH_QUERY_TIMEOUT = 60 * 10  # 10 min
 ELASTICSEARCH_FACETS_TIMEOUT = 60*60*1  # 1 hour

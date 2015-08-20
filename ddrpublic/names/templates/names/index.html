@@ -10,9 +10,21 @@
 <section class="container">
 
 <h2>Names Database</h2>
-<p>
-SAMPLE TEXT
-</p>
+
+<table border="1">
+<form name="search" action="" method="get">
+
+{{ form.as_table }}
+
+  <tr>
+    <td>
+    </td>
+    <td>
+      <input type="submit" value="submit" />
+    </td>
+  </tr>
+</form>
+</table>
 
 </section><!-- .container -->
 {% endblock content %}
