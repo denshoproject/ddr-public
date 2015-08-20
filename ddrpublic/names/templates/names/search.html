@@ -1,0 +1,63 @@
+{% extends "ui/base.html" %}
+{% load names_tags %}
+
+{% block title %}Names Database{% endblock %}
+
+{% block breadcrumbs %}{{ block.super }}
+<li>Names Database</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+<section class="container">
+
+<h2>Names Database</h2>
+
+<ul>
+{% for kwarg in kwargs %}
+  <li>
+    <b>{{ kwarg.0 }}:</b>
+    {{ kwarg.1 }}
+  </li>
+{% endfor %}
+</ul>
+
+<table border=1>
+  <tr>
+    <td valign="top">
+
+<form name="search" action="" method="get">
+<input type="submit" value="submit" />
+{{ form.as_p }}
+</form>
+
+    </td>
+    <td valign="top">
+
+<div id="records">
+{% if records %}
+<p>
+{{ records|length }} records
+</p>
+{% for record in records %}
+<p>
+{% record record %}
+</p>
+{% endfor %}
+{% else %}
+<p>
+No records (try searching for something)
+</p>
+{% endif %}{# records #}
+</div><!-- #records -->
+
+    </td>
+  </tr>
+</table>
+
+{% if body %}
+<pre>{{ body }}</pre>
+{% endif %}
+
+
+</section><!-- .container -->
+{% endblock content %}
