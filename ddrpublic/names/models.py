@@ -5,7 +5,7 @@ import sys
 
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Index
-from elasticsearch_dsl import Search
+from elasticsearch_dsl import Search, F
 from elasticsearch_dsl.query import MultiMatch
 from elasticsearch_dsl.connections import connections
 
@@ -31,18 +31,82 @@ def set_hosts_index(hosts, index):
 def field_values(hosts, index, field):
     return Record.field_values(field)
 
-def search_multimatch(hosts, index, query, sort='m_pseudoid'):
-    logging.info('query: "%s"' % query)
+
+def _hitvalue(hit, field):
+    """Extract list-wrapped values from their lists.
     
+    For some reason, Search hit objects wrap values in lists.
+    returns the value inside the list.
+    
+    @param hit: Elasticsearch search hit object
+    @param field: str field name
+    @return: value
+    """
+    v = hit.get(field)
+    vtype = type(v)
+    value = None
+    if hit.get(field) and isinstance(hit[field], list):
+        value = hit[field][0]
+    elif hit.get(field):
+        value = hit[field]
+    return value
+
+def _from_hit(hit):
+    """Build Record object from Elasticsearch hit
+    @param hit
+    @returns: Record
+    """
+    htype = type(hit)
+    hit_d = hit.__dict__['_d_']
+    m_pseudoid = _hitvalue(hit_d, 'm_pseudoid')
+    m_dataset = _hitvalue(hit_d, 'm_dataset')
+    if m_dataset and m_pseudoid:
+        record = Record(
+            meta={'id': ':'.join([m_dataset, m_pseudoid])}
+        )
+        for field in definitions.FIELDS_MASTER:
+            setattr(record, field, _hitvalue(hit_d, field))
+        record.m_dataset = m_dataset
+        return record
+    return None
+
+def search(
+        hosts, index, query_type='multi_match', query='', filters={},
+        sort='m_pseudoid', limit=1000
+):
+    # remove empty filter args
+    filters = {key:val for key,val in filters.iteritems() if val}
+    if not (query or filters):
+        return None,[]
     s = Search().doc_type(Record)
+    if filters:
+        for field,values in filters.iteritems():
+            # multiple terms for a field are OR-ed
+            s = s.filter(
+                'or',
+                [
+                    # In the Elasticsearch DSL examples, 'tags' is the field name.
+                    # ex: s.filter("term", tags="python")
+                    # Our field name is a var so we have to pass in a **dict
+                    F('term', **{field: value})
+                    for value in values
+                ]
+            )
+    if query:
+        s = s.query(
+            query_type, query=query, fields=definitions.FIELDS_MASTER
+        )
     s = s.fields(definitions.FIELDS_MASTER)
     s = s.sort(sort)
-    s = s.query(
-        'multi_match', query=query, fields=definitions.FIELDS_MASTER
-    )[0:10000]
-    response = s.execute()
-    records = [Record.from_hit(hit) for hit in response]
-    return records
+    s = s[0:limit]
+    body = s.to_dict()
+    records = []
+    for hit in s.execute():
+        record = _from_hit(hit)
+        if record:
+            records.append(record)
+    return body,records
+
 
 def search_aggregation(hosts, index, field):
     s = Search().doc_type(Record)
