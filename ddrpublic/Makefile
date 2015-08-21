@@ -84,10 +84,6 @@ howto-install:
 	@echo "- [Install ddr repo (must be done manually)]"
 	@echo "- [Confirm that ddr-cmdln,ddr-local, and ddr repo are on correct branches]"
 	@echo "- # make syncdb"
-	@echo "- # su encyc"
-	@echo "  $ python manage.py dbshell"
-	@echo "  sqlite> update django_site set domain='encyclopedia.densho.org', name='encyclopedia.densho.org' where id=1;"
-	@echo "  sqlite> .quit"
 	@echo "- # make restart"
 
 
