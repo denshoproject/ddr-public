@@ -126,10 +126,12 @@ def _from_hit(hit):
 
 def search(
         hosts, index, query_type='multi_match', query='', filters={},
-        sort='m_pseudoid', limit=1000
+        sort='m_pseudoid', start=0, pagesize=10
 ):
     """
     This function allows any combination of filters, even illogical ones
+    
+    @returns: Search
     """
     # remove empty filter args
     filters = {key:val for key,val in filters.iteritems() if val}
@@ -155,15 +157,87 @@ def search(
         )
     s = s.fields(definitions.FIELDS_MASTER)
     s = s.sort(sort)
-    s = s[0:limit]
-    body = s.to_dict()
+    s = s[start:start+pagesize]
+    return s
+
+def records(response):
     records = []
-    for hit in s.execute():
+    for hit in response:
         record = _from_hit(hit)
         if record:
             records.append(record)
-    return body,records
+    return records
 
+class Paginator(object):
+    response = None
+    thispage = -1
+    pagesize = -1
+    query = ''
+    total = -1
+    count = -1
+    num_pages = -1
+    first = 1
+    last = -1
+    prev = -1
+    next = -1
+    start = -1
+    end = -1
+    range = []
+    object_list = []
+    labels = {'first':'First', 'prev':'Previous', 'next':'Next', 'last':'Last'}
+    
+    def __init__(self, response, thispage, pagesize, context, query, **kwargs):
+        self.response = response
+        self.thispage = thispage
+        self.pagesize = pagesize
+        
+        self.total = response.hits.total
+        self.count = self.total
+        self.num_pages,mod = divmod(self.total, self.pagesize)
+        if mod:
+            self.num_pages = self.num_pages + 1
+        self.first = 1
+        self.last = self.num_pages
+        self.prev = self.thispage - 1
+        if self.prev <= 0:
+            self.prev = None
+        self.next = self.thispage + 1
+        if self.next > self.num_pages:
+            self.next = None
+        self.start,self.end = Paginator.start_end(self.thispage, self.pagesize)
+        self.object_list = records(response)
+        
+        range_start = self.thispage - context
+        if range_start <= 1:
+            range_start = 1
+        range_end = self.thispage + 1 + context
+        if range_end > self.num_pages:
+            range_end = self.num_pages
+        self.range = range(range_start, range_end)
+
+        qs = []
+        for q in query.split('&'):
+            if '=' in q:
+                if q.split('=')[0] != 'page':
+                    qs.append(q)
+        self.query = '&'.join(qs)
+    
+    def __repr__(self):
+        return "<Paginator %s/%s %s:%s>" % (self.thispage, self.num_pages, self.start, self.end)
+
+    @staticmethod
+    def start_end(thispage, pagesize, total=10000):
+        start = (thispage - 1) * pagesize
+        if start < 0:
+            start = 0
+        if start > total:
+            start  = total
+        end = start + pagesize
+        if end > total:
+            end = total
+        return start,end
+        
+    
 
 def search_aggregation(hosts, index, field):
     s = Search().doc_type(Record)

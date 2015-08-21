@@ -13,24 +13,35 @@ from names import models
 
 HOSTS = settings.NAMESDB_DOCSTORE_HOSTS
 INDEX = models.set_hosts_index(HOSTS, settings.NAMESDB_DOCSTORE_INDEX)
+PAGE_SIZE = 20
+CONTEXT = 3
 
 
 @require_http_methods(['GET',])
 def index(request, template_name='names/index.html'):
+    thispage = int(request.GET.get('page', 1))
     body = None
-    records = []
+    #records = []
+    paginator = None
     if 'query' in request.GET:
         form = SearchForm(request.GET, hosts=HOSTS, index=INDEX)
         if form.is_valid():
             filters = form.cleaned_data
             query = filters.pop('query')
-            body,records = models.search(
+            start,end = models.Paginator.start_end(thispage, PAGE_SIZE)
+            search = models.search(
                 HOSTS, INDEX,
                 query=query,
                 filters=filters,
+                start=start,
+                pagesize=PAGE_SIZE,
             )
+            body = search.to_dict()
             if body:
                 body = json.dumps(body, indent=4, separators=(',', ': '), sort_keys=True)
+            response = search.execute()
+            #records = models.records(response)
+            paginator = models.Paginator(response, thispage, PAGE_SIZE, CONTEXT, request.META['QUERY_STRING'])
     else:
         form = SearchForm(hosts=HOSTS, index=INDEX)
     return render_to_response(
@@ -38,7 +49,8 @@ def index(request, template_name='names/index.html'):
         {
             'form': form,
             'body': body,
-            'records': records,
+            #'records': records,
+            'paginator': paginator,
         },
         context_instance=RequestContext(request)
     )
