@@ -148,6 +148,9 @@ install-elasticsearch:
 	chmod 644 /etc/elasticsearch/elasticsearch.yml
 # 	@echo "${bldgrn}search engine (re)start${txtrst}"
 	/etc/init.d/elasticsearch restart
+	-mkdir -p /var/backups/elasticsearch
+	chown -R elasticsearch.elasticsearch /var/backups/elasticsearch
+	chmod -R 755 /var/backups/elasticsearch
 
 install-virtualenv:
 	apt-get --assume-yes install python-pip python-virtualenv
