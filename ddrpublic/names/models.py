@@ -5,7 +5,7 @@ import sys
 
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Index
-from elasticsearch_dsl import Search, F
+from elasticsearch_dsl import Search, F, A
 from elasticsearch_dsl.query import MultiMatch
 from elasticsearch_dsl.connections import connections
 
@@ -133,28 +133,33 @@ def search(
     
     @returns: Search
     """
-    # remove empty filter args
-    filters = {key:val for key,val in filters.iteritems() if val}
-    if not (query or filters):
-        return None,[]
+    ## remove empty filter args
+    #filter_args = {key:val for key,val in filters.iteritems() if val}
+    #if not (query or filter_args):
+    #    return None,[]
     s = Search().doc_type(Record)
     if filters:
         for field,values in filters.iteritems():
-            # multiple terms for a field are OR-ed
-            s = s.filter(
-                'or',
-                [
-                    # In the Elasticsearch DSL examples, 'tags' is the field name.
-                    # ex: s.filter("term", tags="python")
-                    # Our field name is a var so we have to pass in a **dict
-                    F('term', **{field: value})
-                    for value in values
-                ]
-            )
+            if values:
+                # multiple terms for a field are OR-ed
+                s = s.filter(
+                    'or',
+                    [
+                        # In the Elasticsearch DSL examples, 'tags' is the field name.
+                        # ex: s.filter("term", tags="python")
+                        # Our field name is a var so we have to pass in a **dict
+                        F('term', **{field: value})
+                        for value in values
+                    ]
+                )
     if query:
         s = s.query(
             query_type, query=query, fields=definitions.FIELDS_MASTER
         )
+    # aggregations
+    if filters:
+        for field in filters.iterkeys():
+            s.aggs.bucket(field, 'terms', field=field, size=1000)
     s = s.fields(definitions.FIELDS_MASTER)
     s = s.sort(sort)
     s = s[start:start+pagesize]

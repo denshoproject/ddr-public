@@ -15,25 +15,18 @@ def field_choices(hosts, index, field):
     - Get approved value labels from definitions.
     - Package into django.forms-friendly choices list.
     """
-    # approved labels
+    # TODO get these for all fields at once? cache?
+    aggregations = models.field_values(hosts, index, field)
     choices_dict = {
         key: val
         for key,val in FIELD_DEFINITIONS.get(field, {}).get('choices', [])
         if FIELD_DEFINITIONS.get(field) and FIELD_DEFINITIONS[field].get('choices')
     }
-    # unique values and counts
-    aggregations = models.field_values(hosts, index, field)
-    # format
-    choices = []
-    for term,count in aggregations:
-        if choices_dict.get(term):
-            # approved terms have initial space so they sort first
-            choice = (term, ' %s (%s)' % (choices_dict[term], count))
-        else:
-            choice = (term, '%s (%s)' % (term, count))
-        choices.append(choice)
+    choices = [
+        (term, choices_dict.get(term, term))
+        for term,count in aggregations
+    ]
     return sorted(choices, key=lambda x: x[1])
-
 
 class SearchForm(forms.Form):
     m_dataset = forms.MultipleChoiceField(required=False, choices=[], widget=forms.CheckboxSelectMultiple)
@@ -52,7 +45,26 @@ class SearchForm(forms.Form):
         self.fields['m_originalstate'].choices = field_choices(hosts, index, 'm_originalstate')
         self.fields['m_gender'].choices = field_choices(hosts, index, 'm_gender')
         self.fields['m_birthyear'].choices = field_choices(hosts, index, 'm_birthyear')
-
+    
+    def update_doc_counts(self, response):
+        """Add aggregations doc_counts to field choice labels
+        """
+        aggregations = response.aggregations.to_dict()
+        agg_fieldnames = [key for key in aggregations.iterkeys()]
+        form_fieldnames = [key for key in self.fields.iterkeys()]
+        for fieldname in form_fieldnames:
+            if fieldname in agg_fieldnames:
+                field_aggs_dict = {
+                    d['key']: d['doc_count']
+                    for d in aggregations[fieldname]['buckets']
+                }
+                new_choices = []
+                for keyword,label in self.fields[fieldname].choices:
+                    count = field_aggs_dict.get(keyword, None)
+                    if count is not None:
+                        label = '%s (%s)' % (label, count)
+                    new_choices.append( (keyword, label) )
+                self.fields[fieldname].choices = new_choices
 
 def construct_form(hosts, index, filters):
     fields = []

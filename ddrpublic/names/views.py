@@ -20,36 +20,43 @@ CONTEXT = 3
 @require_http_methods(['GET',])
 def index(request, template_name='names/index.html'):
     thispage = int(request.GET.get('page', 1))
-    body = None
-    #records = []
-    paginator = None
+    pagesize = int(request.GET.get('pagesize', PAGE_SIZE))
     if 'query' in request.GET:
         form = SearchForm(request.GET, hosts=HOSTS, index=INDEX)
         if form.is_valid():
             filters = form.cleaned_data
             query = filters.pop('query')
-            start,end = models.Paginator.start_end(thispage, PAGE_SIZE)
+            start,end = models.Paginator.start_end(thispage, pagesize)
             search = models.search(
                 HOSTS, INDEX,
                 query=query,
                 filters=filters,
                 start=start,
-                pagesize=PAGE_SIZE,
+                pagesize=pagesize,
             )
-            body = search.to_dict()
-            if body:
-                body = json.dumps(body, indent=4, separators=(',', ': '), sort_keys=True)
-            response = search.execute()
-            #records = models.records(response)
-            paginator = models.Paginator(response, thispage, PAGE_SIZE, CONTEXT, request.META['QUERY_STRING'])
     else:
         form = SearchForm(hosts=HOSTS, index=INDEX)
+        # empty search to populate field choice document counts
+        filters = {
+          'm_birthyear': [],
+          'm_camp': [],
+          'm_dataset': [],
+          'm_gender': [],
+          'm_originalstate': []
+        }
+        search = models.search(
+            HOSTS, INDEX,
+            filters=filters,
+        )
+    body = search.to_dict()
+    response = search.execute()
+    form.update_doc_counts(response)
+    paginator = models.Paginator(response, thispage, pagesize, CONTEXT, request.META['QUERY_STRING'])
     return render_to_response(
         template_name,
         {
             'form': form,
-            'body': body,
-            #'records': records,
+            'body': json.dumps(body, indent=4, separators=(',', ': '), sort_keys=True),
             'paginator': paginator,
         },
         context_instance=RequestContext(request)
