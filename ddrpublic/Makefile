@@ -158,6 +158,9 @@ install-virtualenv:
 	test -d $(VIRTUALENV) || virtualenv --distribute --setuptools $(VIRTUALENV)
 
 install-setuptools: install-virtualenv
+	@echo ""
+	@echo "install-setuptools -----------------------------------------------------"
+	apt-get --assume-yes install python-dev
 	source $(VIRTUALENV)/bin/activate; \
 	pip install -U --download-cache=$(PIP_CACHE_DIR) bpython setuptools
 
