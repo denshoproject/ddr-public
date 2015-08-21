@@ -190,11 +190,6 @@ install-ddr-cmdln: install-virtualenv install-setuptools
 	source $(VIRTUALENV)/bin/activate; \
 	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALL_BASE)/ddr-cmdln/ddr/requirements/production.txt
 
-	-mkdir $(DDR_REPO_BASE)
-	-mkdir /var/log/ddr
-	chown -R ddr.root /var/log/ddr
-	chmod -R 755 /var/log/ddr
-
 update-ddr-cmdln: install-virtualenv install-setuptools
 	@echo ""
 	@echo "ddr-cmdln --------------------------------------------------------------"
@@ -269,6 +264,11 @@ install-ddr-public: install-virtualenv
 	git pull
 	source $(VIRTUALENV)/bin/activate; \
 	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALLDIR)/ddrpublic/requirements/production.txt
+# ddr repo
+	-mkdir -p $(DDR_REPO_BASE)
+	chown -R ddr.root $(DDR_REPO_BASE)
+	chmod -R 755 $(DDR_REPO_BASE)
+# logs dir
 	-mkdir /var/log/ddr
 	chown -R ddr.root /var/log/ddr
 	chmod -R 755 /var/log/ddr
