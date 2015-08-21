@@ -62,18 +62,24 @@ class Rcrd(Record):
 
 def same_familyno(hosts, index, record):
     if record.m_familyno:
-        body,records = search(
+        response = search(
             hosts, index, filters={'m_familyno':[record.m_familyno]},
-        )
-        not_this_record = [r for r in records if not (r.m_pseudoid == record.m_pseudoid)]
+        ).execute()
+        not_this_record = [
+            r for r in records(response)
+            if not (r.m_pseudoid == record.m_pseudoid)
+        ]
         return not_this_record
     return []
 
 def other_datasets(hosts, index, record):
-    body,records = search(
+    response = search(
         hosts, index, filters={'m_pseudoid':[record.m_pseudoid]},
-    )
-    not_this_record = [r for r in records if not (r.meta.id == record.meta.id)]
+    ).execute()
+    not_this_record = [
+        r for r in records(response)
+        if not (r.meta.id == record.meta.id)
+    ]
     return not_this_record
 
 
