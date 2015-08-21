@@ -265,7 +265,7 @@ clean-ddr-local:
 install-ddr-public: install-virtualenv
 	@echo ""
 	@echo "ddr-public --------------------------------------------------------------"
-	apt-get --assume-yes install imagemagick supervisor
+	apt-get --assume-yes install imagemagick sqlite3 supervisor
 	git pull
 	source $(VIRTUALENV)/bin/activate; \
 	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALLDIR)/ddrpublic/requirements/production.txt
