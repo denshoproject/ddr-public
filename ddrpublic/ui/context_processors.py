@@ -26,7 +26,7 @@ def sitewide(request):
         'time': datetime.now().isoformat(),
         'pid': os.getpid(),
         'host': os.uname()[1],
-        'commit': git_commit()[:7],
+        'commit': git_commit(),
         'partner': partner,
         'BASE_TEMPLATE': base_template,
         'ENCYC_BASE': settings.ENCYC_BASE,

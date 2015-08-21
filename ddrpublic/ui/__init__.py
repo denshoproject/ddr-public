@@ -13,11 +13,11 @@ def git_commit():
     Cached for 15min.
     """
     key = 'ddrpub:git_commit'
-    timeout = 60 * 15
+    timeout = 60 * 5
     cached = cache.get(key)
     if not cached:
         try:
-            cached = envoy.run('git log --pretty=format:"%H" -1').std_out
+            cached = envoy.run('git log --pretty=format:"%h %ci%d" -1').std_out
         except:
             cached = 'unknown'
         cache.set(key, cached, timeout)
