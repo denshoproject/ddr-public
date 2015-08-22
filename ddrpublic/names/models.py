@@ -34,7 +34,6 @@ def set_hosts_index(hosts, index):
 class Rcrd(Record):
     
     class Meta:
-        index = settings.NAMESDB_DOCSTORE_INDEX
         doc_type = DOC_TYPE
 
     def details(self):
@@ -121,9 +120,10 @@ def _from_hit(hit):
     m_pseudoid = _hitvalue(hit_d, 'm_pseudoid')
     m_dataset = _hitvalue(hit_d, 'm_dataset')
     if m_dataset and m_pseudoid:
-        record = Rcrd(
-            meta={'id': ':'.join([m_dataset, m_pseudoid])}
-        )
+        record = Rcrd(meta={
+            'index': settings.NAMESDB_DOCSTORE_INDEX,
+            'id': ':'.join([m_dataset, m_pseudoid])
+        })
         for field in definitions.FIELDS_MASTER:
             setattr(record, field, _hitvalue(hit_d, field))
         record.m_dataset = m_dataset

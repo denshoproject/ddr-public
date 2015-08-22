@@ -121,7 +121,8 @@ def search(request, template_name='names/search.html'):
 
 @require_http_methods(['GET',])
 def detail(request, id, template_name='names/detail.html'):
-    record = models.Rcrd.get(id=id)
+    # TODO INDEX._name is vulnerable to upstream changes!
+    record = models.Rcrd.get(index=INDEX._name, id=id)
     record.other_datasets = models.other_datasets(HOSTS, INDEX, record)
     record.family_members = models.same_familyno(HOSTS, INDEX, record)
     return render_to_response(
