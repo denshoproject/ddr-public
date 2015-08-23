@@ -32,6 +32,7 @@ def index(request, template_name='names/index.html'):
     pagesize = int(request.GET.get('pagesize', PAGE_SIZE))
     kwargs = [(key,val) for key,val in request.GET.iteritems()]
     
+    search = None
     if 'query' in request.GET:
         form = SearchForm(request.GET, hosts=HOSTS, index=INDEX)
         if form.is_valid():
@@ -47,6 +48,7 @@ def index(request, template_name='names/index.html'):
             )
     else:
         form = SearchForm(hosts=HOSTS, index=INDEX)
+    if not search:
         # empty search to populate field choice document counts
         filters = {
           'm_birthyear': [],
@@ -98,7 +100,8 @@ def search(request, template_name='names/search.html'):
         if key in defined_fields
     }
     query = request.GET.get('query', '')
-    
+
+    search = None
     if 'query' in request.GET:
         form = FlexiSearchForm(request.GET, hosts=HOSTS, index=INDEX, filters=filters)
         if form.is_valid():
@@ -111,6 +114,7 @@ def search(request, template_name='names/search.html'):
             )
     else:
         form = FlexiSearchForm(hosts=HOSTS, index=INDEX, filters=filters)
+    if not search:
         search = models.search(
             HOSTS, INDEX,
             query=query,
