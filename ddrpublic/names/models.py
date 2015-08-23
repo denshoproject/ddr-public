@@ -37,7 +37,7 @@ class Rcrd(Record):
     class Meta:
         doc_type = DOC_TYPE
 
-    def fields_enriched(self, label=False, description=False):
+    def fields_enriched(self, label=False, description=False, list_fields=[]):
         """Returns an OrderedDict of (field, value) tuples for displaying values
         
         # list fields and values in order
@@ -48,24 +48,31 @@ class Rcrd(Record):
         >>> record.details.m_dataset.label
         >>> record.details.m_dataset.value
         
+        @param label: boolean Get pretty label for fields.
+        @param description: boolean Get pretty description for fields. boolean
+        @param list_fields: list If non-blank get pretty values only for these fields.
         @returns: OrderedDict
         """
         details = []
         fieldnames  = definitions.DATASETS[self.m_dataset]
+        # some datasets do not have the 'm_dataset' field
         if 'm_dataset' not in fieldnames:
              fieldnames.insert(0, 'm_dataset')
         for fieldname in fieldnames:
-            raw_value = getattr(self, fieldname, None)
-            if raw_value:
+            value = getattr(self, fieldname, None)
+            if value:
                 data = {
                     'field': fieldname,
-                    'raw_value': raw_value,
-                    'value': raw_value,
+                    'label': fieldname,
+                    'description': '',
+                    'value_raw': value,
+                    'value': value,
                 }
-                # get pretty value from FIELD_DEFINITIONS
-                choices = definitions.FIELD_DEFINITIONS[fieldname].get('choices', {})
-                if choices.get(raw_value, None):
-                    data['value'] = choices[raw_value]
+                if (not list_fields) or (fieldname in list_fields):
+                    # get pretty value from FIELD_DEFINITIONS
+                    choices = definitions.FIELD_DEFINITIONS[fieldname].get('choices', {})
+                    if choices and choices.get(value, None):
+                        data['value'] = choices[value]
                 if label:
                     data['label'] = definitions.FIELD_DEFINITIONS.get(fieldname, {}).get('label', fieldname)
                 if description:
@@ -229,7 +236,9 @@ def records(response):
     for hit in response:
         record = _from_hit(hit)
         if record:
-            record.fields = record.fields_enriched(label=False, description=False)
+            record.fields = record.fields_enriched(
+                label=False, description=False, list_fields=definitions.FIELDS_MASTER
+            )
             records.append(record)
     return records
 
