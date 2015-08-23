@@ -72,18 +72,6 @@ class SearchForm(forms.Form):
     def update_doc_counts(self, response):
         update_doc_counts(self, response)
 
-def construct_form(hosts, index, filters):
-    fields = []
-    fields.append(('query', forms.CharField(required=False, max_length=255)))
-    for field_name in filters:
-        fobject = forms.MultipleChoiceField(
-            required=False,
-            choices=field_choices(hosts, index, field_name),
-            widget=forms.CheckboxSelectMultiple
-        )
-        fields.append((field_name, fobject))
-    fields = SortedDict(fields)
-    return fields
 
 class FlexiSearchForm(forms.Form):
     """Construct form from any combination of Record filter fields.
@@ -93,7 +81,16 @@ class FlexiSearchForm(forms.Form):
         index = kwargs.pop('index')
         filters = kwargs.pop('filters')
         super(FlexiSearchForm, self).__init__(*args, **kwargs)
-        self.fields = construct_form(hosts, index, filters)
+        fields = []
+        fields.append(('query', forms.CharField(required=False, max_length=255)))
+        for field_name in filters:
+            fobject = forms.MultipleChoiceField(
+                required=False,
+                choices=field_choices(hosts, index, field_name),
+                widget=forms.CheckboxSelectMultiple
+            )
+            fields.append((field_name, fobject))
+        self.fields = SortedDict(fields)
     
     def update_doc_counts(self, response):
         update_doc_counts(self, response)
