@@ -63,7 +63,9 @@ def index(request, template_name='names/index.html'):
         )
     body = search.to_dict()
     response = search.execute()
-    form.update_doc_counts(response)
+    m_camp_choices = form.fields['m_camp'].choices
+    m_camp_selected = filters['m_camp']
+    #form.update_doc_counts(response)
     paginator = models.Paginator(
         response, thispage, pagesize, CONTEXT, request.META['QUERY_STRING']
     )
@@ -72,6 +74,8 @@ def index(request, template_name='names/index.html'):
         {
             'kwargs': kwargs,
             'form': form,
+            'm_camp_choices': m_camp_choices,
+            'm_camp_selected': m_camp_selected,
             'body': json.dumps(body, indent=4, separators=(',', ': '), sort_keys=True),
             'paginator': paginator,
         },
