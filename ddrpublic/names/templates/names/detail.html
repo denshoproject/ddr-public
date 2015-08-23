@@ -16,7 +16,7 @@
 
 <h2>
 <strong>{{ record.m_lastname }}, {{ record.m_firstname }}</strong>
-<small class="font300">{ record.dataset.nice }</small>
+<small class="font300">{{ record.fields.m_dataset.value }}</small>
 </h2>
 
     <div class="row">
@@ -32,10 +32,10 @@
 <table class="table">
   <tbody>
 
-{% for field in record.details %}
-<!-- {{ field.field }} -->
+{% for field in record.fields %}
     <tr>
       <td>
+<!-- {{ field.field }} -->
 <a href="#" data-container="body" data-toggle="tooltip" data-placement="bottom" data-original-title="{{ field.description }}">
 {% if field.label %}{{ field.label }}{% else %}{{ field.field }}{% endif %}
 </a>
@@ -44,7 +44,7 @@
 {{ field.value }}
       </td>
     </tr>
-    <!-- <a href="{% url "names-search" %}?query=&{{ field.field }}={{ field.label }}">search</a> -->
+{#    <!-- <a href="{% url "names-search" %}?query=&{{ field.field }}={{ field.label }}">search</a> --> #}
 {% endfor %}
 
   </tbody>
@@ -76,12 +76,12 @@
         {{ r.m_lastname }},&nbsp;{{ r.m_firstname }}&nbsp;({{ r.m_gender }})
         </a>
       </td>
-      <td>{{ r.m_camp }}</td>
-      <td>{{ r.m_birthyear }}</td>
-      <td>{{ r.m_originalstate }}</td>
-      <td>{{ r.m_familyno }}</td>
-      <td>{{ r.m_individualno }}</td>
-      <td>{{ r.m_dataset }}</td>
+      <td>{{ r.fields.m_camp.value }}</td>
+      <td>{{ r.fields.m_birthyear.value }}</td>
+      <td>{{ r.fields.m_originalstate.value }}</td>
+      <td>{{ r.fields.m_familyno.value }}</td>
+      <td>{{ r.fields.m_individualno.value }}</td>
+      <td>{{ r.fields.m_dataset.value }}</td>
     </tr>
 {% endfor %}
   </tbody>
@@ -114,12 +114,12 @@
         {{ r.m_lastname }},&nbsp;{{ r.m_firstname }}&nbsp;({{ r.m_gender }})
         </a>
       </td>
-      <td>{{ r.m_camp }}</td>
-      <td>{{ r.m_birthyear }}</td>
-      <td>{{ r.m_originalstate }}</td>
-      <td>{{ r.m_familyno }}</td>
-      <td>{{ r.m_individualno }}</td>
-      <td>{{ r.m_dataset }}</td>
+      <td>{{ r.fields.m_camp.value }}</td>
+      <td>{{ r.fields.m_birthyear.value }}</td>
+      <td>{{ r.fields.m_originalstate.value }}</td>
+      <td>{{ r.fields.m_familyno.value }}</td>
+      <td>{{ r.fields.m_individualno.value }}</td>
+      <td>{{ r.fields.m_dataset.value }}</td>
     </tr>
 {% endfor %}
   </tbody>

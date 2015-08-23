@@ -234,12 +234,12 @@ returned
           <td>
             <a href="{{ record.absolute_url }}">{{ record.m_lastname }}, {{ record.m_firstname }} ({{ record.m_gender }})</a>
           </td>
-          <td>{{ record.m_camp }}</td>
-          <td>{{ record.m_birthyear }}</td>
-          <td>{{ record.m_originalstate }}</td>
-          <td>{{ record.m_familyno }}</td>
-          <td>{{ record.m_individualno }}</td>
-          <td>{{ record.m_dataset }}</td>
+          <td>{{ record.fields.m_camp.value }}</td>
+          <td>{{ record.fields.m_birthyear.value }}</td>
+          <td>{{ record.fields.m_originalstate.value }}</td>
+          <td>{{ record.fields.m_familyno.value }}</td>
+          <td>{{ record.fields.m_individualno.value }}</td>
+          <td>{{ record.fields.m_dataset.value }}</td>
         </tr>
 {% endfor %}
 

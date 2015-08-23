@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import logging
 logger = logging.getLogger(__name__)
 
@@ -9,21 +10,17 @@ from namesdb.definitions import FIELD_DEFINITIONS
 from names import models
 
 
-def field_choices(hosts, index, field):
+def field_choices(hosts, index, fieldname):
     """
     - Get unique field values and counts (aggregations).
     - Get approved value labels from definitions.
     - Package into django.forms-friendly choices list.
     """
     # TODO get these for all fields at once? cache?
-    aggregations = models.field_values(hosts, index, field)
-    choices_dict = {
-        key: val
-        for key,val in FIELD_DEFINITIONS.get(field, {}).get('choices', [])
-        if FIELD_DEFINITIONS.get(field) and FIELD_DEFINITIONS[field].get('choices')
-    }
+    aggregations = models.field_values(hosts, index, fieldname)
+    choices_dict = FIELD_DEFINITIONS.get(fieldname, {}).get('choices', OrderedDict([]))
     choices = [
-        (term, choices_dict.get(term, term))
+        (term, '%s (%s)' % (choices_dict.get(term, term), count))
         for term,count in aggregations
     ]
     return sorted(choices, key=lambda x: x[1])

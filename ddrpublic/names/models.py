@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import json
 import logging
 import os
@@ -36,22 +37,42 @@ class Rcrd(Record):
     class Meta:
         doc_type = DOC_TYPE
 
-    def details(self):
-        """Returns a list of (field, value) tuples for displaying values
+    def fields_enriched(self, label=False, description=False):
+        """Returns an OrderedDict of (field, value) tuples for displaying values
+        
+        # list fields and values in order
+        >>> for field in record.details.values:
+        >>>     print(field.label, field.value)
+        
+        # access individual values
+        >>> record.details.m_dataset.label
+        >>> record.details.m_dataset.value
+        
+        @returns: OrderedDict
         """
         details = []
-        for field in definitions.DATASETS[self.m_dataset]:
-            label = definitions.FIELD_DEFINITIONS.get(field, {}).get('label', field)
-            description = definitions.FIELD_DEFINITIONS.get(field, {}).get('description', '')
-            value = getattr(self, field, None)
-            if value:
-                details.append({
-                    'field': field,
-                    'label': label,
-                    'description': description,
-                    'value': value
-                })
-        return details
+        fieldnames  = definitions.DATASETS[self.m_dataset]
+        if 'm_dataset' not in fieldnames:
+             fieldnames.insert(0, 'm_dataset')
+        for fieldname in fieldnames:
+            raw_value = getattr(self, fieldname, None)
+            if raw_value:
+                data = {
+                    'field': fieldname,
+                    'raw_value': raw_value,
+                    'value': raw_value,
+                }
+                # get pretty value from FIELD_DEFINITIONS
+                choices = definitions.FIELD_DEFINITIONS[fieldname].get('choices', {})
+                if choices.get(raw_value, None):
+                    data['value'] = choices[raw_value]
+                if label:
+                    data['label'] = definitions.FIELD_DEFINITIONS.get(fieldname, {}).get('label', fieldname)
+                if description:
+                    data['description'] = definitions.FIELD_DEFINITIONS.get(fieldname, {}).get('description', '')
+                item = (fieldname, data)
+                details.append(item)
+        return OrderedDict(details)
     
     def absolute_url(self):
         return reverse(
@@ -208,6 +229,7 @@ def records(response):
     for hit in response:
         record = _from_hit(hit)
         if record:
+            record.fields = record.fields_enriched(label=False, description=False)
             records.append(record)
     return records
 
