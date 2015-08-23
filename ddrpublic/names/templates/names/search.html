@@ -4,7 +4,8 @@
 {% block title %}Names Database{% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
-<li>Names Database</li>
+<li><a href="{% url "names-index" %}">Names Database</a></li>
+<li>Search</li>
 {% endblock breadcrumbs %}
 
 {% block content %}

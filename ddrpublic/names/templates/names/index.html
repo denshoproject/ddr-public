@@ -4,7 +4,12 @@
 {% block title %}Names Database{% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
+{% if paginator.object_list %}
+<li><a href="{% url "names-index" %}">Names Database</a></li>
+<li>Search</li>
+{% else %}
 <li>Names Database</li>
+{% endif %}
 {% endblock breadcrumbs %}
 
 {% block content %}
