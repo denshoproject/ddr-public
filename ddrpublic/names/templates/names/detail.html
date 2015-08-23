@@ -11,21 +11,36 @@
 {% block content %}
 <section class="container">
 
+
+  <div class="white-row">
+
 <h2>{{ record.m_lastname }} {{ record.m_firstname }}</h2>
 
-<table border=1>
-{% for x in record.details %}
-  <tr>
-    <td>{{ x.field }}</td>
-    <td>{{ x.label }}</td>
-    <td>{{ x.description }}</td>
-    <td>{{ x.value }}</td>
-    <td>
-      <a href="{% url "names-search" %}?query=&{{ x.field }}={{ x.label }}">search</a>
-    </td>
-  </tr>
+    <div class="row">
+      <div class="col-md-9 col-md-offset-1">
+        <table class="table">
+          <tbody>
+
+{% for field in record.details %}
+<!-- {{ field.field }} -->
+            <tr>
+              <td>
+<a href="#" data-container="body" data-toggle="tooltip" data-placement="bottom" data-content="{{ field.description }}">
+{% if field.label %}{{ field.label }}{% else %}{{ field.field }}{% endif %}
+</a>
+              </td>
+              <td>
+{{ field.value }}
+              </td>
+            </tr>
+            <!-- <a href="{% url "names-search" %}?query=&{{ field.field }}={{ field.label }}">search</a> -->
 {% endfor %}
-</table>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
 {% if record.other_datasets %}
 <div id="other_datasets">
