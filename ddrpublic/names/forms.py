@@ -27,6 +27,29 @@ def field_choices(hosts, index, field):
         for term,count in aggregations
     ]
     return sorted(choices, key=lambda x: x[1])
+    
+def update_doc_counts(form, response):
+    """Add aggregations doc_counts to field choice labels
+    """
+    if response.get('aggregations', None):
+        aggregations = response.aggregations.to_dict()
+    else:
+        aggregations = {}
+    agg_fieldnames = [key for key in aggregations.iterkeys()]
+    form_fieldnames = [key for key in form.fields.iterkeys()]
+    for fieldname in form_fieldnames:
+        if fieldname in agg_fieldnames:
+            field_aggs_dict = {
+                d['key']: d['doc_count']
+                for d in aggregations[fieldname]['buckets']
+            }
+            new_choices = []
+            for keyword,label in form.fields[fieldname].choices:
+                count = field_aggs_dict.get(keyword, None)
+                if count is not None:
+                    label = '%s (%s)' % (label, count)
+                new_choices.append( (keyword, label) )
+            form.fields[fieldname].choices = new_choices
 
 class SearchForm(forms.Form):
     m_dataset = forms.MultipleChoiceField(required=False, choices=[], widget=forms.CheckboxSelectMultiple)
@@ -47,24 +70,7 @@ class SearchForm(forms.Form):
         self.fields['m_birthyear'].choices = field_choices(hosts, index, 'm_birthyear')
     
     def update_doc_counts(self, response):
-        """Add aggregations doc_counts to field choice labels
-        """
-        aggregations = response.aggregations.to_dict()
-        agg_fieldnames = [key for key in aggregations.iterkeys()]
-        form_fieldnames = [key for key in self.fields.iterkeys()]
-        for fieldname in form_fieldnames:
-            if fieldname in agg_fieldnames:
-                field_aggs_dict = {
-                    d['key']: d['doc_count']
-                    for d in aggregations[fieldname]['buckets']
-                }
-                new_choices = []
-                for keyword,label in self.fields[fieldname].choices:
-                    count = field_aggs_dict.get(keyword, None)
-                    if count is not None:
-                        label = '%s (%s)' % (label, count)
-                    new_choices.append( (keyword, label) )
-                self.fields[fieldname].choices = new_choices
+        update_doc_counts(self, response)
 
 def construct_form(hosts, index, filters):
     fields = []
@@ -88,3 +94,6 @@ class FlexiSearchForm(forms.Form):
         filters = kwargs.pop('filters')
         super(FlexiSearchForm, self).__init__(*args, **kwargs)
         self.fields = construct_form(hosts, index, filters)
+    
+    def update_doc_counts(self, response):
+        update_doc_counts(self, response)
