@@ -41,15 +41,16 @@ class Rcrd(Record):
         """
         details = []
         for field in definitions.DATASETS[self.m_dataset]:
-            try:
-                label = definitions.FIELD_DEFINITIONS[field]['label']
-            except:
-                pass
-            if not label:
-                label = field
+            label = definitions.FIELD_DEFINITIONS[field].get('label', field)
+            description = definitions.FIELD_DEFINITIONS[field].get('description', '')
             value = getattr(self, field, None)
             if value:
-                details.append((field, label, value))
+                details.append({
+                    'field': field,
+                    'label': label,
+                    'description': description,
+                    'value': value
+                })
         return details
     
     def absolute_url(self):
