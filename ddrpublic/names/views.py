@@ -30,8 +30,6 @@ NON_FILTER_FIELDS = [
 def index(request, template_name='names/index.html'):
     thispage = int(request.GET.get('page', 1))
     pagesize = int(request.GET.get('pagesize', PAGE_SIZE))
-    
-    # for display to user
     kwargs = [(key,val) for key,val in request.GET.iteritems()]
     
     if 'query' in request.GET:
@@ -70,6 +68,7 @@ def index(request, template_name='names/index.html'):
     return render_to_response(
         template_name,
         {
+            'kwargs': kwargs,
             'form': form,
             'body': json.dumps(body, indent=4, separators=(',', ': '), sort_keys=True),
             'paginator': paginator,
@@ -89,9 +88,8 @@ def search(request, template_name='names/search.html'):
     """
     thispage = int(request.GET.get('page', 1))
     pagesize = int(request.GET.get('pagesize', PAGE_SIZE))
-
-    # for display to user
     kwargs = [(key,val) for key,val in request.GET.iteritems()]
+    
     # for use in form
     defined_fields = [key for key in definitions.FIELD_DEFINITIONS.iterkeys()]
     filters = {
@@ -112,7 +110,6 @@ def search(request, template_name='names/search.html'):
                 filters=filters,
             )
     else:
-        query = ''
         form = FlexiSearchForm(hosts=HOSTS, index=INDEX, filters=filters)
         search = models.search(
             HOSTS, INDEX,
@@ -129,6 +126,7 @@ def search(request, template_name='names/search.html'):
     return render_to_response(
         template_name,
         {
+            'kwargs': kwargs,
             'form': form,
             'body': json.dumps(body, indent=4, separators=(',', ': '), sort_keys=True),
             'paginator': paginator,
