@@ -60,7 +60,8 @@ class Rcrd(Record):
              fieldnames.insert(0, 'm_dataset')
         for fieldname in fieldnames:
             value = getattr(self, fieldname, None)
-            if value:
+            display = definitions.FIELD_DEFINITIONS.get(fieldname, {}).get('display', None)
+            if value and display:
                 data = {
                     'field': fieldname,
                     'label': fieldname,
