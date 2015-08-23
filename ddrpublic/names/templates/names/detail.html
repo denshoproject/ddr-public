@@ -1,11 +1,11 @@
 {% extends "ui/base.html" %}
 {% load names_tags %}
 
-{% block title %}{{ record }}{% endblock %}
+{% block title %}{{ record.m_lastname }}, {{ record.m_firstname }} | Names{% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
 <li><a href="{% url "names-index" %}">Names Registry</a></li>
-<li>{{ record }}</li>
+<li>{{ record.m_lastname }}, {{ record.m_firstname }}</li>
 {% endblock breadcrumbs %}
 
 {% block content %}
@@ -14,51 +14,140 @@
 
   <div class="white-row">
 
-<h2>{{ record.m_lastname }} {{ record.m_firstname }}</h2>
+<h2>
+<strong>{{ record.m_lastname }}, {{ record.m_firstname }}</strong>
+<small class="font300">{ record.dataset.nice }</small>
+</h2>
 
     <div class="row">
       <div class="col-md-9 col-md-offset-1">
-        <table class="table">
-          <tbody>
+
+
+<p class="pull-right">
+<a href="#" role="button" class="back btn btn-xs btn-primary"><i class="fa fa-reply"></i> Back to results</a>
+<a href="{% url "names-index" %}" role="button" class="btn btn-xs btn-primary"><i class="fa fa-search"></i> New search</a>
+</p>
+
+
+<table class="table">
+  <tbody>
 
 {% for field in record.details %}
 <!-- {{ field.field }} -->
-            <tr>
-              <td>
+    <tr>
+      <td>
 <a href="#" data-container="body" data-toggle="tooltip" data-placement="bottom" data-content="{{ field.description }}">
 {% if field.label %}{{ field.label }}{% else %}{{ field.field }}{% endif %}
 </a>
-              </td>
-              <td>
+      </td>
+      <td>
 {{ field.value }}
-              </td>
-            </tr>
-            <!-- <a href="{% url "names-search" %}?query=&{{ field.field }}={{ field.label }}">search</a> -->
+      </td>
+    </tr>
+    <!-- <a href="{% url "names-search" %}?query=&{{ field.field }}={{ field.label }}">search</a> -->
 {% endfor %}
 
-          </tbody>
-        </table>
+  </tbody>
+</table>
+
+
+{% if record.other_datasets %}
+<h3>
+<strong>More Records</strong>
+<small class="font300">Matches in other datasets</small>
+</h3>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Facility</th>
+      <th>Birthyear</th>
+      <th>Home State</th>
+      <th>Family No.</th>
+      <th>Individual No.</th>
+      <th>Dataset</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for r in record.other_datasets %}
+    <tr>
+      <td>
+        <a href="{{ r.absolute_url }}">
+        {{ r.m_lastname }},&nbsp;{{ r.m_firstname }}&nbsp;({{ r.m_gender }})
+        </a>
+      </td>
+      <td>{{ r.m_camp }}</td>
+      <td>{{ r.m_birthyear }}</td>
+      <td>{{ r.m_originalstate }}</td>
+      <td>{{ r.m_familyno }}</td>
+      <td>{{ r.m_individualno }}</td>
+      <td>{{ r.m_dataset }}</td>
+    </tr>
+{% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+
+{% if record.family_members %}
+<h3>
+<strong>Family Members</strong>
+<small class="font300">WRA Family No. {{ record.m_familyno }}</small>
+</h3>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Facility</th>
+      <th>Birthyear</th>
+      <th>Home State</th>
+      <th>Family No.</th>
+      <th>Individual No.</th>
+      <th>Dataset</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for r in record.family_members %}
+    <tr>
+      <td>
+        <a href="{{ r.absolute_url }}">
+        {{ r.m_lastname }},&nbsp;{{ r.m_firstname }}&nbsp;({{ r.m_gender }})
+        </a>
+      </td>
+      <td>{{ r.m_camp }}</td>
+      <td>{{ r.m_birthyear }}</td>
+      <td>{{ r.m_originalstate }}</td>
+      <td>{{ r.m_familyno }}</td>
+      <td>{{ r.m_individualno }}</td>
+      <td>{{ r.m_dataset }}</td>
+    </tr>
+{% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+
+<p class="pull-right">
+<a href="#" role="button" class="back btn btn-xs btn-primary"><i class="fa fa-reply"></i> Back to results</a>
+<a href="{% url "names-index" %}" role="button" class="btn btn-xs btn-primary"><i class="fa fa-search"></i> New search</a>
+</p>
+
+
       </div>
     </div>
   </div>
 
-{% if record.other_datasets %}
-<div id="other_datasets">
-<h3>other_datasets</h3>
-{% for r in record.other_datasets %}
-{% record r %}<br/>
-{% endfor %}
-</div>
-{% endif %}
-
-{% if record.family_members %}
-<div id="family">
-<h3>Family ID {{ record.m_familyno }}</h3>
-{% for r in record.family_members %}
-{% record r %}<br/>
-{% endfor %}
-</div>
-{% endif %}
-
 </section><!-- .container -->
 {% endblock content %}
+
+
+{% block javascript %}
+<script>
+    $(document).ready(function(){
+        $('a.back').click(function(){
+            parent.history.back();
+            return false;
+        });
+    });
+</script>
+{% endblock javascript %}
