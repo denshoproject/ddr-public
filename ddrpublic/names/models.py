@@ -70,7 +70,7 @@ class Rcrd(Record):
                 }
                 if (not list_fields) or (fieldname in list_fields):
                     # get pretty value from FIELD_DEFINITIONS
-                    choices = definitions.FIELD_DEFINITIONS[fieldname].get('choices', {})
+                    choices = definitions.FIELD_DEFINITIONS.get(fieldname, {}).get('choices', {})
                     if choices and choices.get(value, None):
                         data['value'] = choices[value]
                 if label:
