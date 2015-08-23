@@ -32,9 +32,18 @@ def index(request, template_name='names/index.html'):
     pagesize = int(request.GET.get('pagesize', PAGE_SIZE))
     kwargs = [(key,val) for key,val in request.GET.iteritems()]
     
+    # All the filter fields are MultipleChoiceFields, which does not
+    # support an "empty_label" choice.  Unfortunately, the UI design
+    # makes use of a <select> with a blank "All camps" default.
+    # So... make a copy of request.GET and forcibly remove 'm_camp'
+    # if the "All camps" choice was selected.
+    local_GET = request.GET.copy()
+    if ('m_camp' in local_GET.keys()) and not local_GET.get('m_camp'):
+        local_GET.pop('m_camp')
+    
     search = None
     if 'query' in request.GET:
-        form = SearchForm(request.GET, hosts=HOSTS, index=INDEX)
+        form = SearchForm(local_GET, hosts=HOSTS, index=INDEX)
         if form.is_valid():
             filters = form.cleaned_data
             query = filters.pop('query')
