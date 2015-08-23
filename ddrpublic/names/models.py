@@ -37,8 +37,7 @@ class Rcrd(Record):
         doc_type = DOC_TYPE
 
     def details(self):
-        """
-        Returns a list of (field, value) tuples for displaying values
+        """Returns a list of (field, value) tuples for displaying values
         """
         details = []
         for field in definitions.DATASETS[self.m_dataset]:
@@ -60,6 +59,12 @@ class Rcrd(Record):
         )
 
 def same_familyno(hosts, index, record):
+    """Lists other Records with the same m_familyno.
+    
+    @param hosts: list settings.DOCSTORE_HOSTS
+    @param index: elasticsearch_dsl.Index
+    @returns: list of Records
+    """
     if record.m_familyno:
         response = search(
             hosts, index, filters={'m_familyno':[record.m_familyno]},
@@ -72,6 +77,12 @@ def same_familyno(hosts, index, record):
     return []
 
 def other_datasets(hosts, index, record):
+    """Lists occurances of the m_pseudoid in other datasets
+    
+    @param hosts: list settings.DOCSTORE_HOSTS
+    @param index: elasticsearch_dsl.Index
+    @returns: list of Records
+    """
     response = search(
         hosts, index, filters={'m_pseudoid':[record.m_pseudoid]},
     ).execute()
@@ -83,11 +94,18 @@ def other_datasets(hosts, index, record):
 
 
 def field_values(hosts, index, field):
+    """Gets all values for the field with doc_counts.
+    
+    @param hosts: list settings.DOCSTORE_HOSTS
+    @param index: elasticsearch_dsl.Index
+    @param field: str Field name. 
+    @returns: 
+    """
     return Record.field_values(field)
 
 
 def _hitvalue(hit, field):
-    """Extract list-wrapped values from their lists.
+    """Extracts list-wrapped values from their lists.
     
     TODO use the one in namesdb
     
@@ -108,7 +126,7 @@ def _hitvalue(hit, field):
     return value
 
 def _from_hit(hit):
-    """Build Record object from Elasticsearch hit
+    """Builds Record object from Elasticsearch hit
     
     TODO use the one in namesdb
     
@@ -134,10 +152,19 @@ def search(
         hosts, index, query_type='multi_match', query='', filters={},
         sort='m_pseudoid', start=0, pagesize=10
 ):
-    """
-    This function allows any combination of filters, even illogical ones
+    """Constructs Search object
     
-    @returns: Search
+    Note: allows any combination of filters, even illogical ones
+    
+    @param hosts: list settings.DOCSTORE_HOSTS
+    @param index: elasticsearch_dsl.Index
+    @param query_type: str Name of query type.
+    @param query: str Query string.
+    @param filters: dict Filters and their arguments.
+    @param sort: str Name of field on which to sort.
+    @param start: int Start of result set.
+    @param pagesize: int Number of records to return.
+    @returns: elasticsearch_dsl.Search
     """
     ## remove empty filter args
     #filter_args = {key:val for key,val in filters.iteritems() if val}
@@ -172,6 +199,10 @@ def search(
     return s
 
 def records(response):
+    """
+    @param response
+    @returns: list of Records
+    """
     records = []
     for hit in response:
         record = _from_hit(hit)
@@ -238,6 +269,11 @@ class Paginator(object):
 
     @staticmethod
     def start_end(thispage, pagesize, total=10000):
+        """Calculates start,end indexes for page.
+        @param thispage: int
+        @param pagesize: int
+        @param total: int
+        """
         start = (thispage - 1) * pagesize
         if start < 0:
             start = 0
