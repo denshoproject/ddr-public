@@ -41,8 +41,8 @@ class Rcrd(Record):
         """
         details = []
         for field in definitions.DATASETS[self.m_dataset]:
-            label = definitions.FIELD_DEFINITIONS[field].get('label', field)
-            description = definitions.FIELD_DEFINITIONS[field].get('description', '')
+            label = definitions.FIELD_DEFINITIONS.get(field, {}).get('label', field)
+            description = definitions.FIELD_DEFINITIONS.get(field, {}).get('description', '')
             value = getattr(self, field, None)
             if value:
                 details.append({
