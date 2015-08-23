@@ -31,7 +31,7 @@ def field_choices(hosts, index, field):
 def update_doc_counts(form, response):
     """Add aggregations doc_counts to field choice labels
     """
-    if response.get('aggregations', None):
+    if hasattr(response, 'get') and response.get('aggregations', None):
         aggregations = response.aggregations.to_dict()
     else:
         aggregations = {}
