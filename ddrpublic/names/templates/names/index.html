@@ -1,7 +1,9 @@
 {% extends "ui/base.html" %}
 {% load names_tags %}
 
+
 {% block title %}Names Database{% endblock %}
+
 
 {% block breadcrumbs %}{{ block.super }}
 {% if paginator.object_list %}
@@ -12,10 +14,22 @@
 {% endif %}
 {% endblock breadcrumbs %}
 
+
 {% block content %}
 <section class="container">
 
 <h2>Names Database</h2>
+
+{% if kwargs %}
+<ul>
+{% for kwarg in kwargs %}
+  <li>
+    <b>{{ kwarg.0 }}:</b>
+    {{ kwarg.1 }}
+  </li>
+{% endfor %}
+</ul>
+{% endif %}
 
 <table border="1" width="100%">
 <form name="search" action="" method="get">
