@@ -21,43 +21,50 @@
 {% endfor %}
 </ul>
 
-<table border=1>
-  <tr>
-    <td valign="top">
-
+<table border="1" width="100%">
 <form name="search" action="" method="get">
-<input type="submit" value="submit" />
+  <tr>
+    <td width="40%" valign="top">
+
 {{ form.as_p }}
-</form>
 
     </td>
     <td valign="top">
+
+{{ form.query }}
+
+<input type="submit" value="submit" />
+
+{% if paginator.object_list %}
+  <div>
+    {{ paginator.count }} items<br/>
+  </div>
+{% endif %}
+
+</div><!-- .querymeta -->
+
+{% if paginator.object_list %}
+
+{% if paginator.num_pages > 1 %}
+{% names_paginate paginator %}
+{% endif %}
 
 <div id="records">
-{% if records %}
-<p>
-{{ records|length }} records
-</p>
-{% for record in records %}
-<p>
+{% for record in paginator.object_list %}
 {% record record %}
-</p>
 {% endfor %}
-{% else %}
-<p>
-No records (try searching for something)
-</p>
-{% endif %}{# records #}
 </div><!-- #records -->
 
-    </td>
-  </tr>
-</table>
+{% endif %}{# paginator.object_list #}
 
 {% if body %}
 <pre>{{ body }}</pre>
 {% endif %}
 
+    </td>
+  </tr>
+</form>
+</table>
 
 </section><!-- .container -->
 {% endblock content %}

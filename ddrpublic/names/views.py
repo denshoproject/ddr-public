@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404, redirect, render_to_response
 from django.template import RequestContext
 from django.views.decorators.http import require_http_methods
 
+from namesdb import definitions
 from names.forms import SearchForm, FlexiSearchForm
 from names import models
 
@@ -15,12 +16,24 @@ HOSTS = settings.NAMESDB_DOCSTORE_HOSTS
 INDEX = models.set_hosts_index(HOSTS, settings.NAMESDB_DOCSTORE_INDEX)
 PAGE_SIZE = 20
 CONTEXT = 3
+DEFAULT_FILTERS = [
+    'm_dataset',
+    'm_camp',
+    'm_originalstate',
+]
+NON_FILTER_FIELDS = [
+    'query'
+]
 
 
 @require_http_methods(['GET',])
 def index(request, template_name='names/index.html'):
     thispage = int(request.GET.get('page', 1))
     pagesize = int(request.GET.get('pagesize', PAGE_SIZE))
+    
+    # for display to user
+    kwargs = [(key,val) for key,val in request.GET.iteritems()]
+    
     if 'query' in request.GET:
         form = SearchForm(request.GET, hosts=HOSTS, index=INDEX)
         if form.is_valid():
@@ -51,7 +64,9 @@ def index(request, template_name='names/index.html'):
     body = search.to_dict()
     response = search.execute()
     form.update_doc_counts(response)
-    paginator = models.Paginator(response, thispage, pagesize, CONTEXT, request.META['QUERY_STRING'])
+    paginator = models.Paginator(
+        response, thispage, pagesize, CONTEXT, request.META['QUERY_STRING']
+    )
     return render_to_response(
         template_name,
         {
@@ -72,48 +87,51 @@ def search(request, template_name='names/search.html'):
     form contains the list of fields
     flexible: lets user construct "impossible" forms (e.g. both FAR and WRA fields)
     """
-    qs = request.META['QUERY_STRING']
-    # list of filter fields from URL
-    # used to build form
-    default_filters = ['m_dataset', 'm_camp', 'm_originalstate',]
-    non_filter_fields = ['query']
-    filters = [
-        field
-        for field in urlparse.parse_qs(qs, keep_blank_values=1).iterkeys()
-        if field not in non_filter_fields
-    ]
-    if not filters:
-        filters = default_filters
-    # kwargs for display to user
-    kwargsdict = urlparse.parse_qs(qs, keep_blank_values=1)
-    kwargs = [
-        [key,val]
-        for key,val in kwargsdict.iteritems()
-    ]
+    thispage = int(request.GET.get('page', 1))
+    pagesize = int(request.GET.get('pagesize', PAGE_SIZE))
+
+    # for display to user
+    kwargs = [(key,val) for key,val in request.GET.iteritems()]
+    # for use in form
+    defined_fields = [key for key in definitions.FIELD_DEFINITIONS.iterkeys()]
+    filters = {
+        key:val
+        for key,val in request.GET.iteritems()
+        if key in defined_fields
+    }
+    query = request.GET.get('query', '')
     
-    body = None
-    records = []
     if 'query' in request.GET:
         form = FlexiSearchForm(request.GET, hosts=HOSTS, index=INDEX, filters=filters)
         if form.is_valid():
             filters = form.cleaned_data
             query = filters.pop('query')
-            body,records = models.search(
+            search = models.search(
                 HOSTS, INDEX,
                 query=query,
                 filters=filters,
             )
-            if body:
-                body = json.dumps(body, indent=4, separators=(',', ': '), sort_keys=True)
     else:
+        query = ''
         form = FlexiSearchForm(hosts=HOSTS, index=INDEX, filters=filters)
+        search = models.search(
+            HOSTS, INDEX,
+            query=query,
+            filters=filters,
+        )
+    
+    body = search.to_dict()
+    response = search.execute()
+    form.update_doc_counts(response)
+    paginator = models.Paginator(
+        response, thispage, pagesize, CONTEXT, request.META['QUERY_STRING']
+    )
     return render_to_response(
         template_name,
         {
-            'kwargs': kwargs,
             'form': form,
-            'body': body,
-            'records': records,
+            'body': json.dumps(body, indent=4, separators=(',', ': '), sort_keys=True),
+            'paginator': paginator,
         },
         context_instance=RequestContext(request)
     )
