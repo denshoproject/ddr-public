@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import datetime
 import json
 import logging
 import os
@@ -62,6 +63,9 @@ class Rcrd(Record):
             value = getattr(self, fieldname, None)
             display = definitions.FIELD_DEFINITIONS.get(fieldname, {}).get('display', None)
             if value and display:
+                # display datetimes as dates
+                if isinstance(value, datetime.datetime):
+                    value = value.date()
                 data = {
                     'field': fieldname,
                     'label': fieldname,
