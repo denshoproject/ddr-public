@@ -53,7 +53,13 @@ Edit `/etc/ddr/local.cfg` to include the following text.::
     docstore_host=127.0.0.1:9200
     # Name of the index you wish to use (e.g. "encyc-production", "encyc-stage", "encyc-dev").
     docstore_index=encyc-dev
-
+    
+    # Absolute path to directory that will hold static and user-uploaded files.
+    # Note: Should match MEDIA_ROOT and STATIC_ROOT in Makefile.
+    # Note: Should not have trailing slashes.
+    static_root=/var/www/ddrpublic/static
+    media_root=/var/www/ddrpublic/media
+    
     # Thumbnail module looks here for full-size images.
     # Should be a direct link, with no redirects or CDNs in the way.
     media_url_local=http://192.168.56.101/media/public/
