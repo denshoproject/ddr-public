@@ -51,12 +51,12 @@ LANGUAGE_CODE='en-us'
 TIME_ZONE='America/Los_Angeles'
 
 # Filesystem path and URL for static media (mostly used for interfaces).
-STATIC_ROOT='/var/www/static'
+STATIC_ROOT = config.get('public', 'static_root')
 STATIC_URL='/static/'
 
 # Filesystem path and URL for media to be manipulated by ddrlocal
 # (collection repositories, thumbnail cache, etc).
-MEDIA_ROOT='/var/www/media'
+MEDIA_ROOT = config.get('public', 'media_root')
 MEDIA_URL = config.get('public', 'media_url')
 # URL of local media server ("local" = in the same cluster).
 # Use this for sorl.thumbnail so it doesn't have to go through
