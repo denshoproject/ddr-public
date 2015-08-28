@@ -51,12 +51,12 @@ LANGUAGE_CODE='en-us'
 TIME_ZONE='America/Los_Angeles'
 
 # Filesystem path and URL for static media (mostly used for interfaces).
-STATIC_ROOT='/var/www/ddrpublic/static'
+STATIC_ROOT = config.get('public', 'static_root')
 STATIC_URL='/static/'
 
 # Filesystem path and URL for media to be manipulated by ddrlocal
 # (collection repositories, thumbnail cache, etc).
-MEDIA_ROOT='/var/www/ddrpublic/media'
+MEDIA_ROOT = config.get('public', 'media_root')
 MEDIA_URL = config.get('public', 'media_url')
 # URL of local media server ("local" = in the same cluster).
 # Use this for sorl.thumbnail so it doesn't have to go through
@@ -133,6 +133,7 @@ INSTALLED_APPS = (
     #
     'ddrpublic',
     'ui',
+    'names',
 )
 
 DATABASES = {
@@ -163,6 +164,12 @@ DOCSTORE_HOSTS = [
     {'host':docstore_host, 'port':docstore_port}
 ]
 DOCSTORE_INDEX = config.get('public', 'docstore_index')
+
+namesdb_docstore_host,namesdb_docstore_port = config.get('public', 'namesdb_docstore_host').split(':')
+NAMESDB_DOCSTORE_HOSTS = [
+    {'host':namesdb_docstore_host, 'port':namesdb_docstore_port}
+]
+NAMESDB_DOCSTORE_INDEX = config.get('public', 'namesdb_docstore_index')
 
 ELASTICSEARCH_MAX_SIZE = 1000000
 ELASTICSEARCH_QUERY_TIMEOUT = 60 * 10  # 10 min
@@ -235,6 +242,7 @@ def UI_DOWNLOAD_URL( ddrfile ):
 #SESSION_ENGINE = 'redis_sessions.session'
 
 TEMPLATE_DIRS = (
+    '/usr/local/src/ddr-public/ddrpublic/names/templates',
     '/usr/local/src/ddr-public/ddrpublic/ui/templates',
 )
 

@@ -1,0 +1,28 @@
+<nav>
+  <ul class="pagination">
+    <li>
+      <a href="?{{ paginator.query }}&page={{ paginator.first }}" aria-label="First">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    <li>
+      <a href="?{{ paginator.query }}&page={{ paginator.prev }}" aria-label="Previous">
+        <span aria-hidden="true">&larr;</span>
+      </a>
+    </li>
+
+{% for n in paginator.range %}
+    <li {% if n == paginator.thispage %}class="active"{% endif %}><a href="?{{ paginator.query }}&page={{ n }}">{{ n }}</a></li>
+{% endfor %}
+    <li>
+      <a href="?{{ paginator.query }}&page={{ paginator.next }}" aria-label="Next">
+        <span aria-hidden="true">&rarr;</span>
+      </a>
+    </li>
+    <li>
+      <a href="?{{ paginator.query }}&page={{ paginator.last }}" aria-label="last">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>

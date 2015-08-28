@@ -1,0 +1,74 @@
+{% extends "ui/base.html" %}
+{% load names_tags %}
+
+
+{% block title %}Names Database{% endblock %}
+
+
+{% block breadcrumbs %}{{ block.super }}
+<li><a href="{% url "names-index" %}">Names Database</a></li>
+<li>Search</li>
+{% endblock breadcrumbs %}
+
+
+{% block content %}
+<section class="container">
+
+<h2>Names Database</h2>
+
+<ul>
+{% for kwarg in kwargs %}
+  <li>
+    <b>{{ kwarg.0 }}:</b>
+    {{ kwarg.1 }}
+  </li>
+{% endfor %}
+</ul>
+
+<table border="1" width="100%">
+<form name="search" action="" method="get">
+  <tr>
+    <td width="40%" valign="top">
+
+{{ form.as_p }}
+
+    </td>
+    <td valign="top">
+
+{{ form.query }}
+
+<input type="submit" value="submit" />
+
+{% if paginator.object_list %}
+  <div>
+    {{ paginator.count }} items<br/>
+  </div>
+{% endif %}
+
+</div><!-- .querymeta -->
+
+{% if paginator.object_list %}
+
+{% if paginator.num_pages > 1 %}
+{% names_paginate paginator %}
+{% endif %}
+
+<div id="records">
+{% for record in paginator.object_list %}
+{% record record %}
+{% endfor %}
+</div><!-- #records -->
+
+{% endif %}{# paginator.object_list #}
+
+{% if body %}
+<pre>{{ body }}</pre>
+{% endif %}
+
+    </td>
+  </tr>
+</form>
+</table>
+
+</section><!-- .container -->
+{% endblock content %}

@@ -1,0 +1,157 @@
+{% extends "ui/base.html" %}
+{% load names_tags %}
+
+{% block title %}{{ record.m_lastname }}, {{ record.m_firstname }} | Names{% endblock %}
+
+{% block breadcrumbs %}{{ block.super }}
+<li><a href="{% url "names-index" %}">Names Registry</a></li>
+<li>{{ record.m_lastname }}, {{ record.m_firstname }}</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+<section class="container">
+
+
+  <div class="white-row">
+
+<h2>
+<strong>{{ record.m_lastname }}, {{ record.m_firstname }}</strong>
+<small class="font300">{{ record.fields.m_dataset.value }}</small>
+</h2>
+
+    <div class="row">
+      <div class="col-md-9 col-md-offset-1">
+
+
+<p class="pull-right">
+<a href="#" role="button" class="back btn btn-xs btn-primary"><i class="fa fa-reply"></i> Back to results</a>
+<a href="{% url "names-index" %}" role="button" class="btn btn-xs btn-primary"><i class="fa fa-search"></i> New search</a>
+</p>
+
+<div class="table-responsive">
+<table class="table">
+  <tbody>
+
+{% for field in record.fields %}
+    <tr>
+      <td>
+<!-- {{ field.field }} -->
+<a href="#" data-container="body" data-toggle="tooltip" data-placement="bottom" data-original-title="{{ field.description }}">
+{% if field.label %}{{ field.label }}{% else %}{{ field.field }}{% endif %}
+</a>
+      </td>
+      <td>
+{{ field.value }}
+      </td>
+    </tr>
+{#    <!-- <a href="{% url "names-search" %}?query=&{{ field.field }}={{ field.label }}">search</a> --> #}
+{% endfor %}
+
+  </tbody>
+</table>
+</div><!--end table-responsive-->
+
+{% if record.other_datasets %}
+<h3>
+<strong>More Records</strong>
+<small class="font300">Matches in other datasets</small>
+</h3>
+<div class="table-responsive">
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Facility</th>
+      <th>Birthyear</th>
+      <th>Home State</th>
+      <th>Family No.</th>
+      <th>Individual No.</th>
+      <th>Dataset</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for r in record.other_datasets %}
+    <tr>
+      <td>
+        <a href="{{ r.absolute_url }}">
+        {{ r.m_lastname }},&nbsp;{{ r.m_firstname }}&nbsp;({{ r.m_gender }})
+        </a>
+      </td>
+      <td>{{ r.fields.m_camp.value }}</td>
+      <td>{{ r.fields.m_birthyear.value }}</td>
+      <td>{{ r.fields.m_originalstate.value }}</td>
+      <td>{{ r.fields.m_familyno.value }}</td>
+      <td>{{ r.fields.m_individualno.value }}</td>
+      <td>{{ r.fields.m_dataset.value }}</td>
+    </tr>
+{% endfor %}
+  </tbody>
+</table>
+</div><!--end table-responsive-->
+{% endif %}
+
+
+{% if record.family_members %}
+<h3>
+<strong>Family Members</strong>
+<small class="font300">WRA Family No. {{ record.m_familyno }}</small>
+</h3>
+<div class="table-responsive">
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Facility</th>
+      <th>Birthyear</th>
+      <th>Home State</th>
+      <th>Family No.</th>
+      <th>Individual No.</th>
+      <th>Dataset</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for r in record.family_members %}
+    <tr>
+      <td>
+        <a href="{{ r.absolute_url }}">
+        {{ r.m_lastname }},&nbsp;{{ r.m_firstname }}&nbsp;({{ r.m_gender }})
+        </a>
+      </td>
+      <td>{{ r.fields.m_camp.value }}</td>
+      <td>{{ r.fields.m_birthyear.value }}</td>
+      <td>{{ r.fields.m_originalstate.value }}</td>
+      <td>{{ r.fields.m_familyno.value }}</td>
+      <td>{{ r.fields.m_individualno.value }}</td>
+      <td>{{ r.fields.m_dataset.value }}</td>
+    </tr>
+{% endfor %}
+  </tbody>
+</table>
+</div><!--end table-responsive-->
+{% endif %}
+
+
+<p class="pull-right">
+<a href="#" role="button" class="back btn btn-xs btn-primary"><i class="fa fa-reply"></i> Back to results</a>
+<a href="{% url "names-index" %}" role="button" class="btn btn-xs btn-primary"><i class="fa fa-search"></i> New search</a>
+</p>
+
+
+      </div>
+    </div>
+  </div>
+
+</section><!-- .container -->
+{% endblock content %}
+
+
+{% block javascript %}
+<script>
+    $(document).ready(function(){
+        $('a.back').click(function(){
+            parent.history.back();
+            return false;
+        });
+    });
+</script>
+{% endblock javascript %}
