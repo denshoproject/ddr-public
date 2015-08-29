@@ -263,12 +263,12 @@ class ApiEntity(Entity):
                 if oid
             ]
             #persons
-            if d.get('access_rel'):
-                d['img_path'] = os.path.join(collection_id, d['access_rel'])
-                d['img_url'] = img_url(collection_id, d['access_rel'], request)
+            if data.get('access_rel'):
+                data['img_path'] = os.path.join(collection_id, d['access_rel'])
+                data['img_url'] = img_url(collection_id, d['access_rel'], request)
             else:
-                d['img_path'] = None
-                d['img_url'] = None
+                data['img_path'] = None
+                data['img_url'] = None
             pop_field(data, 'files')
             pop_field(data, 'notes')
             pop_field(data, 'parent')
