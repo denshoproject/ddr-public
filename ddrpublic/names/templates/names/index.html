@@ -18,7 +18,6 @@
 {% block content %}
 <section class="container">
 
-
 <h2>Names Registry</h2>
 
 <p>
@@ -41,7 +40,7 @@ The Names Registry is a searchable version of the WRA Form 26 register and Final
 
                 <p>The <strong>Final Accountability Rosters (FAR)</strong> were created as a snapshot of the inmate population as the WRA camps were winding down operations in late 1945-1946. Using a ledger-style format, information about individuals who had been incarcerated in the camp, including the reason for release and exit destination, was recorded at each of the ten WRA camps. Notably, however, the survey fields were not common across all of the camps. For example, the WRA-assigned "Individual No." and "Camp Address" (the block, barrack and apartment unit) were omitted from some of the camp FARs. In total, twelve ledgers were compiled as both Heart Mountain and Tule Lake produced two volumes. The FARs are available as microfilm reproductions of the paper documents through the NARA, and are also online through Ancestry and several other sites.</p>
 
-                <p>For further information and historical background, see, <a href="http://encyclopedia.densho.org/Records_about_Japanese_Americans_relocated_during_World_War_II/" target="blank">"Records about Japanese Americans relocated during World War II,"</a> in the <a href="http://encyclopedia.densho.org/" target="blank">Densho Encyclopedia</a>.</p>
+                <p>For further information and historical background, see, <a href="//encyclopedia.densho.org/Records_about_Japanese_Americans_relocated_during_World_War_II/" target="blank">"Records about Japanese Americans relocated during World War II,"</a> in the <a href="//encyclopedia.densho.org/" target="blank">Densho Encyclopedia</a>.</p>
             </div>
         </div>
     </div>
@@ -56,22 +55,24 @@ The Names Registry is a searchable version of the WRA Form 26 register and Final
         <div id="accordian2" class="collapse" aria-expanded="false" style="height: 0 px;">
             <div class="panel-body">
                 <h5>About the Datasets</h5>
-                <p>The raw datasets that feed the DDR Names Registry were collected from several different sources detailed below. The quality of the data varies widely due to errors in the original recording and subsequent transcriptions that occurred over time. In particular, names may have been misspelled, and in the case of some datasets, entire fields from the original were omitted by the transcribers.</p>
-                <p>Densho processed each of the datasets prior to ingesting it into the system. Fields and field values such as state names were normalized, and basic quality control was performed. In addition, full birthdates were converted to display only the birth year. Though the information appears in the original NARA microfilm images and also in other on-line searchable versions of the data, Densho made a conscious decision to remove this personally identifiable information.</p>
-                <p>With the exception of the Ancestry dataset, each dataset may be downloaded individually in CSV format for use under a CC0 public-domain license grant dedication. The datasets are still undergoing quality-check and as mistakes are corrected, the files will be updated. In addition, as more of the individual camp FARs are transcribed, they will be made available as well.</p>
+                <p>The raw datasets that feed the DDR Names Registry were collected from several different sources detailed below. Densho processed each of the datasets prior to ingesting it into the system. Fields and field values such as state names were normalized where possible, and some basic data cleanup was performed. However, the quality of the data varies widely due to errors in the original recording and subsequent transcriptions that occurred over time. In particular, names may have been misspelled, and in the case of some datasets, entire fields from the original were omitted by the transcribers. There are also duplicate and incomplete rows.</p>
+                  <p>Because of privacy concerns, full birthdates were converted to display only the birth year. Though the information appears in the original NARA microfilm images and also in other on-line searchable versions of the data, Densho made a conscious decision to remove this personally identifiable information.</p>
+                <p>With the exception of the Ancestry data, each dataset may be downloaded individually in CSV format for use under a CC0 public-domain license grant dedication. The datasets are still undergoing quality-check and as mistakes are corrected, the files will be updated. As additional individual camp FARs are transcribed, they will be made available as well.</p>
                 <div class="row">
                     <div class="col-sm-6 col-md-4">
                         <div class="item-box">
                             <div class="item-box-desc">
                                 <h5>Form WRA-26</h5>
-                                <p>Created from NARA fixed-field data records and processed/transcribed into a relational database by staff and volunteers of the Japanese American National Museum in the late 1990s. The archival fixed-field data file is available from NARA along with accompanying documentation, including reproductions of the form itself and the original memorandum outlining the procedures for administering the survey and recording the responses.</p>
+                                <p>Created from the US National Archives and Records Administration (NARA) fixed-field data records and processed/transcribed into a relational database by staff and volunteers of the Japanese American National Museum in the late 1990s. The archival fixed-field data file is <a href="https://catalog.archives.gov/id/1264228" target="_blank">available from NARA</a> along with accompanying documentation, including reproductions of the form itself and the original memorandum outlining the procedures for administering the survey and recording the responses.</p>
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <a href="" target="_blank"><i class="fa fa-download"></i> Download CSV</a>
+                                        <a href="https://drive.google.com/open?id=0B0JVNT2N8YiIMEx2MnB0T2Izd28" target="_blank"><i class="fa fa-download"></i> Download CSV</a>
                                     </div>
+                                    <!--
                                     <div class="col-md-6">
                                         <a href="" target="_blank"><i class="fa fa-external-link"></i> View on Github</a>
                                     </div>
+                                    //-->
                                 </div>
                             </div>
                         </div>
@@ -80,7 +81,7 @@ The Names Registry is a searchable version of the WRA Form 26 register and Final
                         <div class="item-box">
                             <div class="item-box-desc">
                                 <h5>FAR Ancestry.com</h5>
-                                <p>Transcribed from scanned NARA microfilm images by Ancestry.com, the dataset includes the FARs from all ten camps: Central Utah, October 1945; Colorado River, November 1945; Gila River, November 1945; Granada, October 1945; Heart Mountain, November 1945, Volumes I and II; Jerome, June 1944; Manzanar, November 1945; Minidoka, October 1945; Rohwer, November 1945; and Tule Lake, March 1946, Volumes I and II. The dataset only includes a limited set of the original data fields. Under license agreement with Ancestry, the raw data is incorporated in the Names Registry; but not currently available for direct download under CC0 license.</p>
+                                <p>Transcribed from scanned NARA microfilm images by Ancestry.com, the dataset includes the FARs from all ten camps: Central Utah, October 1945; Colorado River, November 1945; Gila River, November 1945; Granada, October 1945; Heart Mountain, November 1945, Volumes I and II; Jerome, June 1944; Manzanar, November 1945; Minidoka, October 1945; Rohwer, November 1945; and Tule Lake, March 1946, Volumes I and II. The dataset only includes a limited set of the original data fields, depending on the facility. Under license agreement with Ancestry, the raw data is incorporated in the Names Registry; but not currently available for direct download.</p>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <a href="http://search.ancestry.com/search/db.aspx?dbid=2982" target="_blank"><i class="fa fa-external-link"></i> View at Ancestry</a>
@@ -96,11 +97,13 @@ The Names Registry is a searchable version of the WRA Form 26 register and Final
                                 <p>Contains records from the FAR Central Utah, prepared in October of 1945. Transcribed from NARA microfilm in May 2010 by a volunteer from the Poston reunion group and <a href="http://digital.lib.usu.edu/cdm/ref/collection/Topaz/id/7913" target="_blank">made available</a> by the University of Southern Utah.</p>
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <a href="" target="_blank"><i class="fa fa-download"></i> Download CSV</a>
+                                        <a href="https://drive.google.com/open?id=0B0JVNT2N8YiIOFVsaDVUaUJHZ0E" target="_blank"><i class="fa fa-download"></i> Download CSV</a>
                                     </div>
+                                    <!--
                                     <div class="col-md-6">
                                         <a href="" target="_blank"><i class="fa fa-external-link"></i> View on Github</a>
                                     </div>
+                                    //-->
                                 </div>
                             </div>
                         </div>
@@ -114,11 +117,13 @@ The Names Registry is a searchable version of the WRA Form 26 register and Final
                                 <p>Contains records from the FAR Manzanar, prepared in November 1945. Transcribed from NARA microfilm in 2002 by National Park Service (NPS) staff at the Manzanar National Historic Site.</p>
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <a href="" target="_blank"><i class="fa fa-download"></i> Download CSV</a>
+                                        <a href="https://drive.google.com/open?id=0B0JVNT2N8YiIc2RHVTJPYUx5UVk" target="_blank"><i class="fa fa-download"></i> Download CSV</a>
                                     </div>
+                                    <!--
                                     <div class="col-md-6">
                                         <a href="" target="_blank"><i class="fa fa-external-link"></i> View on Github</a>
                                     </div>
+                                    //-->
                                 </div>
                             </div>
                         </div>
@@ -130,11 +135,13 @@ The Names Registry is a searchable version of the WRA Form 26 register and Final
                                 <p>Contains records from the FAR Minidoka, prepared in October 1945. Transcribed from microfilm copy in 2013-14 by volunteers at Densho. The original Minidoka roster did not include the WRA-assigned individual number, nor the camp address.</p>
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <a href="" target="_blank"><i class="fa fa-download"></i> Download CSV</a>
+                                        <a href="https://drive.google.com/open?id=0B0JVNT2N8YiIbUlRUHFVOFFsZEk" target="_blank"><i class="fa fa-download"></i> Download CSV</a>
                                     </div>
+                                    <!--
                                     <div class="col-md-6">
                                         <a href="" target="_blank"><i class="fa fa-external-link"></i> View on Github</a>
                                     </div>
+                                    //-->
                                 </div>
                             </div>
                         </div>
