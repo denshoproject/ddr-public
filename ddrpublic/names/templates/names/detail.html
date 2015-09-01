@@ -28,7 +28,7 @@
 <a href="{% url "names-index" %}" role="button" class="btn btn-xs btn-primary"><i class="fa fa-search"></i> New search</a>
 </p>
 
-
+<div class="table-responsive">
 <table class="table">
   <tbody>
 
@@ -49,13 +49,14 @@
 
   </tbody>
 </table>
-
+</div><!--end table-responsive-->
 
 {% if record.other_datasets %}
 <h3>
 <strong>More Records</strong>
 <small class="font300">Matches in other datasets</small>
 </h3>
+<div class="table-responsive">
 <table class="table table-striped">
   <thead>
     <tr>
@@ -86,6 +87,7 @@
 {% endfor %}
   </tbody>
 </table>
+</div><!--end table-responsive-->
 {% endif %}
 
 
@@ -94,6 +96,7 @@
 <strong>Family Members</strong>
 <small class="font300">WRA Family No. {{ record.m_familyno }}</small>
 </h3>
+<div class="table-responsive">
 <table class="table table-striped">
   <thead>
     <tr>
@@ -124,6 +127,7 @@
 {% endfor %}
   </tbody>
 </table>
+</div><!--end table-responsive-->
 {% endif %}
 
 
