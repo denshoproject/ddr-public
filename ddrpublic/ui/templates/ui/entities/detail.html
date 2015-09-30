@@ -57,7 +57,7 @@
                         <h3 class="page-header">PARTNER</h3>
                         {% include "ui/partnerlogolink.html" %}
                         <h3 class="page-header">OBJECT ID</h3>
-                        <p>{{ object.id }}</p>
+                        <p>{{ object.id }} {% if object.alternate_id != None and "denshouid" not in object.alternate_id %}<span class="small">({{ object.alternate_id }})</span>{% endif %}</p>
 			<!-- entity.collection -->
                         <h3 class="page-header">PARENT COLLECTION</h3>
                        <p><a href="{{ object.collection.absolute_url }}">{{ object.collection.title }}</a></p>
