@@ -292,6 +292,7 @@ def model_fields(model):
     key = 'ddrpublic:%s:fields' % model
     cached = cache.get(key)
     if not cached:
+        cached = []
         for m,module in MODULES.iteritems():
             if m == model:
                 cached = module.FIELDS
