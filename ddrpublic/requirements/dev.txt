@@ -7,5 +7,6 @@
 -r _base.txt
 
 bpython                         # MIT
+nose                            # LGPL
 snakefood                       # GPL
 sphinx                          # BSD
