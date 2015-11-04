@@ -36,7 +36,6 @@ def breadcrumbs( crumbs, link_endpoint=0 ):
     """
     if not link_endpoint:
         crumbs[-1]['url'] = ''
-    assert False
     t = template.loader.get_template('ui/breadcrumbs.html')
     return t.render(template.Context({'breadcrumbs':crumbs}))
 

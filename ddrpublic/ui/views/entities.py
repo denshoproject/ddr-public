@@ -49,8 +49,6 @@ def files( request, repo, org, cid, eid, role=None ):
     idparts = {'model':'entity', 'repo':repo, 'org':org, 'cid':cid, 'eid':eid}
     identifier = Identifier(parts=idparts)
     entity = Entity.get(identifier)
-    crumbs = entity.identifier.breadcrumbs()
-    assert False
     if not entity:
         raise Http404
     thispage = request.GET.get('page', 1)
