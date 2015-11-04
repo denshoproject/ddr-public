@@ -14,7 +14,7 @@ from django.template import RequestContext
 from django.utils.http import urlquote  as django_urlquote
 
 from DDR import docstore
-from DDR.models import Identity
+from DDR.identifier import Identifier
 from ui import domain_org
 from ui import faceting
 from ui import models
@@ -66,7 +66,7 @@ def results( request ):
         context['search_form'] = SearchForm({'query': query})
         
         # if query is DDR ID just go to document page
-        object_id_parts = Identity.split_object_id(query)
+        object_id_parts = Identifier.split_object_id(query)
         if object_id_parts and (object_id_parts[0] in ['collection', 'entity', 'file']):
             model = object_id_parts.pop(0)
             document = docstore.get(settings.DOCSTORE_HOSTS, settings.DOCSTORE_INDEX,

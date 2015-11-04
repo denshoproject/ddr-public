@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from DDR import docstore
-from DDR.models import Identity
+from ui.identifier import Identifier
 from ui.models import Repository, Organization, Collection, Entity, File
 from ui.views import filter_if_branded
 from ui import faceting
@@ -146,7 +146,7 @@ class ApiRepository(Repository):
     
     @staticmethod
     def api_get(repo, request):
-        id = Identity.make_object_id(Repository.model, repo)
+        id = Identifier.make_object_id(Repository.model, repo)
         document = docstore.get(
             settings.DOCSTORE_HOSTS, index=settings.DOCSTORE_INDEX,
             model=Repository.model, document_id=id)

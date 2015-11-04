@@ -31,6 +31,15 @@ def homeslideitem( target_url, img_src ):
         'MEDIA_URL': settings.MEDIA_URL,
     }))
 	
+def breadcrumbs( crumbs, link_endpoint=0 ):
+    """breadcrumbs up to and including collection
+    """
+    if not link_endpoint:
+        crumbs[-1]['url'] = ''
+    assert False
+    t = template.loader.get_template('ui/breadcrumbs.html')
+    return t.render(template.Context({'breadcrumbs':crumbs}))
+
 def collection( obj ):
     """list-view collection template
     """
@@ -70,6 +79,7 @@ def rightspanel( code ):
     return t.render(c)
 
 register.simple_tag(homeslideitem)
+register.simple_tag(breadcrumbs)
 register.simple_tag(collection)
 register.simple_tag(entity)
 register.simple_tag(file)

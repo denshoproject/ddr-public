@@ -20,6 +20,7 @@
 {% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
+{% breadcrumbs object.identifier.breadcrumbs True %}
 <li>Objects</li>
 {% endblock breadcrumbs %}
 
