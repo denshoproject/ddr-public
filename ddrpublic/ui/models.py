@@ -345,7 +345,8 @@ def get_stub_object(identifier):
         model=identifier.model, document_id=identifier.id
     )
     if document and (document['found'] or document['exists']):
-        o = identifier.object_class()(identifier)
+        object_class = identifier.object_class(mappings=MODEL_CLASSES)
+        o = object_class()
         o.identifier = identifier
         for key,value in document['_source'].iteritems():
             setattr(o, key, value)
