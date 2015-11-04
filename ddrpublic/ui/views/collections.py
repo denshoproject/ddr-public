@@ -52,7 +52,7 @@ def detail( request, repo, org, cid ):
         raise Http404
     organization = collection.parent()
     thispage = 1
-    objects = collection.entities(thispage, DEFAULT_SIZE)
+    objects = collection.children(thispage, DEFAULT_SIZE)
     paginator = Paginator(objects, DEFAULT_SIZE)
     page = paginator.page(thispage)
     return render_to_response(
@@ -77,7 +77,7 @@ def entities( request, repo, org, cid ):
     if not collection:
         raise Http404
     thispage = request.GET.get('page', 1)
-    objects = collection.entities(thispage, settings.RESULTS_PER_PAGE)
+    objects = collection.children(thispage, settings.RESULTS_PER_PAGE)
     paginator = Paginator(objects, settings.RESULTS_PER_PAGE)
     page = paginator.page(thispage)
     return render_to_response(

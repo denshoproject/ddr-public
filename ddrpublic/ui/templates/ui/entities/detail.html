@@ -3,8 +3,8 @@
 
 {% block parent %}
 <div id="parent">
-<a href="{{ object.collection.absolute_url }}"><span class="label label-default">{{ object.collection.id }}</span></a>
-<a href="{{ object.collection.absolute_url }}">{{ object.collection.title|safe }}</a>
+<a href="{{ parent.absolute_url }}"><span class="label label-default">{{ parent.id }}</span></a>
+<a href="{{ parent.absolute_url }}">{{ parent.title|safe }}</a>
 </div>
 {% endblock %}
 
@@ -60,7 +60,7 @@
                         <p>{{ object.id }}</p>
 			<!-- entity.collection -->
                         <h3 class="page-header">PARENT COLLECTION</h3>
-                       <p><a href="{{ object.collection.absolute_url }}">{{ object.collection.title }}</a></p>
+                       <p><a href="{{ parent.absolute_url }}">{{ parent.title }}</a></p>
                        <!-- entity.description -->
  			<h3 class="page-header">DESCRIPTION</h3>
 			<p>{{ object.description|safe }}</p>

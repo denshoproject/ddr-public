@@ -502,7 +502,7 @@ class Collection( object ):
     def cite_url( self ):
         return cite_url(self.identifier)
     
-    def entities( self, page=1, page_size=DEFAULT_SIZE ):
+    def children( self, page=1, page_size=DEFAULT_SIZE ):
         results = cached_query(
             host=HOSTS, index=INDEX, model='entity',
             query='id:"%s"' % self.identifier.id,
@@ -574,7 +574,8 @@ class Entity( object ):
     def cite_url( self ):
         return cite_url(self.identifier)
     
-    def parent( self ):
+    def collection( self ):
+        # TODO should be .parent()
         return Collection.get(self.identifier.parent())
     
     def children( self, page=1, page_size=DEFAULT_SIZE, role=None ):

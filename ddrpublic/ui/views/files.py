@@ -20,6 +20,7 @@ def detail( request, repo, org, cid, eid, role, sha1 ):
     ffile = File.get(identifier)
     if not ffile:
         raise Http404
+    parent = ffile.parent()
     organization = Organization.get(ffile.identifier.organization())
     return render_to_response(
         'ui/files/detail.html',
@@ -31,6 +32,7 @@ def detail( request, repo, org, cid, eid, role, sha1 ):
             'role': role,
             'sha1': sha1,
             'object': ffile,
+            'parent': parent,
             'organization': organization,
         },
         context_instance=RequestContext(request, processors=[])

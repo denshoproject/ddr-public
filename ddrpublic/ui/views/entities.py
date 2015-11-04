@@ -22,6 +22,7 @@ def detail( request, repo, org, cid, eid ):
     entity = Entity.get(identifier)
     if not entity:
         raise Http404
+    parent = entity.collection()
     organization = Organization.get(entity.identifier.organization())
     thispage = 1
     objects = entity.children(thispage, DEFAULT_SIZE)
@@ -35,6 +36,7 @@ def detail( request, repo, org, cid, eid ):
             'cid': cid,
             'eid': eid,
             'object': entity,
+            'parent': parent,
             'organization': organization,
             'paginator': paginator,
             'page': page,
