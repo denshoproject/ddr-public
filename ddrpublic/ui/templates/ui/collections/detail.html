@@ -126,7 +126,7 @@
 		<div class="col-sm-12 col-md-12">
 			<h3>{{ paginator.count }} Objects</h3>
 			{% for entity in page.object_list %}
-			{% entity entity %}
+			{% document entity %}
 			{% endfor %}
 			
             {% if paginator.count > 10 %}

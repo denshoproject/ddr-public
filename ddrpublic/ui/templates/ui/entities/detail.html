@@ -175,7 +175,7 @@
 		<div class="col-sm-12 col-md-12">
 			<h3>{{ paginator.count }} Files</h3>
 			{% for file in page.object_list %}
-			{% file file %}
+			{% document file %}
 			{% endfor %}
 			
 			{% if paginator.count > 10 %}
