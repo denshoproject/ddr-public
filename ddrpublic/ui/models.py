@@ -167,41 +167,6 @@ def _page_bottom_top(total, index, page_size):
         top = bottom + page_size
         return bottom,top,num_pages
 
-def massage_query_results( results, thispage, page_size ):
-    """Takes ES query, makes facsimile of original object; pads results for paginator.
-    
-    Problem: Django Paginator only displays current page but needs entire result set.
-    Actually, it just needs a list that is the same size as the actual result set.
-    
-    GOOD:
-    Do an ElasticSearch search, without ES paging.
-    Loop through ES results, building new list, process only the current page's hits
-    hits outside current page added as placeholders
-    
-    BETTER:
-    Do an ElasticSearch search, *with* ES paging.
-    Loop through ES results, building new list, processing all the hits
-    Pad list with empty objects fore and aft.
-    
-    @param results: ElasticSearch result set (non-empty, no errors)
-    @param thispage: Value of GET['page'] or 1
-    @param page_size: Number of objects per page
-    @returns: list of hit dicts, with empty "hits" fore and aft of current page
-    """
-    objects = docstore.massage_query_results(results, thispage, page_size)
-    results = None
-    for o in objects:
-        if not o.get('placeholder',False):
-            # assemble urls for each record type
-            if o.get('id', None):
-                identifier = Identifier(o['id'])
-                o['identifier'] = identifier
-                o['url'] = reverse(
-                    'ui-%s' % identifier.model,
-                    args=identifier.parts.values()
-                )
-    return objects
-
 # ----------------------------------------------------------------------
 # functions for displaying various types of content
 
@@ -281,6 +246,73 @@ def field_display_style( o, field ):
     return None
 
 # ----------------------------------------------------------------------
+# functions for performing searches and processing results
+
+def cached_query(host, index, model='', query='', terms={}, filters={}, fields=[], sort=[], size=10000):
+    """Perform an ElasticSearch query and cache it.
+    
+    Cache key consists of a hash of all the query arguments.
+    """
+    query_args = {'host':host, 'index':index, 'model':model,
+                  'query':query, 'terms':terms, 'filters':filters,
+                  'fields':fields, 'sort':sort,}
+    key = hashlib.sha1(json.dumps(query_args)).hexdigest()
+    cached = cache.get(key)
+    if not cached:
+        cached = docstore.search(hosts=HOSTS, index=index, model=model,
+                                 query=query, term=terms, filters=filters,
+                                 fields=fields, sort=sort, size=size)
+        cache.set(key, cached, settings.ELASTICSEARCH_QUERY_TIMEOUT)
+    return cached
+
+def massage_query_results( results, thispage, page_size ):
+    """Takes ES query, makes facsimile of original object; pads results for paginator.
+    
+    Problem: Django Paginator only displays current page but needs entire result set.
+    Actually, it just needs a list that is the same size as the actual result set.
+    
+    GOOD:
+    Do an ElasticSearch search, without ES paging.
+    Loop through ES results, building new list, process only the current page's hits
+    hits outside current page added as placeholders
+    
+    BETTER:
+    Do an ElasticSearch search, *with* ES paging.
+    Loop through ES results, building new list, processing all the hits
+    Pad list with empty objects fore and aft.
+    
+    @param results: ElasticSearch result set (non-empty, no errors)
+    @param thispage: Value of GET['page'] or 1
+    @param page_size: Number of objects per page
+    @returns: list of hit dicts, with empty "hits" fore and aft of current page
+    """
+    objects = docstore.massage_query_results(results, thispage, page_size)
+    results = None
+    for o in objects:
+        if not o.get('placeholder',False):
+            # assemble urls for each record type
+            if o.get('id', None):
+                identifier = Identifier(o['id'])
+                o['identifier'] = identifier
+                o['url'] = reverse(
+                    'ui-%s' % identifier.model,
+                    args=identifier.parts.values()
+                )
+    return objects
+
+def process_query_results( results, page, page_size ):
+    objects = []
+    massaged = massage_query_results(results, page, page_size)
+    for hit in massaged:
+        if hit.get('placeholder', None):
+            objects.append(hit)
+        else:
+            o = build_object(Identifier(hit['id']), hit)
+            if o:
+                objects.append(o)
+            else:
+                objects.append(hit)
+    return objects
 
 def model_fields(identifier):
     """Get list of fields from ES
@@ -339,6 +371,9 @@ def build_object(identifier, source, rename={} ):
         o.signature_file = source['signature_file']
     return o
 
+
+# ----------------------------------------------------------------------
+
 def get_stub_object(identifier):
     document = docstore.get(
         HOSTS, index=INDEX,
@@ -362,40 +397,7 @@ def get_object(identifier):
         return build_object(identifier, document['_source'])
     return None
 
-def process_query_results( results, page, page_size ):
-    objects = []
-    massaged = massage_query_results(results, page, page_size)
-    for hit in massaged:
-        if hit.get('placeholder', None):
-            objects.append(hit)
-        else:
-            o = build_object(Identifier(hit['id']), hit)
-            if o:
-                objects.append(o)
-            else:
-                objects.append(hit)
-    return objects
 
-def cached_query(host, index, model='', query='', terms={}, filters={}, fields=[], sort=[], size=10000):
-    """Perform an ElasticSearch query and cache it.
-    
-    Cache key consists of a hash of all the query arguments.
-    """
-    query_args = {'host':host, 'index':index, 'model':model,
-                  'query':query, 'terms':terms, 'filters':filters,
-                  'fields':fields, 'sort':sort,}
-    key = hashlib.sha1(json.dumps(query_args)).hexdigest()
-    cached = cache.get(key)
-    if not cached:
-        cached = docstore.search(hosts=HOSTS, index=index, model=model,
-                                 query=query, term=terms, filters=filters,
-                                 fields=fields, sort=sort, size=size)
-        cache.set(key, cached, settings.ELASTICSEARCH_QUERY_TIMEOUT)
-    return cached
-
-
-# ----------------------------------------------------------------------
-    
 class Repository( object ):
     index = INDEX
     identifier = None
