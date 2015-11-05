@@ -300,7 +300,7 @@ def massage_query_results( results, thispage, page_size ):
                 )
     return objects
 
-def process_query_results( massaged ):
+def instantiate_query_objects( massaged ):
     """Instantiate Collection/Entity/File objects in massaged list of results
     
     @param massaged: list Output of massage_query_results().
@@ -477,7 +477,7 @@ class Organization( object ):
             sort=COLLECTION_LIST_SORT,
         )
         massaged = massage_query_results(results, page, page_size)
-        objects = process_query_results(massaged)
+        objects = instantiate_query_objects(massaged)
         return objects
     
     def repository( self ):
@@ -518,7 +518,7 @@ class Collection( object ):
             sort=ENTITY_LIST_SORT,
         )
         massaged = massage_query_results(results, page, page_size)
-        objects = process_query_results(massaged)
+        objects = instantiate_query_objects(massaged)
         return objects
     
     def files( self, page=1, page_size=DEFAULT_SIZE ):
@@ -532,7 +532,7 @@ class Collection( object ):
             sort=FILE_LIST_SORT
         )
         massaged = massage_query_results(results, page, page_size)
-        objects = process_query_results(massaged)
+        objects = instantiate_query_objects(massaged)
         return objects
     
     def parent( self ):
@@ -606,7 +606,7 @@ class Entity( object ):
             sort=FILE_LIST_SORT
         )
         massaged = massage_query_results(results, page, page_size)
-        objects = process_query_results(massaged)
+        objects = instantiate_query_objects(massaged)
         return objects
 
     def org_logo_url( self ):
