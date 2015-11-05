@@ -103,7 +103,8 @@ def results( request ):
         if results.get('hits',None) and not results.get('status',None):
             # OK -- prep results for display
             thispage = request.GET.get('page', 1)
-            objects = models.process_query_results(results, thispage, settings.RESULTS_PER_PAGE)
+            massaged = models.massage_query_results(results, thispage, settings.RESULTS_PER_PAGE)
+            objects = models.process_query_results(massaged)
             paginator = Paginator(objects, settings.RESULTS_PER_PAGE)
             page = paginator.page(thispage)
             context['paginator'] = paginator
@@ -156,7 +157,8 @@ def term_query( request, field, term ):
                                   terms=terms, filters=filters,
                                   fields=fields, sort=sort)
     thispage = request.GET.get('page', 1)
-    objects = models.process_query_results(results, thispage, settings.RESULTS_PER_PAGE)
+    massaged = models.massage_query_results(results, thispage, settings.RESULTS_PER_PAGE)
+    objects = models.process_query_results(massaged)
     paginator = Paginator(objects, settings.RESULTS_PER_PAGE)
     page = paginator.page(request.GET.get('page', 1))
     return render_to_response(

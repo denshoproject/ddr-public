@@ -300,9 +300,13 @@ def massage_query_results( results, thispage, page_size ):
                 )
     return objects
 
-def process_query_results( results, page, page_size ):
+def process_query_results( massaged ):
+    """Instantiate Collection/Entity/File objects in massaged list of results
+    
+    @param massaged: list Output of massage_query_results().
+    @returns: list of Collection/Entity/File objects and Hit dicts
+    """
     objects = []
-    massaged = massage_query_results(results, page, page_size)
     for hit in massaged:
         if hit.get('placeholder', None):
             objects.append(hit)
@@ -472,7 +476,8 @@ class Organization( object ):
             fields=COLLECTION_LIST_FIELDS,
             sort=COLLECTION_LIST_SORT,
         )
-        objects = process_query_results( results, page, page_size )
+        massaged = massage_query_results(results, page, page_size)
+        objects = process_query_results(massaged)
         return objects
     
     def repository( self ):
@@ -512,7 +517,8 @@ class Collection( object ):
             fields=ENTITY_LIST_FIELDS,
             sort=ENTITY_LIST_SORT,
         )
-        objects = process_query_results( results, page, page_size )
+        massaged = massage_query_results(results, page, page_size)
+        objects = process_query_results(massaged)
         return objects
     
     def files( self, page=1, page_size=DEFAULT_SIZE ):
@@ -525,7 +531,8 @@ class Collection( object ):
             fields=FILE_LIST_FIELDS,
             sort=FILE_LIST_SORT
         )
-        objects = process_query_results( results, page, page_size )
+        massaged = massage_query_results(results, page, page_size)
+        objects = process_query_results(massaged)
         return objects
     
     def parent( self ):
@@ -598,7 +605,8 @@ class Entity( object ):
             fields=FILE_LIST_FIELDS,
             sort=FILE_LIST_SORT
         )
-        objects = process_query_results( results, page, page_size )
+        massaged = massage_query_results(results, page, page_size)
+        objects = process_query_results(massaged)
         return objects
 
     def org_logo_url( self ):
