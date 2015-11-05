@@ -14,7 +14,7 @@ from django.template import RequestContext
 from django.utils.http import urlquote  as django_urlquote
 
 from DDR import docstore
-from DDR.identifier import Identifier
+from ui.identifier import Identifier, MODEL_CLASSES
 from ui import domain_org
 from ui import faceting
 from ui import models
@@ -64,31 +64,24 @@ def results( request ):
         query = query.replace(char, '')
     if query:
         context['search_form'] = SearchForm({'query': query})
+        nonstub_models = [key for key,val in MODEL_CLASSES.iteritems() if not val['stub']]
         
         # if query is DDR ID just go to document page
-        object_id_parts = Identifier.split_object_id(query)
-        if object_id_parts and (object_id_parts[0] in ['collection', 'entity', 'file']):
-            model = object_id_parts.pop(0)
-            document = docstore.get(settings.DOCSTORE_HOSTS, settings.DOCSTORE_INDEX,
-                                    model, query)
-            if document and (document['found'] or document['exists']):
-                # OK -- redirect to document page
-                object_url = models.make_object_url(object_id_parts)
-                if object_url:
-                    return HttpResponseRedirect(object_url)
-            else:
-                # FAIL -- try again
-                context['error_message'] = '"%s" is not a valid DDR object ID.' % query
-                return render_to_response(
-                    template, context, context_instance=RequestContext(request, processors=[])
-                )
+        # will get a 404 if no object exists
+        try:
+            identifier = Identifier(query)
+        except:
+            identifier = None
+        if identifier and (identifier.model in nonstub_models):
+            return HttpResponseRedirect(models.absolute_url(identifier))
             
         # prep query for elasticsearch
-        model = request.GET.get('model', None)
         filters = {}
         fields = models.all_list_fields()
-        sort = {'record_created': request.GET.get('record_created', ''),
-                'record_lastmod': request.GET.get('record_lastmod', ''),}
+        sort = {
+            'record_created': request.GET.get('record_created', ''),
+            'record_lastmod': request.GET.get('record_lastmod', ''),
+        }
         # filter by partner
         repo,org = domain_org(request)
         if repo and org:
@@ -96,9 +89,14 @@ def results( request ):
             filters['org'] = org
         
         # do query and cache the results
-        results = models.cached_query(settings.DOCSTORE_HOSTS, settings.DOCSTORE_INDEX,
-                                      query=query, filters=filters,
-                                      fields=fields, sort=sort)
+        nonstub_models_str = ','.join(nonstub_models)
+        results = models.cached_query(
+            settings.DOCSTORE_HOSTS, settings.DOCSTORE_INDEX,
+            # limit search to non-stub (e.g. collection,entity,file) objects
+            model=nonstub_models_str,
+            query=query, filters=filters,
+            fields=fields, sort=sort
+        )
         
         if results.get('hits',None) and not results.get('status',None):
             # OK -- prep results for display
@@ -112,9 +110,6 @@ def results( request ):
         else:
             # FAIL -- elasticsearch error
             context['error_message'] = 'Search query "%s" caused an error. Please try again.' % query
-            return render_to_response(
-                template, context, context_instance=RequestContext(request, processors=[])
-            )
     
     return render_to_response(
         template, context, context_instance=RequestContext(request, processors=[])

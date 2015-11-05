@@ -11,11 +11,11 @@ from DDR.identifier import format_id
 
 
 MODEL_CLASSES = {
-    'file':         {'module': 'ui.models', 'class':'File', 'templatedir':'files',},
-    'entity':       {'module': 'ui.models', 'class':'Entity', 'templatedir':'entities',},
-    'collection':   {'module': 'ui.models', 'class':'Collection', 'templatedir':'collections',},
-    'organization': {'module': 'ui.models', 'class':'Organization', 'templatedir':'',},
-    'repository':   {'module': 'ui.models', 'class':'Repository', 'templatedir':'',},
+    'file':         {'module': 'ui.models', 'class':'File', 'stub':0, 'templatedir':'files',},
+    'entity':       {'module': 'ui.models', 'class':'Entity', 'stub':0, 'templatedir':'entities',},
+    'collection':   {'module': 'ui.models', 'class':'Collection', 'stub':0, 'templatedir':'collections',},
+    'organization': {'module': 'ui.models', 'class':'Organization', 'stub':1, 'templatedir':'',},
+    'repository':   {'module': 'ui.models', 'class':'Repository', 'stub':1, 'templatedir':'',},
 }
 
 
