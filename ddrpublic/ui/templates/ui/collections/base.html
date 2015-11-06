@@ -2,5 +2,4 @@
 
 {% block breadcrumbs %}{{ block.super }}
 <li><a href="{% url "ui-collections-list" %}">Collections</a></li>
-<li><a href="{% url "ui-collection" repo org cid %}">{{ repo }}-{{org }}-{{ cid }}</a></li>
 {% endblock breadcrumbs %}

@@ -7,6 +7,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import Http404, get_object_or_404, redirect, render_to_response
 from django.template import RequestContext
 
+from ui.identifier import Identifier
 from ui.models import Repository, Organization, Collection, Entity, File
 
 
@@ -22,8 +23,8 @@ def list( request, repo ):
     )
 
 def detail( request, repo, org ):
-    organization = Organization.get(repo, org)
-    collections = organization.collections()
+    organization = Organization.get(Identifier(request))
+    collections = organization.children()
     return render_to_response(
         'ui/organizations/detail.html',
         {

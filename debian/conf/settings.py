@@ -202,14 +202,14 @@ def UI_THUMB_URL(ddrfile):
     http://192.168.56.101/media/base/ddr-testing-123/files/ddr-testing-123-1/files/ddr-testing-123-1-master-a1b2c3d4e5-a.jpg
     """
     return 'http://192.168.56.101/media/base/%s/files/%s/files/%s' % (
-        ddrfile.collection_id, ddrfile.entity_id, ddrfile.access_rel)
+        ddrfile.identifier.collection_id(), ddrfile.parent_id(), ddrfile.access_rel)
 
 # colo
 def UI_THUMB_URL(ddrfile):
     """Example:
     /media/ddr-testing-123/ddr-testing-123-1-master-a1b2c3d4e5-a.jpg
     """
-    return '%s%s/%s' % (MEDIA_URL, ddrfile.collection_id, ddrfile.access_rel)
+    return '%s%s/%s' % (MEDIA_URL, ddrfile.identifier.collection_id(), ddrfile.access_rel)
 
 # # Amazon S3
 # def UI_THUMB_URL(ddrfile):
@@ -217,7 +217,7 @@ def UI_THUMB_URL(ddrfile):
 #     https://densho-ddr.s3.amazonaws.com/ddr-testing-123/ddr-testing-123-1-master-a1b2c3d4e5-a.jpg
 #     """
 #     bucket = 'densho-ddr'
-#     folder = ddrfile.collection_id
+#     folder = ddrfile.identifier.collection_id()
 #     object_key = ddrfile.access_rel
 #     return 'https://%s.s3.amazonaws.com/%s/%s' % (bucket, folder, object_key)
 
@@ -232,8 +232,8 @@ def UI_DOWNLOAD_URL( ddrfile ):
     """
     if ddrfile.role == u'mezzanine':
         extension = os.path.splitext(ddrfile.basename_orig)[1]
-        filename = ddrfile.id + extension
-        path_rel = os.path.join(ddrfile.collection_id, filename)
+        filename = ddrfile.identifier.id + extension
+        path_rel = os.path.join(ddrfile.identifier.collection_id(), filename)
         url = DOWNLOAD_URL + path_rel
         return url
     return None

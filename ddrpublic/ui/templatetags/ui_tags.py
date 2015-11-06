@@ -4,6 +4,7 @@ import os
 from django import template
 from django.conf import settings
 
+from ui.identifier import MODEL_CLASSES
 
 register = template.Library()
 
@@ -31,22 +32,20 @@ def homeslideitem( target_url, img_src ):
         'MEDIA_URL': settings.MEDIA_URL,
     }))
 	
-def collection( obj ):
-    """list-view collection template
+def breadcrumbs( crumbs, link_endpoint=0 ):
+    """breadcrumbs up to and including collection
     """
-    t = template.loader.get_template('ui/collections/list-object.html')
-    return t.render(template.Context({'object':obj}))
+    if not link_endpoint:
+        crumbs[-1]['url'] = ''
+    t = template.loader.get_template('ui/breadcrumbs.html')
+    return t.render(template.Context({'breadcrumbs':crumbs}))
 
-def entity( obj ):
-    """list-view entity template
+def document( obj ):
+    """list-view document template
     """
-    t = template.loader.get_template('ui/entities/list-object.html')
-    return t.render(template.Context({'object':obj}))
-
-def file( obj ):
-    """list-view file template
-    """
-    t = template.loader.get_template('ui/files/list-object.html')
+    model_plural = MODEL_CLASSES[obj.identifier.model]['templatedir']
+    template_path = 'ui/%s/list-object.html' % model_plural
+    t = template.loader.get_template(template_path)
     return t.render(template.Context({'object':obj}))
 
 def addthis():
@@ -70,9 +69,8 @@ def rightspanel( code ):
     return t.render(c)
 
 register.simple_tag(homeslideitem)
-register.simple_tag(collection)
-register.simple_tag(entity)
-register.simple_tag(file)
+register.simple_tag(breadcrumbs)
+register.simple_tag(document)
 register.simple_tag(addthis)
 register.simple_tag(cite)
 register.simple_tag(rightspanel)
