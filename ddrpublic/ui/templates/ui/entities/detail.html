@@ -25,10 +25,10 @@
 
 <section id="shop" class="container">
 
-	<div class="row">
-
-		<div class="col-sm-6 col-md-6">
-		<h2>{{ object.title|safe }}</h2>
+    <div class="row">
+        <!-- left content -->
+        <div class="col-sm-6 col-md-6">
+            <h2>{{ object.title|safe }}</h2>
 
 {% if object.signature_url %}
   {% thumbnail object.signature_url_local "480x480" as img %}
@@ -40,153 +40,142 @@
         <a href="{{ DOWNLOAD_URL }}{{ object.signature.access_path }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download large size</a>
 {% endif %}
 
-			<div class="divider"><!-- divider -->
-				<i class="fa fa-chevron-down"></i>
-			</div>
-			{% rightspanel object.rights %}
-	{% endif %}				
-		</div>
+        <div class="divider"><!-- divider -->
+            <i class="fa fa-chevron-down"></i>
+        </div>
+        {% rightspanel object.rights %}
+        {% endif %}
+        </div>
+        <!-- right meta -->
+        <div class="col-sm-6 col-md-6">
 
+            {% addthis %}
 
-		<div class="col-sm-6 col-md-6">
-			
-			{% addthis %}
-			
-			<div class="desc productDescription">
-			<!-- entity.id -->
-                        <h3 class="page-header">PARTNER</h3>
-                        {% include "ui/partnerlogolink.html" %}
-                        <h3 class="page-header">OBJECT ID</h3>
-                        <p>{{ object.id }}</p>
-			<!-- entity.collection -->
-                        <h3 class="page-header">PARENT COLLECTION</h3>
-                       <p><a href="{{ parent.absolute_url }}">{{ parent.title }}</a></p>
-                       <!-- entity.description -->
- 			<h3 class="page-header">DESCRIPTION</h3>
-			<p>{{ object.description|safe }}</p>
+            <div class="desc productDescription">
+                <!-- entity.partner -->
+                <h3 class="page-header">PARTNER</h3>
+                    {% include "ui/partnerlogolink.html" %}
+                    <!-- entity.entity_id -->
+                    <h3 class="page-header">OBJECT ID</h3>
+                    <p>
+                    {{ object.id }}
+                    {% if object.alternate_id != None and "denshouid" not in object.alternate_id %}
+                    <span class="small">({{ object.alternate_id }})</span>
+                    {% endif %}
+                    </p>
+                    <!-- entity.collection -->
+                    <h3 class="page-header">PARENT COLLECTION</h3>
+                    <p>
+                    <a href="{{ parent.absolute_url }}">{{ parent.title }}</a>
+                    </p>
+                    <!-- entity.description -->
+                    <h3 class="page-header">DESCRIPTION</h3>
+                    <p>
+                    {{ object.description|safe }}
+                    </p>
 
-					<!-- core meta -->
-						<div class="row">
-							<div class="col">
+                    <!-- core meta -->
+                    <div class="row">
+                        <div class="col-md-5 col-sm-5">
+                            <!-- entity.creation -->
+                            <h3 class="page-header">DATE</h3>
+                            <p>
+                                {{ object.creation }}
+                            </p>
+                        </div>
 
-								<div class="col-md-5 col-sm-5">
-									<!-- entity.creation -->
-									<h3 class="page-header">DATE</h3>
-									<p>
-									{{ object.creation }}
-									</p>
+                        <div class="col-md-7 col-sm-7">
+                            <!-- entity.location -->
+                            <h3 class="page-header">LOCATION</h3>
+                            {{ object.fields|ddrvalue:"location" }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-5 col-sm-5">
+                            <!-- entity.genre -->
+                            <h3 class="page-header">OBJECT GENRE</h3>
+                            {{ object.fields|ddrvalue:"genre" }}
+                        </div>
+                        <div class="col-md-7 col-sm-7">
+                            <!-- entity.format -->
+                            <h3 class="page-header">OBJECT FORMAT</h3>
+                            {{ object.fields|ddrvalue:"format" }}
+                        </div>
+                    </div>
+                    <div class="row">    
+                        <div class="col-md-5 col-sm-5">
+                            <!-- entity.topics -->
+                            <h3 class="page-header">TOPICS</h3>
+                            <ul class="list-unstyled">
+                                {% for term in object.topics %}
+                                <li><a href="{{ term.url }}">{{ term.title }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-md-7 col-sm-7">
+                            <!-- entity.facility -->
+                            <h3 class="page-header">FACILITY</h3>
+                            {{ object.fields|ddrvalue:"facility" }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-5 col-sm-5">
+                            <!-- entity.creators -->
+                            <h3 class="page-header">CREATORS</h3>
+                            {{ object.fields|ddrvalue:"creators" }}
+                        </div>
+                        <div class="col-md-7 col-sm-7">
+                            <!-- entity.persons -->
+                            <h3 class="page-header">PERSONS/ORGANIZATIONS</h3>
+                            {{ object.fields|ddrvalue:"persons" }}
+                        </div>
+                    </div>
+                    <!-- /core meta -->	
+                    <h3 class="page-header">CONTRIBUTOR</h3>
+                    <p>
+                        {{ object.contributor }}
+                    </p>
+                    <!-- entity.credit -->
+                    <h3 class="page-header">PREFERRED CITATION</h3>
+                    <p>
+                        {{ object.credit }}
+                    </p>
+                    <!-- entity.rights -->
+                    <h3 class="page-header">RIGHTS</h3>
+                    {{ object.fields|ddrvalue:"rights" }}
 
-								</div>
-								
-								<div class="col-md-7 col-sm-7">
-									<!-- entity.location -->
-									<h3 class="page-header">LOCATION</h3>
-									<p>
-									{{ object.fields|ddrvalue:"location" }}
-									</p>
-								</div>
+                    {% if object.encyc_articles %}
+                    <!-- entity.encycarticles -->
+                    <h3 class="page-header">FOR MORE INFORMATION</h3>
+                    <p class="small">
+                        Related articles from the <a target="encyc" href="http://encyclopedia.densho.org/">Densho Encyclopedia</a>
+                    </p>
+                    <ul class="list-unstyled">
+                        {% for article in object.encyc_articles %}
+                        <li><a target="encyc" href="{{ article.url }}">{{ article.title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>	
+            </div>
+</div>
 
-								<div class="col-md-5 col-sm-5">
-									<!-- entity.genre -->
-									<h3 class="page-header">OBJECT GENRE</h3>
-									<p>
-									{{ object.fields|ddrvalue:"genre" }}
-									</p>
-								</div>
-								<div class="col-md-7 col-sm-7">
-									<!-- entity.format -->
-									<h3 class="page-header">OBJECT FORMAT</h3>
-									<p>
-									{{ object.fields|ddrvalue:"format" }}
-									</p>
-								</div>
-								<div class="col-md-5 col-sm-5">
-									<!-- entity.topics -->
-									<h3 class="page-header">TOPICS</h3>
-<p>
-<ul class="list-unstyled">
-{% for term in object.topics %}
-  <li><a href="{{ term.url }}">{{ term.title }}</a></li>
-{% endfor %}
-</ul>
-</p>
+    <div class="row">
+        <div class="col-sm-12 col-md-12">
+            <h3>{{ paginator.count }} Files</h3>
+            {% for file in page.object_list %}
+            {% document file %}
+            {% endfor %}
 
-								</div>
-								<div class="col-md-7 col-sm-7">
-									<!-- entity.facility -->
-									<h3 class="page-header">FACILITY</h3>
-									<p>
-									{{ object.fields|ddrvalue:"facility" }}
-									</p>
-								</div>
-								<div class="col-md-5 col-sm-5">
-									<!-- entity.creators -->
-									<h3 class="page-header">CREATORS</h3>
-									<p>
-									{{ object.fields|ddrvalue:"creators" }}
-									</p>
-								</div>
-								<div class="col-md-7 col-sm-7">
-									<!-- entity.persons -->
-									<h3 class="page-header">PERSONS/ORGANIZATIONS</h3>
-									<p>
-									{{ object.fields|ddrvalue:"persons" }}
-									</p>
-								</div>
+            {% if paginator.count > 10 %}
+            <br />
+            <p>
+                <a class="btn btn-primary btn-md" href="{% url "ui-entity-files" repo org cid eid %}">See all files <i class="fa fa-arrow-circle-right"></i></a>
+            </p>
+            {% endif %}
+        </div>
 
-							</div>
-
-						</div>
-				<!-- /core meta -->	
-				<h3 class="page-header">CONTRIBUTOR</h3>
-                                <p>
-                                {{ object.contributor }}
-                                </p>
-                                <!-- entity.credit -->
-				<h3 class="page-header">PREFERRED CITATION</h3>
-				<p>
-				{{ object.credit }}
-				</p>
-				<!-- entity.rights -->
-				<h3 class="page-header">RIGHTS</h3>
-				<p>
-				{{ object.fields|ddrvalue:"rights" }}
-				</p>
-
-{% if object.encyc_articles %}
-				<!-- entity.encycarticles -->
-				<h3 class="page-header">FOR MORE INFORMATION</h3>
-				<p class="small">
-                Related articles from the
-                <a target="encyc" href="http://encyclopedia.densho.org/">Densho Encyclopedia</a>
-                </p>
-                <ul class="list-unstyled">
-  {% for article in object.encyc_articles %}
-				    <li><a target="encyc" href="{{ article.url }}">{{ article.title }}</a></li>
-  {% endfor %}
-				</ul>
-{% endif %}
-
-		</div>	
-	</div>
-</div>		
-
-	<div class="row">
-		<div class="col-sm-12 col-md-12">
-			<h3>{{ paginator.count }} Files</h3>
-			{% for file in page.object_list %}
-			{% document file %}
-			{% endfor %}
-			
-			{% if paginator.count > 10 %}
-			<br />
-			<p>
-			<a class="btn btn-primary btn-md" href="{% url "ui-entity-files" repo org cid eid %}">See all files <i class="fa fa-arrow-circle-right"></i></a>
-			</p>
-			{% endif %}
-		</div>
-
-	</div><!-- .row -->
+    </div><!-- .row -->
   
 </section>
 {% endblock content %}
