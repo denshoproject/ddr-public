@@ -64,9 +64,7 @@ Related articles from the
 {% endif %}
 
 {% for hit in page.object_list %}
-  {% if hit.model == "collection" %}{% collection hit %}{% endif %}
-  {% if hit.model == "entity" %}{% entity hit %}{% endif %}
-  {% if hit.model == "file" %}{% file hit %}{% endif %}
+{% document hit %}
 {% endfor %}
 
 {% if paginator.num_pages > 1 %}
