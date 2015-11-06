@@ -11,3 +11,5 @@ coverage                        # BSD
 nose                            # LGPL
 snakefood                       # GPL
 sphinx                          # BSD
+twill                           # MIT
+cssselect  # required by twill    BSD
