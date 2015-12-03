@@ -85,13 +85,6 @@
 	<!-- TOP NAV -->
 	<header id="topNav">
 		<div class="container">
-<!-- alert area -->
-<div class="alert alert-info" role="alert">
-	<button type="button" class="close" data-dismiss="alert">×</button>
-	<strong>Attention, please!</strong> We will be performing server maintenance on Tuesday, December 15, 2015. The site will go offline and may not be available until Wednesday, December 16, 2015. We are sorry for any inconvenience!
-</div>
-
-
 				<!-- Mobile Menu Button -->
 				<button class="btn" data-toggle="collapse" data-target=".nav-main-collapse">
 					<i class="fa fa-bars"></i>
@@ -180,6 +173,11 @@
 	{% endblock pageheader %}
 
 <div id="content">
+    <!-- alert area -->
+    <div class="alert alert-warning" role="alert">
+    	<button class="btn close" data-dismiss="alert">×</button>
+    	<strong>Attention, please!</strong> We will be performing server maintenance on Tuesday, December 15, 2015, starting from 7am PST. The site will go offline and may not be available until Wednesday, December 16, 2015. For more information, see: <a href="http://www.densho.org/2015-server-maintenance" target="_blank">www.densho.org/2015-server-maintenance. We apologize for any inconvenience!
+    </div>
 {% block content %}{% endblock content %}
 </div><!-- #content -->
 
