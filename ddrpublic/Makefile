@@ -1,6 +1,6 @@
 SHELL = /bin/bash
 
-PACKAGE_SERVER=tank.densho.org
+PACKAGE_SERVER=ddr.densho.org/static/ddrpublic
 
 INSTALL_BASE=/usr/local/src
 INSTALLDIR=$(INSTALL_BASE)/ddr-public
