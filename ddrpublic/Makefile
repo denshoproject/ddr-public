@@ -88,7 +88,7 @@ howto-install:
 
 
 
-install: install-prep install-daemons install-ddr install-static install-configs
+install: install-prep install-ddr install-static install-configs
 
 update: update-ddr
 
@@ -372,6 +372,15 @@ install-configs:
 	cp $(INSTALLDIR)/debian/conf/settings.py $(INSTALLDIR)/ddrpublic/ddrpublic/
 	chown root.root $(INSTALLDIR)/ddrpublic/ddrpublic/settings.py
 	chmod 644 $(INSTALLDIR)/ddrpublic/ddrpublic/settings.py
+
+uninstall-configs:
+	-rm $(INSTALL_BASE)/ddr-local/ddrpublic/ddrpublic/settings.py
+	-rm /etc/ddr/ddrpublic-secret-key.txt
+	-rm /etc/ddr/ddr.cfg
+
+install-daemons-configs:
+	@echo ""
+	@echo "configuring daemons -------------------------------------------------"
 # nginx settings
 	cp $(INSTALLDIR)/debian/conf/ddrpublic.conf /etc/nginx/sites-available
 	chown root.root /etc/nginx/sites-available/ddrpublic.conf
@@ -384,13 +393,10 @@ install-configs:
 	chown root.root /etc/supervisor/conf.d/gunicorn_ddrpublic.conf
 	chmod 644 /etc/supervisor/conf.d/gunicorn_ddrpublic.conf
 
-uninstall-configs:
+uninstall-daemons-configs:
 	-rm /etc/nginx/sites-available/ddrpublic.conf
 	-rm /etc/nginx/sites-enabled/ddrpublic.conf
 	-rm /etc/supervisor/conf.d/gunicorn_ddrpublic.conf
-	-rm $(INSTALL_BASE)/ddr-local/ddrpublic/ddrpublic/settings.py
-	-rm /etc/ddr/ddrpublic-secret-key.txt
-	-rm /etc/ddr/ddr.cfg
 
 
 reload: reload-nginx reload-supervisor
