@@ -8,6 +8,7 @@ from django.http import HttpRequest
 
 from DDR.identifier import Identifier as DDRIdentifier
 from DDR.identifier import format_id
+from DDR.identifier import CHILDREN, CHILDREN_ALL
 
 
 MODEL_CLASSES = {
