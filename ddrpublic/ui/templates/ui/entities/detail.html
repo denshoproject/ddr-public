@@ -104,10 +104,10 @@
                     </div>
                     <div class="row">    
                         <div class="col-md-5 col-sm-5">
-                            <!-- entity.topics -->
+                            <!-- entity.topic_terms -->
                             <h3 class="page-header">TOPICS</h3>
                             <ul class="list-unstyled">
-                                {% for term in object.topics %}
+                                {% for term in object.topic_terms %}
                                 <li><a href="{{ term.url }}">{{ term.title }}</a></li>
                                 {% endfor %}
                             </ul>
@@ -144,7 +144,7 @@
                     <h3 class="page-header">RIGHTS</h3>
                     {{ object.fields|ddrvalue:"rights" }}
 
-                    {% if encyc_articles %}
+                    {% if object.encyc_articles %}
                     <!-- entity.encycarticles -->
                     <h3 class="page-header">FOR MORE INFORMATION</h3>
                     <p class="small">

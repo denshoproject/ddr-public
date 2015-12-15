@@ -628,13 +628,19 @@ class Entity( object ):
     def signature_url_local( self ):
         return media_url_local(self.signature_url())
     
-    def topics( self ):
-        return [faceting.Term('topics', int(tid)) for tid in self._topics]
+    def topic_terms( self ):
+        if self._topics:
+            topics = self._topics
+        elif self.topics:
+            topics = self.topics
+        else:
+            topics = []
+        return [faceting.Term('topics', int(tid)) for tid in topics]
 
     def encyc_articles( self ):
         if not self._encyc_articles:
             self._encyc_articles = []
-            for term in self.topics():
+            for term in self.topic_terms():
                 for article in term.encyc_articles():
                     self._encyc_articles.append(article)
         return self._encyc_articles

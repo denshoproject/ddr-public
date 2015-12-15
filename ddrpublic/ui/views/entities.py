@@ -36,7 +36,6 @@ def detail( request, repo, org, cid, eid ):
             'cid': cid,
             'eid': eid,
             'object': entity,
-            #'encyc_articles': entity.encyc_articles(),
             'parent': parent,
             'organization': organization,
             'paginator': paginator,
