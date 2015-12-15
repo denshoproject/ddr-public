@@ -629,9 +629,9 @@ class Entity( object ):
         return media_url_local(self.signature_url())
     
     def topic_terms( self ):
-        if self._topics:
+        if hasattr(self, '_topics') and self._topics:
             topics = self._topics
-        elif self.topics:
+        elif hasattr(self, 'topics') and self.topics:
             topics = self.topics
         else:
             topics = []
