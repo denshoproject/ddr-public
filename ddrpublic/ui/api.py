@@ -526,11 +526,11 @@ def term_objects(request, facet_id, term_id, format=None):
     # post-processing. See *.api_children methods in .models.py
     documents = [hit['_source'] for hit in results['hits']['hits']]
     for d in documents:
-        idparts = Identity.split_object_id(d['id'])
-        model = idparts.pop(0)
-        collection_id = Identity.make_object_id(Collection.model, idparts[0], idparts[1], idparts[2])
-        d['url'] = reverse('ui-api-%s' % model, args=idparts, request=request)
-        d['absolute_url'] = reverse('ui-%s' % model, args=idparts, request=request)
+        i = Identifier(d['id'])
+        idparts = [x for x in i.parts.itervalues()]
+        collection_id = i.collection_id()
+        d['url'] = reverse('ui-api-%s' % i.model, args=idparts, request=request)
+        d['absolute_url'] = reverse('ui-%s' % i.model, args=idparts, request=request)
         d['img_url'] = img_url(collection_id, access_filename(d['signature_file']), request)
         d['img_path'] = os.path.join(collection_id, access_filename(d['signature_file']))
     return Response(documents)
