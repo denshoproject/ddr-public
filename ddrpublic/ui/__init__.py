@@ -1,7 +1,7 @@
 import envoy
 
 from django.conf import settings
-from django.contrib.sites.models import RequestSite
+from django.contrib.sites.requests import RequestSite
 from django.core.cache import cache
 from django.template.loader import get_template
 from django.template import TemplateDoesNotExist

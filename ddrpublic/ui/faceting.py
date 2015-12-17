@@ -1,3 +1,5 @@
+# TODO could much of this code be replaced by DDR.vocab?
+
 from collections import defaultdict
 import json
 import re

@@ -14,20 +14,22 @@ from django.template.loader import get_template
 from django.utils.http import urlquote  as django_urlquote
 
 from DDR import docstore
-from DDR.models import MODELS_DIR, MODELS, MODULES
-from DDR.models import Identity
 
 from ui import faceting
+from ui.identifier import Identifier, MODEL_CLASSES
 
 
 DEFAULT_SIZE = 10
 
+# TODO move to DDR.identifier?
 REPOSITORY_LIST_FIELDS = ['id', 'title', 'description', 'url',]
 ORGANIZATION_LIST_FIELDS = ['id', 'title', 'description', 'url',]
 COLLECTION_LIST_FIELDS = ['id', 'title', 'description', 'signature_file',]
 ENTITY_LIST_FIELDS = ['id', 'title', 'description', 'signature_file',]
 FILE_LIST_FIELDS = ['id', 'basename_orig', 'label', 'access_rel','sort',]
 
+# TODO refactor: knows too much about structure of ID
+#      Does Elasticsearch have lambda functions for sorting?
 REPOSITORY_LIST_SORT = [
     ['repo','asc'],
 ]
@@ -84,39 +86,37 @@ INDEX = settings.DOCSTORE_INDEX
 
 # functions for GETing object data from ElasticSearch
 
-def make_object_url( parts ):
+def absolute_url(identifier):
     """Takes a list of object ID parts and returns URL for that object.
     """
-    if len(parts) == 6: return reverse('ui-file', args=parts)
-    elif len(parts) == 4: return reverse('ui-entity', args=parts)
-    elif len(parts) == 3: return reverse('ui-collection', args=parts)
-    return None
+    return reverse(
+        'ui-%s' % identifier.model,
+        args=identifier.parts.values()
+    )
 
-def backend_url( object_type, object_id ):
+def backend_url(identifier):
     """Debug link to ElasticSearch page for the object.
     """
     if settings.DEBUG:
-        return 'http://%s/%s/%s/%s' % (HOSTS, INDEX, object_type, object_id)
+        return 'http://%s/%s/%s/%s' % (HOSTS, INDEX, identifier.model, identifier.id)
     return ''
 
-def cite_url( model, object_id ):
+def cite_url(identifier):
     """Link to object's citation page
     """
-    return reverse('ui-cite', args=(model, object_id))
+    return reverse('ui-cite', args=(identifier.model, identifier.id))
 
-def org_logo_url( organization_id ):
+def org_logo_url(identifier):
     """Link to organization logo image
     """
-    return os.path.join(settings.MEDIA_URL, organization_id, 'logo.png')
+    return os.path.join(settings.MEDIA_URL, identifier.organization_id(), 'logo.png')
 
-def signature_url( signature_file ):
+def signature_url(identifier, signature_file):
     """
+    @param identifier: Identifier
     @param signature_file: str File ID
     """
-    oid = Identity.split_object_id(signature_file)
-    model = oid.pop(0)
-    cid = Identity.make_object_id('collection', oid[0], oid[1], oid[2])
-    return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, cid, signature_file)
+    return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, identifier.collection_id(), signature_file)
 
 def media_url_local( url ):
     """Replace media_url with one that points to "local" media server
@@ -166,42 +166,6 @@ def _page_bottom_top(total, index, page_size):
         bottom = (number - 1) * page_size
         top = bottom + page_size
         return bottom,top,num_pages
-
-def massage_query_results( results, thispage, page_size ):
-    """Takes ES query, makes facsimile of original object; pads results for paginator.
-    
-    Problem: Django Paginator only displays current page but needs entire result set.
-    Actually, it just needs a list that is the same size as the actual result set.
-    
-    GOOD:
-    Do an ElasticSearch search, without ES paging.
-    Loop through ES results, building new list, process only the current page's hits
-    hits outside current page added as placeholders
-    
-    BETTER:
-    Do an ElasticSearch search, *with* ES paging.
-    Loop through ES results, building new list, processing all the hits
-    Pad list with empty objects fore and aft.
-    
-    @param results: ElasticSearch result set (non-empty, no errors)
-    @param thispage: Value of GET['page'] or 1
-    @param page_size: Number of objects per page
-    @returns: list of hit dicts, with empty "hits" fore and aft of current page
-    """
-    objects = docstore.massage_query_results(results, thispage, page_size)
-    results = None
-    for o in objects:
-        if not o.get('placeholder',False):
-            # assemble urls for each record type
-            if o.get('id', None):
-                oid = Identity.split_object_id(o['id'])
-                if o['type'] == 'collection':
-                    o['url'] = reverse('ui-collection', args=oid[1:])
-                elif o['type'] == 'entity':
-                    o['url'] = reverse('ui-entity', args=oid[1:])
-                elif o['type'] == 'file':
-                    o['url'] = reverse('ui-file', args=oid[1:])
-    return objects
 
 # ----------------------------------------------------------------------
 # functions for displaying various types of content
@@ -276,30 +240,98 @@ field_display_handler = {
 }
 
 def field_display_style( o, field ):
-    for modelfield in model_fields(o.model):
+    for modelfield in model_fields(o.identifier):
         if modelfield['name'] == field:
             return modelfield['elasticsearch']['display']
     return None
 
 # ----------------------------------------------------------------------
+# functions for performing searches and processing results
 
-def model_fields(model):
-    """Get list of fields from ES
+def cached_query(host, index, model='', query='', terms={}, filters={}, fields=[], sort=[], size=10000):
+    """Perform an ElasticSearch query and cache it.
     
-    @param model: str Name of model
-    @returns: list of field names
+    Cache key consists of a hash of all the query arguments.
     """
-    key = 'ddrpublic:%s:fields' % model
+    query_args = {'host':host, 'index':index, 'model':model,
+                  'query':query, 'terms':terms, 'filters':filters,
+                  'fields':fields, 'sort':sort,}
+    key = hashlib.sha1(json.dumps(query_args)).hexdigest()
     cached = cache.get(key)
     if not cached:
-        cached = []
-        for m,module in MODULES.iteritems():
-            if m == model:
-                cached = module.FIELDS
+        cached = docstore.search(hosts=HOSTS, index=index, model=model,
+                                 query=query, term=terms, filters=filters,
+                                 fields=fields, sort=sort, size=size)
+        cache.set(key, cached, settings.ELASTICSEARCH_QUERY_TIMEOUT)
+    return cached
+
+def massage_query_results( results, thispage, page_size ):
+    """Takes ES query, makes facsimile of original object; pads results for paginator.
+    
+    Problem: Django Paginator only displays current page but needs entire result set.
+    Actually, it just needs a list that is the same size as the actual result set.
+    
+    GOOD:
+    Do an ElasticSearch search, without ES paging.
+    Loop through ES results, building new list, process only the current page's hits
+    hits outside current page added as placeholders
+    
+    BETTER:
+    Do an ElasticSearch search, *with* ES paging.
+    Loop through ES results, building new list, processing all the hits
+    Pad list with empty objects fore and aft.
+    
+    @param results: ElasticSearch result set (non-empty, no errors)
+    @param thispage: Value of GET['page'] or 1
+    @param page_size: Number of objects per page
+    @returns: list of hit dicts, with empty "hits" fore and aft of current page
+    """
+    objects = docstore.massage_query_results(results, thispage, page_size)
+    results = None
+    for o in objects:
+        if not o.get('placeholder',False):
+            # assemble urls for each record type
+            if o.get('id', None):
+                identifier = Identifier(o['id'])
+                o['identifier'] = identifier
+                o['url'] = reverse(
+                    'ui-%s' % identifier.model,
+                    args=identifier.parts.values()
+                )
+    return objects
+
+def instantiate_query_objects( massaged ):
+    """Instantiate Collection/Entity/File objects in massaged list of results
+    
+    @param massaged: list Output of massage_query_results().
+    @returns: list of Collection/Entity/File objects and Hit dicts
+    """
+    objects = []
+    for hit in massaged:
+        if hit.get('placeholder', None):
+            objects.append(hit)
+        else:
+            o = build_object(Identifier(hit['id']), hit)
+            if o:
+                objects.append(o)
+            else:
+                objects.append(hit)
+    return objects
+
+def model_fields(identifier):
+    """Get list of fields from ES
+    
+    @param identifier: Identifier
+    @returns: list of field names
+    """
+    key = 'ddrpublic:%s:fields' % identifier.model
+    cached = cache.get(key)
+    if not cached:
+        cached = identifier.fields_module().FIELDS
         cache.set(key, cached, 60*1)
     return cached
 
-def build_object( o, id, source, rename={} ):
+def build_object(identifier, source, rename={} ):
     """Build object from ES GET data.
     
     NOTE: This only works on object types listed in DDR.models.MODULES.
@@ -307,14 +339,17 @@ def build_object( o, id, source, rename={} ):
     'rename' contains fields in 'source' that are to be given alternate names.
     Entity.files() and .topics() methods override the original fields.
     
-    @param o: Blank object to build on.
-    @param id: str DDR ID of the object.
+    @param identifier: Identifier
     @param source: dict Contents of Elasticsearch document (document['_source']).
     @param rename: dict of {'fieldnames': 'alternate_names'}.
     """
-    o.id = id
+    object_class = identifier.object_class(mappings=MODEL_CLASSES)
+    o = object_class()
+    o.identifier = identifier  # required or o.__repr__ will crash
+    o.id = o.identifier.id
     o.fields = []
-    for field in model_fields(o.model):
+    fields = model_fields(o.identifier)
+    for field in fields:
         fieldname = field['name']
         label = field.get('label', field['name'])
         if source.get(fieldname,None):
@@ -335,146 +370,114 @@ def build_object( o, id, source, rename={} ):
                 else:
                     contents_display = field_display_handler[style](fieldname, contents)
                 o.fields.append( (fieldname, label, contents_display) )
-    # parent object ids
-    oid = Identity.split_object_id(o.id)
-    if o.model == 'file': m, o.repo,o.org,o.cid,o.eid,o.role,o.sha1 = oid
-    elif o.model == 'entity': m, o.repo,o.org,o.cid,o.eid = oid
-    elif o.model == 'collection': m, o.repo,o.org,o.cid = oid
-    elif o.model == 'organization': m, o.repo,o.org = oid
-    elif o.model == 'repository': m, o.repo = oid
-    if o.model in ['file']:
-        o.entity_id = Identity.make_object_id('entity', o.repo,o.org,o.cid,o.eid,o.role,o.sha1)
-    if o.model in ['file','entity']:
-        o.collection_id = Identity.make_object_id('collection', o.repo, o.org, o.cid)
-    if o.model in ['file','entity','collection']:
-        o.organization_id = Identity.make_object_id('org', o.repo,o.org)
-    if o.model in ['file','entity','collection','organization']:
-        o.repository_id = Identity.make_object_id('repo', o.repo)
     # signature file
     if source.get('signature_file', None):
         o.signature_file = source['signature_file']
     return o
 
-def process_query_results( results, page, page_size ):
-    objects = []
-    massaged = massage_query_results(results, page, page_size)
-    for hit in massaged:
-        if hit.get('placeholder', None):
-            objects.append(hit)
-        else:
-            if hit['model'] in ['repository', 'organization', 'collection', 'entity', 'file']:
-                if hit['model'] == 'repository': object_class = Repository()
-                elif hit['model'] == 'organization': object_class = Organization()
-                elif hit['model'] == 'collection': object_class = Collection()
-                elif hit['model'] == 'entity': object_class = Entity()
-                elif hit['model'] == 'file': object_class = File()
-                o = build_object(object_class, hit['id'], hit)
-                if o:
-                    objects.append(o)
-                else:
-                    objects.append(hit)
-    return objects
-
-def cached_query(host, index, model='', query='', terms={}, filters={}, fields=[], sort=[], size=10000):
-    """Perform an ElasticSearch query and cache it.
-    
-    Cache key consists of a hash of all the query arguments.
-    """
-    query_args = {'host':host, 'index':index, 'model':model,
-                  'query':query, 'terms':terms, 'filters':filters,
-                  'fields':fields, 'sort':sort,}
-    key = hashlib.sha1(json.dumps(query_args)).hexdigest()
-    cached = cache.get(key)
-    if not cached:
-        cached = docstore.search(hosts=HOSTS, index=index, model=model,
-                                 query=query, term=terms, filters=filters,
-                                 fields=fields, sort=sort, size=size)
-        cache.set(key, cached, settings.ELASTICSEARCH_QUERY_TIMEOUT)
-    return cached
-
 
 # ----------------------------------------------------------------------
+
+def get_stub_object(identifier):
+    document = docstore.get(
+        HOSTS, index=INDEX,
+        model=identifier.model, document_id=identifier.id
+    )
+    if document and (document['found'] or document['exists']):
+        object_class = identifier.object_class(mappings=MODEL_CLASSES)
+        o = object_class()
+        o.identifier = identifier
+        for key,value in document['_source'].iteritems():
+            setattr(o, key, value)
+        return o
+    return None
+
+def get_object(identifier):
+    document = docstore.get(
+        HOSTS, index=INDEX,
+        model=identifier.model, document_id=identifier.id
+    )
+    if document and (document['found'] or document['exists']):
+        return build_object(identifier, document['_source'])
+    return None
 
 
 class Repository( object ):
     index = INDEX
-    model = 'repository'
-    id = None
-    repo = None
+    identifier = None
     fieldnames = []
     _organizations = []
     
     def __repr__( self ):
-        return '<ui.models.Repository %s>' % self.id
+        return "<%s.%s %s:%s>" % (
+            self.__module__, self.__class__.__name__,
+            self.identifier.model,
+            self.identifier.id
+        )
     
     @staticmethod
-    def get( repo ):
-        id = Identity.make_object_id(Repository.model, repo)
-        document = docstore.get(HOSTS, index=INDEX, model=Repository.model, document_id=id)
-        if document and (document['found'] or document['exists']):
-            o = Repository()
-            for key,value in document['_source'].iteritems():
-                setattr(o, key, value)
-            return o
-        return None
+    def get(identifier):
+        return get_stub_object(identifier)
     
     def absolute_url( self ):
-        return reverse('ui-repo', args=(self.repo))
+        return absolute_url(self.identifier)
     
     def cite_url( self ):
-        return cite_url('repo', self.id)
+        return cite_url(self.identifier)
+
+    def parent( self ):
+        return None
     
-    def organizations( self, page=1, page_size=DEFAULT_SIZE ):
+    def children( self, page=1, page_size=DEFAULT_SIZE ):
         objects = []
-        results = cached_query(host=HOSTS, index=INDEX, model='organization',
-                               query='id:"%s"' % self.id,
-                               fields=ORGANIZATION_LIST_FIELDS,
-                               sort=ORGANIZATION_LIST_SORT,)
+        results = cached_query(
+            host=HOSTS, index=INDEX, model='organization',
+            query='id:"%s"' % self.identifier.id,
+            fields=ORGANIZATION_LIST_FIELDS,
+            sort=ORGANIZATION_LIST_SORT,
+        )
         for hit in results['hits']['hits']:
-            model,repo,org = Identity.split_object_id(hit['_id'])
-            org = Organization.get(repo, org)
+            identifier = Identifier(hit['_id'])
+            org = Organization.get(identifier)
             objects.append(org)
         return objects
 
 
 class Organization( object ):
     index = INDEX
-    model = 'organization'
-    id = None
-    repo = None
-    org = None
+    identifier = None
     fieldnames = []
     _collections = []
     
     def __repr__( self ):
-        return '<ui.models.Organization %s>' % self.id
+        return "<%s.%s %s:%s>" % (
+            self.__module__, self.__class__.__name__,
+            self.identifier.model,
+            self.identifier.id
+        )
     
     @staticmethod
-    def get( repo, org ):
-        id = Identity.make_object_id(Organization.model, repo, org)
-        document = docstore.get(HOSTS, index=INDEX, model=Organization.model, document_id=id)
-        if document and (document['found'] or document['exists']):
-            o = Organization()
-            for key,value in document['_source'].iteritems():
-                setattr(o, key, value)
-            return o
-        return None
+    def get(identifier):
+        return get_stub_object(identifier)
     
     def absolute_url( self ):
-        return reverse('ui-organization', args=(self.repo, self.org))
+        return absolute_url(self.identifier)
     
     def cite_url( self ):
-        return cite_url('org', self.id)
+        return cite_url(self.identifier)
     
     def logo_url( self ):
-        return org_logo_url( self.id )
+        return org_logo_url(self.identifier)
     
-    def collections( self, page=1, page_size=DEFAULT_SIZE ):
-        results = cached_query(host=HOSTS, index=INDEX, model='collection',
-                               query='id:"%s"' % self.id,
-                               fields=COLLECTION_LIST_FIELDS,
-                               sort=COLLECTION_LIST_SORT,)
-        objects = process_query_results( results, page, page_size )
+    def children( self, page=1, page_size=DEFAULT_SIZE ):
+        results = cached_query(
+            host=HOSTS, index=INDEX, model='collection',
+            query='id:"%s"' % self.identifier.id,
+            fields=COLLECTION_LIST_FIELDS,
+            sort=COLLECTION_LIST_SORT,
+        )
+        massaged = massage_query_results(results, page, page_size)
+        objects = instantiate_query_objects(massaged)
         return objects
     
     def repository( self ):
@@ -483,62 +486,64 @@ class Organization( object ):
 
 class Collection( object ):
     index = INDEX
-    model = 'collection'
-    id = None
-    repo = None
-    org = None
-    cid = None
+    identifier = None
     fieldnames = []
     signature_file = None
     
     def __repr__( self ):
-        return '<ui.models.Collection %s>' % self.id
+        return "<%s.%s %s:%s>" % (
+            self.__module__, self.__class__.__name__,
+            self.identifier.model,
+            self.identifier.id
+        )
     
     @staticmethod
-    def get( repo, org, cid ):
-        id = Identity.make_object_id(Collection.model, repo, org, cid)
-        document = docstore.get(HOSTS, index=INDEX, model=Collection.model, document_id=id)
-        if document and (document['found'] or document['exists']):
-            return build_object(Collection(), id, document['_source'])
-        return None
+    def get(identifier):
+        return get_object(identifier)
     
     def absolute_url( self ):
-        return reverse('ui-collection', args=(self.repo, self.org, self.cid))
+        return absolute_url(self.identifier)
     
     def backend_url( self ):
-        return backend_url('collection', self.id)
+        return backend_url(self.identifier)
     
     def cite_url( self ):
-        return cite_url('collection', self.id)
+        return cite_url(self.identifier)
     
-    def entities( self, page=1, page_size=DEFAULT_SIZE ):
-        results = cached_query(host=HOSTS, index=INDEX, model='entity',
-                               query='id:"%s"' % self.id,
-                               fields=ENTITY_LIST_FIELDS,
-                               sort=ENTITY_LIST_SORT,)
-        objects = process_query_results( results, page, page_size )
+    def children( self, page=1, page_size=DEFAULT_SIZE ):
+        results = cached_query(
+            host=HOSTS, index=INDEX, model='entity',
+            query='id:"%s"' % self.identifier.id,
+            fields=ENTITY_LIST_FIELDS,
+            sort=ENTITY_LIST_SORT,
+        )
+        massaged = massage_query_results(results, page, page_size)
+        objects = instantiate_query_objects(massaged)
         return objects
     
     def files( self, page=1, page_size=DEFAULT_SIZE ):
         """Gets all the files in a collection; paging optional.
         """
         files = []
-        results = cached_query(host=HOSTS, index=INDEX, model='file',
-                               query='id:"%s"' % self.id,
-                               fields=FILE_LIST_FIELDS,
-                               sort=FILE_LIST_SORT)
-        objects = process_query_results( results, page, page_size )
+        results = cached_query(
+            host=HOSTS, index=INDEX, model='file',
+            query='id:"%s"' % self.identifier.id,
+            fields=FILE_LIST_FIELDS,
+            sort=FILE_LIST_SORT
+        )
+        massaged = massage_query_results(results, page, page_size)
+        objects = instantiate_query_objects(massaged)
         return objects
     
-    def organization( self ):
-        return Organization.get(self.repo, self.org)
+    def parent( self ):
+        return Organization.get(self.identifier.parent(stubs=1))
 
     def org_logo_url( self ):
-        return org_logo_url( '-'.join([self.repo, self.org]) )
+        return org_logo_url(self.identifier)
     
     def signature_url( self ):
         if self.signature_file:
-            return signature_url(self.signature_file)
+            return signature_url(self.identifier, self.signature_file)
         return None
     
     def signature_url_local( self ):
@@ -552,12 +557,7 @@ ENTITY_OVERRIDDEN_FIELDS = {
 
 class Entity( object ):
     index = INDEX
-    model = 'entity'
-    id = None
-    repo = None
-    org = None
-    cid = None
-    eid = None
+    identifier = None
     fieldnames = []
     signature_file = None
     _signature = None
@@ -565,26 +565,30 @@ class Entity( object ):
     _encyc_articles = []
     
     def __repr__( self ):
-        return '<ui.models.Entity %s>' % self.id
+        return "<%s.%s %s:%s>" % (
+            self.__module__, self.__class__.__name__,
+            self.identifier.model,
+            self.identifier.id
+        )
     
     @staticmethod
-    def get( repo, org, cid, eid ):
-        id = Identity.make_object_id(Entity.model, repo, org, cid, eid)
-        document = docstore.get(HOSTS, index=INDEX, model=Entity.model, document_id=id)
-        if document and (document['found'] or document['exists']):
-            return build_object(Entity(), id, document['_source'], ENTITY_OVERRIDDEN_FIELDS)
-        return None
+    def get(identifier):
+        return get_object(identifier)
     
     def absolute_url( self ):
-        return reverse('ui-entity', args=(self.repo, self.org, self.cid, self.eid))
+        return absolute_url(self.identifier)
     
     def backend_url( self ):
-        return backend_url('entity', self.id)
+        return backend_url(self.identifier)
     
     def cite_url( self ):
-        return cite_url('entity', self.id)
+        return cite_url(self.identifier)
     
-    def files( self, page=1, page_size=DEFAULT_SIZE, role=None ):
+    def collection( self ):
+        # TODO should be .parent()
+        return Collection.get(self.identifier.parent())
+    
+    def children( self, page=1, page_size=DEFAULT_SIZE, role=None ):
         """Gets all the files in an entity; paging optional.
         
         @param index: start on this index in result set
@@ -592,21 +596,21 @@ class Entity( object ):
         @param role: String 'mezzanine' or 'master'
         """
         files = []
-        query = 'id:"%s"' % self.id
+        query = 'id:"%s"' % self.identifier.id
         if role:
-            query = 'id:"%s-%s"' % (self.id, role)
-        results = cached_query(host=HOSTS, index=INDEX, model='file',
-                               query=query,
-                               fields=FILE_LIST_FIELDS,
-                               sort=FILE_LIST_SORT)
-        objects = process_query_results( results, page, page_size )
+            query = 'id:"%s-%s"' % (self.identifier.id, role)
+        results = cached_query(
+            host=HOSTS, index=INDEX, model='file',
+            query=query,
+            fields=FILE_LIST_FIELDS,
+            sort=FILE_LIST_SORT
+        )
+        massaged = massage_query_results(results, page, page_size)
+        objects = instantiate_query_objects(massaged)
         return objects
 
     def org_logo_url( self ):
-        return org_logo_url( '-'.join([self.repo, self.org]) )
-    
-    def collection( self ):
-        return Collection.get(self.repo, self.org, self.cid)
+        return org_logo_url(self.identifier)
     
     def signature(self):
         if self.signature_file and not self._signature:
@@ -618,19 +622,25 @@ class Entity( object ):
     
     def signature_url( self ):
         if self.signature_file:
-            return signature_url(self.signature_file)
+            return signature_url(self.identifier, self.signature_file)
         return None
     
     def signature_url_local( self ):
         return media_url_local(self.signature_url())
     
-    def topics( self ):
-        return [faceting.Term('topics', int(tid)) for tid in self._topics]
+    def topic_terms( self ):
+        if hasattr(self, '_topics') and self._topics:
+            topics = self._topics
+        elif hasattr(self, 'topics') and self.topics:
+            topics = self.topics
+        else:
+            topics = []
+        return [faceting.Term('topics', int(tid)) for tid in topics]
 
     def encyc_articles( self ):
         if not self._encyc_articles:
             self._encyc_articles = []
-            for term in self.topics():
+            for term in self.topic_terms():
                 for article in term.encyc_articles():
                     self._encyc_articles.append(article)
         return self._encyc_articles
@@ -638,37 +648,30 @@ class Entity( object ):
 
 class File( object ):
     index = INDEX
-    model = 'file'
-    id = None
-    repo = None
-    org = None
-    cid = None
-    eid = None
-    role = None
-    sha1 = None
+    identifier = None
     fieldnames = []
     _file_path = None
     _access_path = None
     
     def __repr__( self ):
-        return '<ui.models.File %s>' % self.id
+        return "<%s.%s %s:%s>" % (
+            self.__module__, self.__class__.__name__,
+            self.identifier.model,
+            self.identifier.id
+        )
     
     @staticmethod
-    def get( repo, org, cid, eid, role, sha1 ):
-        id = Identity.make_object_id(File.model, repo, org, cid, eid, role, sha1)
-        document = docstore.get(HOSTS, index=INDEX, model=File.model, document_id=id)
-        if document and (document['found'] or document['exists']):
-            return build_object(File(), id, document['_source'])
-        return None
+    def get(identifier):
+        return get_object(identifier)
     
     def absolute_url( self ):
-        return reverse('ui-file', args=(self.repo, self.org, self.cid, self.eid, self.role, self.sha1))
+        return absolute_url(self.identifier)
     
     def access_path( self ):
-        """S3 bucket-style path to access file, suitable for appending to MEDIA_URL
+        """S3 bucket-style path to access file, suitable for appending to MEDI_URL
         """
         if hasattr(self, 'access_rel') and self.access_rel and not self._access_path:
-            self._access_path = '%s/%s' % (self.collection_id, self.access_rel)
+            self._access_path = '%s/%s' % (self.identifier.collection_id(), self.access_rel)
         return self._access_path
     
     def access_url( self ):
@@ -680,25 +683,28 @@ class File( object ):
         return media_url_local(self.access_url())
     
     def backend_url( self ):
-        return backend_url('file', self.id)
+        return backend_url(identifier)
     
     def cite_url( self ):
-        return cite_url('file', self.id)
+        return cite_url(self.identifier)
     
-    def entity( self ):
-        return Entity.get(self.repo, self.org, self.cid, self.eid)
+    def parent( self ):
+        return Entity.get(self.identifier.parent())
+
+    def children( self ):
+        return []
     
     def download_url( self ):
         return settings.UI_DOWNLOAD_URL(self)
 
     def org_logo_url( self ):
-        return org_logo_url( '-'.join([self.repo, self.org]) )
+        return org_logo_url(self.identifier)
     
     def file_path(self):
         """S3 bucket-style path to original file, suitable for appending to MEDIA_URL
         """
         if hasattr(self, 'basename_orig') and self.basename_orig and not self._file_path:
             extension = os.path.splitext(self.basename_orig)[1]
-            filename = self.id + extension
-            self._file_path = os.path.join(self.collection_id, filename)
+            filename = self.identifier.id + extension
+            self._file_path = os.path.join(self.identifier.collection_id(), filename)
         return self._file_path

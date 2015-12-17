@@ -9,6 +9,7 @@ from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 
 from ui import domain_org
+from ui.identifier import Identifier
 from ui.models import Repository, Organization, Collection, Entity, File
 from ui.models import DEFAULT_SIZE
 from ui.views import filter_if_branded
@@ -21,15 +22,19 @@ def list( request ):
     repo,org = domain_org(request)
     if repo and org:
         # partner site
-        organization = Organization.get(repo, org)
-        collections = organization.collections(1, 1000000)
+        idparts = {'model':'organization', 'repo':repo, 'org':org}
+        identifier = Identifier(parts=idparts)
+        organization = Organization.get(identifier)
+        collections = organization.children(1, 1000000)
         organizations.append( (organization,collections) )
     else:
         # default site
-        repository = Repository.get('ddr')
+        idparts = {'model':'repository', 'repo':repo}
+        identifier = Identifier(parts=idparts)
+        repository = Repository.get(identifier)
         organizations = []
-        for org in repository.organizations():
-            collections = org.collections(1, 1000000)
+        for org in repository.children():
+            collections = org.children(1, 1000000)
             organizations.append( (org,collections) )
     return render_to_response(
         'ui/collections.html',
@@ -41,12 +46,13 @@ def list( request ):
 
 def detail( request, repo, org, cid ):
     filter_if_branded(request, repo, org)
-    collection = Collection.get(repo, org, cid)
+    identifier = Identifier(url=request.META['PATH_INFO'])
+    collection = Collection.get(identifier)
     if not collection:
         raise Http404
-    organization = Organization.get(collection.repo, collection.org)
+    organization = collection.parent()
     thispage = 1
-    objects = collection.entities(thispage, DEFAULT_SIZE)
+    objects = collection.children(thispage, DEFAULT_SIZE)
     paginator = Paginator(objects, DEFAULT_SIZE)
     page = paginator.page(thispage)
     return render_to_response(
@@ -65,11 +71,13 @@ def detail( request, repo, org, cid ):
 
 def entities( request, repo, org, cid ):
     filter_if_branded(request, repo, org)
-    collection = Collection.get(repo, org, cid)
+    idparts = {'model':'collection', 'repo':repo, 'org':org, 'cid':cid}
+    identifier = Identifier(parts=idparts)
+    collection = Collection.get(identifier)
     if not collection:
         raise Http404
     thispage = request.GET.get('page', 1)
-    objects = collection.entities(thispage, settings.RESULTS_PER_PAGE)
+    objects = collection.children(thispage, settings.RESULTS_PER_PAGE)
     paginator = Paginator(objects, settings.RESULTS_PER_PAGE)
     page = paginator.page(thispage)
     return render_to_response(
@@ -87,7 +95,9 @@ def entities( request, repo, org, cid ):
 
 def files( request, repo, org, cid ):
     filter_if_branded(request, repo, org)
-    collection = Collection.get(repo, org, cid)
+    idparts = {'model':'collection', 'repo':repo, 'org':org, 'cid':cid}
+    identifier = Identifier(parts=idparts)
+    collection = Collection.get(identifier)
     if not collection:
         raise Http404
     thispage = request.GET.get('page', 1)

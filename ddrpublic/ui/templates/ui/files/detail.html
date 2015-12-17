@@ -3,8 +3,8 @@
 
 {% block parent %}
 <div id="parent">
-<a href="{{ object.entity.absolute_url }}"><span class="label label-default">{{ object.entity.id }}</span></a>
-<a href="{{ object.entity.absolute_url }}">{{ object.entity.title|safe }}</a>
+<a href="{{ parent.absolute_url }}"><span class="label label-default">{{ parent.id }}</span></a>
+<a href="{{ parent.absolute_url }}">{{ parent.title|safe }}</a>
 </div>
 {% endblock %}
 
@@ -18,7 +18,7 @@
 {% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
-<li>{{ role }}-{{ sha1 }}</li>
+{% breadcrumbs object.identifier.breadcrumbs %}
 {% endblock breadcrumbs %}
 
 {% block content %}
@@ -28,7 +28,7 @@
 
 		<div class="col-sm-6 col-md-6">
 		<h2>{{ object.title }}</h2>
-                <h2>{{ object.entity.title|safe }} {% if object.label %}({{ object.label }}){% endif %}</h2>
+                <h2>{{ parent.title|safe }} {% if object.label %}({{ object.label }}){% endif %}</h2>
 {% thumbnail object.access_url_local "480x480" as img %}
           <a href="{{ object.access_url }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
             <img src="{{ img.url }}" class="img-responsive">
@@ -55,7 +55,7 @@
                  {% include "ui/partnerlogolink.html" %}
 
 	        <h3 class="page-header">PARENT OBJECT</h3>
-	        <p><a href="{{ object.entity.absolute_url }}">{{ object.entity.title|safe }} ({{ object.entity.id }})</a></p>
+	        <p><a href="{{ parent.absolute_url }}">{{ parent.title|safe }} ({{ parent.id }})</a></p>
             <h3 class="page-header">FILE ID</h3>
             <p>{{ object.id }}</p>
             <h3 class="page-header">SIZE</h3>

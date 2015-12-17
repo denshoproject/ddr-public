@@ -65,7 +65,8 @@ def term( request, facet_id, term_id ):
                                   terms=terms, filters=filters,
                                   fields=fields, sort=sort)
     thispage = request.GET.get('page', 1)
-    objects = models.process_query_results(results, thispage, settings.RESULTS_PER_PAGE)
+    massaged = models.massage_query_results(results, thispage, settings.RESULTS_PER_PAGE)
+    objects = models.instantiate_query_objects(massaged)
     paginator = Paginator(objects, settings.RESULTS_PER_PAGE)
     page = paginator.page(request.GET.get('page', 1))
     return render_to_response(
@@ -104,7 +105,8 @@ def term( request, facet_id, term_id ):
                                   terms=terms, filters=filters,
                                   fields=fields, sort=sort)
     thispage = request.GET.get('page', 1)
-    objects = models.process_query_results(results, thispage, settings.RESULTS_PER_PAGE)
+    massaged = models.massage_query_results(results, thispage, settings.RESULTS_PER_PAGE)
+    objects = models.instantiate_query_objects(massaged)
     paginator = Paginator(objects, settings.RESULTS_PER_PAGE)
     page = paginator.page(request.GET.get('page', 1))
     return render_to_response(

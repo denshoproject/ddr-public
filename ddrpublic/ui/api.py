@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from DDR import docstore
-from DDR.models import Identity
+from ui.identifier import Identifier, CHILDREN, CHILDREN_ALL
 from ui.models import Repository, Organization, Collection, Entity, File
 from ui.views import filter_if_branded
 from ui import faceting
@@ -146,26 +146,27 @@ class ApiRepository(Repository):
     
     @staticmethod
     def api_get(repo, request):
-        id = Identity.make_object_id(Repository.model, repo)
+        i = Identifier(parts={'model':'repository', 'repo':repo})
+        idparts = [x for x in i.parts.itervalues()]
         document = docstore.get(
             settings.DOCSTORE_HOSTS, index=settings.DOCSTORE_INDEX,
-            model=Repository.model, document_id=id)
+            model=i.model, document_id=i.id)
         if document and (document['found'] or document['exists']):
             d = document['_source']
             d['repository_url'] = d['url']
-            d['url'] = reverse('ui-api-repository', args=(repo,), request=request)
-            d['absolute_url'] = reverse('ui-repo', args=(repo,), request=request)
-            d['children'] = reverse('ui-api-organizations', args=(repo,), request=request)
+            d['url'] = reverse('ui-api-repository', args=idparts, request=request)
+            d['absolute_url'] = reverse('ui-repo', args=idparts, request=request)
+            d['children'] = reverse('ui-api-organizations', args=idparts, request=request)
             return d
         return None
 
     @staticmethod
     def api_children(repo, request, limit=DEFAULT_LIMIT, offset=0):
-        object_id = Identity.make_object_id(Repository.model, repo)
-        data = api_children(Organization.model, object_id, request, limit=limit, offset=offset)
+        i = Identifier(parts={'model':'repository', 'repo':repo})
+        data = api_children(CHILDREN_ALL[i.model], i.id, request, limit=limit, offset=offset)
         for d in data.get('results', []):
-            oidparts = Identity.split_object_id(d['id'])
-            oidparts.pop(0)
+            oi = Identifier(d['id'])
+            oidparts = [x for x in oi.parts.itervalues()]
             d['organization_url'] = d['url']
             d['url'] = reverse('ui-api-organization', args=oidparts, request=request)
             d['absolute_url'] = reverse('ui-organization', args=oidparts, request=request)
@@ -176,27 +177,27 @@ class ApiOrganization(Organization):
     
     @staticmethod
     def api_get(repo, org, request):
-        oidparts = [repo,org]
-        id = Identity.make_object_id(Organization.model, repo,org)
+        i = Identifier(parts={'model':'organization', 'repo':repo, 'org':org})
+        idparts = [x for x in i.parts.itervalues()]
         document = docstore.get(
             settings.DOCSTORE_HOSTS, index=settings.DOCSTORE_INDEX,
-            model=Organization.model, document_id=id)
+            model=i.model, document_id=i.id)
         if document and (document['found'] or document['exists']):
             data = document['_source']
-            data['url'] = reverse('ui-api-organization', args=oidparts, request=request)
-            data['absolute_url'] = reverse('ui-organization', args=oidparts, request=request)
-            data['children'] = reverse('ui-api-collections', args=oidparts, request=request)
-            data['logo_url'] = img_url(id, 'logo.png', request)
+            data['url'] = reverse('ui-api-organization', args=idparts, request=request)
+            data['absolute_url'] = reverse('ui-organization', args=idparts, request=request)
+            data['children'] = reverse('ui-api-collections', args=idparts, request=request)
+            data['logo_url'] = img_url(i.id, 'logo.png', request)
             return data
         return None
 
     @staticmethod
     def api_children(repo, org, request, limit=DEFAULT_LIMIT, offset=0):
-        object_id = Identity.make_object_id(Organization.model, repo,org)
-        data = api_children(Collection.model, object_id, request, limit=limit, offset=offset)
+        i = Identifier(parts={'model':'organization', 'repo':repo, 'org':org})
+        data = api_children(CHILDREN_ALL[i.model], i.id, request, limit=limit, offset=offset)
         for d in data.get('results', []):
-            cidparts = Identity.split_object_id (d['id'])
-            cidparts.pop(0)
+            ci = Identifier(d['id'])
+            cidparts = [x for x in ci.parts.itervalues()]
             d['url'] = reverse('ui-api-collection', args=cidparts, request=request)
             d['absolute_url'] = reverse('ui-collection', args=cidparts, request=request)
             d['img_url'] = img_url(d['id'], access_filename(d.get('signature_file')), request)
@@ -206,52 +207,49 @@ class ApiCollection(Collection):
     
     @staticmethod
     def api_get(repo, org, cid, request):
-        cidparts = [repo,org,cid]
-        id = Identity.make_object_id(Collection.model, repo, org, cid)
+        i = Identifier(parts={'model':'collection', 'repo':repo, 'org':org, 'cid':cid})
+        idparts = [x for x in i.parts.itervalues()]
         document = docstore.get(
             settings.DOCSTORE_HOSTS, index=settings.DOCSTORE_INDEX,
-            model=Collection.model, document_id=id)
+            model=i.model, document_id=i.id)
         if document and (document['found'] or document['exists']):
             data = document['_source']
-            data['url'] = reverse('ui-api-collection', args=cidparts, request=request)
-            data['absolute_url'] = reverse('ui-collection', args=cidparts, request=request)
-            data['children'] = reverse('ui-api-entities', args=cidparts, request=request)
-            data['img_path'] = os.path.join(id, access_filename(data.get('signature_file')))
-            data['img_url'] = img_url(id, access_filename(data.get('signature_file')), request)
+            data['url'] = reverse('ui-api-collection', args=idparts, request=request)
+            data['absolute_url'] = reverse('ui-collection', args=idparts, request=request)
+            data['children'] = reverse('ui-api-entities', args=idparts, request=request)
+            data['img_path'] = os.path.join(i.id, access_filename(data.get('signature_file')))
+            data['img_url'] = img_url(i.id, access_filename(data.get('signature_file')), request)
             pop_field(data, 'notes')
             return data
         return None
 
     @staticmethod
     def api_children(repo, org, cid, request, limit=DEFAULT_LIMIT, offset=0):
-        cidparts = [repo,org,cid]
-        object_id = Identity.make_object_id(Collection.model, repo,org,cid)
-        collection_id = object_id
-        data = api_children(Entity.model, object_id, request, limit=limit, offset=offset)
+        i = Identifier(parts={'model':'collection', 'repo':repo, 'org':org, 'cid':cid})
+        data = api_children(CHILDREN_ALL[i.model], i.id, request, limit=limit, offset=offset)
         for d in data.get('results', []):
-            eidparts = Identity.split_object_id(d['id'])
-            eidparts.pop(0)
+            ei = Identifier(d['id'])
+            eidparts = [x for x in ei.parts.itervalues()]
             d['url'] = reverse('ui-api-entity', args=eidparts, request=request)
             d['absolute_url'] = reverse('ui-entity', args=eidparts, request=request)
-            d['img_path'] = os.path.join(collection_id, access_filename(d.get('signature_file')))
-            d['img_url'] = img_url(collection_id, access_filename(d.get('signature_file')), request)
+            d['img_path'] = os.path.join(i.id, access_filename(d.get('signature_file')))
+            d['img_url'] = img_url(i.id, access_filename(d.get('signature_file')), request)
         return data
 
 class ApiEntity(Entity):
     
     @staticmethod
     def api_get(repo, org, cid, eid, request):
-        eidparts = [repo, org, cid, eid]
-        id = Identity.make_object_id(Entity.model, repo, org, cid, eid)
-        collection_id = Identity.make_object_id(Collection.model, repo,org,cid)
+        i = Identifier(parts={'model':'entity', 'repo':repo, 'org':org, 'cid':cid, 'eid':eid})
+        idparts = [x for x in i.parts.itervalues()]
         document = docstore.get(
             settings.DOCSTORE_HOSTS, index=settings.DOCSTORE_INDEX,
-            model=Entity.model, document_id=id)
+            model=i.model, document_id=i.id)
         if document and (document['found'] or document['exists']):
             data = document['_source']
-            data['url'] = reverse('ui-api-entity', args=eidparts, request=request)
-            data['absolute_url'] = reverse('ui-entity', args=eidparts, request=request)
-            data['children'] = reverse('ui-api-files', args=eidparts, request=request)
+            data['url'] = reverse('ui-api-entity', args=idparts, request=request)
+            data['absolute_url'] = reverse('ui-entity', args=idparts, request=request)
+            data['children'] = reverse('ui-api-files', args=idparts, request=request)
             data['facility'] = [
                 reverse('ui-api-term', args=('facility', oid), request=request)
                 for oid in document['_source'].get('facility', [])
@@ -279,13 +277,12 @@ class ApiEntity(Entity):
 
     @staticmethod
     def api_children(repo, org, cid, eid, request, limit=DEFAULT_LIMIT, offset=0):
-        eidparts = [repo,org,cid,eid]
-        object_id = Identity.make_object_id(Entity.model, repo,org,cid,eid)
-        collection_id = Identity.make_object_id(Collection.model, repo,org,cid)
-        data = api_children(File.model, object_id, request, limit=limit, offset=offset)
+        i = Identifier(parts={'model':'entity', 'repo':repo, 'org':org, 'cid':cid, 'eid':eid})
+        data = api_children(CHILDREN[i.model], i.id, request, limit=limit, offset=offset)
         for d in data['results']:
-            model,repo,org,cid,eid,role,sha1 = Identity.split_object_id(d['id'])
-            fidparts = [repo,org,cid,eid,role,sha1]
+            fi = Identifier(d['id'])
+            collection_id = fi.collection_id()
+            fidparts = [x for x in fi.parts.itervalues()]
             d['url'] = reverse('ui-api-file', args=fidparts, request=request)
             d['absolute_url'] = reverse('ui-file', args=fidparts, request=request)
             if d.get('access_rel'):
@@ -294,7 +291,7 @@ class ApiEntity(Entity):
             else:
                 d['img_path'] = None
                 d['img_url'] = None
-            if role == 'mezzanine':
+            if fi.parts['role'] == 'mezzanine':
                 extension = os.path.splitext(d['basename_orig'])[1]
                 filename = d['id'] + extension
                 path_rel = os.path.join(collection_id, filename)
@@ -306,23 +303,24 @@ class ApiFile(File):
     
     @staticmethod
     def api_get(repo, org, cid, eid, role, sha1, request):
-        fidparts = [repo,org,cid,eid,role,sha1]
-        id = Identity.make_object_id(File.model, repo,org,cid,eid,role,sha1)
-        collection_id = Identity.make_object_id(Collection.model, repo,org,cid)
+        i = Identifier(parts={'model':'file', 'repo':repo, 'org':org, 'cid':cid, 'eid':eid, 'role':role, 'sha1':sha1})
+        idparts = [x for x in i.parts.itervalues()]
+        collection_id = i.collection_id()
         document = docstore.get(
             settings.DOCSTORE_HOSTS, index=settings.DOCSTORE_INDEX,
-            model=File.model, document_id=id)
+            model=i.model, document_id=i.id)
         if document and (document['found'] or document['exists']):
             data = document['_source']
-            data['url'] = reverse('ui-api-file', args=fidparts, request=request)
-            data['absolute_url'] = reverse('ui-file', args=fidparts, request=request)
+            data['url'] = reverse('ui-api-file', args=idparts, request=request)
+            data['absolute_url'] = reverse('ui-file', args=idparts, request=request)
             if data.get('access_rel'):
                 data['img_path'] = os.path.join(collection_id, data.get('access_rel'))
                 data['img_url'] = img_url(collection_id, data.get('access_rel'), request)
             else:
                 data['img_path'] = None
                 data['img_url'] = None
-            o = models.build_object(ApiFile(), id, data)
+            #def build_object(identifier, source, rename={} ):
+            o = models.build_object(i, data)
             data['download_url'] = o.download_url()
             pop_field(data, 'public')
             return data
@@ -528,11 +526,11 @@ def term_objects(request, facet_id, term_id, format=None):
     # post-processing. See *.api_children methods in .models.py
     documents = [hit['_source'] for hit in results['hits']['hits']]
     for d in documents:
-        idparts = Identity.split_object_id(d['id'])
-        model = idparts.pop(0)
-        collection_id = Identity.make_object_id(Collection.model, idparts[0], idparts[1], idparts[2])
-        d['url'] = reverse('ui-api-%s' % model, args=idparts, request=request)
-        d['absolute_url'] = reverse('ui-%s' % model, args=idparts, request=request)
+        i = Identifier(d['id'])
+        idparts = [x for x in i.parts.itervalues()]
+        collection_id = i.collection_id()
+        d['url'] = reverse('ui-api-%s' % i.model, args=idparts, request=request)
+        d['absolute_url'] = reverse('ui-%s' % i.model, args=idparts, request=request)
         d['img_url'] = img_url(collection_id, access_filename(d['signature_file']), request)
         d['img_path'] = os.path.join(collection_id, access_filename(d['signature_file']))
     return Response(documents)

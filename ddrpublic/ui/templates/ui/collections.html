@@ -18,7 +18,7 @@
 <h2>Collections</h2>
 {% for organization,collections in organizations %}
 {% for collection in collections %}
-{% collection collection %}
+{% document collection %}
 {% endfor %}
 {% endfor %}{# organizations #}
 
@@ -47,7 +47,7 @@
 {{ organization.title }}
 </h3>
 {% for collection in collections %}
-{% collection collection %}
+{% document collection %}
 {% endfor %}
 
       </div><!-- .{{ organization.id }} -->
