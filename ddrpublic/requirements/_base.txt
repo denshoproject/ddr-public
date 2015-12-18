@@ -20,3 +20,4 @@ redis==2.10.3                      # MIT      y
 requests==2.6.0                    # Apache2  y
 djangorestframework==3.1.1         # BSD      y
 sorl-thumbnail==12.2               # BSD      y
+unicodecsv

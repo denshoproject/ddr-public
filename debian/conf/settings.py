@@ -38,7 +38,10 @@ class NoConfigError(Exception):
     def __str__(self):
         return repr(self.value)
 
-CONFIG_FILES = ['/etc/ddr/ddr.cfg', '/etc/ddr/local.cfg']
+CONFIG_FILES = [
+    '/etc/ddr/ddrpublic.cfg',
+    '/etc/ddr/ddrpublic-local.cfg'
+]
 config = ConfigParser.ConfigParser()
 configs_read = config.read(CONFIG_FILES)
 if not configs_read:
@@ -51,18 +54,18 @@ LANGUAGE_CODE='en-us'
 TIME_ZONE='America/Los_Angeles'
 
 # Filesystem path and URL for static media (mostly used for interfaces).
-STATIC_ROOT = config.get('public', 'static_root')
+STATIC_ROOT = config.get('media', 'static_root')
 STATIC_URL='/static/'
 
 # Filesystem path and URL for media to be manipulated by ddrlocal
 # (collection repositories, thumbnail cache, etc).
-MEDIA_ROOT = config.get('public', 'media_root')
-MEDIA_URL = config.get('public', 'media_url')
+MEDIA_ROOT = config.get('media', 'media_root')
+MEDIA_URL = config.get('media', 'media_url')
 # URL of local media server ("local" = in the same cluster).
 # Use this for sorl.thumbnail so it doesn't have to go through
 # a CDN and get blocked for not including a User-Agent header.
 # TODO Hard-coded! Replace with value from ddr.cfg.
-MEDIA_URL_LOCAL = config.get('public', 'media_url_local')
+MEDIA_URL_LOCAL = config.get('media', 'media_url_local')
 # The REST API will use MEDIA_URL_LOCAL for image URLs
 # if this query argument is present with a truthy value.
 MEDIA_URL_LOCAL_MARKER = 'internal'
@@ -75,7 +78,7 @@ MEDIA_URL_LOCAL_MARKER = 'internal'
 #       set $fname $1;
 #       add_header Content-Disposition 'attachment; filename="$fname"';
 #     }
-DOWNLOAD_URL = config.get('public', 'download_url')
+DOWNLOAD_URL = config.get('media', 'download_url')
 
 ACCESS_FILE_APPEND='-a'
 ACCESS_FILE_EXTENSION='.jpg'
@@ -159,17 +162,17 @@ CACHES = {
 }
 
 # ElasticSearch
-docstore_host,docstore_port = config.get('public', 'docstore_host').split(':')
+docstore_host,docstore_port = config.get('elasticsearch', 'hosts').split(':')
 DOCSTORE_HOSTS = [
     {'host':docstore_host, 'port':docstore_port}
 ]
-DOCSTORE_INDEX = config.get('public', 'docstore_index')
+DOCSTORE_INDEX = config.get('elasticsearch', 'index')
 
-namesdb_docstore_host,namesdb_docstore_port = config.get('public', 'namesdb_docstore_host').split(':')
+namesdb_docstore_host,namesdb_docstore_port = config.get('namesdb', 'hosts').split(':')
 NAMESDB_DOCSTORE_HOSTS = [
     {'host':namesdb_docstore_host, 'port':namesdb_docstore_port}
 ]
-NAMESDB_DOCSTORE_INDEX = config.get('public', 'namesdb_docstore_index')
+NAMESDB_DOCSTORE_INDEX = config.get('namesdb', 'index')
 
 ELASTICSEARCH_MAX_SIZE = 1000000
 ELASTICSEARCH_QUERY_TIMEOUT = 60 * 10  # 10 min
