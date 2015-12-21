@@ -1,0 +1,13 @@
+ddrpublic/names
+
+This app is part of ddrpublic but it uses data from CSV files that is added to Elasticsearch by the NamesDB app:
+
+    https://github.com/densho/namesdb
+
+See this page for installation help::
+
+    https://github.com/densho/namesdb/blob/master/INSTALL.rst
+
+Once everything is installed, run this command to get started::
+
+    $ namesdb --help
