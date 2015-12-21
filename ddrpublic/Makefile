@@ -82,7 +82,7 @@ howto-install:
 	@echo "- # cd $(INSTALLDIR)/ddrpublic"
 	@echo "- # make install"
 	@echo "- [Install ddr repo (must be done manually)]"
-	@echo "- [Confirm that ddr-cmdln,ddr-local, and ddr repo are on correct branches]"
+	@echo "- [Confirm that ddr-cmdln and ddr repo are on correct branches]"
 	@echo "- # make syncdb"
 	@echo "- # make restart"
 
@@ -164,13 +164,13 @@ install-setuptools: install-virtualenv
 	pip install -U --download-cache=$(PIP_CACHE_DIR) bpython setuptools
 
 
-install-ddr: install-ddr-cmdln install-ddr-local install-ddr-public
+install-ddr: install-ddr-cmdln install-ddr-public
 
-update-ddr: update-ddr-cmdln update-ddr-local update-ddr-public install-configs
+update-ddr: update-ddr-cmdln update-ddr-public install-configs
 
-uninstall-ddr: uninstall-ddr-cmdln uninstall-ddr-local uninstall-ddr-manual
+uninstall-ddr: uninstall-ddr-cmdln uninstall-ddr-manual
 
-clean-ddr: clean-ddr-cmdln clean-ddr-local clean-ddr-manual
+clean-ddr: clean-ddr-cmdln clean-ddr-manual
 
 
 install-ddr-cmdln: install-virtualenv install-setuptools
@@ -215,46 +215,6 @@ uninstall-ddr-cmdln: install-virtualenv
 clean-ddr-cmdln:
 	-rm -Rf $(INSTALL_BASE)/ddr-cmdln/ddr/build
 
-# ddr-local is only used because it contains ddr.cfg
-install-ddr-local: install-virtualenv
-	@echo ""
-	@echo "ddr-local --------------------------------------------------------------"
-#	apt-get --assume-yes install imagemagick libexempi3 libssl-dev python-dev libxml2 libxml2-dev libxslt1-dev supervisor
-	if test -d $(INSTALL_BASE)/ddr-local; \
-	then cd $(INSTALL_BASE)/ddr-local && git pull; \
-	else cd $(INSTALL_BASE) && git clone https://github.com/densho/ddr-local.git; \
-	fi
-#	source $(VIRTUALENV)/bin/activate; \
-#	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALL_BASE)/ddr-local/ddrlocal/requirements/production.txt
-# logs dir
-	-mkdir /var/log/ddr
-	chown -R ddr.root /var/log/ddr
-	chmod -R 755 /var/log/ddr
-## sqlite db dir
-#	-mkdir /var/lib/ddr
-#	chown -R ddr.root /var/lib/ddr
-#	chmod -R 755 /var/lib/ddr
-# media dir
-	-mkdir -p $(MEDIA_ROOT)
-	chown -R ddr.root $(MEDIA_ROOT)
-	chmod -R 755 $(MEDIA_ROOT)
-
-update-ddr-local:
-	@echo ""
-	@echo "ddr-local --------------------------------------------------------------"
-	git fetch && git pull
-#	source $(VIRTUALENV)/bin/activate; \
-#	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALL_BASE)/ddr-local/ddrlocal/requirements/production.txt
-
-uninstall-ddr-local:
-	cd $(INSTALL_BASE)/ddr-local/ddrlocal
-#	source $(VIRTUALENV)/bin/activate; \
-#	-pip uninstall -r $(INSTALL_BASE)/ddr-local/ddrlocal/requirements/production.txt
-	-rm /usr/local/lib/python2.7/dist-packages/ddrlocal-*
-	-rm -Rf /usr/local/lib/python2.7/dist-packages/ddrlocal
-
-clean-ddr-local:
-	-rm -Rf $(INSTALL_BASE)/ddr-local/ddrlocal/src
 
 install-ddr-public: install-virtualenv
 	@echo ""
@@ -355,18 +315,18 @@ clean-jquery:
 install-configs:
 	@echo ""
 	@echo "configuring ddr-public -------------------------------------------------"
-# base settings file (from ddr-local)
-# /etc/ddr/ddr.cfg must be readable by all
-# /etc/ddr/local.cfg must be readable by ddr but contains sensitive info
+# base settings file
+# /etc/ddr/ddrpublic.cfg must be readable by all
+# /etc/ddr/ddrpublic-local.cfg must be readable by ddr but contains sensitive info
 	-mkdir /etc/ddr
-	cp $(INSTALL_BASE)/ddr-local/debian/conf/ddr.cfg /etc/ddr/
-	touch /etc/ddr/local.cfg
+	cp $(INSTALL_BASE)/ddr-public/debian/conf/ddrpublic.cfg /etc/ddr/
+	touch /etc/ddr/ddrpublic-local.cfg
 	python -c 'import random; print "".join([random.choice("abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)") for i in range(50)])' > /etc/ddr/ddrpublic-secret-key.txt
-	chown root.root /etc/ddr/ddr.cfg
-	chown root.ddr /etc/ddr/local.cfg
+	chown root.root /etc/ddr/ddrpublic.cfg
+	chown root.ddr /etc/ddr/ddrpublic-local.cfg
 	chown ddr.ddr /etc/ddr/ddrpublic-secret-key.txt
-	chmod 644 /etc/ddr/ddr.cfg
-	chmod 640 /etc/ddr/local.cfg
+	chmod 644 /etc/ddr/ddrpublic.cfg
+	chmod 640 /etc/ddr/ddrpublic-local.cfg
 	chmod 640 /etc/ddr/ddrpublic-secret-key.txt
 # web app settings
 	cp $(INSTALLDIR)/debian/conf/settings.py $(INSTALLDIR)/ddrpublic/ddrpublic/
@@ -374,9 +334,9 @@ install-configs:
 	chmod 644 $(INSTALLDIR)/ddrpublic/ddrpublic/settings.py
 
 uninstall-configs:
-	-rm $(INSTALL_BASE)/ddr-local/ddrpublic/ddrpublic/settings.py
+	-rm $(INSTALL_BASE)/ddr-public/ddrpublic/ddrpublic/settings.py
 	-rm /etc/ddr/ddrpublic-secret-key.txt
-	-rm /etc/ddr/ddr.cfg
+	-rm /etc/ddr/ddrpublic.cfg
 
 install-daemons-configs:
 	@echo ""
@@ -432,8 +392,6 @@ status:
 git-status:
 	@echo "------------------------------------------------------------------------"
 	cd $(INSTALL_BASE)/ddr-cmdln && git status
-	@echo "------------------------------------------------------------------------"
-	cd $(INSTALL_BASE)/ddr-local && git status
 	@echo "------------------------------------------------------------------------"
 	cd $(INSTALLDIR) && git status
 
