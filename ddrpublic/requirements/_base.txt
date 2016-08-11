@@ -12,7 +12,7 @@ Django==1.8                        # MIT      y
 django-bootstrap-pagination==1.5.1 # MIT      ???
 django-redis==3.8.3                # BSD      y
 elasticsearch==1.4.0               # Apache   y
-elasticsearch-dsl
+elasticsearch-dsl==0.0.9
 envoy==0.0.3                       # MIT      ???
 gunicorn==19.3.0                   # MIT      y
 python-dateutil==2.2               # BSD      y
@@ -20,4 +20,4 @@ redis==2.10.3                      # MIT      y
 requests==2.6.0                    # Apache2  y
 djangorestframework==3.1.1         # BSD      y
 sorl-thumbnail==12.2               # BSD      y
-unicodecsv
+unicodecsv==0.9.4
