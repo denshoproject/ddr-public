@@ -200,7 +200,7 @@ class ApiOrganization(Organization):
             cidparts = [x for x in ci.parts.itervalues()]
             d['url'] = reverse('ui-api-collection', args=cidparts, request=request)
             d['absolute_url'] = reverse('ui-collection', args=cidparts, request=request)
-            d['img_url'] = img_url(d['id'], access_filename(d.get('signature_file')), request)
+            d['img_url'] = img_url(d['id'], access_filename(d.get('signature_id')), request)
         return data
 
 class ApiCollection(Collection):
@@ -217,8 +217,8 @@ class ApiCollection(Collection):
             data['url'] = reverse('ui-api-collection', args=idparts, request=request)
             data['absolute_url'] = reverse('ui-collection', args=idparts, request=request)
             data['children'] = reverse('ui-api-entities', args=idparts, request=request)
-            data['img_path'] = os.path.join(i.id, access_filename(data.get('signature_file')))
-            data['img_url'] = img_url(i.id, access_filename(data.get('signature_file')), request)
+            data['img_path'] = os.path.join(i.id, access_filename(data.get('signature_id')))
+            data['img_url'] = img_url(i.id, access_filename(data.get('signature_id')), request)
             pop_field(data, 'notes')
             return data
         return None
@@ -232,8 +232,8 @@ class ApiCollection(Collection):
             eidparts = [x for x in ei.parts.itervalues()]
             d['url'] = reverse('ui-api-entity', args=eidparts, request=request)
             d['absolute_url'] = reverse('ui-entity', args=eidparts, request=request)
-            d['img_path'] = os.path.join(i.id, access_filename(d.get('signature_file')))
-            d['img_url'] = img_url(i.id, access_filename(d.get('signature_file')), request)
+            d['img_path'] = os.path.join(i.id, access_filename(d.get('signature_id')))
+            d['img_url'] = img_url(i.id, access_filename(d.get('signature_id')), request)
         return data
 
 class ApiEntity(Entity):
@@ -531,6 +531,6 @@ def term_objects(request, facet_id, term_id, format=None):
         collection_id = i.collection_id()
         d['url'] = reverse('ui-api-%s' % i.model, args=idparts, request=request)
         d['absolute_url'] = reverse('ui-%s' % i.model, args=idparts, request=request)
-        d['img_url'] = img_url(collection_id, access_filename(d['signature_file']), request)
-        d['img_path'] = os.path.join(collection_id, access_filename(d['signature_file']))
+        d['img_url'] = img_url(collection_id, access_filename(d['signature_id']), request)
+        d['img_path'] = os.path.join(collection_id, access_filename(d['signature_id']))
     return Response(documents)
