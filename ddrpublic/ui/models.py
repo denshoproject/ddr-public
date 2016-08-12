@@ -647,7 +647,7 @@ class Entity( object ):
             topics = self.topics
         else:
             topics = []
-        return [faceting.Term('topics', int(tid)) for tid in topics]
+        return [faceting.Term('topics', int(tid)) for tid in topics if tid]
 
     def encyc_articles( self ):
         if not self._encyc_articles:
