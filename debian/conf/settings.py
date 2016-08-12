@@ -205,14 +205,21 @@ def UI_THUMB_URL(ddrfile):
     http://192.168.56.101/media/base/ddr-testing-123/files/ddr-testing-123-1/files/ddr-testing-123-1-master-a1b2c3d4e5-a.jpg
     """
     return 'http://192.168.56.101/media/base/%s/files/%s/files/%s' % (
-        ddrfile.identifier.collection_id(), ddrfile.parent_id(), ddrfile.access_rel)
+        ddrfile.identifier.collection_id(),
+        ddrfile.parent_id(),
+        os.path.basename(ddrfile.access_rel)
+    )
 
 # colo
 def UI_THUMB_URL(ddrfile):
     """Example:
     /media/ddr-testing-123/ddr-testing-123-1-master-a1b2c3d4e5-a.jpg
     """
-    return '%s%s/%s' % (MEDIA_URL, ddrfile.identifier.collection_id(), ddrfile.access_rel)
+    return '%s%s/%s' % (
+        MEDIA_URL,
+        ddrfile.identifier.collection_id(),
+        os.path.basename(ddrfile.access_rel)
+    )
 
 # # Amazon S3
 # def UI_THUMB_URL(ddrfile):

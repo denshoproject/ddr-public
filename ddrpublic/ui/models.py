@@ -671,7 +671,10 @@ class File( object ):
         """S3 bucket-style path to access file, suitable for appending to MEDI_URL
         """
         if hasattr(self, 'access_rel') and self.access_rel and not self._access_path:
-            self._access_path = '%s/%s' % (self.identifier.collection_id(), self.access_rel)
+            self._access_path = '%s/%s' % (
+                self.identifier.collection_id(),
+                os.path.basename(self.access_rel)
+            )
         return self._access_path
     
     def access_url( self ):
