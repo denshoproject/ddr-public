@@ -101,6 +101,12 @@ def backend_url(identifier):
         return 'http://%s/%s/%s/%s' % (HOSTS, INDEX, identifier.model, identifier.id)
     return ''
 
+def api_url(identifier):
+    return reverse(
+        'ui-api-%s' % identifier.model,
+        kwargs=identifier.parts
+    )
+
 def cite_url(identifier):
     """Link to object's citation page
     """
@@ -507,6 +513,9 @@ class Collection( object ):
     def backend_url( self ):
         return backend_url(self.identifier)
     
+    def api_url(self):
+        return api_url(self.identifier)
+    
     def cite_url( self ):
         return cite_url(self.identifier)
     
@@ -580,6 +589,9 @@ class Entity( object ):
     
     def backend_url( self ):
         return backend_url(self.identifier)
+    
+    def api_url(self):
+        return api_url(self.identifier)
     
     def cite_url( self ):
         return cite_url(self.identifier)
@@ -687,6 +699,9 @@ class File( object ):
     
     def backend_url( self ):
         return backend_url(identifier)
+    
+    def api_url(self):
+        return api_url(self.identifier)
     
     def cite_url( self ):
         return cite_url(self.identifier)
