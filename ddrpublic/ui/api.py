@@ -289,6 +289,13 @@ class ApiEntity(Entity):
             else:
                 data['img_path'] = ''
                 data['img_url'] = ''
+            # add links to child_objects, file_groups files
+            for o in data.get('child_objects', []):
+                o['url'] = reverse('ui-api-entity', args=Identifier(o['id']).parts.values(), request=request)
+            for group in data.get('file_groups', []):
+                for o in group['files']:
+                    o['url'] = reverse('ui-api-file', args=Identifier(o['id']).parts.values(), request=request)
+            # remove extraneous or private fields
             pop_field(data, 'files')
             pop_field(data, 'notes')
             pop_field(data, 'parent')
