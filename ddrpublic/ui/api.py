@@ -106,6 +106,17 @@ def access_filename(file_id):
         return '%s-a.jpg' % file_id
     return file_id
 
+def img_path(bucket, filename):
+    """Constructs S3-style bucket-file URL
+    
+    file.path_rel now often contains a partial path not just filename.
+    This chops that off.
+    """
+    return os.path.join(
+        bucket,
+        os.path.basename(filename)
+    )
+
 def img_url(bucket, filename, request):
     """Constructs URL; sorl.thumbnail-friendly if request contains flag.
 
@@ -200,7 +211,10 @@ class ApiOrganization(Organization):
             cidparts = [x for x in ci.parts.itervalues()]
             d['url'] = reverse('ui-api-collection', args=cidparts, request=request)
             d['absolute_url'] = reverse('ui-collection', args=cidparts, request=request)
-            d['img_url'] = img_url(d['id'], access_filename(d.get('signature_file')), request)
+            if data.get('signature_id'):
+                d['img_url'] = img_url(d['id'], access_filename(d.get('signature_id')), request)
+            else:
+                d['img_url'] = ''
         return data
 
 class ApiCollection(Collection):
@@ -217,8 +231,12 @@ class ApiCollection(Collection):
             data['url'] = reverse('ui-api-collection', args=idparts, request=request)
             data['absolute_url'] = reverse('ui-collection', args=idparts, request=request)
             data['children'] = reverse('ui-api-entities', args=idparts, request=request)
-            data['img_path'] = os.path.join(i.id, access_filename(data.get('signature_file')))
-            data['img_url'] = img_url(i.id, access_filename(data.get('signature_file')), request)
+            if data.get('signature_id'):
+                data['img_path'] = os.path.join(i.id, access_filename(data.get('signature_id')))
+                data['img_url'] = img_url(i.id, access_filename(data.get('signature_id')), request)
+            else:
+                data['img_path'] = ''
+                data['img_url'] = ''
             pop_field(data, 'notes')
             return data
         return None
@@ -232,8 +250,10 @@ class ApiCollection(Collection):
             eidparts = [x for x in ei.parts.itervalues()]
             d['url'] = reverse('ui-api-entity', args=eidparts, request=request)
             d['absolute_url'] = reverse('ui-entity', args=eidparts, request=request)
-            d['img_path'] = os.path.join(i.id, access_filename(d.get('signature_file')))
-            d['img_url'] = img_url(i.id, access_filename(d.get('signature_file')), request)
+            if d.get('signature_id'):
+                d['img_url'] = img_url(i.id, access_filename(d.get('signature_id')), request)
+            else:
+                d['img_url'] = ''
         return data
 
 class ApiEntity(Entity):
@@ -249,6 +269,8 @@ class ApiEntity(Entity):
             data = document['_source']
             data['url'] = reverse('ui-api-entity', args=idparts, request=request)
             data['absolute_url'] = reverse('ui-entity', args=idparts, request=request)
+            # entity.json has a "children" field
+            data['child_objects'] = data.get('children', [])
             data['children'] = reverse('ui-api-files', args=idparts, request=request)
             data['facility'] = [
                 reverse('ui-api-term', args=('facility', oid), request=request)
@@ -261,12 +283,19 @@ class ApiEntity(Entity):
                 if oid
             ]
             #persons
-            if data.get('access_rel'):
-                data['img_path'] = os.path.join(collection_id, d['access_rel'])
-                data['img_url'] = img_url(collection_id, d['access_rel'], request)
+            if data.get('signature_id'):
+                data['img_path'] = os.path.join(i.id, access_filename(data.get('signature_id')))
+                data['img_url'] = img_url(i.id, access_filename(data.get('signature_id')), request)
             else:
-                data['img_path'] = None
-                data['img_url'] = None
+                data['img_path'] = ''
+                data['img_url'] = ''
+            # add links to child_objects, file_groups files
+            for o in data.get('child_objects', []):
+                o['url'] = reverse('ui-api-entity', args=Identifier(o['id']).parts.values(), request=request)
+            for group in data.get('file_groups', []):
+                for o in group['files']:
+                    o['url'] = reverse('ui-api-file', args=Identifier(o['id']).parts.values(), request=request)
+            # remove extraneous or private fields
             pop_field(data, 'files')
             pop_field(data, 'notes')
             pop_field(data, 'parent')
@@ -285,12 +314,10 @@ class ApiEntity(Entity):
             fidparts = [x for x in fi.parts.itervalues()]
             d['url'] = reverse('ui-api-file', args=fidparts, request=request)
             d['absolute_url'] = reverse('ui-file', args=fidparts, request=request)
-            if d.get('access_rel'):
-                d['img_path'] = os.path.join(collection_id, d['access_rel'])
-                d['img_url'] = img_url(collection_id, d['access_rel'], request)
+            if d.get('signature_id'):
+                d['img_url'] = img_url(i.id, access_filename(d.get('signature_id')), request)
             else:
-                d['img_path'] = None
-                d['img_url'] = None
+                d['img_url'] = ''
             if fi.parts['role'] == 'mezzanine':
                 extension = os.path.splitext(d['basename_orig'])[1]
                 filename = d['id'] + extension
@@ -314,11 +341,11 @@ class ApiFile(File):
             data['url'] = reverse('ui-api-file', args=idparts, request=request)
             data['absolute_url'] = reverse('ui-file', args=idparts, request=request)
             if data.get('access_rel'):
-                data['img_path'] = os.path.join(collection_id, data.get('access_rel'))
-                data['img_url'] = img_url(collection_id, data.get('access_rel'), request)
+                data['img_path'] = img_path(collection_id, os.path.basename(data['access_rel']))
+                data['img_url'] = img_url(collection_id, os.path.basename(data.get('access_rel')), request)
             else:
-                data['img_path'] = None
-                data['img_url'] = None
+                data['img_path'] = ''
+                data['img_url'] = ''
             #def build_object(identifier, source, rename={} ):
             o = models.build_object(i, data)
             data['download_url'] = o.download_url()
@@ -531,6 +558,8 @@ def term_objects(request, facet_id, term_id, format=None):
         collection_id = i.collection_id()
         d['url'] = reverse('ui-api-%s' % i.model, args=idparts, request=request)
         d['absolute_url'] = reverse('ui-%s' % i.model, args=idparts, request=request)
-        d['img_url'] = img_url(collection_id, access_filename(d['signature_file']), request)
-        d['img_path'] = os.path.join(collection_id, access_filename(d['signature_file']))
+        if d.get('signature_id'):
+            d['img_url'] = img_url(collection_id, access_filename(d['signature_id']), request)
+        else:
+            d['img_url'] = ''
     return Response(documents)

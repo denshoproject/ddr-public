@@ -24,8 +24,8 @@ DEFAULT_SIZE = 10
 # TODO move to DDR.identifier?
 REPOSITORY_LIST_FIELDS = ['id', 'title', 'description', 'url',]
 ORGANIZATION_LIST_FIELDS = ['id', 'title', 'description', 'url',]
-COLLECTION_LIST_FIELDS = ['id', 'title', 'description', 'signature_file',]
-ENTITY_LIST_FIELDS = ['id', 'title', 'description', 'signature_file',]
+COLLECTION_LIST_FIELDS = ['id', 'title', 'description', 'signature_id',]
+ENTITY_LIST_FIELDS = ['id', 'title', 'description', 'signature_id',]
 FILE_LIST_FIELDS = ['id', 'basename_orig', 'label', 'access_rel','sort',]
 
 # TODO refactor: knows too much about structure of ID
@@ -101,6 +101,12 @@ def backend_url(identifier):
         return 'http://%s/%s/%s/%s' % (HOSTS, INDEX, identifier.model, identifier.id)
     return ''
 
+def api_url(identifier):
+    return reverse(
+        'ui-api-%s' % identifier.model,
+        kwargs=identifier.parts
+    )
+
 def cite_url(identifier):
     """Link to object's citation page
     """
@@ -111,12 +117,12 @@ def org_logo_url(identifier):
     """
     return os.path.join(settings.MEDIA_URL, identifier.organization_id(), 'logo.png')
 
-def signature_url(identifier, signature_file):
+def signature_url(identifier, signature_id):
     """
     @param identifier: Identifier
-    @param signature_file: str File ID
+    @param signature_id: str File ID
     """
-    return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, identifier.collection_id(), signature_file)
+    return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, identifier.collection_id(), signature_id)
 
 def media_url_local( url ):
     """Replace media_url with one that points to "local" media server
@@ -371,8 +377,8 @@ def build_object(identifier, source, rename={} ):
                     contents_display = field_display_handler[style](fieldname, contents)
                 o.fields.append( (fieldname, label, contents_display) )
     # signature file
-    if source.get('signature_file', None):
-        o.signature_file = source['signature_file']
+    if source.get('signature_id', None):
+        o.signature_id = source['signature_id']
     return o
 
 
@@ -488,7 +494,7 @@ class Collection( object ):
     index = INDEX
     identifier = None
     fieldnames = []
-    signature_file = None
+    signature_id = None
     
     def __repr__( self ):
         return "<%s.%s %s:%s>" % (
@@ -506,6 +512,9 @@ class Collection( object ):
     
     def backend_url( self ):
         return backend_url(self.identifier)
+    
+    def api_url(self):
+        return api_url(self.identifier)
     
     def cite_url( self ):
         return cite_url(self.identifier)
@@ -542,8 +551,8 @@ class Collection( object ):
         return org_logo_url(self.identifier)
     
     def signature_url( self ):
-        if self.signature_file:
-            return signature_url(self.identifier, self.signature_file)
+        if self.signature_id:
+            return signature_url(self.identifier, self.signature_id)
         return None
     
     def signature_url_local( self ):
@@ -559,7 +568,7 @@ class Entity( object ):
     index = INDEX
     identifier = None
     fieldnames = []
-    signature_file = None
+    signature_id = None
     _signature = None
     _topics = []
     _encyc_articles = []
@@ -580,6 +589,9 @@ class Entity( object ):
     
     def backend_url( self ):
         return backend_url(self.identifier)
+    
+    def api_url(self):
+        return api_url(self.identifier)
     
     def cite_url( self ):
         return cite_url(self.identifier)
@@ -613,16 +625,16 @@ class Entity( object ):
         return org_logo_url(self.identifier)
     
     def signature(self):
-        if self.signature_file and not self._signature:
-            oid = Identity.split_object_id(self.signature_file)
+        if self.signature_id and not self._signature:
+            oid = Identity.split_object_id(self.signature_id)
             self._signature = File.get(oid[1], oid[2], oid[3], oid[4], oid[5], oid[6])
         if self._signature:
             return self._signature
         return None
     
     def signature_url( self ):
-        if self.signature_file:
-            return signature_url(self.identifier, self.signature_file)
+        if self.signature_id:
+            return signature_url(self.identifier, self.signature_id)
         return None
     
     def signature_url_local( self ):
@@ -635,7 +647,7 @@ class Entity( object ):
             topics = self.topics
         else:
             topics = []
-        return [faceting.Term('topics', int(tid)) for tid in topics]
+        return [faceting.Term('topics', int(tid)) for tid in topics if tid]
 
     def encyc_articles( self ):
         if not self._encyc_articles:
@@ -671,7 +683,10 @@ class File( object ):
         """S3 bucket-style path to access file, suitable for appending to MEDI_URL
         """
         if hasattr(self, 'access_rel') and self.access_rel and not self._access_path:
-            self._access_path = '%s/%s' % (self.identifier.collection_id(), self.access_rel)
+            self._access_path = '%s/%s' % (
+                self.identifier.collection_id(),
+                os.path.basename(self.access_rel)
+            )
         return self._access_path
     
     def access_url( self ):
@@ -684,6 +699,9 @@ class File( object ):
     
     def backend_url( self ):
         return backend_url(identifier)
+    
+    def api_url(self):
+        return api_url(self.identifier)
     
     def cite_url( self ):
         return cite_url(self.identifier)

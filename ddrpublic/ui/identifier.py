@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpRequest
 
 from DDR.identifier import Identifier as DDRIdentifier
-from DDR.identifier import format_id
+from DDR.identifier import format_id, IdentifierFormatException
 from DDR.identifier import CHILDREN, CHILDREN_ALL
 
 
@@ -41,6 +41,21 @@ class Identifier(DDRIdentifier):
             ]
             kwargs['id'] = object_id
         super(Identifier, self).__init__(*args, **kwargs)
+        
+    def parent(self, stubs=False):
+        """Parent of the Identifier
+        
+        @param stub: boolean An archival object not just a Stub
+        """
+        parent_parts = self._parent_parts()
+        for model in self._parent_models(stubs):
+            idparts = parent_parts
+            idparts['model'] = model
+            try:
+                return Identifier(idparts, base_path=self.basepath)
+            except IdentifierFormatException:
+                pass
+        return None
 
     def organization_id(self):
         #return self.parts.values()[:2]
