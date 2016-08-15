@@ -1,29 +1,5 @@
 # Django settings for ddrpublic.
 
-DEBUG = False
-TEMPLATE_DEBUG = DEBUG
-THUMBNAIL_DEBUG = DEBUG
-
-# Hosts/domain names that are valid for this site; required if DEBUG is False
-# See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = [
-    'ddr.densho.org',
-    'ddrstage.densho.org',
-    '192.168.56.120',
-]
-
-# partner-branded domains
-PARTNER_DOMAINS = {
-    'hmwf': ['hmwf.ddr.densho.org', 'hmwf.ddr.local',],
-    'janm': ['janm.ddr.densho.org', 'janm.ddr.local',],
-    'one': ['one.ddr.densho.org', 'one.ddr.local',],
-    'testing': ['testing.ddr.densho.org', 'testing.ddr.local',],
-}
-for value in PARTNER_DOMAINS.values():
-    for domain in value:
-        if domain not in ALLOWED_HOSTS:
-            ALLOWED_HOSTS.append(domain)
-
 ENCYC_BASE = 'http://encyclopedia.densho.org'
 
 # ----------------------------------------------------------------------
@@ -53,19 +29,53 @@ with open('/etc/ddr/ddrpublic-secret-key.txt') as f:
 LANGUAGE_CODE='en-us'
 TIME_ZONE='America/Los_Angeles'
 
+DEBUG = config.get('debug', 'debug')
+TEMPLATE_DEBUG = DEBUG
+THUMBNAIL_DEBUG = config.get('debug', 'thumbnail')
+
+# Hosts/domain names that are valid for this site; required if DEBUG is False
+# See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in config.get('public', 'allowed_hosts').split(',')
+]
+# partner-branded domains
+PARTNER_DOMAINS = {
+    'hmwf': ['hmwf.ddr.densho.org', 'hmwf.ddr.local',],
+    'janm': ['janm.ddr.densho.org', 'janm.ddr.local',],
+    'one': ['one.ddr.densho.org', 'one.ddr.local',],
+    'testing': ['testing.ddr.densho.org', 'testing.ddr.local',],
+}
+for value in PARTNER_DOMAINS.values():
+    for domain in value:
+        if domain not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(domain)
+
+# Elasticsearch
+DOCSTORE_HOSTS = [{
+    'host':config.get('public', 'docstore_host').split(':')[0],
+    'port':config.get('public', 'docstore_host').split(':')[1],
+}]
+DOCSTORE_INDEX = config.get('public', 'docstore_index')
+NAMESDB_DOCSTORE_HOSTS = [{
+    'host':config.get('public', 'namesdb_host').split(':')[0],
+    'port':config.get('public', 'namesdb_host').split(':')[1],
+}]
+NAMESDB_DOCSTORE_INDEX = config.get('public', 'namesdb_index')
+
 # Filesystem path and URL for static media (mostly used for interfaces).
-STATIC_ROOT = config.get('media', 'static_root')
+STATIC_ROOT = config.get('public', 'static_root')
 STATIC_URL='/static/'
 
 # Filesystem path and URL for media to be manipulated by ddrlocal
 # (collection repositories, thumbnail cache, etc).
-MEDIA_ROOT = config.get('media', 'media_root')
-MEDIA_URL = config.get('media', 'media_url')
+MEDIA_ROOT = config.get('public', 'media_root')
+MEDIA_URL = config.get('public', 'media_url')
 # URL of local media server ("local" = in the same cluster).
 # Use this for sorl.thumbnail so it doesn't have to go through
 # a CDN and get blocked for not including a User-Agent header.
 # TODO Hard-coded! Replace with value from ddr.cfg.
-MEDIA_URL_LOCAL = config.get('media', 'media_url_local')
+MEDIA_URL_LOCAL = config.get('public', 'media_url_local')
 # The REST API will use MEDIA_URL_LOCAL for image URLs
 # if this query argument is present with a truthy value.
 MEDIA_URL_LOCAL_MARKER = 'internal'
@@ -78,7 +88,7 @@ MEDIA_URL_LOCAL_MARKER = 'internal'
 #       set $fname $1;
 #       add_header Content-Disposition 'attachment; filename="$fname"';
 #     }
-DOWNLOAD_URL = config.get('media', 'download_url')
+DOWNLOAD_URL = config.get('public', 'download_url')
 
 ACCESS_FILE_APPEND='-a'
 ACCESS_FILE_EXTENSION='.jpg'
@@ -162,18 +172,6 @@ CACHES = {
 }
 
 # ElasticSearch
-docstore_host,docstore_port = config.get('elasticsearch', 'hosts').split(':')
-DOCSTORE_HOSTS = [
-    {'host':docstore_host, 'port':docstore_port}
-]
-DOCSTORE_INDEX = config.get('elasticsearch', 'index')
-
-namesdb_docstore_host,namesdb_docstore_port = config.get('namesdb', 'hosts').split(':')
-NAMESDB_DOCSTORE_HOSTS = [
-    {'host':namesdb_docstore_host, 'port':namesdb_docstore_port}
-]
-NAMESDB_DOCSTORE_INDEX = config.get('namesdb', 'index')
-
 ELASTICSEARCH_MAX_SIZE = 1000000
 ELASTICSEARCH_QUERY_TIMEOUT = 60 * 10  # 10 min
 ELASTICSEARCH_FACETS_TIMEOUT = 60*60*1  # 1 hour
