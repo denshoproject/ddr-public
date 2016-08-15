@@ -2,10 +2,15 @@ SHELL = /bin/bash
 
 PACKAGE_SERVER=ddr.densho.org/static/ddrpublic
 
+SRC_REPO_DEFS=https://github.com/densho/ddr-defs.git
+
 INSTALL_BASE=/usr/local/src
 INSTALLDIR=$(INSTALL_BASE)/ddr-public
 PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
 VIRTUALENV=$(INSTALL_BASE)/env/ddrpublic
+
+CONF_BASE=/etc/ddr
+CONF_DEFS=$(CONF_BASE)/ddr-defs
 
 DDR_REPO_BASE=/var/www/media
 
@@ -266,6 +271,15 @@ clean-ddr-public:
 
 clean-pip:
 	-rm -Rf $(PIP_CACHE_DIR)/*
+
+
+get-ddr-defs:
+	@echo ""
+	@echo "get-ddr-defs -----------------------------------------------------------"
+	if test -d $(CONF_DEFS); \
+	then cd $(CONF_DEFS) && git pull; \
+	else cd $(CONF_BASE) && git clone $(SRC_REPO_DEFS) $(CONF_DEFS); \
+	fi
 
 
 branch:
