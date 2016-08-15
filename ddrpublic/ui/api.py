@@ -269,6 +269,8 @@ class ApiEntity(Entity):
             data = document['_source']
             data['url'] = reverse('ui-api-entity', args=idparts, request=request)
             data['absolute_url'] = reverse('ui-entity', args=idparts, request=request)
+            # entity.json has a "children" field
+            data['child_objects'] = data.get('children', [])
             data['children'] = reverse('ui-api-files', args=idparts, request=request)
             data['facility'] = [
                 reverse('ui-api-term', args=('facility', oid), request=request)
