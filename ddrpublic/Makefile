@@ -32,14 +32,14 @@ MEDIA_BASE=/var/www/ddrpublic
 MEDIA_ROOT=$(MEDIA_BASE)/media
 STATIC_ROOT=$(MEDIA_BASE)/static
 
-ELASTICSEARCH=elasticsearch-1.0.1.deb
+ELASTICSEARCH=elasticsearch-1.6.2.deb
 MODERNIZR=modernizr-2.6.2.js
 JQUERY=jquery-1.11.0.min.js
 BOOTSTRAP=bootstrap-3.1.1-dist.zip
 ASSETS=ddr-public-assets.tar.gz
-# wget https://github.com/twbs/bootstrap/releases/download/v3.1.1/bootstrap-3.1.1-dist.zip
+# wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.6.2.deb
 # wget http://code.jquery.com/jquery-1.11.0.min.js
-# wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.0.1.deb
+# wget https://github.com/twbs/bootstrap/releases/download/v3.1.1/bootstrap-3.1.1-dist.zip
 
 SUPERVISOR_GUNICORN_CONF=/etc/supervisor/conf.d/gunicorn_ddrlocal.conf
 NGINX_CONF=/etc/nginx/sites-available/ddrlocal.conf
