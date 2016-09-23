@@ -91,7 +91,7 @@ def absolute_url(identifier):
     """
     return reverse(
         'ui-%s' % identifier.model,
-        args=identifier.parts.values()
+        args=[identifier.id]
     )
 
 def backend_url(identifier):
@@ -104,7 +104,7 @@ def backend_url(identifier):
 def api_url(identifier):
     return reverse(
         'ui-api-%s' % identifier.model,
-        kwargs=identifier.parts
+        args=[identifier.id]
     )
 
 def cite_url(identifier):
@@ -302,7 +302,7 @@ def massage_query_results( results, thispage, page_size ):
                 o['identifier'] = identifier
                 o['url'] = reverse(
                     'ui-%s' % identifier.model,
-                    args=identifier.parts.values()
+                    args=[identifier.id]
                 )
     return objects
 

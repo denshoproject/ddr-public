@@ -16,10 +16,10 @@ from ui.views import filter_if_branded
 
 # views ----------------------------------------------------------------
 
-def detail( request, repo, org, cid, eid ):
-    filter_if_branded(request, repo, org)
-    identifier = Identifier(url=request.META['PATH_INFO'])
-    entity = Entity.get(identifier)
+def detail(request, oid):
+    i = Identifier(id=oid)
+    filter_if_branded(request, i)
+    entity = Entity.get(i)
     if not entity:
         raise Http404
     parent = entity.collection()
@@ -35,10 +35,10 @@ def detail( request, repo, org, cid, eid ):
     return render_to_response(
         'ui/entities/detail.html',
         {
-            'repo': repo,
-            'org': org,
-            'cid': cid,
-            'eid': eid,
+            'repo': i.parts['repo'],
+            'org': i.parts['org'],
+            'cid': i.parts['cid'],
+            'eid': i.parts['eid'],
             'object': entity,
             'facilities': facilities,
             'creators': creators,
@@ -50,13 +50,12 @@ def detail( request, repo, org, cid, eid ):
         context_instance=RequestContext(request, processors=[])
     )
 
-def files( request, repo, org, cid, eid, role=None ):
+def files( request, oid, role=None ):
     """Lists all the files in an entity.
     """
-    filter_if_branded(request, repo, org)
-    idparts = {'model':'entity', 'repo':repo, 'org':org, 'cid':cid, 'eid':eid}
-    identifier = Identifier(parts=idparts)
-    entity = Entity.get(identifier)
+    i = Identifier(id=oid)
+    filter_if_branded(request, i)
+    entity = Entity.get(i)
     if not entity:
         raise Http404
     thispage = request.GET.get('page', 1)
@@ -66,10 +65,10 @@ def files( request, repo, org, cid, eid, role=None ):
     return render_to_response(
         'ui/entities/files.html',
         {
-            'repo': repo,
-            'org': org,
-            'cid': cid,
-            'eid': eid,
+            'repo': i.parts['repo'],
+            'org': i.parts['org'],
+            'cid': i.parts['cid'],
+            'eid': i.parts['eid'],
             'object': entity,
             'paginator': paginator,
             'page': page,

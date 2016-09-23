@@ -44,10 +44,10 @@ def list( request ):
         context_instance=RequestContext(request, processors=[])
     )
 
-def detail( request, repo, org, cid ):
-    filter_if_branded(request, repo, org)
-    identifier = Identifier(url=request.META['PATH_INFO'])
-    collection = Collection.get(identifier)
+def detail(request, oid):
+    i = Identifier(id=oid)
+    filter_if_branded(request, i)
+    collection = Collection.get(i)
     if not collection:
         raise Http404
     organization = collection.parent()
@@ -58,9 +58,9 @@ def detail( request, repo, org, cid ):
     return render_to_response(
         'ui/collections/detail.html',
         {
-            'repo': repo,
-            'org': org,
-            'cid': cid,
+            'repo': i.parts['repo'],
+            'org': i.parts['org'],
+            'cid': i.parts['cid'],
             'object': collection,
             'organization': organization,
             'paginator': paginator,
@@ -69,11 +69,10 @@ def detail( request, repo, org, cid ):
         context_instance=RequestContext(request, processors=[])
     )
 
-def entities( request, repo, org, cid ):
-    filter_if_branded(request, repo, org)
-    idparts = {'model':'collection', 'repo':repo, 'org':org, 'cid':cid}
-    identifier = Identifier(parts=idparts)
-    collection = Collection.get(identifier)
+def entities(request, oid):
+    i = Identifier(id=oid)
+    filter_if_branded(request, i)
+    collection = Collection.get(i)
     if not collection:
         raise Http404
     thispage = request.GET.get('page', 1)
@@ -83,9 +82,9 @@ def entities( request, repo, org, cid ):
     return render_to_response(
         'ui/collections/entities.html',
         {
-            'repo': repo,
-            'org': org,
-            'cid': cid,
+            'repo': i.parts['repo'],
+            'org': i.parts['org'],
+            'cid': i.parts['cid'],
             'object': collection,
             'paginator': paginator,
             'page': page,
@@ -93,11 +92,10 @@ def entities( request, repo, org, cid ):
         context_instance=RequestContext(request, processors=[])
     )
 
-def files( request, repo, org, cid ):
-    filter_if_branded(request, repo, org)
-    idparts = {'model':'collection', 'repo':repo, 'org':org, 'cid':cid}
-    identifier = Identifier(parts=idparts)
-    collection = Collection.get(identifier)
+def files(request, oid):
+    i = Identifier(id=oid)
+    filter_if_branded(request, i)
+    collection = Collection.get(i)
     if not collection:
         raise Http404
     thispage = request.GET.get('page', 1)
@@ -107,9 +105,9 @@ def files( request, repo, org, cid ):
     return render_to_response(
         'ui/collections/files.html',
         {
-            'repo': repo,
-            'org': org,
-            'cid': cid,
+            'repo': i.parts['repo'],
+            'org': i.parts['org'],
+            'cid': i.parts['cid'],
             'object': collection,
             'paginator': paginator,
             'page': page,

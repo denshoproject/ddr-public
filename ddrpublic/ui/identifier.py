@@ -84,7 +84,7 @@ class Identifier(DDRIdentifier):
             if i.model in INCLUDE:
                 crumb = {
                     'identifier': i,
-                    'url': reverse('ui-%s' % i.model, kwargs=i.parts),
+                    'url': reverse('ui-%s' % i.model, args=[i.id]),
                     'label': i.parts.values()[-1],
                 }
                 crumbs.append(crumb)

@@ -178,7 +178,7 @@
             {% if paginator.count > 10 %}
             <br />
             <p>
-                <a class="btn btn-primary btn-md" href="{% url "ui-entity-files" repo org cid eid %}">See all files <i class="fa fa-arrow-circle-right"></i></a>
+                <a class="btn btn-primary btn-md" href="{% url "ui-entity-files" object.identifier.id %}">See all files <i class="fa fa-arrow-circle-right"></i></a>
             </p>
             {% endif %}
         </div>

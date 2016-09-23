@@ -14,10 +14,10 @@ from ui.views import filter_if_branded
 
 # views ----------------------------------------------------------------
 
-def detail( request, repo, org, cid, eid, role, sha1 ):
-    filter_if_branded(request, repo, org)
-    identifier = Identifier(url=request.META['PATH_INFO'])
-    ffile = File.get(identifier)
+def detail(request, oid):
+    i = Identifier(id=oid)
+    filter_if_branded(request, i)
+    ffile = File.get(i)
     if not ffile:
         raise Http404
     parent = ffile.parent()
@@ -25,12 +25,12 @@ def detail( request, repo, org, cid, eid, role, sha1 ):
     return render_to_response(
         'ui/files/detail.html',
         {
-            'repo': repo,
-            'org': org,
-            'cid': cid,
-            'eid': eid,
-            'role': role,
-            'sha1': sha1,
+            'repo': i.parts['repo'],
+            'org': i.parts['org'],
+            'cid': i.parts['cid'],
+            'eid': i.parts['eid'],
+            'role': i.parts['role'],
+            'sha1': i.parts['sha1'],
             'object': ffile,
             'parent': parent,
             'organization': organization,
