@@ -50,8 +50,23 @@ def detail(request, oid):
         context_instance=RequestContext(request, processors=[])
     )
 
-def files( request, oid, role=None ):
-    """Lists all the files in an entity.
+def children( request, oid, role=None ):
+    """Lists all direct children of the entity.
+    """
+    i = Identifier(id=oid)
+    filter_if_branded(request, i)
+    entity = Entity.get(i)
+    if not entity:
+        raise Http404
+    return render_to_response(
+        'ui/entities/children.html',
+        {
+        },
+        context_instance=RequestContext(request, processors=[])
+    )
+
+def nodes( request, oid, role=None ):
+    """Lists all nodes of the entity.
     """
     i = Identifier(id=oid)
     filter_if_branded(request, i)
@@ -63,7 +78,7 @@ def files( request, oid, role=None ):
     paginator = Paginator(objects, settings.RESULTS_PER_PAGE)
     page = paginator.page(thispage)
     return render_to_response(
-        'ui/entities/files.html',
+        'ui/entities/nodes.html',
         {
             'repo': i.parts['repo'],
             'org': i.parts['org'],

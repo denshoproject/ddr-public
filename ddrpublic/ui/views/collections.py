@@ -69,7 +69,9 @@ def detail(request, oid):
         context_instance=RequestContext(request, processors=[])
     )
 
-def entities(request, oid):
+def children(request, oid):
+    """Lists all direct children of the collection.
+    """
     i = Identifier(id=oid)
     filter_if_branded(request, i)
     collection = Collection.get(i)
@@ -80,7 +82,7 @@ def entities(request, oid):
     paginator = Paginator(objects, settings.RESULTS_PER_PAGE)
     page = paginator.page(thispage)
     return render_to_response(
-        'ui/collections/entities.html',
+        'ui/collections/children.html',
         {
             'repo': i.parts['repo'],
             'org': i.parts['org'],
@@ -92,7 +94,9 @@ def entities(request, oid):
         context_instance=RequestContext(request, processors=[])
     )
 
-def files(request, oid):
+def nodes(request, oid):
+    """Lists all nodes of the collection.
+    """
     i = Identifier(id=oid)
     filter_if_branded(request, i)
     collection = Collection.get(i)
@@ -103,7 +107,7 @@ def files(request, oid):
     paginator = Paginator(files, settings.RESULTS_PER_PAGE)
     page = paginator.page(thispage)
     return render_to_response(
-        'ui/collections/files.html',
+        'ui/collections/nodes.html',
         {
             'repo': i.parts['repo'],
             'org': i.parts['org'],

@@ -48,16 +48,18 @@ urlpatterns = patterns(
     url(r'^collections/$', 'ui.views.collections.list', name='ui-collections-list'),
     
     url(r'^f/(?P<oid>[\w\d-]+)/$', 'ui.views.files.detail', name='ui-file'),
-    url(r'^r/(?P<oid>[\w\d-]+)/$', 'ui.views.entities.files', name='ui-file-role'),
+    url(r'^r/(?P<oid>[\w\d-]+)/$', 'ui.views.entities.nodes', name='ui-file-role'),
     
-    url(r'^s/(?P<oid>[\w\d-]+)/files/$', 'ui.views.entities.files', name='ui-segment-files'),
+    url(r'^s/(?P<oid>[\w\d-]+)/files/$', 'ui.views.entities.nodes', name='ui-segment-nodes'),
+    url(r'^s/(?P<oid>[\w\d-]+)/objects/$', 'ui.views.entities.children', name='ui-segment-children'),
     url(r'^s/(?P<oid>[\w\d-]+)/$', 'ui.views.entities.detail', name='ui-segment'),
     
-    url(r'^e/(?P<oid>[\w\d-]+)/files/$', 'ui.views.entities.files', name='ui-entity-files'),
+    url(r'^e/(?P<oid>[\w\d-]+)/files/$', 'ui.views.entities.nodes', name='ui-entity-nodes'),
+    url(r'^e/(?P<oid>[\w\d-]+)/objects/$', 'ui.views.entities.children', name='ui-entity-children'),
     url(r'^e/(?P<oid>[\w\d-]+)/$', 'ui.views.entities.detail', name='ui-entity'),
     
-    url(r'^c/(?P<oid>[\w\d-]+)/files/$', 'ui.views.collections.files', name='ui-collection-files'),
-    url(r'^c/(?P<oid>[\w\d-]+)/objects/$', 'ui.views.collections.entities', name='ui-collection-entities'),
+    url(r'^c/(?P<oid>[\w\d-]+)/files/$', 'ui.views.collections.nodes', name='ui-collection-nodes'),
+    url(r'^c/(?P<oid>[\w\d-]+)/objects/$', 'ui.views.collections.children', name='ui-collection-children'),
     url(r'^c/(?P<oid>[\w\d-]+)/$', 'ui.views.collections.detail', name='ui-collection'),
     
     url(r'^o/(?P<oid>[\w\d-]+)/$', 'ui.views.organizations.detail', name='ui-organization'),
