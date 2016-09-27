@@ -11,8 +11,10 @@ from DDR.identifier import format_id, IdentifierFormatException
 from DDR.identifier import CHILDREN, CHILDREN_ALL
 
 
+# TODO Hard-coded! Get this data from ddr-defs!
 MODEL_CLASSES = {
     'file':         {'module': 'ui.models', 'class':'File', 'stub':0, 'templatedir':'files',},
+    'segment':      {'module': 'ui.models', 'class':'Entity', 'stub':0, 'templatedir':'entities',},
     'entity':       {'module': 'ui.models', 'class':'Entity', 'stub':0, 'templatedir':'entities',},
     'collection':   {'module': 'ui.models', 'class':'Collection', 'stub':0, 'templatedir':'collections',},
     'organization': {'module': 'ui.models', 'class':'Organization', 'stub':1, 'templatedir':'',},
