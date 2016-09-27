@@ -647,7 +647,15 @@ class Entity( object ):
             topics = self.topics
         else:
             topics = []
-        return [faceting.Term('topics', int(tid)) for tid in topics if tid]
+        # TODO refactor this -- topics terms are now {'id':...,'term':...} dicts 
+        terms = []
+        for t in topics:
+            tid = t.get('id')
+            if tid and isinstance(tid, basestring) and tid.isdigit():
+                tid = int(tid)
+            if tid and (isinstance(tid, int) or tid.isdigit()):
+                terms.append(faceting.Term('topics', tid))
+        return terms
 
     def encyc_articles( self ):
         if not self._encyc_articles:

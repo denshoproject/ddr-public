@@ -1,3 +1,4 @@
+import json
 import os
 
 from django.conf import settings
@@ -277,11 +278,18 @@ class ApiEntity(Entity):
                 for oid in document['_source'].get('facility', [])
                 if oid
             ]
+            
+            for term in document['_source'].get('topics', []):
+                if isinstance(term, basestring):
+                    term = json.load(term)
+                term_id = term['id']
+            
             data['topics'] = [
-                reverse('ui-api-term', args=('topics', oid), request=request)
-                for oid in document['_source'].get('topics', [])
-                if oid
+                reverse('ui-api-term', args=('topics', term['id']), request=request)
+                for term in document['_source'].get('topics', [])
+                if term
             ]
+            
             #persons
             if data.get('signature_id'):
                 data['img_path'] = os.path.join(i.id, access_filename(data.get('signature_id')))
