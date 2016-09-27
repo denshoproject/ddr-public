@@ -24,6 +24,10 @@ def detail( request, repo, org, cid, eid ):
         raise Http404
     parent = entity.collection()
     organization = Organization.get(entity.identifier.organization())
+    # facet terms
+    facilities = [item for item in getattr(entity, 'facility', [])]
+    creators = [item for item in getattr(entity, 'creators', [])]
+    # child objects
     thispage = 1
     objects = entity.children(thispage, DEFAULT_SIZE)
     paginator = Paginator(objects, DEFAULT_SIZE)
@@ -36,6 +40,8 @@ def detail( request, repo, org, cid, eid ):
             'cid': cid,
             'eid': eid,
             'object': entity,
+            'facilities': facilities,
+            'creators': creators,
             'parent': parent,
             'organization': organization,
             'paginator': paginator,

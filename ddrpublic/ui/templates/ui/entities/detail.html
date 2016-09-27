@@ -115,14 +115,22 @@
                         <div class="col-md-7 col-sm-7">
                             <!-- entity.facility -->
                             <h3 class="page-header">FACILITY</h3>
-                            {{ object.fields|ddrvalue:"facility" }}
+                            <ul class="list-unstyled">
+                              {% for term in facilities %}
+                              <li><a href="{% url "ui-browse-term" "facility" term.id %}">{{ term.term }}<a/></li>
+                                {% endfor %}
+                            </ul>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-5 col-sm-5">
                             <!-- entity.creators -->
                             <h3 class="page-header">CREATORS</h3>
-                            {{ object.fields|ddrvalue:"creators" }}
+                            <ul class="list-unstyled">
+                              {% for term in creators %}
+                              <li>{{ term.namepart }} ({{ term.role }})</li>
+                              {% endfor %}
+                            </ul>
                         </div>
                         <div class="col-md-7 col-sm-7">
                             <!-- entity.persons -->
