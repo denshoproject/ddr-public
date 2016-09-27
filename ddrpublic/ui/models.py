@@ -21,14 +21,14 @@ from ui.identifier import Identifier, MODEL_CLASSES
 
 DEFAULT_SIZE = 10
 
-# TODO move to DDR.identifier?
+# TODO move to ddr-defs
 REPOSITORY_LIST_FIELDS = ['id', 'title', 'description', 'url',]
 ORGANIZATION_LIST_FIELDS = ['id', 'title', 'description', 'url',]
 COLLECTION_LIST_FIELDS = ['id', 'title', 'description', 'signature_id',]
 ENTITY_LIST_FIELDS = ['id', 'title', 'description', 'signature_id',]
-FILE_LIST_FIELDS = ['id', 'basename_orig', 'label', 'access_rel','sort',]
+FILE_LIST_FIELDS = ['id', 'title', 'description', 'access_rel','sort',]
 
-# TODO refactor: knows too much about structure of ID
+# TODO mode to ddr-defs: knows too much about structure of ID
 #      Does Elasticsearch have lambda functions for sorting?
 REPOSITORY_LIST_SORT = [
     ['repo','asc'],
