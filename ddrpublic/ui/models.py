@@ -582,7 +582,22 @@ class Entity( object ):
     
     @staticmethod
     def get(identifier):
-        return get_object(identifier)
+        document = docstore.get(
+            HOSTS, index=INDEX,
+            model=identifier.model, document_id=identifier.id
+        )
+        if document and (document['found'] or document['exists']):
+            entity = build_object(identifier, document['_source'])
+            
+            entity.children = document['_source'].get('children', [])
+            
+            # NOTE role:files instead of list of dicts
+            entity.file_groups = {
+                fgroup['role']: fgroup['files']
+                for fgroup in document['_source'].get('file_groups', [])
+            }
+            return entity
+        return None
     
     def absolute_url( self ):
         return absolute_url(self.identifier)
@@ -600,27 +615,29 @@ class Entity( object ):
         # TODO should be .parent()
         return Collection.get(self.identifier.parent())
     
-    def children( self, page=1, page_size=DEFAULT_SIZE, role=None ):
+    def children_meta(self):
         """Gets all the files in an entity; paging optional.
         
         @param index: start on this index in result set
         @param size: number of results to return
         @param role: String 'mezzanine' or 'master'
         """
-        files = []
-        query = 'id:"%s"' % self.identifier.id
-        if role:
-            query = 'id:"%s-%s"' % (self.identifier.id, role)
-        results = cached_query(
-            host=HOSTS, index=INDEX, model='file',
-            query=query,
-            fields=FILE_LIST_FIELDS,
-            sort=FILE_LIST_SORT
-        )
-        massaged = massage_query_results(results, page, page_size)
-        objects = instantiate_query_objects(massaged)
-        return objects
+        return [
+            build_object(Identifier(data['id']), data)
+            for data in self.children
+        ]
 
+    def nodes_meta(self, role=None):
+        """Loads File objects from Entity.file_groups into single list
+        """
+        if role: roles = [role]
+        else: roles = self.file_groups.iterkeys()
+        return [
+            build_object(Identifier(data['id']), data)
+            for role in roles
+            for data in self.file_groups.get(role, [])
+        ]
+    
     def org_logo_url( self ):
         return org_logo_url(self.identifier)
     
