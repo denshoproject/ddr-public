@@ -1,1 +1,57 @@
-NOT IMPLEMENTED YET
+{% extends "ui/entities/base.html" %}
+{% load bootstrap_pagination thumbnail ui_tags %}
+
+{% block parent %}
+<!--
+<div id="parent">
+<a href="{{ object.parent.absolute_url }}"><span class="label label-default">{{ object.parent.id }}</span></a>
+<a href="{{ object.parent.absolute_url }}">{{ object.parent.title }}</a>
+</div>
+-->
+{% endblock %}
+
+{% block title %}
+{{ object.id }} {% if object.title %}&mdash;{% endif %} {{ object.title }} &mdash; Children
+{% endblock %}
+
+{% block pagetitle %}
+<span class="label label-default">{{ object.id }}</span>
+{{ object.title }} &mdash; Children
+{% endblock %}
+
+{% block breadcrumbs %}{{ block.super }}
+{% breadcrumbs object.identifier.breadcrumbs True %}
+<li>Children</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+<section id="shop" class="container">
+  <div class="row">
+    <div class="col-sm-12 col-md-12">
+      <div id="item-count">
+        {{ paginator.count }} objects<br/>
+      </div>
+
+{% if page.object_list %}
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+
+{% for file in page.object_list %}
+{% document file %}
+{% endfor %}
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+
+{% endif %}
+
+    </div><!-- .col-sm-12 col-md-12 -->
+  </div><!-- .row -->
+</section><!-- .container-fluid -->
+{% endblock content %}
+
+{% block footer %}
+{% endblock footer %}

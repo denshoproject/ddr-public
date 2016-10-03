@@ -27,11 +27,10 @@ def detail(request, oid):
     # facet terms
     facilities = [item for item in getattr(entity, 'facility', [])]
     creators = [item for item in getattr(entity, 'creators', [])]
-    # child objects
-    thispage = 1
-    objects = entity.children(thispage, DEFAULT_SIZE)
-    paginator = Paginator(objects, DEFAULT_SIZE)
-    page = paginator.page(thispage)
+    # children/nodes
+    thispage = request.GET.get('page', 1)
+    children_paginator = Paginator(entity.children_meta(), DEFAULT_SIZE)
+    nodes_paginator = Paginator(entity.nodes_meta(), DEFAULT_SIZE)
     return render_to_response(
         'ui/entities/detail.html',
         {
@@ -44,8 +43,10 @@ def detail(request, oid):
             'creators': creators,
             'parent': parent,
             'organization': organization,
-            'paginator': paginator,
-            'page': page,
+            'children_paginator': children_paginator,
+            'children_page': children_paginator.page(thispage),
+            'nodes_paginator': nodes_paginator,
+            'nodes_page': nodes_paginator.page(thispage),
         },
         context_instance=RequestContext(request, processors=[])
     )
@@ -58,9 +59,19 @@ def children( request, oid, role=None ):
     entity = Entity.get(i)
     if not entity:
         raise Http404
+    # children
+    thispage = request.GET.get('page', 1)
+    children_paginator = Paginator(entity.children_meta(), settings.RESULTS_PER_PAGE)
     return render_to_response(
         'ui/entities/children.html',
         {
+            'repo': i.parts['repo'],
+            'org': i.parts['org'],
+            'cid': i.parts['cid'],
+            'eid': i.parts['eid'],
+            'object': entity,
+            'paginator': children_paginator,
+            'page': children_paginator.page(thispage),
         },
         context_instance=RequestContext(request, processors=[])
     )
@@ -73,10 +84,9 @@ def nodes( request, oid, role=None ):
     entity = Entity.get(i)
     if not entity:
         raise Http404
+    # nodes
     thispage = request.GET.get('page', 1)
-    objects = entity.children(thispage, settings.RESULTS_PER_PAGE)
-    paginator = Paginator(objects, settings.RESULTS_PER_PAGE)
-    page = paginator.page(thispage)
+    nodes_paginator = Paginator(entity.nodes_meta(), settings.RESULTS_PER_PAGE)
     return render_to_response(
         'ui/entities/nodes.html',
         {
@@ -85,8 +95,8 @@ def nodes( request, oid, role=None ):
             'cid': i.parts['cid'],
             'eid': i.parts['eid'],
             'object': entity,
-            'paginator': paginator,
-            'page': page,
+            'paginator': nodes_paginator,
+            'page': nodes_paginator.page(thispage),
         },
         context_instance=RequestContext(request, processors=[])
     )
