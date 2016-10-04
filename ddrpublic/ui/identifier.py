@@ -8,7 +8,7 @@ from django.http import HttpRequest
 
 from DDR.identifier import Identifier as DDRIdentifier
 from DDR.identifier import format_id, IdentifierFormatException
-from DDR.identifier import CHILDREN, CHILDREN_ALL
+from DDR.identifier import CHILDREN, CHILDREN_ALL, MODEL_REPO_MODELS
 
 
 # TODO Hard-coded! Get this data from ddr-defs!
@@ -80,10 +80,9 @@ class Identifier(DDRIdentifier):
           {'url:'', 'label':'37409ecadb'},
         ]
         """
-        INCLUDE = ['collection', 'entity', 'file',]
         crumbs = []
         for i in self.lineage(stubs=True):
-            if i.model in INCLUDE:
+            if i.model in MODEL_REPO_MODELS.keys():
                 crumb = {
                     'identifier': i,
                     'url': reverse('ui-%s' % i.model, args=[i.id]),
