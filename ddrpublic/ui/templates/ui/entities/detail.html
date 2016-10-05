@@ -172,7 +172,7 @@
         <div class="col-sm-12 col-md-12">
 
           <h3>
-            <a href="{% url "ui-entity-children" object.identifier.id %}">
+            <a href="{% url "ui-object-children" object.identifier.id %}">
               {{ children_paginator.count }} Objects
             </a>
           </h3>
@@ -182,12 +182,12 @@
           {% if children_paginator.count > 10 %}
           <br />
           <p>
-            <a class="btn btn-primary btn-md" href="{% url "ui-entity-children" object.identifier.id %}">See all objects <i class="fa fa-arrow-circle-right"></i></a>
+            <a class="btn btn-primary btn-md" href="{% url "ui-object-children" object.identifier.id %}">See all objects <i class="fa fa-arrow-circle-right"></i></a>
           </p>
           {% endif %}
 
           <h3>
-            <a href="{% url "ui-entity-nodes" object.identifier.id %}">
+            <a href="{% url "ui-object-nodes" object.identifier.id %}">
               {{ nodes_paginator.count }} Files
             </a>
           </h3>
@@ -197,7 +197,7 @@
           {% if nodes_paginator.count > 10 %}
           <br />
           <p>
-            <a class="btn btn-primary btn-md" href="{% url "ui-entity-nodes" object.identifier.id %}">See all files <i class="fa fa-arrow-circle-right"></i></a>
+            <a class="btn btn-primary btn-md" href="{% url "ui-object-nodes" object.identifier.id %}">See all files <i class="fa fa-arrow-circle-right"></i></a>
           </p>
           {% endif %}
             

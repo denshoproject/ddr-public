@@ -13,7 +13,7 @@ from ui.models import Repository, Organization, Collection, Entity, File
 
 # views ----------------------------------------------------------------
 
-def list( request, repo ):
+def list(request, oid):
     return render_to_response(
         'ui/organizations/list.html',
         {
@@ -22,14 +22,15 @@ def list( request, repo ):
         context_instance=RequestContext(request, processors=[])
     )
 
-def detail( request, repo, org ):
-    organization = Organization.get(Identifier(request))
+def detail(request, oid):
+    i = Identifier(id=oid)
+    organization = Organization.get(i)
     collections = organization.children()
     return render_to_response(
         'ui/organizations/detail.html',
         {
-            'repo': repo,
-            'org': org,
+            'repo': i.parts['repo'],
+            'org': i.parts['org'],
             'organization': organization,
             'object': organization,
             'collections': collections,

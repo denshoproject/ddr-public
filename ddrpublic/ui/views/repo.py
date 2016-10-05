@@ -13,16 +13,17 @@ from ui.models import Repository, Organization, Collection, Entity, File
 
 # views ----------------------------------------------------------------
 
-def detail( request, repo ):
-    return redirect('ui-collections-list')
-    #repository = Repository.get(Identifier(request))
+def detail( request, oid ):
+    #i = Identifier(id=oid)
+    #repository = Repository.get(i)
     #organizations = repository.children()
     #return render_to_response(
     #    'ui/repo/detail.html',
     #    {
-    #        'repo': repo,
+    #        'repo': i.parts['repo'],
     #        'repository': repository,
     #        'organizations': organizations,
     #    },
     #    context_instance=RequestContext(request, processors=[])
     #)
+    return redirect('ui-collections-list')
