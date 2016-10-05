@@ -12,19 +12,9 @@ urlpatterns = patterns(
     url(r'^api/0.2/facet/(?P<facet>[\w]+)/$', 'ui.api.facet', name='ui-api-facet'),
     url(r'^api/0.2/facet/$', 'ui.api.facet_index', name='ui-api-facets'),
     
-    # lists
-    url(r'^api/0.2/e/(?P<oid>[\w\d-]+)/children/$', 'ui.api.files', name='ui-api-files'),
-    url(r'^api/0.2/c/(?P<oid>[\w\d-]+)/children/$', 'ui.api.entities', name='ui-api-entities'),
-    url(r'^api/0.2/o/(?P<oid>[\w\d-]+)/children/$', 'ui.api.collections', name='ui-api-collections'),
-    url(r'^api/0.2/r/(?P<oid>[\w\d-]+)/children/$', 'ui.api.organizations', name='ui-api-organizations'),
-    
-    # nodes
-    url(r'^api/0.2/f/(?P<oid>[\w\d-]+)/$', 'ui.api.file', name='ui-api-file'),
-    url(r'^api/0.2/s/(?P<oid>[\w\d-]+)/$', 'ui.api.entity', name='ui-api-segment'),
-    url(r'^api/0.2/e/(?P<oid>[\w\d-]+)/$', 'ui.api.entity', name='ui-api-entity'),
-    url(r'^api/0.2/c/(?P<oid>[\w\d-]+)/$', 'ui.api.collection', name='ui-api-collection'),
-    url(r'^api/0.2/o/(?P<oid>[\w\d-]+)/$', 'ui.api.organization', name='ui-api-organization'),
-    url(r'^api/0.2/r/(?P<oid>[\w\d-]+)/$', 'ui.api.repository', name='ui-api-repository'),
+    url(r'^api/0.2/(?P<oid>[\w\d-]+)/children/$', 'ui.api.object_children', name='ui-api-object-children'),
+    url(r'^api/0.2/(?P<oid>[\w\d-]+)/files/$', 'ui.api.object_nodes', name='ui-api-object-nodes'),
+    url(r'^api/0.2/(?P<oid>[\w\d-]+)/$', 'ui.api.object_detail', name='ui-api-object'),
     
     url(r'^api/0.2/$', 'ui.api.index', name='ui-api-index'),
     url(r'^api/0.1/$', 'ui.api.index', name='ui-api-index'),

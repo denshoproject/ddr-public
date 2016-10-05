@@ -65,6 +65,7 @@ MODEL_LIST_SETTINGS = {
     'organization': {'fields': ORGANIZATION_LIST_FIELDS, 'sort': ORGANIZATION_LIST_SORT},
     'collection': {'fields': COLLECTION_LIST_FIELDS, 'sort': COLLECTION_LIST_SORT},
     'entity': {'fields': ENTITY_LIST_FIELDS, 'sort': ENTITY_LIST_SORT},
+    'segment': {'fields': ENTITY_LIST_FIELDS, 'sort': ENTITY_LIST_SORT},
     'file': {'fields': FILE_LIST_FIELDS, 'sort': FILE_LIST_SORT},
 }
 
