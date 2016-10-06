@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import json
 import os
 
@@ -170,11 +171,12 @@ class ApiRepository(Repository):
             model=i.model, document_id=i.id)
         if document and (document['found'] or document['exists']):
             data = document['_source']
+            data['links'] = OrderedDict()
             data['repository_url'] = data['url']
-            data['url'] = reverse('ui-object-detail', args=[oid], request=request)
-            data['api_url'] = reverse('ui-api-object', args=[oid], request=request)
+            data['links']['url'] = reverse('ui-object-detail', args=[oid], request=request)
+            data['links']['api'] = reverse('ui-api-object', args=[oid], request=request)
             # img_url
-            data['children'] = reverse('ui-api-object-children', args=[oid], request=request)
+            data['links']['children'] = reverse('ui-api-object-children', args=[oid], request=request)
             return data
         return None
 
@@ -185,11 +187,12 @@ class ApiRepository(Repository):
         for d in data.get('results', []):
             oi = Identifier(d['id'])
             oidparts = [x for x in oi.parts.itervalues()]
-            d['url'] = reverse('ui-object-detail', args=[oi.id], request=request)
-            d['api_url'] = reverse('ui-api-object', args=[oi.id], request=request)
-            d['img_url'] = img_url(d['id'], 'logo.png', request)
+            d['links'] = OrderedDict()
+            d['links']['url'] = reverse('ui-object-detail', args=[oi.id], request=request)
+            d['links']['api'] = reverse('ui-api-object', args=[oi.id], request=request)
+            d['links']['img'] = img_url(d['id'], 'logo.png', request)
             if data.get('parent_id'):
-                data['parent_url'] = reverse('ui-api-object', args=[data['parent_id']], request=request)
+                data['links']['parent'] = reverse('ui-api-object', args=[data['parent_id']], request=request)
         return data
 
 class ApiOrganization(Organization):
@@ -203,12 +206,13 @@ class ApiOrganization(Organization):
             model=i.model, document_id=i.id)
         if document and (document['found'] or document['exists']):
             data = document['_source']
-            data['url'] = reverse('ui-object-detail', args=[oid], request=request)
-            data['api_url'] = reverse('ui-api-object', args=[oid], request=request)
-            data['img_url'] = img_url(i.id, 'logo.png', request)
+            data['links'] = OrderedDict()
+            data['links']['url'] = reverse('ui-object-detail', args=[oid], request=request)
+            data['links']['api'] = reverse('ui-api-object', args=[oid], request=request)
+            data['links']['img'] = img_url(i.id, 'logo.png', request)
             if data.get('parent_id'):
-                data['parent_url'] = reverse('ui-api-object', args=[data['parent_id']], request=request)
-            data['children'] = reverse('ui-api-object-children', args=[oid], request=request)
+                data['links']['parent'] = reverse('ui-api-object', args=[data['parent_id']], request=request)
+            data['links']['children'] = reverse('ui-api-object-children', args=[oid], request=request)
             return data
         return None
 
@@ -219,12 +223,11 @@ class ApiOrganization(Organization):
         for d in data.get('results', []):
             ci = Identifier(d['id'])
             cidparts = [x for x in ci.parts.itervalues()]
-            d['url'] = reverse('ui-object-detail', args=[ci.id], request=request)
-            d['api_url'] = reverse('ui-api-object', args=[ci.id], request=request)
+            d['links'] = OrderedDict()
+            d['links']['url'] = reverse('ui-object-detail', args=[ci.id], request=request)
+            d['links']['api'] = reverse('ui-api-object', args=[ci.id], request=request)
             if data.get('signature_id'):
-                d['img_url'] = img_url(d['id'], access_filename(d.get('signature_id')), request)
-            else:
-                d['img_url'] = ''
+                d['links']['img'] = img_url(d['id'], access_filename(d.get('signature_id')), request)
         return data
 
 class ApiCollection(Collection):
@@ -238,17 +241,18 @@ class ApiCollection(Collection):
             model=i.model, document_id=i.id)
         if document and (document['found'] or document['exists']):
             data = document['_source']
-            data['url'] = reverse('ui-object-detail', args=[oid], request=request)
-            data['api_url'] = reverse('ui-api-object', args=[oid], request=request)
+            data['links'] = OrderedDict()
+            data['links']['www'] = reverse('ui-object-detail', args=[oid], request=request)
+            data['links']['api'] = reverse('ui-api-object', args=[oid], request=request)
             if data.get('signature_id'):
                 data['img_path'] = os.path.join(i.id, access_filename(data.get('signature_id')))
-                data['img_url'] = img_url(i.id, access_filename(data.get('signature_id')), request)
+                data['links']['img'] = img_url(i.id, access_filename(data.get('signature_id')), request)
             else:
                 data['img_path'] = ''
-                data['img_url'] = ''
+                data['links']['img'] = ''
             if data.get('parent_id'):
-                data['parent_url'] = reverse('ui-api-object', args=[data['parent_id']], request=request)
-            data['children'] = reverse('ui-api-object-children', args=[oid], request=request)
+                data['links']['parent'] = reverse('ui-api-object', args=[data['parent_id']], request=request)
+            data['links']['children'] = reverse('ui-api-object-children', args=[oid], request=request)
             pop_field(data, 'notes')
             return data
         return None
@@ -260,12 +264,11 @@ class ApiCollection(Collection):
         for d in data.get('results', []):
             ei = Identifier(d['id'])
             eidparts = [x for x in ei.parts.itervalues()]
-            d['url'] = reverse('ui-object-detail', args=[ei.id], request=request)
-            d['api_url'] = reverse('ui-api-object', args=[ei.id], request=request)
+            d['links'] = OrderedDict()
+            d['links']['url'] = reverse('ui-object-detail', args=[ei.id], request=request)
+            d['links']['api'] = reverse('ui-api-object', args=[ei.id], request=request)
             if d.get('signature_id'):
-                d['img_url'] = img_url(i.id, access_filename(d.get('signature_id')), request)
-            else:
-                d['img_url'] = ''
+                d['links']['img'] = img_url(i.id, access_filename(d.get('signature_id')), request)
         return data
 
 class ApiEntity(Entity):
@@ -279,24 +282,19 @@ class ApiEntity(Entity):
             model=i.model, document_id=i.id)
         if document and (document['found'] or document['exists']):
             data = document['_source']
-            data['url'] = reverse('ui-object-detail', args=[oid], request=request)
-            data['api_url'] = reverse('ui-api-object', args=[oid], request=request)
+            data['links'] = OrderedDict()
+            data['links']['url'] = reverse('ui-object-detail', args=[oid], request=request)
+            data['links']['api'] = reverse('ui-api-object', args=[oid], request=request)
             if data.get('signature_id'):
                 data['img_path'] = os.path.join(i.id, access_filename(data.get('signature_id')))
-                data['img_url'] = img_url(i.id, access_filename(data.get('signature_id')), request)
+                data['links']['img'] = img_url(i.id, access_filename(data.get('signature_id')), request)
             else:
                 data['img_path'] = ''
-                data['img_url'] = ''
+                data['links']['img'] = ''
             if data.get('parent_id'):
-                data['parent_url'] = reverse('ui-api-object', args=[data['parent_id']], request=request)
-            data['children-objects'] = reverse('ui-api-object-children', args=[oid], request=request)
-            data['children-files'] = reverse('ui-api-object-nodes', args=[oid], request=request)
-            # add links to child_objects, file_groups files
-            for o in data.get('child_objects', []):
-                o['api_url'] = reverse('ui-api-object-children', args=[o['id']], request=request)
-            for group in data.get('file_groups', []):
-                for o in group['files']:
-                    o['api_url'] = reverse('ui-api-object-nodes', args=[o['id']], request=request)
+                data['links']['parent'] = reverse('ui-api-object', args=[data['parent_id']], request=request)
+            data['links']['children-objects'] = reverse('ui-api-object-children', args=[oid], request=request)
+            data['links']['children-files'] = reverse('ui-api-object-nodes', args=[oid], request=request)
             # fields
             data['facility'] = []
             for item in document['_source'].get('facility', []):
@@ -330,12 +328,11 @@ class ApiEntity(Entity):
         for d in data.get('results', []):
             ei = Identifier(d['id'])
             eidparts = [x for x in ei.parts.itervalues()]
-            d['url'] = reverse('ui-object-detail', args=[ei.id], request=request)
-            d['api_url'] = reverse('ui-api-object', args=[ei.id], request=request)
+            d['links'] = OrderedDict()
+            d['links']['url'] = reverse('ui-object-detail', args=[ei.id], request=request)
+            d['links']['api'] = reverse('ui-api-object', args=[ei.id], request=request)
             if d.get('signature_id'):
-                d['img_url'] = img_url(i.id, access_filename(d.get('signature_id')), request)
-            else:
-                d['img_url'] = ''
+                d['links']['img'] = img_url(i.id, access_filename(d.get('signature_id')), request)
         return data
 
     @staticmethod
@@ -346,18 +343,17 @@ class ApiEntity(Entity):
             fi = Identifier(d['id'])
             collection_id = fi.collection_id()
             fidparts = [x for x in fi.parts.itervalues()]
-            d['url'] = reverse('ui-object-detail', args=[fi.id], request=request)
-            d['api_url'] = reverse('ui-api-object', args=[fi.id], request=request)
+            d['links'] = OrderedDict()
+            d['links']['url'] = reverse('ui-object-detail', args=[fi.id], request=request)
+            d['links']['api_url'] = reverse('ui-api-object', args=[fi.id], request=request)
             if d.get('signature_id'):
-                d['img_url'] = img_url(i.id, access_filename(d.get('signature_id')), request)
-            else:
-                d['img_url'] = ''
+                d['links']['img_url'] = img_url(i.id, access_filename(d.get('signature_id')), request)
             if fi.parts['role'] == 'mezzanine':
                 extension = os.path.splitext(d['basename_orig'])[1]
                 filename = d['id'] + extension
                 path_rel = os.path.join(collection_id, filename)
                 url = settings.MEDIA_URL + path_rel
-                d['download_url'] = url
+                d['links']['download'] = url
         return data
 
 class ApiFile(File):
@@ -372,19 +368,20 @@ class ApiFile(File):
             model=i.model, document_id=i.id)
         if document and (document['found'] or document['exists']):
             data = document['_source']
-            data['url'] = reverse('ui-object-detail', args=[oid], request=request)
-            data['api_url'] = reverse('ui-api-object', args=[oid], request=request)
+            data['links'] = OrderedDict()
+            data['links']['www'] = reverse('ui-object-detail', args=[oid], request=request)
+            data['links']['api'] = reverse('ui-api-object', args=[oid], request=request)
             if data.get('access_rel'):
                 data['img_path'] = img_path(collection_id, os.path.basename(data['access_rel']))
-                data['img_url'] = img_url(collection_id, os.path.basename(data.get('access_rel')), request)
+                data['links']['img'] = img_url(collection_id, os.path.basename(data.get('access_rel')), request)
             else:
                 data['img_path'] = ''
-                data['img_url'] = ''
+                data['links']['img'] = ''
             if data.get('parent_id'):
-                data['parent_url'] = reverse('ui-api-object', args=[data['parent_id']], request=request)
+                data['links']['parent'] = reverse('ui-api-object', args=[data['parent_id']], request=request)
             #def build_object(identifier, source, rename={} ):
             o = models.build_object(i, data)
-            data['download_url'] = o.download_url()
+            data['links']['download'] = o.download_url()
             pop_field(data, 'public')
             return data
         return None
