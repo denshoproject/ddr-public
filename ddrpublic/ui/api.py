@@ -330,6 +330,21 @@ class ApiEntity(Entity):
     def api_children(oid, request, limit=DEFAULT_LIMIT, offset=0):
         i = Identifier(id=oid)
         data = api_children(CHILDREN[i.model][0], i.id, request, limit=limit, offset=offset)
+        for d in data.get('results', []):
+            ei = Identifier(d['id'])
+            eidparts = [x for x in ei.parts.itervalues()]
+            d['url'] = reverse('ui-api-object', args=[ei.id], request=request)
+            d['absolute_url'] = reverse('ui-object-detail', args=[ei.id], request=request)
+            if d.get('signature_id'):
+                d['img_url'] = img_url(i.id, access_filename(d.get('signature_id')), request)
+            else:
+                d['img_url'] = ''
+        return data
+
+    @staticmethod
+    def api_nodes(oid, request, limit=DEFAULT_LIMIT, offset=0):
+        i = Identifier(id=oid)
+        data = api_children(CHILDREN[i.model][0], i.id, request, limit=limit, offset=offset)
         for d in data['results']:
             fi = Identifier(d['id'])
             collection_id = fi.collection_id()
@@ -463,18 +478,18 @@ def index(request, format=None):
 
 @api_view(['GET'])
 def object_nodes(request, oid):
-    assert False
+    return files(request, oid)
 
 
 @api_view(['GET'])
 def object_children(request, oid):
     i = Identifier(id=oid)
-    if i.model == 'repository': assert False #return repository(request, oid)
-    elif i.model == 'organization': return organizations(request, oid)
-    elif i.model == 'collection': return collections(request, oid)
-    elif i.model == 'entity': return entities(request, oid)
-    elif i.model == 'segment': return segments(request, oid)
-    elif i.model == 'file': return files(request, oid)
+    if i.model == 'repository': return organizations(request, oid)
+    elif i.model == 'organization': return collections(request, oid)
+    elif i.model == 'collection': return entities(request, oid)
+    elif i.model == 'entity': return segments(request, oid)
+    elif i.model == 'segment': return files(request, oid)
+    elif i.model == 'file': assert False
     raise Exception("Could not match ID,model,view.")
 
 def _list(request, data):
