@@ -171,8 +171,9 @@ class ApiRepository(Repository):
         if document and (document['found'] or document['exists']):
             data = document['_source']
             data['repository_url'] = data['url']
-            data['url'] = reverse('ui-api-object', args=[oid], request=request)
-            data['absolute_url'] = reverse('ui-object-detail', args=[oid], request=request)
+            data['url'] = reverse('ui-object-detail', args=[oid], request=request)
+            data['api_url'] = reverse('ui-api-object', args=[oid], request=request)
+            # img_url
             data['children'] = reverse('ui-api-object-children', args=[oid], request=request)
             return data
         return None
@@ -184,12 +185,11 @@ class ApiRepository(Repository):
         for d in data.get('results', []):
             oi = Identifier(d['id'])
             oidparts = [x for x in oi.parts.itervalues()]
-            #d['organization_url'] = d['url']
-            d['url'] = reverse('ui-api-object', args=[oi.id], request=request)
-            d['absolute_url'] = reverse('ui-object-detail', args=[oi.id], request=request)
+            d['url'] = reverse('ui-object-detail', args=[oi.id], request=request)
+            d['api_url'] = reverse('ui-api-object', args=[oi.id], request=request)
+            d['img_url'] = img_url(d['id'], 'logo.png', request)
             if data.get('parent_id'):
                 data['parent_url'] = reverse('ui-api-object', args=[data['parent_id']], request=request)
-            d['logo_url'] = img_url(d['id'], 'logo.png', request)
         return data
 
 class ApiOrganization(Organization):
@@ -203,12 +203,12 @@ class ApiOrganization(Organization):
             model=i.model, document_id=i.id)
         if document and (document['found'] or document['exists']):
             data = document['_source']
-            data['url'] = reverse('ui-api-object', args=[oid], request=request)
-            data['absolute_url'] = reverse('ui-object-detail', args=[oid], request=request)
+            data['url'] = reverse('ui-object-detail', args=[oid], request=request)
+            data['api_url'] = reverse('ui-api-object', args=[oid], request=request)
+            data['img_url'] = img_url(i.id, 'logo.png', request)
             if data.get('parent_id'):
                 data['parent_url'] = reverse('ui-api-object', args=[data['parent_id']], request=request)
             data['children'] = reverse('ui-api-object-children', args=[oid], request=request)
-            data['img_url'] = img_url(i.id, 'logo.png', request)
             return data
         return None
 
@@ -219,8 +219,8 @@ class ApiOrganization(Organization):
         for d in data.get('results', []):
             ci = Identifier(d['id'])
             cidparts = [x for x in ci.parts.itervalues()]
-            d['url'] = reverse('ui-api-object', args=[ci.id], request=request)
-            d['absolute_url'] = reverse('ui-object-detail', args=[ci.id], request=request)
+            d['url'] = reverse('ui-object-detail', args=[ci.id], request=request)
+            d['api_url'] = reverse('ui-api-object', args=[ci.id], request=request)
             if data.get('signature_id'):
                 d['img_url'] = img_url(d['id'], access_filename(d.get('signature_id')), request)
             else:
@@ -238,17 +238,17 @@ class ApiCollection(Collection):
             model=i.model, document_id=i.id)
         if document and (document['found'] or document['exists']):
             data = document['_source']
-            data['url'] = reverse('ui-api-object', args=[oid], request=request)
-            data['absolute_url'] = reverse('ui-object-detail', args=[oid], request=request)
-            if data.get('parent_id'):
-                data['parent_url'] = reverse('ui-api-object', args=[data['parent_id']], request=request)
-            data['children'] = reverse('ui-api-object-children', args=[oid], request=request)
+            data['url'] = reverse('ui-object-detail', args=[oid], request=request)
+            data['api_url'] = reverse('ui-api-object', args=[oid], request=request)
             if data.get('signature_id'):
                 data['img_path'] = os.path.join(i.id, access_filename(data.get('signature_id')))
                 data['img_url'] = img_url(i.id, access_filename(data.get('signature_id')), request)
             else:
                 data['img_path'] = ''
                 data['img_url'] = ''
+            if data.get('parent_id'):
+                data['parent_url'] = reverse('ui-api-object', args=[data['parent_id']], request=request)
+            data['children'] = reverse('ui-api-object-children', args=[oid], request=request)
             pop_field(data, 'notes')
             return data
         return None
@@ -260,8 +260,8 @@ class ApiCollection(Collection):
         for d in data.get('results', []):
             ei = Identifier(d['id'])
             eidparts = [x for x in ei.parts.itervalues()]
-            d['url'] = reverse('ui-api-object', args=[ei.id], request=request)
-            d['absolute_url'] = reverse('ui-object-detail', args=[ei.id], request=request)
+            d['url'] = reverse('ui-object-detail', args=[ei.id], request=request)
+            d['api_url'] = reverse('ui-api-object', args=[ei.id], request=request)
             if d.get('signature_id'):
                 d['img_url'] = img_url(i.id, access_filename(d.get('signature_id')), request)
             else:
@@ -279,44 +279,41 @@ class ApiEntity(Entity):
             model=i.model, document_id=i.id)
         if document and (document['found'] or document['exists']):
             data = document['_source']
-            data['url'] = reverse('ui-api-object', args=[oid], request=request)
-            data['absolute_url'] = reverse('ui-object-detail', args=[oid], request=request)
-            if data.get('parent_id'):
-                data['parent_url'] = reverse('ui-api-object', args=[data['parent_id']], request=request)
-            # entity.json has a "children" field
-            data['children-objects'] = reverse('ui-api-object-children', args=[oid], request=request)
-            data['children-files'] = reverse('ui-api-object-nodes', args=[oid], request=request)
-            data['facility'] = []
-            for item in document['_source'].get('facility', []):
-                if item:
-                    item_id = item.get('id')
-                    reverse('ui-api-term', args=('facility', item['id']), request=request)
-                assert False
-            
-            for term in document['_source'].get('topics', []):
-                if isinstance(term, basestring):
-                    term = json.load(term)
-                term_id = term['id']
-            
-            data['topics'] = [
-                reverse('ui-api-term', args=('topics', term['id']), request=request)
-                for term in document['_source'].get('topics', [])
-                if term
-            ]
-            
-            #persons
+            data['url'] = reverse('ui-object-detail', args=[oid], request=request)
+            data['api_url'] = reverse('ui-api-object', args=[oid], request=request)
             if data.get('signature_id'):
                 data['img_path'] = os.path.join(i.id, access_filename(data.get('signature_id')))
                 data['img_url'] = img_url(i.id, access_filename(data.get('signature_id')), request)
             else:
                 data['img_path'] = ''
                 data['img_url'] = ''
+            if data.get('parent_id'):
+                data['parent_url'] = reverse('ui-api-object', args=[data['parent_id']], request=request)
+            data['children-objects'] = reverse('ui-api-object-children', args=[oid], request=request)
+            data['children-files'] = reverse('ui-api-object-nodes', args=[oid], request=request)
             # add links to child_objects, file_groups files
             for o in data.get('child_objects', []):
-                o['url'] = reverse('ui-api-object-children', args=[o['id']], request=request)
+                o['api_url'] = reverse('ui-api-object-children', args=[o['id']], request=request)
             for group in data.get('file_groups', []):
                 for o in group['files']:
-                    o['url'] = reverse('ui-api-object-nodes', args=[o['id']], request=request)
+                    o['api_url'] = reverse('ui-api-object-nodes', args=[o['id']], request=request)
+            # fields
+            data['facility'] = []
+            for item in document['_source'].get('facility', []):
+                if item:
+                    item_id = item.get('id')
+                    reverse('ui-api-term', args=('facility', item['id']), request=request)
+                assert False
+            for term in document['_source'].get('topics', []):
+                if isinstance(term, basestring):
+                    term = json.load(term)
+                term_id = term['id']
+            data['topics'] = [
+                reverse('ui-api-term', args=('topics', term['id']), request=request)
+                for term in document['_source'].get('topics', [])
+                if term
+            ]
+            #persons
             # remove extraneous or private fields
             pop_field(data, 'files')
             pop_field(data, 'notes')
@@ -333,8 +330,8 @@ class ApiEntity(Entity):
         for d in data.get('results', []):
             ei = Identifier(d['id'])
             eidparts = [x for x in ei.parts.itervalues()]
-            d['url'] = reverse('ui-api-object', args=[ei.id], request=request)
-            d['absolute_url'] = reverse('ui-object-detail', args=[ei.id], request=request)
+            d['url'] = reverse('ui-object-detail', args=[ei.id], request=request)
+            d['api_url'] = reverse('ui-api-object', args=[ei.id], request=request)
             if d.get('signature_id'):
                 d['img_url'] = img_url(i.id, access_filename(d.get('signature_id')), request)
             else:
@@ -349,8 +346,8 @@ class ApiEntity(Entity):
             fi = Identifier(d['id'])
             collection_id = fi.collection_id()
             fidparts = [x for x in fi.parts.itervalues()]
-            d['url'] = reverse('ui-api-object', args=[fi.id], request=request)
-            d['absolute_url'] = reverse('ui-object-detail', args=[fi.id], request=request)
+            d['url'] = reverse('ui-object-detail', args=[fi.id], request=request)
+            d['api_url'] = reverse('ui-api-object', args=[fi.id], request=request)
             if d.get('signature_id'):
                 d['img_url'] = img_url(i.id, access_filename(d.get('signature_id')), request)
             else:
@@ -375,16 +372,16 @@ class ApiFile(File):
             model=i.model, document_id=i.id)
         if document and (document['found'] or document['exists']):
             data = document['_source']
-            data['url'] = reverse('ui-api-object', args=[oid], request=request)
-            data['absolute_url'] = reverse('ui-object-detail', args=[oid], request=request)
-            if data.get('parent_id'):
-                data['parent_url'] = reverse('ui-api-object', args=[data['parent_id']], request=request)
+            data['url'] = reverse('ui-object-detail', args=[oid], request=request)
+            data['api_url'] = reverse('ui-api-object', args=[oid], request=request)
             if data.get('access_rel'):
                 data['img_path'] = img_path(collection_id, os.path.basename(data['access_rel']))
                 data['img_url'] = img_url(collection_id, os.path.basename(data.get('access_rel')), request)
             else:
                 data['img_path'] = ''
                 data['img_url'] = ''
+            if data.get('parent_id'):
+                data['parent_url'] = reverse('ui-api-object', args=[data['parent_id']], request=request)
             #def build_object(identifier, source, rename={} ):
             o = models.build_object(i, data)
             data['download_url'] = o.download_url()
@@ -400,15 +397,15 @@ class ApiFacet(faceting.Facet):
             'name': self.name,
             'title': self.title,
             'description': self.description,
-            'url': reverse('ui-api-facet', args=[self.id,], request=request),
-            'absolute_url': reverse('ui-browse-facet', args=[self.id,], request=request),
+            'api_url': reverse('ui-api-facet', args=[self.id,], request=request),
+            'url': reverse('ui-browse-facet', args=[self.id,], request=request),
         }
         data['terms'] = [
             {
                 'id': term.id,
                 'title': term.title,
-                'url': reverse('ui-api-term', args=(term.facet_id, term.id), request=request),
-                'absolute_url': reverse('ui-browse-term', args=(term.facet_id, term.id), request=request),
+                'api_url': reverse('ui-api-term', args=(term.facet_id, term.id), request=request),
+                'url': reverse('ui-browse-term', args=(term.facet_id, term.id), request=request),
             }
             for term in self.terms()
         ]
@@ -437,8 +434,8 @@ class ApiTerm(faceting.Term):
             'created': self.created,
             'modified': self.modified,
             'encyclopedia': self.encyc_urls,
-            'url': reverse('ui-api-term', args=(self.facet_id, self.id), request=request),
-            'absolute_url': self.url(),
+            'api_url': reverse('ui-api-term', args=(self.facet_id, self.id), request=request),
+            'url': self.url(),
         }
         if self.parent_id:
             data['parent_url'] = reverse(
@@ -628,8 +625,8 @@ def term_objects(request, facet_id, term_id, format=None):
         i = Identifier(d['id'])
         idparts = [x for x in i.parts.itervalues()]
         collection_id = i.collection_id()
-        d['url'] = reverse('ui-api-v', args=idparts, request=request)
-        d['absolute_url'] = reverse('ui-%s' % i.model, args=idparts, request=request)
+        d['api_url'] = reverse('ui-api-v', args=idparts, request=request)
+        d['url'] = reverse('ui-%s' % i.model, args=idparts, request=request)
         if d.get('signature_id'):
             d['img_url'] = img_url(collection_id, access_filename(d['signature_id']), request)
         else:
