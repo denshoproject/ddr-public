@@ -124,7 +124,12 @@
 
 	<div class="row">
 		<div class="col-sm-12 col-md-12">
-			<h3>{{ paginator.count }} Objects</h3>
+		  <h3>
+            <a href="{% url "ui-object-children" object.identifier.id %}">
+              {{ paginator.count }} Objects
+            </a>
+          </h3>
+
 			{% for entity in page.object_list %}
 			{% document entity %}
 			{% endfor %}
