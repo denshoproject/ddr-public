@@ -23,10 +23,9 @@ def facets_list():
     cached = cache.get(key)
     if not cached:
         facets_list = []
-        for name in docstore.list_facets():
-            document = docstore.get(settings.DOCSTORE_HOSTS, index=settings.DOCSTORE_INDEX,
-                                    model='facet', document_id=name)
-            f = document['_source']
+        ds = docstore.Docstore()
+        for name in ds.get_facets():
+            f = ds.get(model='facet', document_id=name)['_source']
             f['name'] = name
             f['url'] = reverse('ui-browse-facet', args=[name])
             facets_list.append(f)
@@ -77,7 +76,8 @@ def get_term_children(facet_id, term_dict):
         children = []
         facet = get_facet(facet_id)
         for t in facet['terms']:
-            if t.get('parent_id',None) and (int(t['parent_id']) == int(term_dict['id'])):
+            if t.get('parent_id',None) \
+            and (int(t['parent_id']) == int(term_dict['id'])):
                 children.append(t)
     return children
 
@@ -292,8 +292,8 @@ def facet_terms(facet):
     If term is postcoordinate, all the terms come from the index, but there is not title/description.
     """
     facetterms = []
-    results = docstore.facet_terms(settings.DOCSTORE_HOSTS,
-                                   settings.DOCSTORE_INDEX, facet['name'], order='term')
+    ds = docstore.Docstore()
+    results = ds.facet_terms(facet['name'], order='term')
     if facet.get('terms', []):
         # precoordinate
         # IMPORTANT: topics and facility term IDs are int. All others are str.

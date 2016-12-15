@@ -266,9 +266,11 @@ def cached_query(host, index, model='', query='', terms={}, filters={}, fields=[
     key = hashlib.sha1(json.dumps(query_args)).hexdigest()
     cached = cache.get(key)
     if not cached:
-        cached = docstore.search(hosts=HOSTS, index=index, model=model,
-                                 query=query, term=terms, filters=filters,
-                                 fields=fields, sort=sort, size=size)
+        cached = docstore.Docstore().search(
+            model=model,
+            query=query, term=terms, filters=filters,
+            fields=fields, sort=sort, size=size
+        )
         cache.set(key, cached, settings.ELASTICSEARCH_QUERY_TIMEOUT)
     return cached
 
@@ -386,8 +388,7 @@ def build_object(identifier, source, rename={} ):
 # ----------------------------------------------------------------------
 
 def get_stub_object(identifier):
-    document = docstore.get(
-        HOSTS, index=INDEX,
+    document = docstore.Docstore().get(
         model=identifier.model, document_id=identifier.id
     )
     if document and (document['found'] or document['exists']):
@@ -400,8 +401,7 @@ def get_stub_object(identifier):
     return None
 
 def get_object(identifier):
-    document = docstore.get(
-        HOSTS, index=INDEX,
+    document = docstore.Docstore().get(
         model=identifier.model, document_id=identifier.id
     )
     if document and (document['found'] or document['exists']):
@@ -583,8 +583,7 @@ class Entity( object ):
     
     @staticmethod
     def get(identifier):
-        document = docstore.get(
-            HOSTS, index=INDEX,
+        document = docstore.Docstore().get(
             model=identifier.model, document_id=identifier.id
         )
         if document and (document['found'] or document['exists']):
@@ -682,6 +681,10 @@ class Entity( object ):
                 for article in term.encyc_articles():
                     self._encyc_articles.append(article)
         return self._encyc_articles
+
+
+class Role( object ):
+    pass
 
 
 class File( object ):
