@@ -41,9 +41,9 @@ ASSETS=ddr-public-assets.tar.gz
 # wget http://code.jquery.com/jquery-1.11.0.min.js
 # wget https://github.com/twbs/bootstrap/releases/download/v3.1.1/bootstrap-3.1.1-dist.zip
 
-SUPERVISOR_GUNICORN_CONF=/etc/supervisor/conf.d/gunicorn_ddrlocal.conf
-NGINX_CONF=/etc/nginx/sites-available/ddrlocal.conf
-NGINX_CONF_LINK=/etc/nginx/sites-enabled/ddrlocal.conf
+SUPERVISOR_GUNICORN_CONF=/etc/supervisor/conf.d/gunicorn_ddrpublic.conf
+NGINX_CONF=/etc/nginx/sites-available/ddrpublic.conf
+NGINX_CONF_LINK=/etc/nginx/sites-enabled/ddrpublic.conf
 
 
 .PHONY: help
