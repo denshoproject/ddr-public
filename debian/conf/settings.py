@@ -7,6 +7,7 @@ ENCYC_BASE = 'http://encyclopedia.densho.org'
 import ConfigParser
 import logging
 import os
+import sys
 
 class NoConfigError(Exception):
     def __init__(self, value):
@@ -22,6 +23,10 @@ config = ConfigParser.ConfigParser()
 configs_read = config.read(CONFIG_FILES)
 if not configs_read:
     raise NoConfigError('No config file!')
+
+REPO_MODELS_PATH = config.get('cmdln','repo_models_path')
+if REPO_MODELS_PATH not in sys.path:
+    sys.path.append(REPO_MODELS_PATH)
 
 with open('/etc/ddr/ddrpublic-secret-key.txt') as f:
     SECRET_KEY = f.read().strip()
