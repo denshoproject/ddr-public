@@ -7,6 +7,7 @@ urlpatterns = patterns(
     '',
     url(r'^names', include('names.urls')),
     
+    url(r'^api/0.2/search/help/', TemplateView.as_view(template_name="ui/search/help.html"), name='ui-about'),
     url(r'^api/0.2/search/$', 'ui.api.search', name='ui-api-search'),
     
     url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/objects/$', 'ui.api.term_objects', name='ui-api-term-objects'),

@@ -15,6 +15,7 @@ elasticsearch==1.4.0               # Apache   y
 elasticsearch-dsl==0.0.9
 envoy==0.0.3                       # MIT      ???
 gunicorn==19.3.0                   # MIT      y
+Markdown==2.6.7                    # BSD      y
 python-dateutil==2.2               # BSD      y
 redis==2.10.3                      # MIT      y
 requests==2.6.0                    # Apache2  y

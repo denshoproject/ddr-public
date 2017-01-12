@@ -141,10 +141,10 @@ SEARCH_RETURN_FIELDS = [
     'sort',
 ]
 
-def api_search(request, query, models=[], sort_fields=[], limit=DEFAULT_LIMIT, offset=0):
+def api_search(text='', must=[], should=[], mustnot=[], models=[], sort_fields=[], limit=DEFAULT_LIMIT, offset=0, request=None):
     """Return object children list in Django REST Framework format.
     
-    Returns a paged list with count/previous/next metadata
+    Returns a paged list with count/prev/next metadata
     
     @returns: dict
     """
@@ -155,15 +155,23 @@ def api_search(request, query, models=[], sort_fields=[], limit=DEFAULT_LIMIT, o
     else:
         raise Exception('model must be a string or a list')
     
+    q = docstore.search_query(
+        text=text,
+        must=must,
+        should=should,
+        mustnot=mustnot
+    )
+
     results = docstore.Docstore().search(
-        model=models,
-        query=query,
+        doctypes=models,
+        query=q,
         sort=sort_fields,
         fields=SEARCH_RETURN_FIELDS,
-        first=offset,
+        from_=offset,
         size=limit,
     )
-    return format_list_objects(request, results, offset, limit)
+    data = format_list_objects(results, offset, limit, request)
+    return data
 
 def api_children(request, model, object_id, sort_fields, limit=DEFAULT_LIMIT, offset=0):
     """Return object children list in Django REST Framework format.
@@ -586,43 +594,46 @@ def index(request, format=None):
     return Response(data)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def search(request, format=None):
-    """SEARCH DOCS
-    
-    q - query
-    m - models
-    s - sort
-    n - number of results AKA page size (limit)
-    p - page (offset)
     """
-    query = request.GET.get('q', '')
-    if not query:
-        return Response({})
-    models = request.GET.get('m', '').strip().split(',')
-    sort = request.GET.get('s', '').strip().split(',')
-    limit = request.GET.get('n', DEFAULT_LIMIT)
-    offset = request.GET.get('p', 0)
-
+    <a href="/api/0.2/search/help/">Search API help</a>
+    """
+    args = {
+        'fulltext': request.data.get('fulltext'),
+        'must': request.data.get('must', []),
+        'should': request.data.get('should', []),
+        'mustnot': request.data.get('mustnot', []),
+        'models': request.data.get('models', []),
+        'sort': request.data.get('sort', []),
+        'offset': request.data.get('offset', 0),
+        'limit': request.data.get('limit', DEFAULT_LIMIT),
+    }
+    if args['fulltext'] or args['must'] or args['should'] or args['mustnot']:
+        # do the query
+        data = api_search(
+            text = args['fulltext'],
+            must = args['must'],
+            should = args['should'],
+            mustnot = args['mustnot'],
+            models = args['models'],
+            sort_fields = args['sort'],
+            offset = args['offset'],
+            limit = args['limit'],
+            request = request,
+        )
+        # remove match _all from must, keeping fulltext arg
+        for item in args['must']:
+            if isinstance(item, dict) \
+            and item.get('match') \
+            and item['match'].get('_all') \
+            and (item['match']['_all'] == args.get('fulltext')):
+                args['must'].remove(item)
+        # include args in response
+        data['args'] = args
     
-    #ALL_MODELS = ['repository','organization','collection','entity','segment','file']
-    #if not models:
-    #    models = ALL_MODELS
-    
-    #if request.GET.get('s'):
-    #    sort = request.GET['s'].strip().split(',')
-    #else:
-    #    sort = []
-    
-    data = api_search(
-        request=request,
-        query=query,
-        models=models,
-        sort_fields=sort,
-        limit=limit,
-        offset=offset,
-    )
-    return Response(data)
+        return Response(data)
+    return Response({})
 
 
 @api_view(['GET'])
