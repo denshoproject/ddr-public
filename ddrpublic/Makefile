@@ -309,7 +309,7 @@ branch:
 	cd $(INSTALL_PUBLIC)/ddrpublic; python ./bin/git-checkout-branch.py $(BRANCH)
 
 
-install-static: get-ddrpublic-assets install-modernizr install-bootstrap install-jquery
+install-static: get-ddrpublic-assets install-restframework install-modernizr install-bootstrap install-jquery
 
 clean-static: clean-modernizr clean-bootstrap clean-jquery
 
@@ -320,6 +320,12 @@ get-ddrpublic-assets:
 	-mkdir $(MEDIA_BASE)
 	wget -nc -P /tmp http://$(PACKAGE_SERVER)/$(ASSETS)
 	tar xzvf /tmp/ddr-public-assets.tar.gz -C $(MEDIA_BASE)/
+
+install-restframework:
+	@echo ""
+	@echo "rest_framework ----------------------------------------------------------"
+	-mkdir $(MEDIA_BASE)
+	cp -R /usr/local/src/env/ddrpublic/lib/python2.7/site-packages/rest_framework/static/rest_framework/ $(STATIC_ROOT)/
 
 install-modernizr:
 	@echo ""
