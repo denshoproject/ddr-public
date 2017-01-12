@@ -92,7 +92,7 @@ def img_path(bucket, filename):
         os.path.basename(filename)
     )
 
-def img_url(bucket, filename, request):
+def img_url(bucket, filename, request=None):
     """Constructs URL; sorl.thumbnail-friendly if request contains flag.
 
     sorl.thumbnail can make thumbnails from images on external systems,
@@ -107,7 +107,9 @@ def img_url(bucket, filename, request):
     @param request: Django request object.
     @returns: URL or None
     """
-    internal = request.GET.get(settings.MEDIA_URL_LOCAL_MARKER, 0)
+    internal = 0
+    if request:
+        internal = request.GET.get(settings.MEDIA_URL_LOCAL_MARKER, 0)
     if internal and isinstance(internal, basestring) and internal.isdigit():
         internal = int(internal)
     if bucket and filename and internal:
@@ -166,7 +168,7 @@ def api_search(request, query, models=[], sort_fields=[], limit=DEFAULT_LIMIT, o
 def api_children(request, model, object_id, sort_fields, limit=DEFAULT_LIMIT, offset=0):
     """Return object children list in Django REST Framework format.
     
-    Returns a paged list with count/previous/next metadata
+    Returns a paged list with count/prev/next metadata
     
     @returns: dict
     """
@@ -187,9 +189,9 @@ def api_children(request, model, object_id, sort_fields, limit=DEFAULT_LIMIT, of
         first=offset,
         size=limit,
     )
-    return format_list_objects(request, results, offset, limit)
+    return format_list_objects(results, offset, limit, request)
 
-def format_list_objects(request, results, offset, limit):
+def format_list_objects(results, offset, limit, request=None):
     """Common function for processing lists of search hits
     
     @param results: dict Output of docstore.Docstore().search
@@ -223,25 +225,25 @@ def format_list_objects(request, results, offset, limit):
             )
         hits.append(data)
     
-    count = results['hits']['total']
+    total = results['hits']['total']
     prev,next_ = None,None
     p = offset - limit
     n = offset + limit
     if p < 0:
         p = None
-    if n >= count:
+    if n >= total:
         n = None
     if p is not None:
         prev = '?limit=%s&offset=%s' % (limit, p)
     if n:
         next_ = '?limit=%s&offset=%s' % (limit, n)
     
-    return {
-        "count": count,
-        "previous": prev,
-        "next": next_,
-        "results": hits,
-    }
+    data = OrderedDict()
+    data['total'] = total
+    data['prev'] = prev
+    data['next'] = next_
+    data['hits'] = hits
+    return data
 
 def format_object_detail(document, request):
     if document and (document['found'] or document['exists']):
@@ -488,7 +490,7 @@ class ApiFile(object):
     def api_children(oid, request, limit=DEFAULT_LIMIT, offset=0):
         return {
             "count": 0,
-            "previous": None,
+            "prev": None,
             "next": None,
             "results": [],
         }
@@ -648,8 +650,8 @@ def object_children(request, oid):
 def _list(request, data):
     host = request.META['HTTP_HOST']
     path = request.META['PATH_INFO']
-    if data.get('previous'):
-        data['previous'] = 'http://%s%s%s' % (host, path, data['previous'])
+    if data.get('prev'):
+        data['prev'] = 'http://%s%s%s' % (host, path, data['prev'])
     if data.get('next'):
         data['next'] = 'http://%s%s%s' % (host, path, data['next'])
     return Response(data)
