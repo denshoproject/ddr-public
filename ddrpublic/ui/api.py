@@ -564,6 +564,88 @@ class ApiFile(object):
             "results": [],
         }
 
+    
+def format_narrator(document, request, listitem=False):
+    if document and document.get('_source'):
+        oid = document['_source'].pop('id')
+        
+        d = OrderedDict()
+        d['id'] = oid
+        d['model'] = 'narrator'
+        # links
+        d['links'] = OrderedDict()
+        d['links']['html'] = reverse('ui-browse-narrator', args=[oid], request=request)
+        d['links']['json'] = reverse('ui-api-narrator', args=[oid], request=request)
+        d['links']['img'] = document['_source'].pop('image_url')
+        d['links']['documents'] = ''
+        # title, description
+        if document['_source'].get('title'):
+            d['title'] = document['_source'].pop('title')
+        if document['_source'].get('description'):
+            d['description'] = document['_source'].pop('description')
+        # everything else
+        HIDDEN_FIELDS = [
+            'repo','org','cid','eid','sid','role','sha1'
+        ]
+        for key in document['_source'].iterkeys():
+            if key not in HIDDEN_FIELDS:
+                d[key] = document['_source'][key]
+        return d
+    return None
+
+class ApiNarrator(object):
+    
+    @staticmethod
+    def api_get(oid, request):
+        document = docstore.Docstore().get(
+            model='narrator', document_id=oid
+        )
+        if not document:
+            raise NotFound()
+        data = format_narrator(document, request)
+        HIDDEN_FIELDS = [
+            'notes',
+        ]
+        for field in HIDDEN_FIELDS:
+            pop_field(data, field)
+        return data
+    
+    @staticmethod
+    def api_list(request, limit=DEFAULT_LIMIT, offset=0):
+        SORT_FIELDS = [
+            ['last_name','asc'],
+            ['first_name','asc'],
+            ['middle_name','asc'],
+        ]
+        LIST_FIELDS = [
+            'id',
+            'title',
+            'image_url',
+        ]
+        q = docstore.search_query(
+            must=[
+                { "match_all": {}}
+            ]
+        )
+        results = docstore.Docstore().search(
+            doctypes=['narrator'],
+            query=q,
+            sort=SORT_FIELDS,
+            fields=LIST_FIELDS,
+            from_=offset,
+            size=limit,
+        )
+        return format_list_objects(
+            paginate_results(
+                results,
+                offset,
+                limit,
+                request
+            ),
+            request,
+            format_narrator
+        )
+
 
 class ApiFacet(faceting.Facet):
 
@@ -648,8 +730,9 @@ def index(request, format=None):
     """
     repo = 'ddr'
     data = {
-        'repository': reverse('ui-api-object', args=[repo,], request=request),
         'facets': reverse('ui-api-facets', request=request),
+        'narrators': reverse('ui-api-narrators', request=request),
+        'repository': reverse('ui-api-object', args=[repo,], request=request),
         'search': reverse('ui-api-search', request=request),
     }
     return Response(data)
@@ -805,6 +888,17 @@ def entity(request, oid, format=None):
 def file(request, oid, format=None):
     filter_if_branded(request, oid)
     data = ApiFile.api_get(oid, request)
+    return _detail(request, data)
+
+@api_view(['GET'])
+def narrator_index(request, format=None):
+    offset = int(request.GET.get('offset', 0))
+    data = ApiNarrator.api_list(request, offset=offset)
+    return _list(request, data)
+
+@api_view(['GET'])
+def narrator(request, oid, format=None):
+    data = ApiNarrator.api_get(oid, request)
     return _detail(request, data)
 
 @api_view(['GET'])

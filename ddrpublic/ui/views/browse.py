@@ -27,6 +27,9 @@ def index( request ):
         context_instance=RequestContext(request, processors=[])
     )
 
+def narrator(request, oid):
+    assert False
+
 def facet( request, facet ):
     facet = faceting.Facet(facet)
     terms = facet.tree()
