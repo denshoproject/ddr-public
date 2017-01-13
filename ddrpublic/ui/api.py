@@ -7,6 +7,7 @@ from django.http import HttpResponseRedirect
 
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
@@ -313,6 +314,8 @@ class ApiRepository(object):
     def api_get(oid, request):
         i = Identifier(id=oid)
         document = docstore.Docstore().get(model=i.model, document_id=i.id)
+        if not document:
+            raise NotFound()
         data = format_object_detail(document, request)
         data['repository_url'] = data['url']
         return data
@@ -336,6 +339,8 @@ class ApiOrganization(object):
     def api_get(oid, request):
         i = Identifier(id=oid)
         document = docstore.Docstore().get(model=i.model, document_id=i.id)
+        if not document:
+            raise NotFound()
         data = format_object_detail(document, request)
         return data
 
@@ -360,6 +365,8 @@ class ApiCollection(object):
         i = Identifier(id=oid)
         idparts = [x for x in i.parts.itervalues()]
         document = docstore.Docstore().get(model=i.model, document_id=i.id)
+        if not document:
+            raise NotFound()
         data = format_object_detail(document, request)
         pop_field(data, 'notes')
         return data
@@ -397,6 +404,8 @@ class ApiEntity(object):
     def api_get(oid, request):
         i = Identifier(id=oid)
         document = docstore.Docstore().get(model=i.model, document_id=i.id)
+        if not document:
+            raise NotFound()
         data = format_object_detail(document, request)
         pop_field(data['links'], 'children')
         data['links']['children-objects'] = reverse(
@@ -485,6 +494,8 @@ class ApiFile(object):
         document = docstore.Docstore().get(
             model=i.model, document_id=i.id
         )
+        if not document:
+            raise NotFound()
         data = format_object_detail(document, request)
         pop_field(data, 'public')
         data['links']['download'] = img_url(
