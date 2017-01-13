@@ -188,14 +188,16 @@ def api_children(request, model, object_id, sort_fields, limit=DEFAULT_LIMIT, of
     else:
         raise Exception('model must be a string or a list')
     
-    q = 'id:"%s"' % object_id
+    q = docstore.search_query(
+        must=[{"wildcard": {"id": "%s-*" % object_id}}],
+    )
     
     results = docstore.Docstore().search(
-        model=model,
+        doctypes=model,
         query=q,
         sort=sort_fields,
         fields=SEARCH_RETURN_FIELDS,
-        first=offset,
+        from_=offset,
         size=limit,
     )
     return format_list_objects(results, offset, limit, request)
