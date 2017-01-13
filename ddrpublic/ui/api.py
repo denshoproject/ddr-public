@@ -162,7 +162,7 @@ def api_search(text='', must=[], should=[], mustnot=[], models=[], sort_fields=[
         should=should,
         mustnot=mustnot
     )
-
+    
     results = docstore.Docstore().search(
         doctypes=models,
         query=q,
@@ -640,38 +640,38 @@ def search(request, format=None):
     """
     <a href="/api/0.2/search/help/">Search API help</a>
     """
-    args = {
-        'fulltext': request.data.get('fulltext'),
-        'must': request.data.get('must', []),
-        'should': request.data.get('should', []),
-        'mustnot': request.data.get('mustnot', []),
-        'models': request.data.get('models', []),
-        'sort': request.data.get('sort', []),
-        'offset': request.data.get('offset', 0),
-        'limit': request.data.get('limit', DEFAULT_LIMIT),
-    }
-    if args['fulltext'] or args['must'] or args['should'] or args['mustnot']:
+    query = OrderedDict()
+    query['fulltext'] = request.data.get('fulltext')
+    query['must'] = request.data.get('must', [])
+    query['should'] = request.data.get('should', [])
+    query['mustnot'] = request.data.get('mustnot', [])
+    query['models'] = request.data.get('models', [])
+    query['sort'] = request.data.get('sort', [])
+    query['offset'] = request.data.get('offset', 0)
+    query['limit'] = request.data.get('limit', DEFAULT_LIMIT)
+    
+    if query['fulltext'] or query['must'] or query['should'] or query['mustnot']:
         # do the query
         data = api_search(
-            text = args['fulltext'],
-            must = args['must'],
-            should = args['should'],
-            mustnot = args['mustnot'],
-            models = args['models'],
-            sort_fields = args['sort'],
-            offset = args['offset'],
-            limit = args['limit'],
+            text = query['fulltext'],
+            must = query['must'],
+            should = query['should'],
+            mustnot = query['mustnot'],
+            models = query['models'],
+            sort_fields = query['sort'],
+            offset = query['offset'],
+            limit = query['limit'],
             request = request,
         )
         # remove match _all from must, keeping fulltext arg
-        for item in args['must']:
+        for item in query['must']:
             if isinstance(item, dict) \
             and item.get('match') \
             and item['match'].get('_all') \
-            and (item['match']['_all'] == args.get('fulltext')):
-                args['must'].remove(item)
-        # include args in response
-        data['args'] = args
+            and (item['match']['_all'] == query.get('fulltext')):
+                query['must'].remove(item)
+        # include query in response
+        data['query'] = query
     
         return Response(data)
     return Response({})
