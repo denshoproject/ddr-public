@@ -208,103 +208,94 @@ def format_list_objects(results, offset, limit, request=None):
     @param results: dict Output of docstore.Docstore().search
     @returns: list of dicts
     """
-    hits = []
-    while(results['hits']['hits']):
-        hit = results['hits']['hits'].pop(0)
-        data = hit['_source']
-        i = Identifier(data['id'])
-        data['model'] = i.model
-        data['links'] = OrderedDict()
-        data['links']['html'] = reverse(
-            'ui-object-detail', args=[data['id']], request=request
-        )
-        data['links']['json'] = reverse(
-            'ui-api-object', args=[data['id']], request=request
-        )
-        # img
-        if data.get('signature_id'):
-            data['links']['img'] = img_url(
-                i.collection_id(),
-                access_filename(data['signature_id']),
-                request
-            )
-        elif i.model == 'file':
-            data['links']['img'] = img_url(
-                i.collection_id(),
-                os.path.basename(data['access_rel']),
-                request
-            )
-        hits.append(data)
+    data = OrderedDict()
+    data['total'] = results['hits']['total']
     
-    total = results['hits']['total']
-    prev,next_ = None,None
+    data['prev'] = None
+    data['next'] = None
     p = offset - limit
     n = offset + limit
     if p < 0:
         p = None
-    if n >= total:
+    if n >= data['total']:
         n = None
     if p is not None:
-        prev = '?limit=%s&offset=%s' % (limit, p)
+        data['prev'] = '?limit=%s&offset=%s' % (limit, p)
     if n:
-        next_ = '?limit=%s&offset=%s' % (limit, n)
+        data['next'] = '?limit=%s&offset=%s' % (limit, n)
     
-    data = OrderedDict()
-    data['total'] = total
-    data['prev'] = prev
-    data['next'] = next_
-    data['hits'] = hits
+    data['hits'] = [
+        format_object_detail(hit, request, listitem=True)
+        for hit in results['hits']['hits']
+    ]
     return data
 
-def format_object_detail(document, request):
-    if document and (document['found'] or document['exists']):
-        data = document['_source']
+def format_object_detail(document, request, listitem=False):
+    if document and document.get('_source'):
+        oid = document['_source'].pop('id')
+        i = Identifier(oid)
         
-        i = Identifier(data['id'])
-        data['model'] = i.model
-        try:
-            data['collection_id'] = i.collection_id()
-        except:
-            pass
-        
+        d = OrderedDict()
+        d['id'] = oid
+        if not listitem:
+            try:
+                d['collection_id'] = i.collection_id()
+            except:
+                pass
+        d['model'] = i.model
         # links
-        data['links'] = OrderedDict()
-        data['links']['html'] = reverse(
-            'ui-object-detail', args=[i.id], request=request
+        d['links'] = OrderedDict()
+        if not listitem:
+            if document.get('parent_id'):
+                d['links']['parent'] = reverse(
+                    'ui-api-object',
+                    args=[document['parent_id']],
+                    request=request
+                )
+            elif i.parent_id():
+                d['links']['parent'] = reverse(
+                    'ui-api-object',
+                    args=[i.parent_id()],
+                    request=request
+                )
+        d['links']['html'] = reverse(
+            'ui-object-detail', args=[oid], request=request
         )
-        data['links']['json'] = reverse(
-            'ui-api-object', args=[i.id], request=request
+        d['links']['json'] = reverse(
+            'ui-api-object', args=[oid], request=request
         )
-        if data.get('parent_id'):
-            data['links']['parent'] = reverse(
-                'ui-api-object', args=[data['parent_id']], request=request
-            )
-        elif i.parent():
-            data['links']['parent'] = reverse(
-                'ui-api-object', args=[i.parent()], request=request
-            )
-        data['links']['children'] = reverse(
-            'ui-api-object-children', args=[i.id], request=request
-        )
-        # img
-        if data.get('signature_id'):
-            data['links']['img'] = img_url(
+        #if not listitem:
+        #    d['links']['children'] = reverse(
+        #        'ui-api-object-children',
+        #        args=[i.id],
+        #        request=request
+        #    )
+        # links-img
+        if document['_source'].get('signature_id'):
+            d['links']['img'] = img_url(
                 i.collection_id(),
-                access_filename(data['signature_id']),
+                access_filename(document['_source'].pop('signature_id')),
                 request
             )
         elif i.model == 'file':
-            data['links']['img'] = img_url(
+            d['links']['img'] = img_url(
                 i.collection_id(),
-                os.path.basename(data['access_rel']),
+                os.path.basename(document['_source'].pop('access_rel')),
                 request
             )
-        
-        # rm unsightly ID parts
-        for key in ['repo','org','cid','eid','sid','role','sha1']:
-            pop_field(data, key)
-        
-        return data
+        # title, description
+        if document['_source'].get('title'):
+            d['title'] = document['_source'].pop('title')
+        if document['_source'].get('description'):
+            d['description'] = document['_source'].pop('description')
+        # everything else
+        HIDDEN_FIELDS = [
+            'repo','org','cid','eid','sid','role','sha1'
+        ]
+        for key in document['_source'].iterkeys():
+            if key not in HIDDEN_FIELDS:
+                d[key] = document['_source'][key]
+        return d
     return None
 
 
@@ -319,6 +310,11 @@ class ApiRepository(object):
         if not document:
             raise NotFound()
         data = format_object_detail(document, request)
+        data['links']['children'] = reverse(
+            'ui-api-object-children',
+            args=[i.id],
+            request=request
+        )
         data['repository_url'] = data['url']
         return data
 
@@ -344,6 +340,16 @@ class ApiOrganization(object):
         if not document:
             raise NotFound()
         data = format_object_detail(document, request)
+        data['links']['parent'] = reverse(
+            'ui-api-object',
+            args=[i.parent_id(stubs=1)],
+            request=request
+        )
+        data['links']['children'] = reverse(
+            'ui-api-object-children',
+            args=[i.id],
+            request=request
+        )
         return data
 
     @staticmethod
@@ -370,7 +376,21 @@ class ApiCollection(object):
         if not document:
             raise NotFound()
         data = format_object_detail(document, request)
-        pop_field(data, 'notes')
+        data['links']['parent'] = reverse(
+            'ui-api-object',
+            args=[i.parent_id(stubs=1)],
+            request=request
+        )
+        data['links']['children'] = reverse(
+            'ui-api-object-children',
+            args=[i.id],
+            request=request
+        )
+        HIDDEN_FIELDS = [
+            'notes',
+        ]
+        for field in HIDDEN_FIELDS:
+            pop_field(data, field)
         return data
 
     @staticmethod
@@ -424,11 +444,15 @@ class ApiEntity(object):
                 x['html'] = reverse(
                     'ui-browse-term', args=[facet, x['id']], request=request
                 )
-        pop_field(data, 'files')
-        pop_field(data, 'notes')
-        pop_field(data, 'parent')
-        pop_field(data, 'status')
-        pop_field(data, 'public')
+        HIDDEN_FIELDS = [
+            'files',
+            'notes',
+            'parent',
+            'status',
+            'public',
+        ]
+        for field in HIDDEN_FIELDS:
+            pop_field(data, field)
         return data
 
     @staticmethod
@@ -499,7 +523,11 @@ class ApiFile(object):
         if not document:
             raise NotFound()
         data = format_object_detail(document, request)
-        pop_field(data, 'public')
+        HIDDEN_FIELDS = [
+            'public',
+        ]
+        for field in HIDDEN_FIELDS:
+            pop_field(data, field)
         data['links']['download'] = img_url(
             data['collection_id'],
             data['path_rel'],
