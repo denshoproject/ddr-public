@@ -163,16 +163,20 @@ def api_search(text='', must=[], should=[], mustnot=[], models=[], sort_fields=[
         mustnot=mustnot
     )
     
-    results = docstore.Docstore().search(
-        doctypes=models,
-        query=q,
-        sort=sort_fields,
-        fields=SEARCH_RETURN_FIELDS,
-        from_=offset,
-        size=limit,
+    return format_list_objects(
+        paginate_results(
+            docstore.Docstore().search(
+                doctypes=models,
+                query=q,
+                sort=sort_fields,
+                fields=SEARCH_RETURN_FIELDS,
+                from_=offset,
+                size=limit,
+            ),
+            offset, limit, request
+        ),
+        request
     )
-    data = format_list_objects(results, offset, limit, request)
-    return data
 
 def api_children(request, model, object_id, sort_fields, limit=DEFAULT_LIMIT, offset=0):
     """Return object children list in Django REST Framework format.
@@ -191,19 +195,25 @@ def api_children(request, model, object_id, sort_fields, limit=DEFAULT_LIMIT, of
     q = docstore.search_query(
         must=[{"wildcard": {"id": "%s-*" % object_id}}],
     )
-    
-    results = docstore.Docstore().search(
-        doctypes=model,
-        query=q,
-        sort=sort_fields,
-        fields=SEARCH_RETURN_FIELDS,
-        from_=offset,
-        size=limit,
+    return format_list_objects(
+        paginate_results(
+            docstore.Docstore().search(
+                doctypes=model,
+                query=q,
+                sort=sort_fields,
+                fields=SEARCH_RETURN_FIELDS,
+                from_=offset,
+                size=limit,
+            ),
+            offset, limit, request
+        ),
+        request
     )
-    return format_list_objects(results, offset, limit, request)
 
-def format_list_objects(results, offset, limit, request=None):
-    """Common function for processing lists of search hits
+def paginate_results(results, offset, limit, request=None):
+    """Makes raw Elasticsearch results nicer to work with
+    
+    TODO format data to work with Django paginator?
     
     @param results: dict Output of docstore.Docstore().search
     @returns: list of dicts
@@ -224,13 +234,12 @@ def format_list_objects(results, offset, limit, request=None):
     if n:
         data['next'] = '?limit=%s&offset=%s' % (limit, n)
     
-    data['hits'] = [
-        format_object_detail(hit, request, listitem=True)
-        for hit in results['hits']['hits']
-    ]
+    data['hits'] = [hit for hit in results['hits']['hits']]
     return data
 
 def format_object_detail(document, request, listitem=False):
+    """Formats repository objects, adds list URLs,
+    """
     if document and document.get('_source'):
         oid = document['_source'].pop('id')
         i = Identifier(oid)
@@ -297,6 +306,17 @@ def format_object_detail(document, request, listitem=False):
                 d[key] = document['_source'][key]
         return d
     return None
+
+def format_list_objects(results, request, function=format_object_detail):
+    """Iterate through results objects apply format_object_detail function
+    """
+    results['objects'] = []
+    while(results['hits']):
+        hit = results['hits'].pop(0)
+        results['objects'].append(
+            function(hit, request, listitem=True)
+        )
+    return results
 
 
 # classes --------------------------------------------------------------
