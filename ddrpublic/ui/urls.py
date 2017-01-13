@@ -36,6 +36,8 @@ urlpatterns = patterns(
     url(r'^cite/(?P<model>[\w]+)/(?P<object_id>[\w\d-]+)/$', 'ui.views.cite', name='ui-cite'),
     
     url(r'^collections/$', 'ui.views.collections.list', name='ui-collections-list'),
+
+    url(r'^narrators/$', 'ui.views.narrators.list', name='ui-narrators-list'),
     
     url(r'^r/(?P<oid>[\w\d-]+)/$', 'ui.views.entities.nodes', name='ui-file-role'),
     
