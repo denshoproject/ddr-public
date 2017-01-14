@@ -220,6 +220,7 @@ def paginate_results(results, offset, limit, request=None):
     """
     data = OrderedDict()
     data['total'] = results['hits']['total']
+    data['page_size'] = limit
     
     data['prev'] = None
     data['next'] = None
@@ -317,6 +318,25 @@ def format_list_objects(results, request, function=format_object_detail):
             function(hit, request, listitem=True)
         )
     return results
+
+def pad_results(objects, page_start, page_next, total):
+    """Inserts dummy objects before and after specified page.
+    
+    This is necessary for displaying API results using the
+    Django paginator.
+    
+    @param objects: list
+    @param page_start: int Index of start of current page
+    @param page_next: int Index of start of next page
+    @param total: int Total number of results
+    """
+    # pad before
+    for n in range(0, page_start):
+        objects.insert(n, {'n':n})
+    # pad after
+    for n in range(page_next, total):
+        objects.append({'n':n})
+    return objects
 
 
 # classes --------------------------------------------------------------
