@@ -11,6 +11,7 @@ from django.template import RequestContext
 from ui import domain_org
 from ui import faceting
 from ui import models
+from ui.api import pad_results, ApiNarrator
 
 SHOW_THESE = ['topics', 'facility', 'location', 'format', 'genre',]
 
@@ -27,8 +28,44 @@ def index( request ):
         context_instance=RequestContext(request, processors=[])
     )
 
+def narrators(request):
+    thispage = int(request.GET.get('page', 1))
+    pagesize = settings.RESULTS_PER_PAGE
+    page_start = (thispage-1) * pagesize
+    page_next = (thispage) * pagesize
+    
+    objects = ApiNarrator.api_list(
+        request,
+        limit=pagesize,
+        offset=pagesize*thispage
+    )
+    paginator = Paginator(
+        pad_results(
+            objects['objects'],
+            page_start,
+            page_next,
+            objects['total']
+        ),
+        pagesize
+    )
+    page = paginator.page(thispage)
+    return render_to_response(
+        'ui/browse/narrators.html',
+        {
+            'paginator': paginator,
+            'page': page,
+        },
+        context_instance=RequestContext(request, processors=[])
+    )
+
 def narrator(request, oid):
-    assert False
+    return render_to_response(
+        'ui/browse/narrator-detail.html',
+        {
+            'object': ApiNarrator.api_get(oid, request),
+        },
+        context_instance=RequestContext(request, processors=[])
+    )
 
 def facet( request, facet ):
     facet = faceting.Facet(facet)
