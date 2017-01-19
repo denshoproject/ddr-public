@@ -211,8 +211,9 @@ def api_children(request, model, object_id, sort_fields, limit=DEFAULT_LIMIT, of
     )
 
 def paginate_results(results, offset, limit, request=None):
-    """Makes raw Elasticsearch results nicer to work with
+    """Makes Elasticsearch results nicer to work with (doesn't actually paginate)
     
+    Strips much of the raw ES stuff, adds total, page_size, prev/next links
     TODO format data to work with Django paginator?
     
     @param results: dict Output of docstore.Docstore().search
@@ -321,24 +322,27 @@ def format_list_objects(results, request, function=format_object_detail):
         )
     return results
 
-def pad_results(objects, page_start, page_next, total):
-    """Inserts dummy objects before and after specified page.
+def pad_results(results, pagesize, thispage):
+    """Returns result set objects with dummy objects before/after specified page
     
     This is necessary for displaying API results using the
     Django paginator.
     
-    @param objects: list
-    @param page_start: int Index of start of current page
-    @param page_next: int Index of start of next page
+    @param objects: dict Raw output of search API
+    @param pagesize: int
+    @param thispage: int
     @param total: int Total number of results
+    @returns: list of objects
     """
+    page_start = (thispage-1) * pagesize
+    page_next = (thispage) * pagesize
     # pad before
     for n in range(0, page_start):
-        objects.insert(n, {'n':n})
+        results['objects'].insert(n, {'n':n})
     # pad after
-    for n in range(page_next, total):
-        objects.append({'n':n})
-    return objects
+    for n in range(page_next, results['total']):
+        results['objects'].append({'n':n})
+    return results['objects']
 
 
 # classes --------------------------------------------------------------
