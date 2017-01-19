@@ -249,12 +249,12 @@ def format_object_detail(document, request, listitem=False):
         
         d = OrderedDict()
         d['id'] = oid
+        d['model'] = document['_type']
         if not listitem:
             try:
                 d['collection_id'] = i.collection_id()
             except:
                 pass
-        d['model'] = i.model
         # links
         d['links'] = OrderedDict()
         if not listitem:
