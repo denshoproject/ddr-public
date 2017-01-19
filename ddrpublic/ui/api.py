@@ -218,8 +218,10 @@ def paginate_results(results, offset, limit, request=None):
     @param results: dict Output of docstore.Docstore().search
     @returns: list of dicts
     """
+    offset = int(offset)
+    limit = int(limit)
     data = OrderedDict()
-    data['total'] = results['hits']['total']
+    data['total'] = int(results['hits']['total'])
     data['page_size'] = limit
     
     data['prev'] = None
