@@ -221,7 +221,7 @@ setup-ddr-cmdln:
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_CMDLN)/ddr && python setup.py install
 
-install-ddr-cmdln:
+install-ddr-cmdln: clean-ddr-cmdln
 	@echo ""
 	@echo "install-ddr-cmdln ------------------------------------------------------"
 	apt-get --assume-yes install git-core git-annex libxml2-dev libxslt1-dev libz-dev pmount udisks
@@ -254,7 +254,7 @@ get-ddr-public:
 	@echo "get-ddr-public ---------------------------------------------------------"
 	git pull
 
-install-ddr-public:
+install-ddr-public: clean-ddr-public
 	@echo ""
 	@echo "install-ddr-public -----------------------------------------------------"
 	apt-get --assume-yes install imagemagick sqlite3 supervisor
