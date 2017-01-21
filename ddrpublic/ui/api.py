@@ -483,7 +483,7 @@ class ApiEntity(object):
             'ui-api-object-nodes', args=[oid], request=request
         )
         for facet in ['facility', 'topics']:
-            for x in data[facet]:
+            for x in data.get(facet, []):
                 x['json'] = reverse(
                     'ui-api-term', args=[facet, x['id']], request=request
                 )
