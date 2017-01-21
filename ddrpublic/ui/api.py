@@ -514,8 +514,11 @@ class ApiEntity(object):
             ['sha1','asc'],
             ['id','asc'],
         ]
+        models = CHILDREN[i.model]
+        if 'file' in models:
+            models.remove('file')
         return api_children(
-            request, CHILDREN[i.model], i.id, sort_fields, limit=limit, offset=offset
+            request, models, i.id, sort_fields, limit=limit, offset=offset
         )
 
     @staticmethod
@@ -531,8 +534,9 @@ class ApiEntity(object):
             ['sha1','asc'],
             ['id','asc'],
         ]
+        models = ['file']
         return api_children(
-            request, CHILDREN[i.model], i.id, sort_fields, limit=limit, offset=offset
+            request, models, i.id, sort_fields, limit=limit, offset=offset
         )
 
 
