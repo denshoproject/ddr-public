@@ -8,8 +8,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 
+from ui import api
 from ui.identifier import Identifier
-from ui.models import Repository, Organization, Collection, Entity, File
 from ui.models import DEFAULT_SIZE
 from ui.views import filter_if_branded
 
@@ -19,18 +19,25 @@ from ui.views import filter_if_branded
 def detail(request, oid):
     i = Identifier(id=oid)
     filter_if_branded(request, i)
-    entity = Entity.get(i)
+    entity = api.ApiEntity.api_get(i.id, request)
+    entity['identifier'] = i
     if not entity:
         raise Http404
-    parent = entity.collection()
-    organization = Organization.get(entity.identifier.organization())
+    parent = api.ApiCollection.api_get(i.parent_id(), request)
+    organization = api.ApiOrganization.api_get(i.organization().id, request)
     # facet terms
     facilities = [item for item in getattr(entity, 'facility', [])]
     creators = [item for item in getattr(entity, 'creators', [])]
     # children/nodes
     thispage = request.GET.get('page', 1)
-    children_paginator = Paginator(entity.children_meta(), DEFAULT_SIZE)
-    nodes_paginator = Paginator(entity.nodes_meta(), DEFAULT_SIZE)
+    children_paginator = Paginator(
+        api.ApiEntity.api_children(i.id, request)['objects'],
+        DEFAULT_SIZE
+    )
+    nodes_paginator = Paginator(
+        api.ApiEntity.api_nodes(i.id, request)['objects'],
+        DEFAULT_SIZE
+    )
     return render_to_response(
         'ui/entities/detail.html',
         {
@@ -56,12 +63,16 @@ def children( request, oid, role=None ):
     """
     i = Identifier(id=oid)
     filter_if_branded(request, i)
-    entity = Entity.get(i)
+    entity = api.ApiEntity.api_get(i.id, request)
+    entity['identifier'] = i
     if not entity:
         raise Http404
     # children
     thispage = request.GET.get('page', 1)
-    children_paginator = Paginator(entity.children_meta(), settings.RESULTS_PER_PAGE)
+    children_paginator = Paginator(
+        api.ApiEntity.api_children(i.id, request)['objects'],
+        DEFAULT_SIZE
+    )
     return render_to_response(
         'ui/entities/children.html',
         {
@@ -81,12 +92,16 @@ def nodes( request, oid, role=None ):
     """
     i = Identifier(id=oid)
     filter_if_branded(request, i)
-    entity = Entity.get(i)
+    entity = api.ApiEntity.api_get(i.id, request)
+    entity['identifier'] = i
     if not entity:
         raise Http404
     # nodes
     thispage = request.GET.get('page', 1)
-    nodes_paginator = Paginator(entity.nodes_meta(), settings.RESULTS_PER_PAGE)
+    nodes_paginator = Paginator(
+        api.ApiEntity.api_nodes(i.id, request)['objects'],
+        DEFAULT_SIZE
+    )
     return render_to_response(
         'ui/entities/nodes.html',
         {
