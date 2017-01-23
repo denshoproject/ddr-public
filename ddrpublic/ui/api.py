@@ -759,12 +759,14 @@ class ApiTerm(faceting.Term):
             ],
             models=[],
             sort_fields=[
+                'sort',
+                'id',
                 'record_created',
                 'record_lastmod',
             ],
             limit=limit,
             offset=offset,
-            request=request
+            request=request,
         )
 
 
@@ -968,10 +970,7 @@ def term(request, facet_id, term_id, format=None):
     return Response(data)
 
 @api_view(['GET'])
-def term_objects(request, facet_id, term_id, format=None):
-    """
-    http://DOMAIN/api/0.1/facet/{facet_id}/{term_id}/objects/?{internal=1}&{limit=5}
-    """
+def term_objects(request, facet_id, term_id, limit=DEFAULT_LIMIT, offset=0):
     term = ApiTerm(facet_id=facet_id, term_id=term_id)
-    data = term.objects(request)
+    data = term.objects(limit=limit, offset=offset, request=request)
     return Response(data)
