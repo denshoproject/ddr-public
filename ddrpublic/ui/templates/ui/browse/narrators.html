@@ -1,0 +1,48 @@
+{% extends "ui/browse/base.html" %}
+{% load bootstrap_pagination thumbnail ui_tags %}
+
+{% block title %}Narrators{% endblock %}
+{% block pagetitle %}Narrators{% endblock %}
+
+{% block breadcrumbs %}{{ block.super }}
+<li>Narrators</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+<section class="container">
+  <div class="row">
+	<div class="col-sm-10 col-md-10">
+
+<h1>
+Narrators
+</h1>
+<p>
+  Narrators are the interview subjects of oral histories contained in the Densho Digital Repository.
+</p>
+
+      <div id="item-count">
+        {{ paginator.count }} objects<br/>
+      </div>
+
+{% if page.object_list %}
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+
+<p>
+{% for object in page.object_list %}
+<a href="{{ object.links.html }}">{{ object.title }}</a><br/>
+{% endfor %}
+</p>
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+
+{% endif %}
+
+	</div>
+  </div><!-- .row -->
+</section><!-- .container-fluid -->
+{% endblock content %}

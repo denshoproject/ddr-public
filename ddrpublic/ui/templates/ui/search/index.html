@@ -9,10 +9,10 @@
 <p></p>
 
 <form action="{% url "ui-search-results" %}" method="get" class="input-group nomargin-bottom">
-  <input class="form-control" id="id_query" name="query" type="text" value="{{ query }}" placeholder="Search..." />
-  <span class="input-group-btn">
-    <button class="btn btn-primary"><i class="fa fa-search"></i></button>
-  </span>
+
+  {{ search_form.as_p }}
+  
+  <input type="submit" "value="submit" />
 </form>
 
 </div><!-- .container-fluid -->

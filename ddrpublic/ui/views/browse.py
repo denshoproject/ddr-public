@@ -11,6 +11,7 @@ from django.template import RequestContext
 from ui import domain_org
 from ui import faceting
 from ui import models
+from ui import api
 
 SHOW_THESE = ['topics', 'facility', 'location', 'format', 'genre',]
 
@@ -23,6 +24,36 @@ def index( request ):
         'ui/browse/index.html',
         {
             'facets': facets,
+        },
+        context_instance=RequestContext(request, processors=[])
+    )
+
+def narrators(request):
+    thispage = int(request.GET.get('page', 1))
+    pagesize = settings.RESULTS_PER_PAGE
+
+    results = api.ApiNarrator.api_list(
+        request,
+        limit=pagesize,
+        offset=pagesize*thispage
+    )
+    objects = api.pad_results(results, pagesize, thispage)
+    paginator = Paginator(objects, pagesize)
+    page = paginator.page(thispage)
+    return render_to_response(
+        'ui/browse/narrators.html',
+        {
+            'paginator': paginator,
+            'page': page,
+        },
+        context_instance=RequestContext(request, processors=[])
+    )
+
+def narrator(request, oid):
+    return render_to_response(
+        'ui/browse/narrator-detail.html',
+        {
+            'object': api.ApiNarrator.api_get(oid, request),
         },
         context_instance=RequestContext(request, processors=[])
     )

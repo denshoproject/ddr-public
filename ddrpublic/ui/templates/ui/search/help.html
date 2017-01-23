@@ -1,0 +1,80 @@
+{% extends "rest_framework/api.html" %}
+
+{% block title %}API Search Help{% endblock %}
+
+{% block breadcrumbs %}
+<ul class="breadcrumb">
+  <li><a href="/api/0.2/">Index</a></li>
+  <li><a href="/api/0.2/search/">Search</a></li>
+  <li>Help</li>
+</ul>
+{% endblock %}
+
+
+{% block description %}
+<h1>
+Search Help
+</h1>
+
+<p>
+Search query JSON format.
+</p>
+<pre>
+{
+    "fulltext": "FULL TEXT SEARCH HERE",
+    
+    "must": [ ...AND queries... ],
+    "should": [ ...OR queries... ],
+    "mustnot": [ ...NOT queries... ],
+    
+    "models": [],
+    
+    "sort": ["field1", "field2"],
+    "limit": 25,
+    "offset": 0
+}
+</pre>
+
+<h3>
+  Subqueries
+</h3>
+<p>
+  Subqueries are formatted like
+  <a href="https://www.elastic.co/guide/en/elasticsearch/guide/current/_most_important_queries.html">Elasticsearch query dicts</a>
+</p>
+<pre>
+{"match": {"fieldname": "value"}}
+{"multi_match": {
+    "query": "full text search",
+    "fields": ["fieldname1", "fieldname2"]
+}}
+{"terms": {"fieldname": ["value1","value2"]}},
+{"range": {"fieldname": {"gt":20, "lte":31}}},
+{"exists": {"fieldname": "title"}}
+{"missing": {"fieldname": "title"}}
+</pre>
+
+<h3>
+  Nested fields
+</h3>
+<p>
+For example, the <code>role</code> field below would be referred to as <code>creators.role</code>.
+</p>
+<pre>
+{
+  "creators": [
+    {
+      "namepart": "Hirabayashi, Gordon",
+      "role": "author"
+    },
+    ...
+</pre>
+{% endblock description %}
+
+{% block request %}
+request
+{% endblock request %}
+
+{% block response %}
+response
+{% endblock response %}

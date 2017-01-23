@@ -43,7 +43,7 @@ def breadcrumbs( crumbs, link_endpoint=0 ):
 def document( obj ):
     """list-view document template
     """
-    model_plural = MODEL_CLASSES[obj.identifier.model]['templatedir']
+    model_plural = MODEL_CLASSES[obj['model']]['templatedir']
     template_path = 'ui/%s/list-object.html' % model_plural
     t = template.loader.get_template(template_path)
     return t.render(template.Context({'object':obj}))

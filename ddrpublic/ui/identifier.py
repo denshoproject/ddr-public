@@ -19,6 +19,7 @@ MODEL_CLASSES = {
     'collection':   {'module': 'ui.models', 'class':'Collection', 'stub':0, 'templatedir':'collections',},
     'organization': {'module': 'ui.models', 'class':'Organization', 'stub':1, 'templatedir':'',},
     'repository':   {'module': 'ui.models', 'class':'Repository', 'stub':1, 'templatedir':'',},
+    'narrator':     {'templatedir':'narrators',},
 }
 
 
