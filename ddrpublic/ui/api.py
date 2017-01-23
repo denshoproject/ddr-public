@@ -745,11 +745,31 @@ class ApiTerm(faceting.Term):
             reverse('ui-api-term', args=[self.facet_id, tid], request=request)
             for tid in self._children
         ]
-        data['links']['objects'] = [
-            reverse('ui-api-term-objects', args=[self.facet_id, tid], request=request)
-            for tid in self._children
-        ]
+        data['links']['objects'] = reverse(
+            'ui-api-term-objects',
+            args=[self.facet_id, self.id],
+            request=request
+        )
         return data
+    
+    def objects(self, limit=DEFAULT_LIMIT, offset=0, request=None):
+        """
+        http://DOMAIN/api/0.1/facet/{facet_id}/{term_id}/objects/?{internal=1}&{limit=5}
+        """
+        field = '%s.id' % self.facet_id
+        return api_search(
+            must=[
+                {'terms': {field: [self.id]}},
+            ],
+            models=[],
+            sort_fields=[
+                'record_created',
+                'record_lastmod',
+            ],
+            limit=limit,
+            offset=offset,
+            request=request
+        )
 
 
 # views ----------------------------------------------------------------
@@ -956,35 +976,6 @@ def term_objects(request, facet_id, term_id, format=None):
     """
     http://DOMAIN/api/0.1/facet/{facet_id}/{term_id}/objects/?{internal=1}&{limit=5}
     """
-    terms = {facet_id:term_id}
-    fields = models.all_list_fields()
-    sort = {'record_created': request.GET.get('record_created', ''),
-            'record_lastmod': request.GET.get('record_lastmod', ''),}
-    limit = request.GET.get('limit', 100)
-    # filter by partner
-    filters = {}
-    repo,org = None,None
-    if repo and org:
-        filters['repo'] = repo
-        filters['org'] = org
-    # do the query
-    results = models.cached_query(
-        settings.DOCSTORE_HOSTS, settings.DOCSTORE_INDEX,
-        terms=terms, filters=filters,
-        fields=fields,
-        sort=sort,
-        size=limit,
-    )
-    # post-processing. See *.api_children methods in .models.py
-    documents = [hit['_source'] for hit in results['hits']['hits']]
-    for d in documents:
-        i = Identifier(d['id'])
-        idparts = [x for x in i.parts.itervalues()]
-        collection_id = i.collection_id()
-        d['json'] = reverse('ui-api-v', args=idparts, request=request)
-        d['html'] = reverse('ui-%s' % i.model, args=idparts, request=request)
-        if d.get('signature_id'):
-            d['img_url'] = img_url(collection_id, access_filename(d['signature_id']), request)
-        else:
-            d['img_url'] = ''
-    return Response(documents)
+    term = ApiTerm(facet_id=facet_id, term_id=term_id)
+    data = term.objects(request)
+    return Response(data)
