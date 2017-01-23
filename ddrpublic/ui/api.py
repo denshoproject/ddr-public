@@ -712,27 +712,17 @@ class ApiFacet(faceting.Facet):
 class ApiTerm(faceting.Term):
         
     def api_data(self, request):
-        data = {
-            'id': self.id,
-            'parent_id': self.parent_id,
-            'facet_id': self.facet_id,
-            'title': self.title,
-            'description': self.description,
-            'weight': self.weight,
-            'created': self.created,
-            'modified': self.modified,
-            'encyclopedia': self.encyc_urls,
-            'links': {
-                'json': reverse('ui-api-term', args=(self.facet_id, self.id), request=request),
-                'html': self.url(),
-                'parent': '',
-            },
-        }
+        data = OrderedDict()
+        data['id'] = self.id
+        data['model'] = None
+        data['links'] = OrderedDict()
         if self.parent_id:
             data['links']['parent'] = reverse(
                 'ui-api-term',
                 args=[self.facet_id, self.parent_id],
                 request=request)
+        data['links']['json'] = reverse('ui-api-term', args=(self.facet_id, self.id), request=request)
+        data['links']['html'] = reverse('ui-browse-term', args=(self.facet_id, self.id), request=request)
         data['links']['ancestors'] = [
             reverse('ui-api-term', args=[self.facet_id, tid], request=request)
             for tid in self._ancestors
@@ -750,6 +740,12 @@ class ApiTerm(faceting.Term):
             args=[self.facet_id, self.id],
             request=request
         )
+        data['links']['encyclopedia'] = self.encyc_urls
+        data['title'] = self.title
+        data['description'] = self.description
+        data['weight'] = self.weight
+        data['created'] = self.created
+        data['modified'] = self.modified
         return data
     
     def objects(self, limit=DEFAULT_LIMIT, offset=0, request=None):
