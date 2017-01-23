@@ -1,14 +1,14 @@
 {% extends "ui/browse/base.html" %}
 
-{% block title %}Narrators{% endblock %}
-{% block pagetitle %}Narrators{% endblock %}
+{% block title %}{{ narrator.title }}{% endblock %}
+{% block pagetitle %}{{ narrator.title }}{% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
 <li>
   <a href="{% url "ui-browse-narrators" %}">Narrators</a>
 </li>
 <li>
-  {{ object.title }}
+  {{ narrator.title }}
 </li>
 {% endblock breadcrumbs %}
 
@@ -18,18 +18,69 @@
 	<div class="col-sm-10 col-md-10">
 
 <h1>
-  {{ object.title }}
+  {{ narrator['_source']['display_name'] }}
 </h1>
-<table>
-  {% for field,value in object.iteritems %}
-  <tr>
-    <th>{{ field }}</th>
-    <td>{{ value }}</td>
-  </tr>
-{% endfor %}
-</table>
+<!-- narrator.bio -->
+<p>
+    {{ narrator['_source']['bio'] }}
+</p>
 
-	</div>
-  </div><!-- .row -->
+<h4>Interviews</h4>
+            <!-- for interview in narrator.interviews[] -->
+            <div class="media ">
+                <!-- interview.id -->
+                <a class="pull-left" href="/ddr/densho/271/4/">
+                    <!-- interview.alternate_id ("[denshouid: denshovh-aalice-01]") -->
+                    <img class="media-object" src="http://ddr.densho.org/media/denshovh/denshovh-aalice-01.jpg" width="180" class="img-responsive">
+                </a>
+
+            <div class="media-body">
+                <b class="media-heading">
+                    <!-- interview.title, interview.id -->
+                    <a href="/ddr/densho/271/4/">Alice Matsumodo Ando Interview I - ddr-one-7-73</a>
+                </b>
+                <div class="source muted">
+                    <!-- interview.extent, interview.location, interview.date, len(interview.children[]) -->
+                    June 13, 2014. Portland, Oregon.<br />01:10:34 - 22 segments
+                </div>
+                <!-- interview.id -->
+                <div class="url">
+                  <a href="/ddr/densho/271/4/">/ddr/densho/271/4/</a>
+                </div>
+              </div><!-- .media-body -->
+            </div><!-- .media -->
+
+            <div class="media ">
+                <!-- interview.id -->
+                <a class="pull-left" href="/ddr/densho/271/4/">
+                    <!-- interview.alternate_id ("[denshouid: denshovh-aalice-01]", thumbnailed to 160x) -->
+                    <img class="media-object" src="https://archive.org/download/ddr-one-7-73/ddr-one-7-73.jpg" width="160" class="img-responsive">
+                </a>
+
+            <div class="media-body">
+                <b class="media-heading">
+                    <span class="badge badge-info">Interview</span>
+                    <!-- interview.title, interview.id -->
+                    <a href="/ddr/densho/271/4/">ddr-one-7-71 - Alice Matsumodo Ando Interview I</a>
+                </b>
+                <div class="source muted">
+                    <!-- interview.extent, interview.location, interview.date, len(interview.children[]) -->
+                    01:10:34. June 13, 2014. Portland, Oregon. 22 segments.
+                </div>
+                <!-- interview.id -->
+                <div class="url">
+                  <a href="/ddr/densho/271/4/">/ddr/densho/271/4/</a>
+                </div>
+              </div><!-- .media-body -->
+            </div><!-- .media -->
+
+
+    </div><!-- .column -->
+    <div class="col-sm-4 col-md-4">
+        <!-- narrator.image_url, narrator.interview_display_name -->
+        <img src="{{ narrator['links']['img'] }}" class="img-responsive" alt="{{ narrator.title }}">
+    </div>
+  </div><!-- .row detail content -->
+
 </section><!-- .container-fluid -->
 {% endblock content %}

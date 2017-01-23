@@ -9,7 +9,7 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
-<section class="container">
+<section class="container" id="portfolio">
   <div class="row">
 	<div class="col-sm-10 col-md-10">
 
@@ -17,32 +17,120 @@
 Narrators
 </h1>
 <p>
-  Narrators are the interview subjects of oral histories contained in the Densho Digital Repository.
+Narrators are the interview subjects of oral histories contained in the Densho Digital Repository. Our interviewees, or narrators, share their life histories to preserve history, educate the public, and promote tolerance. We urge our users to approach these materials in the same spirit.
 </p>
 
       <div id="item-count">
-        {{ paginator.count }} objects<br/>
+        {{ paginator.count }} narrators<br/>
       </div>
 
-{% if page.object_list %}
+<div class="row"> <!-- results content -->
+    <div class="col-sm-12 col-md-12">
+        <!--  view selection tabs -->
+        <div class="tabs no-margin-top" style="margin:10px 0;">
+    <ul class="nav nav-tabs">
+        <li class="active">
+            <a href="#gallery_tab" data-toggle="tab">
+                <i class="fa fa-th"></i> Gallery view
+            </a>
+        </li>
+        <li>
+            <a href="#list_tab" data-toggle="tab">
+                <i class="fa fa-list"></i> List view
+            </a>
+        </li>
+    </ul>
+    <div class="tab-content">
+        <div id="gallery_tab" class="tab-pane active">
+              <div id="item-count">
+                {{ paginator.count }} narrators<br/>
+              </div>
 
 {% if paginator.num_pages > 1 %}
 {% bootstrap_paginate page range=10 show_first_last="true" %}
 {% endif %}
 
-<p>
-{% for object in page.object_list %}
-<a href="{{ object.links.html }}">{{ object.title }}</a><br/>
+                <div class="row">
+                    <ul class="sort-destination isotope fullwidth" data-sort-id="isotope-list">
+
+{% for narrator in page.object_list %}
+                        <li class="isotope-item"><!-- slide item -->
+                            <div class="item-box">
+                                <figure>
+                                    <!-- narrator.id -->
+                                    <a class="item-hover" href="/narrators/{{ narrator.id }}" data-plugin-options='{"type":"image"}'>
+                                        <span class="overlay color2"></span>
+                                        <span class="inner">
+                                            <span class="block fa fa-user fsize40"></span>
+                                            <span class="fsize16" style="line-height:1;">{{ narrator.display_name }}</span>
+                                        </span>
+                                    </a>
+                                    <!-- narrator.image_url -->
+                                    <img src="{{ narrator.image_url }}" class="img-responsive" width="260" height="260" alt="">
+                                </figure>
+                            </div>
+                        </li>
 {% endfor %}
-</p>
+
+                    </ul>
+                </div><!-- /.row gallery -->
+            
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+            
+        </div> <!-- end gallery_tab -->
+        <div id="list_tab" class="tab-pane">
+              <div id="item-count">
+                {{ paginator.count }} narrators<br/>
+              </div>
 
 {% if paginator.num_pages > 1 %}
 {% bootstrap_paginate page range=10 show_first_last="true" %}
 {% endif %}
-
+            
+{% for narrator in page.object_list %}
+{% if forloop.counter0|divisibleby:2 %}
+            <!-- begin list row -->
+            <div class="row">
 {% endif %}
+                <!-- begin list col -->
+                <div class="col-md-6 col-sm-6">
+                    <div class="media ">
+                        <a class="pull-left" href="/narrators/{{ narrator.id }}">
+                            <img class="media-object" src="{{ narrator.image_url }}" class="img-responsive" width="110px" />
+                        </a>
+                        <div class="media-body">
+                            <h4 class="media-heading">
+                                <!-- narrator.display_name -->
+                                <a href="/narrators/{{ narrator.id }}">{{ narrator.display_name }}</a>
+                            </h4>
+                            <div class="source muted">
+                                <!-- narrator.generation, narrator.b_date, narrator.birth_location -->
+                                <!--
+                                    "Born {:%B %d, %Y} in {}".format(narrator.b_date, narrator.birth_location)
+                                    -->
+                                    {{ narrator.generation }}. Born in {{ narrator.birth_location }}. {{ narrator.b_date }} - {{ narrator.d_date }}
+                                </div>
+                            </div><!-- .media-body -->
+                        </div><!-- .media -->
+                    </div><!-- .col list-col -->
 
-	</div>
-  </div><!-- .row -->
+{% if forloop.counter0|divisibleby:2 %}
+            </div> <!-- .row list-row -->
+{% endif %}
+{% endfor %}
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+            
+        </div> <!-- end list_tab -->
+    </div> <!-- end tabs content -->
+</div> <!-- end tabs -->
+    </div>
+</div> <!-- .row results content -->
+
 </section><!-- .container-fluid -->
+
 {% endblock content %}
