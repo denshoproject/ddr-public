@@ -48,6 +48,22 @@ def document( obj ):
     t = template.loader.get_template(template_path)
     return t.render(template.Context({'object':obj}))
 
+def galleryitem( obj ):
+    """gallery-view item template
+    """
+    model_plural = MODEL_CLASSES[obj['model']]['templatedir']
+    template_path = 'ui/%s/gallery-object.html' % model_plural
+    t = template.loader.get_template(template_path)
+    return t.render(template.Context({'object':obj}))
+
+def listitem( obj ):
+    """list-view item template
+    """
+    model_plural = MODEL_CLASSES[obj['model']]['templatedir']
+    template_path = 'ui/%s/list-object.html' % model_plural
+    t = template.loader.get_template(template_path)
+    return t.render(template.Context({'object':obj}))
+
 def addthis():
     """AddThis button
     """
@@ -71,6 +87,8 @@ def rightspanel( code ):
 register.simple_tag(homeslideitem)
 register.simple_tag(breadcrumbs)
 register.simple_tag(document)
+register.simple_tag(galleryitem)
+register.simple_tag(listitem)
 register.simple_tag(addthis)
 register.simple_tag(cite)
 register.simple_tag(rightspanel)

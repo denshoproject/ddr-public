@@ -73,7 +73,88 @@ Related articles from the
 
 {% endif %}
 
-	</div>
-  </div><!-- .row -->
-</section><!-- .container-fluid -->
+{% if page.object_list %}
+<div class="row"> <!-- results content -->
+    <div class="col-sm-12 col-md-12">
+        <!--  view selection tabs -->
+        <div class="tabs no-margin-top" style="margin:10px 0;">
+    <ul class="nav nav-tabs">
+        <li class="active">
+            <a href="#gallery_tab" data-toggle="tab">
+                <i class="fa fa-th"></i> Gallery view
+            </a>
+        </li>
+        <li>
+            <a href="#list_tab" data-toggle="tab">
+                <i class="fa fa-list"></i> List view
+            </a>
+        </li>
+    </ul>
+    <div class="tab-content">
+        <div id="gallery_tab" class="tab-pane active">
+            <div id="item-count">
+                {{ paginator.count }} items<br/>
+            </div>
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+            <div class="row">
+                <ul class="sort-destination isotope fullwidth" data-sort-id="isotope-list">
+{% for object in page.object_list %}
+{% galleryitem object %}
+{% endfor %}
+                </ul>
+            </div><!-- /.masonry-container -->
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+
+        </div> <!-- end gallery_tab -->
+        <div id="list_tab" class="tab-pane">
+              <div id="item-count">
+                {{ paginator.count }} items<br/>
+              </div>
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+
+{% for object in page.object_list %}
+{% listitem object %}
+            <!-- ddr-densho-271-4 -->
+            <div class="media ">
+
+              <a class="pull-left" href="/ddr/densho/271/4/">
+                <img class="media-object" src="http://ddr.densho.org/media/cache/a6/da/a6daa78659735c01d8bfcf28cf448f5a.jpg" class="img-responsive">
+              </a>
+
+              <div class="media-body">
+                <b class="media-heading">
+                  <span class="badge badge-info">Object</span>
+                  <a href="/ddr/densho/271/4/">Arm-Nav Troppers newsletter, Tokyo Bound (ddr-densho-271-4)</a>
+                </b>
+                <!-- entity.genre, entity.description  -->
+                <div class="source muted">
+                    Photograph. 
+                </div>
+                <div class="url">
+                  <a href="/ddr/densho/271/4/">/ddr/densho/271/4/</a>
+                </div>
+              </div><!-- .media-body -->
+            </div><!-- .media -->
+
+{% endfor %}
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+
+        </div> <!-- end list_tab -->
+    </div> <!-- end tabs content -->
+</div> <!-- end tabs -->
+    </div>
+</div> <!-- .row results content -->
+{% endif %}
+
 {% endblock content %}
