@@ -9,9 +9,8 @@
               <div class="media-body">
                 <b class="media-heading">
                   <span class="badge badge-info">Collection</span>
-                  <a href="/ddr/densho/271/4/">{{ object.title|safe }} ({{ object.id }})</a>
+                  <a href="{{ object.links.html }}">{{ object.title|safe }} ({{ object.id }})</a>
                 </b>
-                <!-- entity.genre, entity.description  -->
                 <div class="source muted">
                     {{ object.description|safe|truncatewords_html:56 }}
                 </div>
