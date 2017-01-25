@@ -62,7 +62,7 @@ Narrators are the interview subjects of oral histories contained in the Densho D
                                         <span class="overlay color2"></span>
                                         <span class="inner">
                                             <span class="block fa fa-user fsize40"></span>
-                                            <span class="fsize16" style="line-height:1;">{{ narrator.display_name }}</span>
+                                            <span class="fsize16" style="line-height:1;">{{ narrator._source.display_name }}</span>
                                         </span>
                                     </a>
                                     <!-- narrator.image_url -->
@@ -103,14 +103,14 @@ Narrators are the interview subjects of oral histories contained in the Densho D
                         <div class="media-body">
                             <h4 class="media-heading">
                                 <!-- narrator.display_name -->
-                                <a href="/narrators/{{ narrator.id }}">{{ narrator.display_name }}</a>
+                                <a href="/narrators/{{ narrator.id }}">{{ narrator._source.display_name }}</a>
                             </h4>
                             <div class="source muted">
                                 <!-- narrator.generation, narrator.b_date, narrator.birth_location -->
                                 <!--
                                     "Born {:%B %d, %Y} in {}".format(narrator.b_date, narrator.birth_location)
                                     -->
-                                    {{ narrator.generation }}. Born in {{ narrator.birth_location }}. {{ narrator.b_date }} - {{ narrator.d_date }}
+                                    {{ narrator._source.generation }}. Born in {{ narrator._source.birth_location }}. {{ narrator._source.b_date }} - {{ narrator._source.d_date }}
                                 </div>
                             </div><!-- .media-body -->
                         </div><!-- .media -->
