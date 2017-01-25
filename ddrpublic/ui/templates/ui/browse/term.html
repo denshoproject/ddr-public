@@ -10,7 +10,7 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
-<section class="container">
+<section class="container" id="portfolio">
   <div class="row">
 	<div class="col-sm-10 col-md-10">
 
@@ -43,7 +43,7 @@
 <!-- topic.encycarticles -->
 <p>
 Related articles from the
-<a target="encyc" href="http://encyclopedia.densho.org/">Densho Encyclopedia</a>:
+<a target="encyc" href="http://encyclopedia.densho.org/">Densho Encyclopedia</a>:<br />
 {% for article in term.encyc_articles %}
   <a target="encyc" href="{{ article.url }}">{{ article.title }}</a>{% if not forloop.last %},{% endif %}
 {% endfor %}

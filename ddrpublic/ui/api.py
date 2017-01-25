@@ -609,8 +609,8 @@ def format_narrator(document, request, listitem=False):
         d['links']['img'] = document['_source'].pop('image_url')
         d['links']['documents'] = ''
         # title, description
-        if document['_source'].get('display_name'):
-            d['title'] = document['_source'].pop('display_name')
+        if document['_source'].get('title'):
+            d['title'] = document['_source'].pop('title')
         if document['_source'].get('description'):
             d['description'] = document['_source'].pop('description')
         # everything else
