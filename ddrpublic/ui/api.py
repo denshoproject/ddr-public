@@ -647,7 +647,7 @@ class ApiNarrator(object):
         ]
         LIST_FIELDS = [
             'id',
-            'title',
+            'display_name',
             'image_url',
         ]
         q = docstore.search_query(
