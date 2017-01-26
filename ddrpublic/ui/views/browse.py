@@ -58,20 +58,42 @@ def narrator(request, oid):
     )
 
 def facet(request, facet_id):
-    key = '%s:terms:tree' % facet_id
-    terms = cache.get(key)
-    if not terms:
+    
+    if facet_id == 'topics':
+        template_name = 'ui/browse/facet-topics.html'
+        key = '%s:terms:tree' % facet_id
+        terms = cache.get(key)
+        if not terms:
+            terms = api.ApiFacet.make_tree(
+                api.ApiFacet.api_children(
+                    facet_id, request,
+                    sort=[('sort','asc')],
+                    limit=10000, raw=True
+                )
+            )
+            for term in terms:
+                term['links'] = {}
+                term['links']['html'] = reverse('ui-browse-term', args=[facet_id, term['id']])
+            cache.set(key, terms, settings.ELASTICSEARCH_QUERY_TIMEOUT)
+
+    elif facet_id == 'facility':
         
-        terms = api.ApiFacet.make_tree(
-            api.ApiFacet.api_children(facet_id, request, limit=10000, raw=True)
+        template_name = 'ui/browse/facet-facility.html'
+        terms = api.ApiFacet.api_children(
+            facet_id, request,
+            sort=[('title','asc')],
+            limit=10000, raw=True
         )
+        # for some reason ES does not sort
+        terms = sorted(terms, key=lambda term: term['title']) 
         for term in terms:
             term['links'] = {}
-            term['links']['html'] = reverse('ui-browse-term', args=[facet_id, term['id']])
-        cache.set(key, terms, settings.ELASTICSEARCH_QUERY_TIMEOUT)
-    
+            term['links']['html'] = reverse(
+                'ui-browse-term', args=[facet_id, term['id']]
+            )
+                
     return render_to_response(
-        'ui/browse/facet.html',
+        template_name,
         {
             'facet': api.ApiFacet.api_get(facet_id, request),
             'terms': terms,

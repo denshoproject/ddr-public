@@ -743,10 +743,7 @@ class ApiFacet(object):
         )
     
     @staticmethod
-    def api_children(oid, request, limit=DEFAULT_LIMIT, offset=0, raw=False):
-        SORT_FIELDS = [
-            ['sort','asc'],
-        ]
+    def api_children(oid, request, sort=[], limit=DEFAULT_LIMIT, offset=0, raw=False):
         LIST_FIELDS = [
             'id',
             'sort',
@@ -754,6 +751,7 @@ class ApiFacet(object):
             'facet',
             'ancestors',
             'path',
+            'type',
         ]
         q = docstore.search_query(
             must=[
@@ -763,7 +761,7 @@ class ApiFacet(object):
         results = docstore.Docstore().search(
             doctypes=['facetterm'],
             query=q,
-            sort=SORT_FIELDS,
+            sort=sort,
             fields=LIST_FIELDS,
             from_=offset,
             size=limit,
@@ -786,17 +784,16 @@ class ApiFacet(object):
     
     @staticmethod
     def make_tree(terms_list):
-        """
-
-from ui import api
-facet_id = 'topics' ; request = None
-facet = api.ApiFacet.api_get(facet_id, request)
-terms = api.ApiFacet.api_children(facet_id, request, limit=10000, raw=1) # 
-tree = api.ApiFacet.make_tree(facet['terms'])
-
-    source: https://gist.github.com/hrldcpr/2012250
-    
-    @param 
+        """Rearranges terms list into hierarchical list.
+        
+        Uses term['ancestors'] to generate a tree structure
+        then "prints out" the tree to a list with indent (depth) indicators.
+        More specifically, it adds term['depth'] attribs and reorders
+        terms so they appear in the correct places in the hierarchy.
+        source: https://gist.github.com/hrldcpr/2012250
+        
+        @param terms_list: list
+        @returns: list
         """
         def tree():
             """Define a tree data structure
@@ -913,22 +910,25 @@ class ApiTerm(object):
         # save data for breadcrumbs
         # (we assume ancestors and path in same order)
         facet = document['_source']['facet']
-        ancestors = document['_source']['ancestors']
-        path = document['_source']['path'].split(':')
-        path.pop()
-        # last path item is for this term, so unneeded
+        path = document['_source'].get('path')
+        ancestors = document['_source'].get('ancestors')
+        
         data = format_term(document, request)
         HIDDEN_FIELDS = []
         for field in HIDDEN_FIELDS:
             pop_field(data, field)
         # breadcrumbs
-        data['breadcrumbs'] = []
-        if len(path) == len(ancestors):
-            for n,tid in enumerate(ancestors):
-                data['breadcrumbs'].append({
-                    'url':reverse('ui-browse-term', args=[facet, tid]),
-                    'title':path[n]
-                })
+        # join path (titles) and ancestors (IDs)
+        if path and ancestors:
+            data['breadcrumbs'] = []
+            path = path.split(':')
+            path.pop() # last path item is not an ancestor
+            if len(path) == len(ancestors):
+                for n,tid in enumerate(ancestors):
+                    data['breadcrumbs'].append({
+                        'url':reverse('ui-browse-term', args=[facet, tid]),
+                        'title':path[n]
+                    })
         return data
     
     @staticmethod
