@@ -1,4 +1,4 @@
-from collections import OrderedDict
+from collections import defaultdict, OrderedDict
 import json
 import os
 
@@ -14,8 +14,6 @@ from rest_framework.reverse import reverse
 from DDR import docstore
 from ui.identifier import Identifier, CHILDREN, CHILDREN_ALL
 from ui.views import filter_if_branded
-from ui import faceting
-from ui import models
 
 DEFAULT_LIMIT = 25
 
@@ -677,85 +675,300 @@ class ApiNarrator(object):
         )
 
 
-class ApiFacet(faceting.Facet):
-
-    def api_data(self, request):
-        data = {
-            'id': self.id,
-            'name': self.name,
-            'title': self.title,
-            'description': self.description,
-            'json': reverse('ui-api-facet', args=[self.id,], request=request),
-            'html': reverse('ui-browse-facet', args=[self.id,], request=request),
-        }
-        data['terms'] = [
-            {
-                'id': term.id,
-                'title': term.title,
-                'json': reverse('ui-api-term', args=(term.facet_id, term.id), request=request),
-                'html': reverse('ui-browse-term', args=(term.facet_id, term.id), request=request),
-            }
-            for term in self.terms()
-        ]
-        return data
-    
-    def terms(self):
-        if not self._terms:
-            self._terms = []
-            for t in self._terms_raw:
-                term = ApiTerm(facet_id=self.id, term_id=t['id'])
-                self._terms.append(term)
-            self._terms_raw = None
-        return self._terms
-
-
-class ApiTerm(faceting.Term):
+def format_facet(document, request, listitem=False):
+    if document and document.get('_source'):
+        oid = document['_id']
         
-    def api_data(self, request):
-        data = OrderedDict()
-        data['id'] = self.id
-        data['model'] = None
-        data['links'] = OrderedDict()
-        if self.parent_id:
-            data['links']['parent'] = reverse(
-                'ui-api-term',
-                args=[self.facet_id, self.parent_id],
-                request=request)
-        data['links']['json'] = reverse('ui-api-term', args=(self.facet_id, self.id), request=request)
-        data['links']['html'] = reverse('ui-browse-term', args=(self.facet_id, self.id), request=request)
-        data['links']['ancestors'] = [
-            reverse('ui-api-term', args=[self.facet_id, tid], request=request)
-            for tid in self._ancestors
+        d = OrderedDict()
+        d['id'] = oid
+        d['model'] = 'facet'
+        # links
+        d['links'] = OrderedDict()
+        d['links']['html'] = reverse('ui-api-facet', args=[oid], request=request)
+        d['links']['json'] = reverse('ui-browse-facet', args=[oid], request=request)
+        # everything else
+        HIDDEN_FIELDS = [
         ]
-        data['links']['siblings'] = [
-            reverse('ui-api-term', args=[self.facet_id, tid], request=request)
-            for tid in self._siblings
-        ]
-        data['links']['children'] = [
-            reverse('ui-api-term', args=[self.facet_id, tid], request=request)
-            for tid in self._children
-        ]
-        data['links']['objects'] = reverse(
-            'ui-api-term-objects',
-            args=[self.facet_id, self.id],
-            request=request
+        for key in document['_source'].iterkeys():
+            if key not in HIDDEN_FIELDS:
+                d[key] = document['_source'][key]
+        return d
+    return None
+
+class ApiFacet(object):
+    
+    @staticmethod
+    def api_get(oid, request):
+        document = docstore.Docstore().get(
+            model='facet', document_id=oid
         )
-        data['links']['encyclopedia'] = self.encyc_urls
-        data['title'] = self.title
-        data['description'] = self.description
-        data['weight'] = self.weight
-        data['created'] = self.created
-        data['modified'] = self.modified
+        if not document:
+            raise NotFound()
+        data = format_object_detail(document, request)
+        HIDDEN_FIELDS = []
+        for field in HIDDEN_FIELDS:
+            pop_field(data, field)
         return data
     
-    def objects(self, limit=DEFAULT_LIMIT, offset=0, request=None):
+    @staticmethod
+    def api_list(request, limit=DEFAULT_LIMIT, offset=0):
+        SORT_FIELDS = [
+        ]
+        LIST_FIELDS = [
+            'id',
+            'title',
+        ]
+        q = docstore.search_query(
+            must=[
+                { "match_all": {}}
+            ]
+        )
+        results = docstore.Docstore().search(
+            doctypes=['facet'],
+            query=q,
+            sort=SORT_FIELDS,
+            fields=LIST_FIELDS,
+            from_=offset,
+            size=limit,
+        )
+        return format_list_objects(
+            paginate_results(
+                results,
+                offset,
+                limit,
+                request
+            ),
+            request,
+            format_facet
+        )
+    
+    @staticmethod
+    def api_children(oid, request, limit=DEFAULT_LIMIT, offset=0, raw=False):
+        SORT_FIELDS = [
+            ['sort','asc'],
+        ]
+        LIST_FIELDS = [
+            'id',
+            'sort',
+            'title',
+            'facet',
+            'ancestors',
+            'path',
+        ]
+        q = docstore.search_query(
+            must=[
+                {'term': {'facet': oid}}
+            ]
+        )
+        results = docstore.Docstore().search(
+            doctypes=['facetterm'],
+            query=q,
+            sort=SORT_FIELDS,
+            fields=LIST_FIELDS,
+            from_=offset,
+            size=limit,
+        )
+        if raw:
+            return [
+                term['_source']
+                for term in results['hits']['hits']
+            ]
+        return format_list_objects(
+            paginate_results(
+                results,
+                offset,
+                limit,
+                request
+            ),
+            request,
+            format_term
+        )
+    
+    @staticmethod
+    def make_tree(terms_list):
         """
-        http://DOMAIN/api/0.1/facet/{facet_id}/{term_id}/objects/?{internal=1}&{limit=5}
+
+from ui import api
+facet_id = 'topics' ; request = None
+facet = api.ApiFacet.api_get(facet_id, request)
+terms = api.ApiFacet.api_children(facet_id, request, limit=10000, raw=1) # 
+tree = api.ApiFacet.make_tree(facet['terms'])
+
+    source: https://gist.github.com/hrldcpr/2012250
+    
+    @param 
         """
-        field = '%s.id' % self.facet_id
+        def tree():
+            """Define a tree data structure
+            """
+            return defaultdict(tree)
+        
+        def add(tree_, path):
+            """
+            @param tree_: defaultdict
+            @param path: list of ancestor term IDs
+            """
+            for node in path:
+                tree_ = tree_[node]
+        
+        def populate(terms_list):
+            """Create and populate tree structure
+            by iterating through list of terms and referencing ancestor/path keys
+            
+            @param terms_list: list of dicts
+            @returns: defaultdict
+            """
+            tree_ = tree()
+            for term in terms_list:
+                path = [tid for tid in term['ancestors']]
+                path.append(term['id'])
+                add(tree_, path)
+            return tree_
+        
+        def flatten(tree_, depth=0):
+            """Takes tree dict and returns list of terms with depth values
+            
+            Variation on ptr() from the gist
+            Recursively gets term objects from terms_dict, adds depth,
+            and appends to list of terms.
+            
+            @param tree_: defaultdict Tree
+            @param depth: int Depth of indents
+            """
+            for key in sorted(tree_.keys()):
+                term = terms_dict[key]
+                term['depth'] = depth
+                terms.append(term)
+                depth += 1
+                flatten(tree_[key], depth)
+                depth -= 1
+        
+        terms_dict = {t['id']: t for t in terms_list}
+        terms_tree = populate(terms_list)
+        terms = []
+        flatten(terms_tree)
+        return terms
+
+def format_term(document, request, listitem=False):
+    if document and document.get('_source'):
+        oid = document['_id']
+        fid = document['_source']['facet']
+        tid = document['_source']['id']
+        
+        d = OrderedDict()
+        d['id'] = oid
+        d['model'] = 'facetterm'
+        if document['_source'].get('facet'): d['facet'] = document['_source'].pop('facet')
+        if document['_source'].get('path'): d['path'] = document['_source'].pop('path')
+        # links
+        d['links'] = OrderedDict()
+        d['links']['html'] = reverse('ui-api-term', args=[fid,tid], request=request)
+        d['links']['json'] = reverse('ui-browse-term', args=[fid,tid], request=request)
+        if document['_source'].get('parent_id'):
+            d['links']['parent'] = reverse('ui-api-term', args=[fid,document['_source']['parent_id']], request=request)
+        if document['_source'].get('ancestors'):
+            d['links']['ancestors'] = [
+                reverse('ui-api-term', args=[fid,oid], request=request)
+                for oid in document['_source'].pop('ancestors')
+            ]
+        if document['_source'].get('siblings'):
+            d['links']['siblings'] = [
+                reverse('ui-api-term', args=[fid,oid], request=request)
+                for oid in document['_source'].get('siblings')
+            ]
+        if document['_source'].get('children'):
+            d['links']['children'] = [
+                reverse('ui-api-term', args=[fid,oid], request=request)
+                for oid in document['_source'].get('children')
+            ]
+        d['links']['objects'] = reverse('ui-api-term-objects', args=[fid,tid], request=request)
+        # title, description
+        if document['_source'].get('_title'): d['_title'] = document['_source'].pop('_title')
+        if document['_source'].get('title'): d['title'] = document['_source'].pop('title')
+        if document['_source'].get('description'): d['description'] = document['_source'].pop('description')
+        # everything else
+        HIDDEN_FIELDS = [
+            'created',
+            'modified',
+            'parent_id',
+            #'ancestors',
+            'siblings',
+            'children',
+        ]
+        for key in document['_source'].iterkeys():
+            if key not in HIDDEN_FIELDS:
+                d[key] = document['_source'][key]
+        return d
+    return None
+
+class ApiTerm(object):
+    
+    @staticmethod
+    def api_get(oid, request):
+        document = docstore.Docstore().get(
+            model='facetterm', document_id=oid
+        )
+        if not document:
+            raise NotFound()
+        # save data for breadcrumbs
+        # (we assume ancestors and path in same order)
+        facet = document['_source']['facet']
+        ancestors = document['_source']['ancestors']
+        path = document['_source']['path'].split(':')
+        path.pop()
+        # last path item is for this term, so unneeded
+        data = format_term(document, request)
+        HIDDEN_FIELDS = []
+        for field in HIDDEN_FIELDS:
+            pop_field(data, field)
+        # breadcrumbs
+        data['breadcrumbs'] = []
+        if len(path) == len(ancestors):
+            for n,tid in enumerate(ancestors):
+                data['breadcrumbs'].append({
+                    'url':reverse('ui-browse-term', args=[facet, tid]),
+                    'title':path[n]
+                })
+        return data
+    
+    @staticmethod
+    def api_list(request, limit=DEFAULT_LIMIT, offset=0):
+        SORT_FIELDS = [
+        ]
+        LIST_FIELDS = [
+            'id',
+            'title',
+        ]
+        q = docstore.search_query(
+            must=[
+                { "match_all": {}}
+            ]
+        )
+        results = docstore.Docstore().search(
+            doctypes=['facetterm'],
+            query=q,
+            sort=SORT_FIELDS,
+            fields=LIST_FIELDS,
+            from_=offset,
+            size=limit,
+        )
+        return format_list_objects(
+            paginate_results(
+                results,
+                offset,
+                limit,
+                request
+            ),
+            request,
+            format_facet
+        )
+    
+    @staticmethod
+    def objects(facet_id, term_id, limit=DEFAULT_LIMIT, offset=0, request=None):
+        field = '%s.id' % facet_id
         return api_search(
             must=[
-                {'terms': {field: [self.id]}},
+                {'terms': {field: [term_id]}},
             ],
             models=[],
             sort_fields=[
@@ -889,6 +1102,12 @@ def files(request, oid, format=None):
     data = ApiEntity.api_nodes(oid, request, offset=offset)
     return _list(request, data)
 
+@api_view(['GET'])
+def facets(request, oid, format=None):
+    offset = int(request.GET.get('offset', 0))
+    data = ApiEntity.api_nodes(oid, request, offset=offset)
+    return _list(request, data)
+
 
 @api_view(['GET'])
 def object_detail(request, oid):
@@ -951,26 +1170,27 @@ def narrator(request, oid, format=None):
 
 @api_view(['GET'])
 def facet_index(request, format=None):
-    data = {
-        'topics': reverse('ui-api-facet', args=['topics',], request=request),
-        'facility': reverse('ui-api-facet', args=['facility',], request=request),
-    }
+    data = ApiFacet.api_list(request)
     return Response(data)
 
 @api_view(['GET'])
-def facet(request, facet, format=None):
-    facet = ApiFacet(facet)
-    data = facet.api_data(request)
-    return Response(data)
+def facet(request, facet_id, format=None):
+    data = ApiFacet.api_get(facet_id, request)
+    return _detail(request, data)
 
 @api_view(['GET'])
 def term(request, facet_id, term_id, format=None):
-    term = ApiTerm(facet_id=facet_id, term_id=term_id)
-    data = term.api_data(request)
-    return Response(data)
+    oid = '%s-%s' % (facet_id, term_id)
+    data = ApiTerm.api_get(oid, request)
+    return _detail(request, data)
 
 @api_view(['GET'])
 def term_objects(request, facet_id, term_id, limit=DEFAULT_LIMIT, offset=0):
-    term = ApiTerm(facet_id=facet_id, term_id=term_id)
-    data = term.objects(limit=limit, offset=offset, request=request)
+    oid = '%s-%s' % (facet_id, term_id)
+    data = ApiTerm.objects(
+        facet_id=facet_id,
+        term_id=term_id,
+        offset=offset,
+        request=request
+    )
     return Response(data)

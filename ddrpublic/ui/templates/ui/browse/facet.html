@@ -20,7 +20,7 @@
 
 <p>
 {% for term in terms %}
-<a class="indent{{ term.depth }}" href="{{ term.url }}">{{ term.title }}</a><br/>
+<a class="indent{{ term.depth }}" href="{{ term.links.html }}">{{ term.title }}</a><br/>
 {% endfor %}
 </p>
 

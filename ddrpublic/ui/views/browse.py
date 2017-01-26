@@ -2,6 +2,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
@@ -19,11 +20,9 @@ SHOW_THESE = ['topics', 'facility', 'location', 'format', 'genre',]
 # views ----------------------------------------------------------------
 
 def index( request ):
-    facets = [faceting.get_facet(name) for name in SHOW_THESE]
     return render_to_response(
         'ui/browse/index.html',
         {
-            'facets': facets,
         },
         context_instance=RequestContext(request, processors=[])
     )
@@ -58,24 +57,35 @@ def narrator(request, oid):
         context_instance=RequestContext(request, processors=[])
     )
 
-def facet( request, facet ):
-    facet = faceting.Facet(facet)
-    terms = facet.tree()
+def facet(request, facet_id):
+    key = '%s:terms:tree' % facet_id
+    terms = cache.get(key)
+    if not terms:
+        
+        terms = api.ApiFacet.make_tree(
+            api.ApiFacet.api_children(facet_id, request, limit=10000, raw=True)
+        )
+        for term in terms:
+            term['links'] = {}
+            term['links']['html'] = reverse('ui-browse-term', args=[facet_id, term['id']])
+        cache.set(key, terms, settings.ELASTICSEARCH_QUERY_TIMEOUT)
+    
     return render_to_response(
         'ui/browse/facet.html',
         {
-            'facet': facet,
+            'facet': api.ApiFacet.api_get(facet_id, request),
             'terms': terms,
         },
         context_instance=RequestContext(request, processors=[])
     )
 
 def term( request, facet_id, term_id ):
+    oid = '-'.join([facet_id, term_id])
+    term = api.ApiTerm.api_get(oid, request)
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
-    
-    term = api.ApiTerm(facet_id=facet_id, term_id=term_id)
-    results = term.objects(
+    results = api.ApiTerm.objects(
+        facet_id, term_id,
         limit=pagesize,
         offset=thispage,
         request=request,
@@ -86,6 +96,7 @@ def term( request, facet_id, term_id ):
     return render_to_response(
         'ui/browse/term.html',
         {
+            'facet': api.ApiFacet.api_get(facet_id, request),
             'term': term,
             'paginator': paginator,
             'page': page,
