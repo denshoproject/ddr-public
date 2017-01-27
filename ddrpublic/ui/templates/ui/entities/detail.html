@@ -27,7 +27,7 @@
 
     <div class="row">
         <!-- left content -->
-        <div class="col-sm-6 col-md-6">
+        <div class="col-sm-7 col-md-7">
             <h2>{{ object.title|safe }}</h2>
 
 {% if object.signature_url %}
@@ -40,14 +40,11 @@
         <a href="{{ DOWNLOAD_URL }}{{ object.signature.access_path }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download large size</a>
 {% endif %}
 
-        <div class="divider"><!-- divider -->
-            <i class="fa fa-chevron-down"></i>
-        </div>
         {% rightspanel object.rights %}
         {% endif %}
         </div>
         <!-- right meta -->
-        <div class="col-sm-6 col-md-6">
+        <div class="col-sm-5 col-md-5">
 
             {% addthis %}
 
@@ -152,18 +149,6 @@
                     <h3 class="page-header">RIGHTS</h3>
                     {{ object.fields|ddrvalue:"rights" }}
 
-                    {% if object.encyc_articles %}
-                    <!-- entity.encycarticles -->
-                    <h3 class="page-header">FOR MORE INFORMATION</h3>
-                    <p class="small">
-                        Related articles from the <a target="encyc" href="http://encyclopedia.densho.org/">Densho Encyclopedia</a>
-                    </p>
-                    <ul class="list-unstyled">
-                        {% for article in object.encyc_articles %}
-                        <li><a target="encyc" href="{{ article.url }}">{{ article.title }}</a></li>
-                        {% endfor %}
-                    </ul>
-                    {% endif %}
                 </div>	
             </div>
     </div>
