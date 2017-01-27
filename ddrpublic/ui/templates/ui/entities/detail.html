@@ -177,7 +177,7 @@
             </a>
           </h3>
           {% for file in nodes_page.object_list %}
-          {% document file %}
+          {% listitem file %}
           {% endfor %}
           {% if nodes_paginator.count > 10 %}
           <br />
