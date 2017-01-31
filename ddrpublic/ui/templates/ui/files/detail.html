@@ -54,8 +54,8 @@
       {% else %}{# object.external_urls #}
 
       <!-- local static -->
-      {% thumbnail object.access_url_local "480x480" as img %}
-      <a href="{{ object.access_url }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
+      {% thumbnail object.links.img "480x480" as img %}
+      <a href="{{ object.links.img }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
         <img src="{{ img.url }}" class="img-responsive">
       </a><br />
       {% endthumbnail %}
