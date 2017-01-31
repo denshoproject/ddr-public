@@ -35,6 +35,7 @@ def detail(request, oid):
             'object': ffile,
             'parent': parent,
             'organization': organization,
+            'api_url': reverse('ui-api-object', args=[oid]),
         },
         context_instance=RequestContext(request, processors=[])
     )

@@ -65,6 +65,7 @@ def detail(request, oid):
             'organization': organization,
             'paginator': paginator,
             'page': page,
+            'api_url': reverse('ui-api-object', args=[oid]),
         },
         context_instance=RequestContext(request, processors=[])
     )
@@ -93,6 +94,7 @@ def children(request, oid):
             'object': collection,
             'paginator': paginator,
             'page': page,
+            'api_url': reverse('ui-api-object-children', args=[oid]),
         },
         context_instance=RequestContext(request, processors=[])
     )
@@ -118,6 +120,7 @@ def nodes(request, oid):
             'object': collection,
             'paginator': paginator,
             'page': page,
+            'api_url': reverse('ui-api-object-nodes', args=[oid]),
         },
         context_instance=RequestContext(request, processors=[])
     )
