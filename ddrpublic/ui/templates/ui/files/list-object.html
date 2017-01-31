@@ -3,7 +3,7 @@
 <!--
 {{ object }}
 -->
-<div class="media {{ object.model }}">
+<div class="list-object media {{ object.model }}">
 {% thumbnail object.links.img "110x110" as img %}
   <a class="pull-left" href="{{ object.links.html }}">
     <img class="media-object" src="{{ img.url }}" class="img-responsive">
