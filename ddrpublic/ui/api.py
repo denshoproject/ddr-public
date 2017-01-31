@@ -370,9 +370,12 @@ class ApiRepository(object):
             ['org','asc'],
             ['id','asc'],
         ]
-        return api_children(
+        data = api_children(
             request, CHILDREN[i.model], i.id, sort_fields, limit=limit, offset=offset
         )
+        for d in data['objects']:
+            d['links']['img'] = img_url(d['id'], 'logo.png', request)
+        return data
 
 
 class ApiOrganization(object):
@@ -394,6 +397,7 @@ class ApiOrganization(object):
             args=[i.id],
             request=request
         )
+        data['links']['img'] = img_url(oid, 'logo.png', request)
         return data
 
     @staticmethod
