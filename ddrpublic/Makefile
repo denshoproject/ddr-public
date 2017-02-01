@@ -13,7 +13,6 @@ INSTALL_PUBLIC=$(INSTALL_BASE)/ddr-public
 INSTALL_DEFS=$(INSTALL_BASE)/ddr-defs
 INSTALL_MANUAL=$(INSTALL_BASE)/ddr-manual
 
-PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
 VIRTUALENV=$(INSTALL_BASE)/env/ddrpublic
 SETTINGS=$(INSTALL_PUBLIC)/ddrpublic/ddrpublic/settings.py
 
@@ -197,7 +196,7 @@ install-setuptools: install-virtualenv
 	@echo "install-setuptools -----------------------------------------------------"
 	apt-get --assume-yes install python-dev
 	source $(VIRTUALENV)/bin/activate; \
-	pip install -U --download-cache=$(PIP_CACHE_DIR) bpython setuptools
+	pip install -U bpython setuptools
 
 
 get-app: get-ddr-cmdln get-ddr-public get-ddr-manual
@@ -228,7 +227,7 @@ install-ddr-cmdln:
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_CMDLN)/ddr && python setup.py install
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_CMDLN)/ddr && pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALL_CMDLN)/ddr/requirements/production.txt
+	cd $(INSTALL_CMDLN)/ddr && pip install -U -r $(INSTALL_CMDLN)/ddr/requirements/production.txt
 	-mkdir $(LOG_BASE)
 	chown -R ddr.root $(LOG_BASE)
 	chmod -R 755 $(LOG_BASE)
@@ -259,7 +258,7 @@ install-ddr-public:
 	@echo "install-ddr-public -----------------------------------------------------"
 	apt-get --assume-yes install imagemagick sqlite3 supervisor
 	source $(VIRTUALENV)/bin/activate; \
-	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALL_PUBLIC)/ddrpublic/requirements/production.txt
+	pip install -U -r $(INSTALL_PUBLIC)/ddrpublic/requirements/production.txt
 # ddr repo
 	-mkdir -p $(DDR_REPO_BASE)
 	chown -R ddr.root $(DDR_REPO_BASE)
@@ -283,9 +282,6 @@ uninstall-ddr-public:
 
 clean-ddr-public:
 	-rm -Rf $(INSTALL_PUBLIC)/ddrpublic/src
-
-clean-pip:
-	-rm -Rf $(PIP_CACHE_DIR)/*
 
 
 get-ddr-defs:
@@ -478,7 +474,7 @@ install-ddr-manual:
 	@echo ""
 	@echo "install-ddr-manual -----------------------------------------------------"
 	source $(VIRTUALENV)/bin/activate; \
-	pip install -U --download-cache=$(PIP_CACHE_DIR) sphinx
+	pip install -U sphinx
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_MANUAL) && make html
 	rm -Rf $(MEDIA_ROOT)/manual
