@@ -4,7 +4,6 @@ PACKAGE_SERVER=ddr.densho.org/static/ddrpublic
 
 INSTALL_BASE=/usr/local/src
 INSTALLDIR=$(INSTALL_BASE)/ddr-public
-PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
 VIRTUALENV=$(INSTALL_BASE)/env/ddrpublic
 
 DDR_REPO_BASE=/var/www/media
@@ -161,7 +160,7 @@ install-setuptools: install-virtualenv
 	@echo "install-setuptools -----------------------------------------------------"
 	apt-get --assume-yes install python-dev
 	source $(VIRTUALENV)/bin/activate; \
-	pip install -U --download-cache=$(PIP_CACHE_DIR) bpython setuptools
+	pip install -U bpython setuptools
 
 
 install-ddr: install-ddr-cmdln install-ddr-public
@@ -187,7 +186,7 @@ install-ddr-cmdln: install-virtualenv install-setuptools
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_BASE)/ddr-cmdln/ddr && python setup.py install
 	source $(VIRTUALENV)/bin/activate; \
-	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALL_BASE)/ddr-cmdln/ddr/requirements/production.txt
+	pip install -U -r $(INSTALL_BASE)/ddr-cmdln/ddr/requirements/production.txt
 
 update-ddr-cmdln: install-virtualenv install-setuptools
 	@echo ""
@@ -197,7 +196,7 @@ update-ddr-cmdln: install-virtualenv install-setuptools
 	source $(VIRTUALENV)/bin/activate; \
 	python setup.py install
 	source $(VIRTUALENV)/bin/activate; \
-	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALL_BASE)/ddr-cmdln/ddr/requirements/production.txt
+	pip install -U -r $(INSTALL_BASE)/ddr-cmdln/ddr/requirements/production.txt
 
 uninstall-ddr-cmdln: install-virtualenv
 	cd $(INSTALL_BASE)/ddr-cmdln/ddr
@@ -222,7 +221,7 @@ install-ddr-public: install-virtualenv
 	apt-get --assume-yes install imagemagick sqlite3 supervisor
 	git pull
 	source $(VIRTUALENV)/bin/activate; \
-	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALLDIR)/ddrpublic/requirements/production.txt
+	pip install -U -r $(INSTALLDIR)/ddrpublic/requirements/production.txt
 # ddr repo
 	-mkdir -p $(DDR_REPO_BASE)
 	chown -R ddr.root $(DDR_REPO_BASE)
@@ -249,7 +248,7 @@ update-ddr-public:
 	@echo "ddr-public --------------------------------------------------------------"
 	git fetch && git pull
 	source $(VIRTUALENV)/bin/activate; \
-	pip install -U --download-cache=$(PIP_CACHE_DIR) -r $(INSTALLDIR)/ddrpublic/requirements/production.txt
+	pip install -U -r $(INSTALLDIR)/ddrpublic/requirements/production.txt
 
 uninstall-ddr-public:
 	cd $(INSTALLDIR)/ddrpublic
@@ -263,9 +262,6 @@ restart-ddrpublic:
 
 clean-ddr-public:
 	-rm -Rf $(INSTALLDIR)/ddrpublic/src
-
-clean-pip:
-	-rm -Rf $(PIP_CACHE_DIR)/*
 
 
 branch:
@@ -399,7 +395,7 @@ git-status:
 install-ddr-manual:
 	@echo ""
 	@echo "ddr-manual --------------------------------------------------------------"
-	pip install -U --download-cache=$(PIP_CACHE_DIR) sphinx
+	pip install -U sphinx
 	if test -d $(INSTALL_BASE)/ddr-manual; \
 	then cd $(INSTALL_BASE)/ddr-manual && git pull; \
 	else cd $(INSTALL_BASE) && git clone https://github.com/densho/ddr-manual.git; \
