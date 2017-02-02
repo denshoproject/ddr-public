@@ -93,12 +93,20 @@ def results(request):
     paginator = None
     page = None
     if query['fulltext'] or query['must']:
-        r = requests.post("http://192.168.56.120/api/0.2/search/", data=query)
-        results = json.loads(r.text)
+        results = api.api_search(
+            text=query['fulltext'],
+            must=query['must'],
+            should=[],
+            mustnot=[],
+            models=query['models'],
+            sort_fields=[],
+            limit=query['limit'],
+            offset=query['offset'],
+            request=request,
+        )
         objects = api.pad_results(results, pagesize, thispage)
         paginator = Paginator(objects, pagesize)
         page = paginator.page(thispage)
-    
     return render_to_response(
         'ui/search/results.html',
         {
