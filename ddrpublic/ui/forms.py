@@ -14,13 +14,13 @@ class SearchForm(forms.Form):
     models = forms.MultipleChoiceField(
         choices=[
 
-            ('org', 'Partner'),
+            #('org', 'Partner'),
             ('collection', 'Collection'),
             ('entity', 'Entity'),
             ('segment', 'Segment'),
             ('file', 'File'),
-            ('narrator', 'Narrator'),
-            ('term', 'Topic Term'),
+            #('narrator', 'Narrator'),
+            #('term', 'Topic Term'),
             
         ],
         required=False,
