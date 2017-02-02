@@ -5,10 +5,27 @@ from django import forms
 from django.conf import settings
 
 class SearchForm(forms.Form):
+    
     fulltext = forms.CharField(
         max_length=255,
         required=False,
     )
+    
+    models = forms.MultipleChoiceField(
+        choices=[
+
+            ('org', 'Partner'),
+            ('collection', 'Collection'),
+            ('entity', 'Entity'),
+            ('segment', 'Segment'),
+            ('file', 'File'),
+            ('narrator', 'Narrator'),
+            ('term', 'Topic Term'),
+            
+        ],
+        required=False,
+    )
+    
     language = forms.MultipleChoiceField(
         choices=[
             ('eng', 'English'),
@@ -17,6 +34,7 @@ class SearchForm(forms.Form):
         ],
         required=False,
     )
+    
     topics = forms.MultipleChoiceField(
         choices=[
             ('1', 'Immigration and citizenship'),
