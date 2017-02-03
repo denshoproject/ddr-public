@@ -20,6 +20,8 @@ MODEL_CLASSES = {
     'organization': {'module': 'ui.models', 'class':'Organization', 'stub':1, 'templatedir':'',},
     'repository':   {'module': 'ui.models', 'class':'Repository', 'stub':1, 'templatedir':'',},
     'narrator':     {'templatedir':'narrators',},
+    'facet':        {'templatedir':'facet',},
+    'facetterm':    {'templatedir':'facetterm',},
 }
 
 

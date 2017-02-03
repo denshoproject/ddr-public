@@ -130,14 +130,18 @@ def pop_field(obj, fieldname):
 
 
 SEARCH_RETURN_FIELDS = [
-    'id',
-    'signature_id',
-    'collection_id',
-    'title',
-    'description',
-    'url',
     'access_rel',
+    'bio',
+    'collection_id',
+    'description',
+    'display_name',
+    'facet',
+    'id',
+    'image_url',
+    'signature_id',
     'sort',
+    'title',
+    'url',
 ]
 
 def api_search(text='', must=[], should=[], mustnot=[], models=[], sort_fields=[], limit=DEFAULT_LIMIT, offset=0, request=None):
@@ -768,7 +772,7 @@ class ApiFacet(object):
         )
         if not document:
             raise NotFound()
-        data = format_object_detail(document, request)
+        data = format_facet(document, request)
         HIDDEN_FIELDS = []
         for field in HIDDEN_FIELDS:
             pop_field(data, field)

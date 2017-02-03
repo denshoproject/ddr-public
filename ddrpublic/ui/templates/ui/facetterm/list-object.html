@@ -8,11 +8,11 @@
 {% endthumbnail %}
   <div class="media-body">
     <h4 class="media-heading">
-      <span class="badge badge-info">{{ object.model | capfirst }}</span>
-      <a href="{{ object.links.html }}">{{ object.display_name|safe }}</a>
+      <span class="badge badge-info">{{ object.facet | capfirst }}</span>
+      <a href="{{ object.links.html }}">{{ object.title|safe }}</a>
     </h4>
     <div class="source muted">
-      {{ object.bio|safe|truncatewords_html:56 }}
+      {{ object.description|safe|truncatewords_html:56 }}
     </div>
     <div class="url">
       <a href="{{ object.links.html }}">{{ object.links.html }}</a>
