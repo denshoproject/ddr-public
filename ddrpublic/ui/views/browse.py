@@ -52,7 +52,7 @@ def narrator(request, oid):
     return render_to_response(
         'ui/browse/narrator-detail.html',
         {
-            'object': api.ApiNarrator.api_get(oid, request),
+            'narrator': api.ApiNarrator.api_get(oid, request),
         },
         context_instance=RequestContext(request, processors=[])
     )

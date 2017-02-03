@@ -9,41 +9,43 @@
 {% block content %}
 <section class="container">
   <div class="row">
-	<div class="col-md-4">
-		<div class="featured-box">
-			<div class="box-content">
-				<h4>Collections</h4>
-				<p>Collections are groups of objects, arranged by donor or content.</p>
-				<a href="{% url "ui-collections-list" %}" class="btn btn-primary">Go</a>
-
-			</div>
-		</div>
-	</div>
-
-    <a href="{% url "ui-browse-narrators" %}">Narrators</a>
-    
-	<div class="col-md-4">
-		<div class="featured-box">
-			<div class="box-content">
-				<h4>Topics</h4>
-				<p>Organized thematic categories related to the incarceration experience and the Japanese American community.</p>
-				<a href="{% url "ui-browse-facet" "topics" %}" class="btn btn-primary">Go</a>
-			</div>
-		</div>
-	</div>
-	<div class="col-md-4">
-		<div class="featured-box">
-			<div class="box-content">
-				<h4>Facilities</h4>
-				<p>The incarceration camps and other sites where people were detained.</p>
-				<a href="{% url "ui-browse-facet" "facility" %}" class="btn btn-primary">Go</a>
-
-			</div>
-		</div>
-	</div>
-
+      <div class="col-md-4">
+          <div class="featured-box">
+              <div class="box-content">
+                  <h4>Collections</h4>
+                  <p>Collections are groups of objects, arranged by donor or content.</p>
+                  <a href="{% url "ui-collections-list" %}" class="btn btn-primary">Go</a>
+              </div>
+          </div>
+      </div>
+      <div class="col-md-4">
+          <div class="featured-box">
+              <div class="box-content">
+                  <h4>Topics</h4>
+                  <p>Organized thematic categories related to the incarceration experience and the Japanese American community.</p>
+                  <a href="{% url "ui-browse-facet" "topics" %}" class="btn btn-primary">Go</a>
+              </div>
+          </div>
+      </div>
+      <div class="col-md-4">
+          <div class="featured-box">
+              <div class="box-content">
+                  <h4>Facilities</h4>
+                  <p>The incarceration camps and other sites where people were detained.</p>
+                  <a href="{% url "ui-browse-facet" "facility" %}" class="btn btn-primary">Go</a>
+              </div>
+          </div>
+      </div>
+      <div class="col-md-4">
+          <div class="featured-box">
+              <div class="box-content">
+                  <h4>Narrators</h4>
+                  <p>Narrators are people who have been interviewed about their life and time in the camps.</p>
+                  <a href="{% url "ui-narrators-list" %}" class="btn btn-primary">Go</a>
+              </div>
+          </div>
+      </div>
   </div><!-- .row -->
 </section><!-- .container-fluid -->
 {% endblock content %}
-
 

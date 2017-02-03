@@ -27,12 +27,13 @@ urlpatterns = patterns(
     
     url(r'^about/', TemplateView.as_view(template_name="ui/about.html"), name='ui-about'),
     url(r'^contact/$', TemplateView.as_view(template_name='ui/about.html'), name='ui-contact'),
-    url(r'^faq/$', TemplateView.as_view(template_name='ui/faq.html'), name='ui-faq'),
     url(r'^terms/$', TemplateView.as_view(template_name='ui/terms.html'), name='ui-terms'),
     url(r'^using/$', TemplateView.as_view(template_name='ui/using.html'), name='ui-using'),
+    url(r'^ethicalediting/$', TemplateView.as_view(template_name='ui/ethicalediting.html'), name='ui-ethicalediting'),
     
     url(r'^narrators/(?P<oid>[\w]+)/$', 'ui.views.browse.narrator', name='ui-browse-narrator'),
     url(r'^narrators/$', 'ui.views.browse.narrators', name='ui-browse-narrators'),
+
     url(r'^browse/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/$', 'ui.views.browse.term', name='ui-browse-term'),
     url(r'^browse/(?P<facet_id>[\w]+)/$', 'ui.views.browse.facet', name='ui-browse-facet'),
     url(r'^browse/$', 'ui.views.browse.index', name='ui-browse-index'),

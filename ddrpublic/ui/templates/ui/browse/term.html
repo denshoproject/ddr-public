@@ -10,7 +10,7 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
-<section class="container">
+<section class="container" id="portfolio">
   <div class="row">
 	<div class="col-sm-10 col-md-10">
 
@@ -43,7 +43,7 @@
 <!-- topic.encycarticles -->
 <p>
 Related articles from the
-<a target="encyc" href="http://encyclopedia.densho.org/">Densho Encyclopedia</a>:
+<a target="encyc" href="http://encyclopedia.densho.org/">Densho Encyclopedia</a>:<br />
 {% for article in term.encyc_articles %}
   <a target="encyc" href="{{ article.url }}">{{ article.title }}</a>{% if not forloop.last %},{% endif %}
 {% endfor %}
@@ -73,7 +73,66 @@ Related articles from the
 
 {% endif %}
 
-	</div>
-  </div><!-- .row -->
-</section><!-- .container-fluid -->
+{% if page.object_list %}
+<div class="row"> <!-- results content -->
+    <div class="col-sm-12 col-md-12">
+        <!--  view selection tabs -->
+        <div class="tabs no-margin-top" style="margin:10px 0;">
+    <ul class="nav nav-tabs">
+        <li class="active">
+            <a href="#gallery_tab" data-toggle="tab">
+                <i class="fa fa-th"></i> Gallery view
+            </a>
+        </li>
+        <li>
+            <a href="#list_tab" data-toggle="tab">
+                <i class="fa fa-list"></i> List view
+            </a>
+        </li>
+    </ul>
+    <div class="tab-content">
+        <div id="gallery_tab" class="tab-pane active">
+            <div id="item-count">
+                {{ paginator.count }} items<br/>
+            </div>
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+            <div class="row">
+                <ul class="sort-destination isotope fullwidth" data-sort-id="isotope-list">
+{% for object in page.object_list %}
+{% galleryitem object %}
+{% endfor %}
+                </ul>
+            </div><!-- /.masonry-container -->
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+
+        </div> <!-- end gallery_tab -->
+        <div id="list_tab" class="tab-pane">
+              <div id="item-count">
+                {{ paginator.count }} items<br/>
+              </div>
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+
+{% for object in page.object_list %}
+{% listitem object %}
+{% endfor %}
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+
+        </div> <!-- end list_tab -->
+    </div> <!-- end tabs content -->
+</div> <!-- end tabs -->
+    </div>
+</div> <!-- .row results content -->
+{% endif %}
+
 {% endblock content %}
