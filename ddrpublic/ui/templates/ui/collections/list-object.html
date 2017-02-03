@@ -1,22 +1,21 @@
 {% load thumbnail %}
-
-<!-- {{ object.id }} -->
-<div class="media {{ object.model }}">
-{% thumbnail object.signature_url_local "110x110" as img %}
-  <a class="pull-left" href="{{ object.absolute_url }}">
-    <img class="media-object" src="{{ img.url }}" class="img-responsive">
-  </a>
+            <!-- {{ object.id }} -->
+            <div class="media {{ object.model }}">
+{% thumbnail object.links.img "110x110" as img %}
+              <a class="pull-left" href="{{ object.links.html }}">
+                <img class="media-object" src="{{ img.url }}" class="img-responsive" alt="{{ object.title|safe }} ({{ object.id }})"/>
+              </a>
 {% endthumbnail %}
-  <div class="media-body">
-    <h4 class="media-heading">
-      <span class="badge badge-info">{{ object.model | capfirst }}</span>
-      <a href="{{ object.absolute_url }}">{{ object.id }} - {{ object.title|safe }}</a>
-    </h4>
-    <div class="source muted">
-      {{ object.description|safe|truncatewords_html:56 }}
-    </div>
-    <div class="url">
-      <a href="{{ object.absolute_url }}">{{ object.absolute_url }}</a>
-    </div>
-  </div><!-- .media-body -->
-</div><!-- .media -->
+              <div class="media-body">
+                <b class="media-heading">
+                  <span class="badge badge-info">Collection</span>
+                  <a href="{{ object.links.html }}">{{ object.title|safe }} ({{ object.id }})</a>
+                </b>
+                <div class="source muted">
+                    {{ object.description|safe|truncatewords_html:56 }}
+                </div>
+                <div class="url">
+                  <a href="{{ object.links.html }}">{{ object.links.html }}</a>
+                </div>
+              </div><!-- .media-body -->
+            </div><!-- .media -->

@@ -24,8 +24,12 @@ def facets_list():
     if not cached:
         facets_list = []
         ds = docstore.Docstore()
-        for name in ds.get_facets():
-            f = ds.get(model='facet', document_id=name)['_source']
+        facets = ds.get_facets()
+        for name in facets:
+            data = ds.get(model='facet', document_id=name)
+            if not data:
+                raise Exception('"%s" facet data missing--were facets indexed?' % name)
+            f = data['_source']
             f['name'] = name
             f['url'] = reverse('ui-browse-facet', args=[name])
             facets_list.append(f)

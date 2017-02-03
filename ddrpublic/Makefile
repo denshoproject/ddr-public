@@ -220,7 +220,7 @@ setup-ddr-cmdln:
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_CMDLN)/ddr && python setup.py install
 
-install-ddr-cmdln:
+install-ddr-cmdln: clean-ddr-cmdln
 	@echo ""
 	@echo "install-ddr-cmdln ------------------------------------------------------"
 	apt-get --assume-yes install git-core git-annex libxml2-dev libxslt1-dev libz-dev pmount udisks
@@ -253,7 +253,7 @@ get-ddr-public:
 	@echo "get-ddr-public ---------------------------------------------------------"
 	git pull
 
-install-ddr-public:
+install-ddr-public: clean-ddr-public
 	@echo ""
 	@echo "install-ddr-public -----------------------------------------------------"
 	apt-get --assume-yes install imagemagick sqlite3 supervisor
@@ -305,7 +305,7 @@ branch:
 	cd $(INSTALL_PUBLIC)/ddrpublic; python ./bin/git-checkout-branch.py $(BRANCH)
 
 
-install-static: get-ddrpublic-assets install-modernizr install-bootstrap install-jquery
+install-static: get-ddrpublic-assets install-restframework install-modernizr install-bootstrap install-jquery
 
 clean-static: clean-modernizr clean-bootstrap clean-jquery
 
@@ -316,6 +316,12 @@ get-ddrpublic-assets:
 	-mkdir $(MEDIA_BASE)
 	wget -nc -P /tmp http://$(PACKAGE_SERVER)/$(ASSETS)
 	tar xzvf /tmp/ddr-public-assets.tar.gz -C $(MEDIA_BASE)/
+
+install-restframework:
+	@echo ""
+	@echo "rest_framework ----------------------------------------------------------"
+	-mkdir $(MEDIA_BASE)
+	cp -R /usr/local/src/env/ddrpublic/lib/python2.7/site-packages/rest_framework/static/rest_framework/ $(STATIC_ROOT)/
 
 install-modernizr:
 	@echo ""

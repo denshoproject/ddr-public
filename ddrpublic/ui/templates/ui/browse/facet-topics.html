@@ -12,6 +12,7 @@
   <div class="row">
 	<div class="col-sm-10 col-md-10">
 
+<h1>{{ facet.title }}</h1>
 {% if facet.description %}
 <p>
 {{ facet.description }}
@@ -20,7 +21,7 @@
 
 <p>
 {% for term in terms %}
-<a class="indent{{ term.depth }}" href="{{ term.url }}">{{ term.title }}</a><br/>
+<a class="indent{{ term.depth }}" href="{{ term.links.html }}">{{ term.title }}</a><br/>
 {% endfor %}
 </p>
 
