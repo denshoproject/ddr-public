@@ -1,14 +1,14 @@
 {% extends "ui/browse/base.html" %}
 
-{% block title %}{{ narrator.title }}{% endblock %}
-{% block pagetitle %}{{ narrator.title }}{% endblock %}
+{% block title %}{{ narrator.display_name }}{% endblock %}
+{% block pagetitle %}{{ narrator.display_name }}{% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
 <li>
   <a href="{% url "ui-browse-narrators" %}">Narrators</a>
 </li>
 <li>
-  {{ narrator.title }}
+  {{ narrator.display_name }}
 </li>
 {% endblock breadcrumbs %}
 
@@ -18,14 +18,20 @@
 	<div class="col-sm-10 col-md-10">
 
 <h1>
-  {{ narrator.title }}
+  {{ narrator.display_name }}
 </h1>
-<!-- narrator.bio -->
-<p>
-    {{ narrator.description }}
-</p>
+
+<img src="{{ narrator.links.img }}" width="150" />
+
+{{ narrator.bio|linebreaks }}
+
 
 <h4>Interviews</h4>
+
+<p>
+TODO: REPLACE PLACEHOLDER DATA
+</p>
+
             <!-- for interview in narrator.interviews[] -->
             <div class="media ">
                 <!-- interview.id -->
