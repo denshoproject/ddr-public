@@ -309,12 +309,120 @@ def format_object_detail(document, request, listitem=False):
         return d
     return None
 
+def format_narrator(document, request, listitem=False):
+    if document and document.get('_source'):
+        oid = document['_source'].pop('id')
+        
+        d = OrderedDict()
+        d['id'] = oid
+        d['model'] = 'narrator'
+        # links
+        d['links'] = OrderedDict()
+        d['links']['html'] = reverse('ui-browse-narrator', args=[oid], request=request)
+        d['links']['json'] = reverse('ui-api-narrator', args=[oid], request=request)
+        d['links']['img'] = document['_source'].pop('image_url')
+        d['links']['documents'] = ''
+        # title, description
+        if document['_source'].get('title'):
+            d['title'] = document['_source'].pop('title')
+        if document['_source'].get('description'):
+            d['description'] = document['_source'].pop('description')
+        # everything else
+        HIDDEN_FIELDS = [
+            'repo','org','cid','eid','sid','role','sha1'
+        ]
+        for key in document['_source'].iterkeys():
+            if key not in HIDDEN_FIELDS:
+                d[key] = document['_source'][key]
+        return d
+    return None
+
+def format_facet(document, request, listitem=False):
+    if document and document.get('_source'):
+        oid = document['_id']
+        
+        d = OrderedDict()
+        d['id'] = oid
+        d['model'] = 'facet'
+        # links
+        d['links'] = OrderedDict()
+        d['links']['html'] = reverse('ui-browse-facet', args=[oid], request=request)
+        d['links']['json'] = reverse('ui-api-facet', args=[oid], request=request)
+        # everything else
+        HIDDEN_FIELDS = [
+        ]
+        for key in document['_source'].iterkeys():
+            if key not in HIDDEN_FIELDS:
+                d[key] = document['_source'][key]
+        return d
+    return None
+
+def format_term(document, request, listitem=False):
+    if document and document.get('_source'):
+        oid = document['_id']
+        fid = document['_source']['facet']
+        tid = document['_source']['id']
+        
+        d = OrderedDict()
+        d['id'] = oid
+        d['model'] = 'facetterm'
+        if document['_source'].get('facet'): d['facet'] = document['_source'].pop('facet')
+        if document['_source'].get('path'): d['path'] = document['_source'].pop('path')
+        # links
+        d['links'] = OrderedDict()
+        d['links']['json'] = reverse('ui-api-term', args=[fid,tid], request=request)
+        d['links']['html'] = reverse('ui-browse-term', args=[fid,tid], request=request)
+        if document['_source'].get('parent_id'):
+            d['links']['parent'] = reverse('ui-api-term', args=[fid,document['_source']['parent_id']], request=request)
+        if document['_source'].get('ancestors'):
+            d['links']['ancestors'] = [
+                reverse('ui-api-term', args=[fid,oid], request=request)
+                for oid in document['_source'].pop('ancestors')
+            ]
+        if document['_source'].get('siblings'):
+            d['links']['siblings'] = [
+                reverse('ui-api-term', args=[fid,oid], request=request)
+                for oid in document['_source'].get('siblings')
+            ]
+        if document['_source'].get('children'):
+            d['links']['children'] = [
+                reverse('ui-api-term', args=[fid,oid], request=request)
+                for oid in document['_source'].get('children')
+            ]
+        d['links']['objects'] = reverse('ui-api-term-objects', args=[fid,tid], request=request)
+        # title, description
+        if document['_source'].get('_title'): d['_title'] = document['_source'].pop('_title')
+        if document['_source'].get('title'): d['title'] = document['_source'].pop('title')
+        if document['_source'].get('description'): d['description'] = document['_source'].pop('description')
+        # everything else
+        HIDDEN_FIELDS = [
+            'created',
+            'modified',
+            'parent_id',
+            #'ancestors',
+            'siblings',
+            'children',
+        ]
+        for key in document['_source'].iterkeys():
+            if key not in HIDDEN_FIELDS:
+                d[key] = document['_source'][key]
+        return d
+    return None
+
+FORMATTERS = {
+    'narrator': format_narrator,
+    'facet': format_facet,
+    'facetterm': format_term,
+}
+
 def format_list_objects(results, request, function=format_object_detail):
     """Iterate through results objects apply format_object_detail function
     """
     results['objects'] = []
     while(results['hits']):
         hit = results['hits'].pop(0)
+        doctype = hit['_type']
+        function = FORMATTERS.get(doctype, format_object_detail)
         results['objects'].append(
             function(hit, request, listitem=True)
         )
@@ -596,34 +704,6 @@ class ApiFile(object):
             "results": [],
         }
 
-    
-def format_narrator(document, request, listitem=False):
-    if document and document.get('_source'):
-        oid = document['_source'].pop('id')
-        
-        d = OrderedDict()
-        d['id'] = oid
-        d['model'] = 'narrator'
-        # links
-        d['links'] = OrderedDict()
-        d['links']['html'] = reverse('ui-browse-narrator', args=[oid], request=request)
-        d['links']['json'] = reverse('ui-api-narrator', args=[oid], request=request)
-        d['links']['img'] = document['_source'].pop('image_url')
-        d['links']['documents'] = ''
-        # title, description
-        if document['_source'].get('title'):
-            d['title'] = document['_source'].pop('title')
-        if document['_source'].get('description'):
-            d['description'] = document['_source'].pop('description')
-        # everything else
-        HIDDEN_FIELDS = [
-            'repo','org','cid','eid','sid','role','sha1'
-        ]
-        for key in document['_source'].iterkeys():
-            if key not in HIDDEN_FIELDS:
-                d[key] = document['_source'][key]
-        return d
-    return None
 
 class ApiNarrator(object):
     
@@ -678,26 +758,6 @@ class ApiNarrator(object):
             format_narrator
         )
 
-
-def format_facet(document, request, listitem=False):
-    if document and document.get('_source'):
-        oid = document['_id']
-        
-        d = OrderedDict()
-        d['id'] = oid
-        d['model'] = 'facet'
-        # links
-        d['links'] = OrderedDict()
-        d['links']['html'] = reverse('ui-api-facet', args=[oid], request=request)
-        d['links']['json'] = reverse('ui-browse-facet', args=[oid], request=request)
-        # everything else
-        HIDDEN_FIELDS = [
-        ]
-        for key in document['_source'].iterkeys():
-            if key not in HIDDEN_FIELDS:
-                d[key] = document['_source'][key]
-        return d
-    return None
 
 class ApiFacet(object):
     
@@ -849,58 +909,6 @@ class ApiFacet(object):
         terms = []
         flatten(terms_tree)
         return terms
-
-def format_term(document, request, listitem=False):
-    if document and document.get('_source'):
-        oid = document['_id']
-        fid = document['_source']['facet']
-        tid = document['_source']['id']
-        
-        d = OrderedDict()
-        d['id'] = oid
-        d['model'] = 'facetterm'
-        if document['_source'].get('facet'): d['facet'] = document['_source'].pop('facet')
-        if document['_source'].get('path'): d['path'] = document['_source'].pop('path')
-        # links
-        d['links'] = OrderedDict()
-        d['links']['html'] = reverse('ui-api-term', args=[fid,tid], request=request)
-        d['links']['json'] = reverse('ui-browse-term', args=[fid,tid], request=request)
-        if document['_source'].get('parent_id'):
-            d['links']['parent'] = reverse('ui-api-term', args=[fid,document['_source']['parent_id']], request=request)
-        if document['_source'].get('ancestors'):
-            d['links']['ancestors'] = [
-                reverse('ui-api-term', args=[fid,oid], request=request)
-                for oid in document['_source'].pop('ancestors')
-            ]
-        if document['_source'].get('siblings'):
-            d['links']['siblings'] = [
-                reverse('ui-api-term', args=[fid,oid], request=request)
-                for oid in document['_source'].get('siblings')
-            ]
-        if document['_source'].get('children'):
-            d['links']['children'] = [
-                reverse('ui-api-term', args=[fid,oid], request=request)
-                for oid in document['_source'].get('children')
-            ]
-        d['links']['objects'] = reverse('ui-api-term-objects', args=[fid,tid], request=request)
-        # title, description
-        if document['_source'].get('_title'): d['_title'] = document['_source'].pop('_title')
-        if document['_source'].get('title'): d['title'] = document['_source'].pop('title')
-        if document['_source'].get('description'): d['description'] = document['_source'].pop('description')
-        # everything else
-        HIDDEN_FIELDS = [
-            'created',
-            'modified',
-            'parent_id',
-            #'ancestors',
-            'siblings',
-            'children',
-        ]
-        for key in document['_source'].iterkeys():
-            if key not in HIDDEN_FIELDS:
-                d[key] = document['_source'][key]
-        return d
-    return None
 
 class ApiTerm(object):
     
