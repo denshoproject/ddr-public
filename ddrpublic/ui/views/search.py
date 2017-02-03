@@ -21,7 +21,7 @@ from ui.identifier import Identifier, MODEL_CLASSES
 from ui import domain_org
 from ui import faceting
 from ui import models
-from ui.forms import SearchForm
+from ui.forms import SearchForm, MODELS_CHOICES
 from ui import api
 
 # TODO We should have a whitelist of chars we *do* accept, not this.
@@ -66,10 +66,16 @@ def results(request):
     pagesize = settings.RESULTS_PER_PAGE
     
     # query dict
+    EXCLUDED_MODELS = ['repo','org']
+    models = [
+        x
+        for x in form.cleaned_data.get('models', [])
+        if x not in EXCLUDED_MODELS
+    ]
     query = {
         'fulltext': form.cleaned_data.get('fulltext', ''),
         'must': [],
-        'models': form.cleaned_data.get('models', []),
+        'models': models,
         'offset': thispage - 1,
         'limit': pagesize,
     }

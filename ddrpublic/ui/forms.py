@@ -4,6 +4,16 @@ logger = logging.getLogger(__name__)
 from django import forms
 from django.conf import settings
 
+
+MODELS_CHOICES = [
+    ('collection', 'Collection'),
+    ('entity', 'Entity'),
+    ('segment', 'Segment'),
+    ('file', 'File'),
+    ('narrator', 'Narrator'),
+    ('term', 'Topic Term'),
+]
+
 class SearchForm(forms.Form):
     
     fulltext = forms.CharField(
@@ -12,17 +22,7 @@ class SearchForm(forms.Form):
     )
     
     models = forms.MultipleChoiceField(
-        choices=[
-
-            #('org', 'Partner'),
-            ('collection', 'Collection'),
-            ('entity', 'Entity'),
-            ('segment', 'Segment'),
-            ('file', 'File'),
-            #('narrator', 'Narrator'),
-            #('term', 'Topic Term'),
-            
-        ],
+        choices=MODELS_CHOICES,
         required=False,
     )
     
