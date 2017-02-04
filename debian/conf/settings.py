@@ -91,6 +91,9 @@ MEDIA_URL_LOCAL_MARKER = 'internal'
 #     }
 DOWNLOAD_URL = config.get('public', 'download_url')
 
+# Base URL for narrator images
+NARRATORS_URL = config.get('public', 'narrators_url')
+
 ACCESS_FILE_APPEND='-a'
 ACCESS_FILE_EXTENSION='.jpg'
 ACCESS_FILE_GEOMETRY='1024x1024>'
