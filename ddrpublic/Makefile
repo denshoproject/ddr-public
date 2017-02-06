@@ -35,7 +35,7 @@ ELASTICSEARCH=elasticsearch-1.6.2.deb
 MODERNIZR=modernizr-2.6.2.js
 JQUERY=jquery-1.11.0.min.js
 BOOTSTRAP=bootstrap-3.1.1-dist.zip
-ASSETS=ddr-public-assets.tar.gz
+ASSETS=ddr-public-assets-20170206.tar.gz
 # wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.6.2.deb
 # wget http://code.jquery.com/jquery-1.11.0.min.js
 # wget https://github.com/twbs/bootstrap/releases/download/v3.1.1/bootstrap-3.1.1-dist.zip
@@ -315,7 +315,7 @@ get-ddrpublic-assets:
 	@echo "get assets --------------------------------------------------------------"
 	-mkdir $(MEDIA_BASE)
 	wget -nc -P /tmp http://$(PACKAGE_SERVER)/$(ASSETS)
-	tar xzvf /tmp/ddr-public-assets.tar.gz -C $(MEDIA_BASE)/
+	tar xzvf /tmp/$(ASSETS) -C $(MEDIA_BASE)/
 
 install-restframework:
 	@echo ""
