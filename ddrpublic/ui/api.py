@@ -740,6 +740,10 @@ class ApiNarrator(object):
             'id',
             'display_name',
             'image_url',
+            'generation',
+            'birth_location',
+            'b_date',
+            'd_date',
         ]
         q = docstore.search_query(
             must=[

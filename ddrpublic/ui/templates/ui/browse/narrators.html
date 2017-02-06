@@ -41,6 +41,7 @@ Narrators are the interview subjects of oral histories contained in the Densho D
         </li>
     </ul>
     <div class="tab-content">
+      
         <div id="gallery_tab" class="tab-pane active">
               <div id="item-count">
                 {{ paginator.count }} narrators<br/>
@@ -58,7 +59,7 @@ Narrators are the interview subjects of oral histories contained in the Densho D
                             <div class="item-box">
                                 <figure>
                                     <!-- narrator.id -->
-                                    <a class="item-hover" href="/narrators/{{ narrator.id }}" data-plugin-options='{"type":"image"}'>
+                                    <a class="item-hover" href="{{ narrator.links.html }}" data-plugin-options='{"type":"image"}'>
                                         <span class="overlay color2"></span>
                                         <span class="inner">
                                             <span class="block fa fa-user fsize40"></span>
@@ -66,7 +67,7 @@ Narrators are the interview subjects of oral histories contained in the Densho D
                                         </span>
                                     </a>
                                     <!-- narrator.image_url -->
-                                    <img src="{{ narrator.image_url }}" class="img-responsive" width="260" height="260" alt="">
+                                    <img src="{{ narrator.links.img }}" class="img-responsive" width="260" height="260" alt="">
                                 </figure>
                             </div>
                         </li>
@@ -97,20 +98,19 @@ Narrators are the interview subjects of oral histories contained in the Densho D
                 <!-- begin list col -->
                 <div class="col-md-6 col-sm-6">
                     <div class="media ">
-                        <a class="pull-left" href="/narrators/{{ narrator.id }}">
-                            <img class="media-object" src="{{ narrator.image_url }}" class="img-responsive" width="110px" />
+                        <a class="pull-left" href="{{ narrator.links.html }}">
+                            <img class="media-object" src="{{ narrator.links.img }}" class="img-responsive" width="110px" />
                         </a>
                         <div class="media-body">
                             <h4 class="media-heading">
                                 <!-- narrator.display_name -->
-                                <a href="/narrators/{{ narrator.id }}">{{ narrator.display_name }}</a>
+                                <a href="{{ narrator.links.html }}">{{ narrator.display_name }}</a>
                             </h4>
                             <div class="source muted">
-                                <!-- narrator.generation, narrator.b_date, narrator.birth_location -->
-                                <!--
-                                    "Born {:%B %d, %Y} in {}".format(narrator.b_date, narrator.birth_location)
-                                    -->
-                                    {{ narrator.generation }}. Born in {{ narrator.birth_location }}. {{ narrator.b_date }} - {{ narrator.d_date }}
+                                {% if narrator.generation %}{{ narrator.generation }}.{% endif %}
+                                {% if narrator.birth_location %}Born in {{ narrator.birth_location }}.{% endif %}
+                                {% if narrator.b_date %}{{ narrator.b_date|date:"j F Y" }}{% endif %}
+                                {% if narrator.d_date %}- {{ narrator.d_date|date:"j F Y" }}{% endif %}
                                 </div>
                             </div><!-- .media-body -->
                         </div><!-- .media -->
