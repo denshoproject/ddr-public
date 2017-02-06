@@ -44,6 +44,8 @@ def narrators(request):
         {
             'paginator': paginator,
             'page': page,
+            'thispage': thispage,
+            'tab': request.GET.get('tab', 'gallery'),
         },
         context_instance=RequestContext(request, processors=[])
     )

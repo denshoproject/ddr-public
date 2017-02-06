@@ -20,38 +20,38 @@ Narrators
 Narrators are the interview subjects of oral histories contained in the Densho Digital Repository. Our interviewees, or narrators, share their life histories to preserve history, educate the public, and promote tolerance. We urge our users to approach these materials in the same spirit.
 </p>
 
-      <div id="item-count">
-        {{ paginator.count }} narrators<br/>
-      </div>
-
 <div class="row"> <!-- results content -->
     <div class="col-sm-12 col-md-12">
         <!--  view selection tabs -->
         <div class="tabs no-margin-top" style="margin:10px 0;">
-    <ul class="nav nav-tabs">
-        <li class="active">
-            <a href="#gallery_tab" data-toggle="tab">
+          
+          <ul id="narrator-tabs" class="nav nav-tabs">
+            <li class="{% if tab == "gallery" %}active{% endif %}">
+              <a href="?page={{ thispage }}&tab=gallery">
                 <i class="fa fa-th"></i> Gallery view
-            </a>
-        </li>
-        <li>
-            <a href="#list_tab" data-toggle="tab">
+              </a>
+            </li>
+            <li class="{% if tab == "list" %}active{% endif %}">
+              <a href="?page={{ thispage }}&tab=list">
                 <i class="fa fa-list"></i> List view
-            </a>
-        </li>
-    </ul>
+              </a>
+            </li>
+          </ul>
+          
     <div class="tab-content">
       
-        <div id="gallery_tab" class="tab-pane active">
-              <div id="item-count">
-                {{ paginator.count }} narrators<br/>
-              </div>
+      {% if tab == "gallery" %}
+      <div id="gallery_tab" class="tab-pane {% if tab == "gallery" %}active{% endif %}">
+
+          <div id="item-count">
+            {{ paginator.count }} narrators<br/>
+          </div>
 
 {% if paginator.num_pages > 1 %}
 {% bootstrap_paginate page range=10 show_first_last="true" %}
 {% endif %}
 
-                <div class="row">
+          <div class="row">
                     <ul class="sort-destination isotope fullwidth" data-sort-id="isotope-list">
 
 {% for narrator in page.object_list %}
@@ -79,17 +79,20 @@ Narrators are the interview subjects of oral histories contained in the Densho D
 {% if paginator.num_pages > 1 %}
 {% bootstrap_paginate page range=10 show_first_last="true" %}
 {% endif %}
-            
+
         </div> <!-- end gallery_tab -->
-        <div id="list_tab" class="tab-pane">
-              <div id="item-count">
-                {{ paginator.count }} narrators<br/>
-              </div>
+      {% endif %}{# tab == "gallery" #}
+      {% if tab == "list" %}
+        <div id="list_tab" class="tab-pane {% if tab == "list" %}active{% endif %}">
+
+          <div id="item-count">
+            {{ paginator.count }} narrators<br/>
+          </div>
 
 {% if paginator.num_pages > 1 %}
 {% bootstrap_paginate page range=10 show_first_last="true" %}
 {% endif %}
-            
+
 {% for narrator in page.object_list %}
 {% if forloop.counter0|divisibleby:2 %}
             <!-- begin list row -->
@@ -124,8 +127,9 @@ Narrators are the interview subjects of oral histories contained in the Densho D
 {% if paginator.num_pages > 1 %}
 {% bootstrap_paginate page range=10 show_first_last="true" %}
 {% endif %}
-            
+
         </div> <!-- end list_tab -->
+      {% endif %}{# tab == "list" #}
     </div> <!-- end tabs content -->
 </div> <!-- end tabs -->
     </div>
