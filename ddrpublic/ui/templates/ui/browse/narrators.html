@@ -10,84 +10,88 @@
 
 {% block content %}
 <section class="container" id="portfolio">
+
   <div class="row">
 	<div class="col-sm-10 col-md-10">
 
-<h1>
-Narrators
-</h1>
-<p>
-Narrators are the interview subjects of oral histories contained in the Densho Digital Repository. Our interviewees, or narrators, share their life histories to preserve history, educate the public, and promote tolerance. We urge our users to approach these materials in the same spirit.
-</p>
+      <h1>
+        Narrators
+      </h1>
+      <p>
+        Narrators are the interview subjects of oral histories contained in the Densho Digital Repository. Our interviewees, or narrators, share their life histories to preserve history, educate the public, and promote tolerance. We urge our users to approach these materials in the same spirit.
+      </p>
 
-<div class="row"> <!-- results content -->
+    </div>
+  </div> <!-- .row header -->
+
+  <div class="row"> <!-- results content -->
     <div class="col-sm-12 col-md-12">
-        <!--  view selection tabs -->
-        <div class="tabs no-margin-top" style="margin:10px 0;">
-          
-          <ul id="narrator-tabs" class="nav nav-tabs">
-            <li class="{% if tab == "gallery" %}active{% endif %}">
-              <a href="?page={{ thispage }}&tab=gallery">
-                <i class="fa fa-th"></i> Gallery view
-              </a>
-            </li>
-            <li class="{% if tab == "list" %}active{% endif %}">
-              <a href="?page={{ thispage }}&tab=list">
-                <i class="fa fa-list"></i> List view
-              </a>
-            </li>
-          </ul>
-          
-    <div class="tab-content">
-      
-      {% if tab == "gallery" %}
-      <div id="gallery_tab" class="tab-pane {% if tab == "gallery" %}active{% endif %}">
+      <!--  view selection tabs -->
+      <div class="tabs no-margin-top" style="margin:10px 0;">
 
-          <div id="item-count">
-            {{ paginator.count }} narrators<br/>
-          </div>
+        <ul id="narrator-tabs" class="nav nav-tabs">
+          <li class="{% if tab == "gallery" %}active{% endif %}">
+            <a href="?page={{ thispage }}&tab=gallery">
+              <i class="fa fa-th"></i> Gallery view
+            </a>
+          </li>
+          <li class="{% if tab == "list" %}active{% endif %}">
+            <a href="?page={{ thispage }}&tab=list">
+              <i class="fa fa-list"></i> List view
+            </a>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+
+          {% if tab == "gallery" %}
+          <div id="gallery_tab" class="tab-pane {% if tab == "gallery" %}active{% endif %}">
+
+            <div id="item-count">
+              {{ paginator.count }} narrators<br/>
+            </div>
 
 {% if paginator.num_pages > 1 %}
 {% bootstrap_paginate page range=10 show_first_last="true" %}
 {% endif %}
 
-          <div class="row">
-                    <ul class="sort-destination isotope fullwidth" data-sort-id="isotope-list">
+            <div class="row">
+              <ul class="sort-destination isotope fullwidth" data-sort-id="isotope-list">
 
 {% for narrator in page.object_list %}
-                        <li class="isotope-item"><!-- slide item -->
-                            <div class="item-box">
-                                <figure>
-                                    <!-- narrator.id -->
-                                    <a class="item-hover" href="{{ narrator.links.html }}" data-plugin-options='{"type":"image"}'>
-                                        <span class="overlay color2"></span>
-                                        <span class="inner">
-                                            <span class="block fa fa-user fsize40"></span>
-                                            <span class="fsize16" style="line-height:1;">{{ narrator.display_name }}</span>
-                                        </span>
-                                    </a>
-                                    <!-- narrator.image_url -->
-                                    <img src="{{ narrator.links.img }}" class="img-responsive" width="260" height="260" alt="">
-                                </figure>
-                            </div>
-                        </li>
+<li class="isotope-item"><!-- slide item -->
+  <div class="item-box">
+    <figure>
+      <!-- narrator.id -->
+      <a class="item-hover" href="{{ narrator.links.html }}" data-plugin-options='{"type":"image"}'>
+        <span class="overlay color2"></span>
+        <span class="inner">
+          <span class="block fa fa-user fsize40"></span>
+          <span class="fsize16" style="line-height:1;">{{ narrator.display_name }}</span>
+        </span>
+      </a>
+      <!-- narrator.image_url -->
+      <img src="{{ narrator.links.img }}" class="img-responsive" width="260" height="260" alt="">
+    </figure>
+  </div>
+</li>
 {% endfor %}
 
-                    </ul>
-                </div><!-- /.row gallery -->
-            
+              </ul>
+            </div><!-- /.row gallery -->
+
 {% if paginator.num_pages > 1 %}
 {% bootstrap_paginate page range=10 show_first_last="true" %}
 {% endif %}
 
-        </div> <!-- end gallery_tab -->
-      {% endif %}{# tab == "gallery" #}
-      {% if tab == "list" %}
-        <div id="list_tab" class="tab-pane {% if tab == "list" %}active{% endif %}">
+          </div> <!-- end gallery_tab -->
+          {% endif %}{# tab == "gallery" #}
+          {% if tab == "list" %}
+          <div id="list_tab" class="tab-pane {% if tab == "list" %}active{% endif %}">
 
-          <div id="item-count">
-            {{ paginator.count }} narrators<br/>
-          </div>
+            <div id="item-count">
+              {{ paginator.count }} narrators<br/>
+            </div>
 
 {% if paginator.num_pages > 1 %}
 {% bootstrap_paginate page range=10 show_first_last="true" %}
@@ -98,26 +102,26 @@ Narrators are the interview subjects of oral histories contained in the Densho D
             <!-- begin list row -->
             <div class="row">
 {% endif %}
-                <!-- begin list col -->
-                <div class="col-md-6 col-sm-6">
-                    <div class="media ">
-                        <a class="pull-left" href="{{ narrator.links.html }}">
-                            <img class="media-object" src="{{ narrator.links.img }}" class="img-responsive" width="110px" />
-                        </a>
-                        <div class="media-body">
-                            <h4 class="media-heading">
-                                <!-- narrator.display_name -->
-                                <a href="{{ narrator.links.html }}">{{ narrator.display_name }}</a>
-                            </h4>
-                            <div class="source muted">
-                                {% if narrator.generation %}{{ narrator.generation }}.{% endif %}
-                                {% if narrator.birth_location %}Born in {{ narrator.birth_location }}.{% endif %}
-                                {% if narrator.b_date %}{{ narrator.b_date|date:"j F Y" }}{% endif %}
-                                {% if narrator.d_date %}- {{ narrator.d_date|date:"j F Y" }}{% endif %}
-                                </div>
-                            </div><!-- .media-body -->
-                        </div><!-- .media -->
-                    </div><!-- .col list-col -->
+<!-- begin list col -->
+<div class="col-md-6 col-sm-6">
+  <div class="media ">
+    <a class="pull-left" href="{{ narrator.links.html }}">
+      <img class="media-object" src="{{ narrator.links.img }}" class="img-responsive" width="110px" />
+    </a>
+    <div class="media-body">
+      <h4 class="media-heading">
+        <!-- narrator.display_name -->
+        <a href="{{ narrator.links.html }}">{{ narrator.display_name }}</a>
+      </h4>
+      <div class="source muted">
+        {% if narrator.generation %}{{ narrator.generation }}.{% endif %}
+        {% if narrator.birth_location %}Born in {{ narrator.birth_location }}.{% endif %}
+        {% if narrator.b_date %}{{ narrator.b_date|date:"j F Y" }}{% endif %}
+        {% if narrator.d_date %}- {{ narrator.d_date|date:"j F Y" }}{% endif %}
+      </div>
+    </div><!-- .media-body -->
+  </div><!-- .media -->
+</div><!-- .col list-col -->
 
 {% if forloop.counter0|divisibleby:2 %}
             </div> <!-- .row list-row -->
@@ -128,13 +132,14 @@ Narrators are the interview subjects of oral histories contained in the Densho D
 {% bootstrap_paginate page range=10 show_first_last="true" %}
 {% endif %}
 
-        </div> <!-- end list_tab -->
-      {% endif %}{# tab == "list" #}
-    </div> <!-- end tabs content -->
-</div> <!-- end tabs -->
+          </div> <!-- end list_tab -->
+          {% endif %}{# tab == "list" #}
+
+        </div> <!-- end tabs content -->
+
+      </div> <!-- end tabs -->
     </div>
-</div> <!-- .row results content -->
+  </div> <!-- .row results content -->
 
 </section><!-- .container-fluid -->
-
 {% endblock content %}
