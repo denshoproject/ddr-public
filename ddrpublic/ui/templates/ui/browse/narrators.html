@@ -98,7 +98,7 @@
 {% endif %}
 
 {% for narrator in page.object_list %}
-{% if forloop.counter0|divisibleby:2 %}
+{% if forloop.first or forloop.counter0|divisibleby:2 %}
             <!-- begin list row -->
             <div class="row">
 {% endif %}
@@ -123,8 +123,8 @@
   </div><!-- .media -->
 </div><!-- .col list-col -->
 
-{% if forloop.counter0|divisibleby:2 %}
-            </div> <!-- .row list-row -->
+{% if not forloop.counter0|divisibleby:2 %}
+            </div> <!-- .row -->
 {% endif %}
 {% endfor %}
 
