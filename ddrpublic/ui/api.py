@@ -199,7 +199,7 @@ def api_search(text='', must=[], should=[], mustnot=[], models=[], fields=[], so
         request
     )
 
-def api_children(request, model, object_id, sort_fields, limit=DEFAULT_LIMIT, offset=0):
+def api_children(request, model, object_id, sort_fields, limit=DEFAULT_LIMIT, offset=0, just_count=False):
     """Return object children list in Django REST Framework format.
     
     Returns a paged list with count/prev/next metadata
@@ -216,6 +216,11 @@ def api_children(request, model, object_id, sort_fields, limit=DEFAULT_LIMIT, of
     q = docstore.search_query(
         must=[{"wildcard": {"id": "%s-*" % object_id}}],
     )
+    if just_count:
+        return docstore.Docstore().count(
+            doctypes=model,
+            query=q,
+        )
     return format_list_objects(
         paginate_results(
             docstore.Docstore().search(
@@ -635,7 +640,7 @@ class ApiEntity(object):
         return data
 
     @staticmethod
-    def api_children(oid, request, limit=DEFAULT_LIMIT, offset=0):
+    def api_children(oid, request, limit=DEFAULT_LIMIT, offset=0, just_count=False):
         i = Identifier(id=oid)
         sort_fields = [
             ['repo','asc'],
@@ -651,7 +656,7 @@ class ApiEntity(object):
         if 'file' in models:
             models.remove('file')
         return api_children(
-            request, models, i.id, sort_fields, limit=limit, offset=offset
+            request, models, i.id, sort_fields, limit=limit, offset=offset, just_count=just_count
         )
 
     @staticmethod
@@ -818,6 +823,12 @@ class ApiNarrator(object):
         # TODO do this in formatter?
         for d in results['objects']:
             d['links']['img'] = segment_img_url(d['alternate_id'])
+        for d in results['objects']:
+            r = ApiEntity.api_children(
+                d['id'], request=request,
+                just_count=1
+            )
+            d['num_segments'] = r['count']
         return results
 
 
