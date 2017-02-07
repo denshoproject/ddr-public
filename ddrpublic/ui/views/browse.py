@@ -55,6 +55,7 @@ def narrator(request, oid):
         'ui/browse/narrator-detail.html',
         {
             'narrator': api.ApiNarrator.api_get(oid, request),
+            'interviews': api.ApiNarrator.interviews(oid, request, limit=1000),
         },
         context_instance=RequestContext(request, processors=[])
     )

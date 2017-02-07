@@ -28,58 +28,31 @@
 
 <h4>Interviews</h4>
 
-<p>
-TODO: REPLACE PLACEHOLDER DATA
-</p>
-
-            <!-- for interview in narrator.interviews[] -->
-            <div class="media ">
-                <!-- interview.id -->
-                <a class="pull-left" href="/ddr/densho/271/4/">
-                    <!-- interview.alternate_id ("[denshouid: denshovh-aalice-01]") -->
-                    <img class="media-object" src="http://ddr.densho.org/media/denshovh/denshovh-aalice-01.jpg" width="180" class="img-responsive">
-                </a>
-
-            <div class="media-body">
-                <b class="media-heading">
-                    <!-- interview.title, interview.id -->
-                    <a href="/ddr/densho/271/4/">Alice Matsumodo Ando Interview I - ddr-one-7-73</a>
-                </b>
-                <div class="source muted">
-                    <!-- interview.extent, interview.location, interview.date, len(interview.children[]) -->
-                    June 13, 2014. Portland, Oregon.<br />01:10:34 - 22 segments
-                </div>
-                <!-- interview.id -->
-                <div class="url">
-                  <a href="/ddr/densho/271/4/">/ddr/densho/271/4/</a>
-                </div>
-              </div><!-- .media-body -->
-            </div><!-- .media -->
-
-            <div class="media ">
-                <!-- interview.id -->
-                <a class="pull-left" href="/ddr/densho/271/4/">
-                    <!-- interview.alternate_id ("[denshouid: denshovh-aalice-01]", thumbnailed to 160x) -->
-                    <img class="media-object" src="https://archive.org/download/ddr-one-7-73/ddr-one-7-73.jpg" width="160" class="img-responsive">
-                </a>
-
-            <div class="media-body">
-                <b class="media-heading">
-                    <span class="badge badge-info">Interview</span>
-                    <!-- interview.title, interview.id -->
-                    <a href="/ddr/densho/271/4/">ddr-one-7-71 - Alice Matsumodo Ando Interview I</a>
-                </b>
-                <div class="source muted">
-                    <!-- interview.extent, interview.location, interview.date, len(interview.children[]) -->
-                    01:10:34. June 13, 2014. Portland, Oregon. 22 segments.
-                </div>
-                <!-- interview.id -->
-                <div class="url">
-                  <a href="/ddr/densho/271/4/">/ddr/densho/271/4/</a>
-                </div>
-              </div><!-- .media-body -->
-            </div><!-- .media -->
-
+{% for object in interviews.objects %}
+<div class="media ">
+  <!-- {{ object.id }} -->
+  <a class="pull-left" href="{{ object.links.html }}">
+    <img class="media-object" src="{{ object.links.img }}" width="180" class="img-responsive">
+  </a>
+  <div class="media-body">
+    <b class="media-heading">
+      <a href="{{ object.links.html }}">{{ object.title }} &mdash; {{ object.id }}</a>
+    </b>
+    <div class="source muted">
+      {% if object.creation %}{{ object.creation }}.{% endif %}
+      {% if object.location %}{{ object.location }}.{% endif %}
+      <br/>
+      {% if object.extent %}{{ object.extent }}{% endif %}
+      &mdash;
+      len(object.children[]) segments.
+    </div>
+    <!-- interview.id -->
+    <div class="url">
+      <a href="{{ object.links.html }}">{{ object.links.html }}</a>
+    </div>
+  </div><!-- .media-body -->
+</div><!-- .media -->
+{% endfor %}{# interview in interviews #}
 
     </div><!-- .column -->
     <div class="col-sm-4 col-md-4">

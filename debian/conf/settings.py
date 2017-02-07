@@ -93,6 +93,8 @@ DOWNLOAD_URL = config.get('public', 'download_url')
 
 # Base URL for narrator images
 NARRATORS_URL = config.get('public', 'narrators_url')
+# Base URL for VH interview segment images
+SEGMENT_URL = config.get('public', 'segment_url')
 
 ACCESS_FILE_APPEND='-a'
 ACCESS_FILE_EXTENSION='.jpg'

@@ -117,6 +117,22 @@ def img_url(bucket, filename, request=None):
         return '%s%s/%s' % (settings.MEDIA_URL, bucket, filename)
     return None
 
+def segment_img_url(aid):
+    """Make a VH interview segment image URL given an Entity.alternate_id
+    
+    >>> segment_img("[denshouid: denshovh-mkiyo_2-01]")
+    'http://ddr.densho.org/media/denshovh/denshovh-mkiyo_2-01.jpg'
+    
+    @param aid: str Entity.alternate_id
+    @returns: str URL
+    """
+    if aid and isinstance(aid, basestring) and (':' in aid):
+        return '%s/%s.jpg' % (
+            settings.SEGMENT_URL,
+            aid.replace('[','').replace(']','').split(':')[1].strip()
+        )
+    return ''
+
 def pop_field(obj, fieldname):
     """Safely remove fields from objects.
     
@@ -144,7 +160,7 @@ SEARCH_RETURN_FIELDS = [
     'url',
 ]
 
-def api_search(text='', must=[], should=[], mustnot=[], models=[], sort_fields=[], limit=DEFAULT_LIMIT, offset=0, request=None):
+def api_search(text='', must=[], should=[], mustnot=[], models=[], fields=[], sort_fields=[], limit=DEFAULT_LIMIT, offset=0, request=None):
     """Return object children list in Django REST Framework format.
     
     Returns a paged list with count/prev/next metadata
@@ -157,6 +173,9 @@ def api_search(text='', must=[], should=[], mustnot=[], models=[], sort_fields=[
         models = ','.join(models)
     else:
         raise Exception('model must be a string or a list')
+
+    if not fields:
+        fields = SEARCH_RETURN_FIELDS
     
     q = docstore.search_query(
         text=text,
@@ -171,7 +190,7 @@ def api_search(text='', must=[], should=[], mustnot=[], models=[], sort_fields=[
                 doctypes=models,
                 query=q,
                 sort=sort_fields,
-                fields=SEARCH_RETURN_FIELDS,
+                fields=fields,
                 from_=offset,
                 size=limit,
             ),
@@ -772,6 +791,34 @@ class ApiNarrator(object):
             request,
             format_narrator
         )
+
+    @staticmethod
+    def interviews(narrator_id, request, limit=DEFAULT_LIMIT, offset=0):
+        """Interview (Entity) objects for specified narrator.
+        """
+        results = api_search(
+            must=[
+                {"term": {"creators.id": narrator_id}},
+                {"term": {"format": "vh"}},
+            ],
+            models=[
+                'entity',
+            ],
+            fields=[
+                'id',
+                'title',
+                'alternate_id',
+                'creation',
+                'location',
+                'extent',
+            ],
+            #limit=limit, offset=offset,
+            request=request
+        )
+        # TODO do this in formatter?
+        for d in results['objects']:
+            d['links']['img'] = segment_img_url(d['alternate_id'])
+        return results
 
 
 class ApiFacet(object):
