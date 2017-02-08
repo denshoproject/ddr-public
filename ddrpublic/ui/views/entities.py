@@ -82,25 +82,28 @@ def interview(request, oid):
     organization = api.ApiOrganization.api_get(entity['identifier'].organization().id, request)
     
     # TODO only id, title, extent
-    segments = api.ApiEntity.api_children(entity['id'], request, limit=1000)
+    segments = api.ApiEntity.api_children(ei.id, request, limit=1000)
     # get next,prev segments
     segment_index = 0
     num_segments = len(segments['objects'])
     for n,s in enumerate(segments['objects']):
         if s['id'] == si.id:
             segment_index = n
-
     segment['prev'] = None; segment['next'] = None
     pr = segment_index - 1; nx = segment_index + 1
     if pr >= 0:
         segment['prev'] = segments['objects'][pr]['id']
     if nx < num_segments:
         segment['next'] = segments['objects'][nx]['id']
+    
+    transcripts = api.ApiEntity.transcripts(si, request)
+    
     return render_to_response(
         'ui/entities/segment.html',
         {
             'segment': segment,
             'segments': segments,
+            'transcripts': transcripts,
             'entity': entity,
             'parent': parent,
             'organization': organization,

@@ -680,6 +680,52 @@ class ApiEntity(object):
             request, models, i.id, sort_fields, limit=limit, offset=offset
         )
 
+    @staticmethod
+    def transcripts(sidentifier, request):
+        """Extra stuff require by interview segment page.
+        segment transcript
+        full transcript
+        """
+        data = {
+            'segment': None,
+            'interview': None,
+            'glossary': None,
+        }
+        # segment transcript
+        results = api_search(
+            should=[
+                {"wildcard": {"id": "%s-transcript-*" % sidentifier.id}},
+                {"wildcard": {"id": "%s-transcript-*" % sidentifier.parent_id()}},
+            ],
+            models=[
+                'file',
+            ],
+            fields=[
+                'id',
+                'title',
+                'access_rel',
+                'path_rel',
+                'basename_orig',
+            ],
+            #limit=1, # should only be one transcript per File
+            request=request
+        )
+        # download links
+        for d in results['objects']:
+            d['links']['download'] = img_url(
+                sidentifier.collection_id(),
+                d['path_rel'],
+                request
+            )
+        # assign to role
+        for n,d in enumerate(results['objects']):
+            if 'glossary' in d['title'].lower():
+                data['glossary'] = results['objects'][n]
+            elif 'segment' in d['title'].lower():
+                data['segment'] = results['objects'][n]
+            else:
+                data['interview'] = results['objects'][n]
+        return data
 
 class ApiRole(object):
 

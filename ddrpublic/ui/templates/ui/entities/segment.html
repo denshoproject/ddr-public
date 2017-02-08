@@ -74,8 +74,14 @@
 
           <div id="dls_tab" class="tab-pane active">
 
-            <span class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download segment transcript</span>
-            <a href="" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download full transcript</a>
+            <a href="{{ transcripts.segment.links.download }}" class="btn btn-default btn-xs">
+              <i class="fa fa-download"></i>
+              Download segment transcript
+            </a>
+            <a href="{{ transcripts.interview.links.download }}" class="btn btn-default btn-xs">
+              <i class="fa fa-download"></i>
+              Download full transcript
+            </a>
             <br />
             <a href="https://archive.org/download/ddr-densho-1000-400-1/format=mpeg2" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download MP4 (36.3MB)</a>
             <a href="https://archive.org/download/ddr-densho-1000-400-1/format=mpeg2" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download full-size MPEG2 (1.5GB)</a>
