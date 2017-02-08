@@ -29,8 +29,7 @@ def detail(request, oid):
         segments = api.ApiEntity.api_children(oid, request, limit=1)
         if segments['objects'][0]:
             sid = segments['objects'][0]['id']
-            url = reverse('ui-object-detail', args=[sid])
-            assert False
+            url = reverse('ui-interview', args=[sid])
             return HttpResponseRedirect(url)
     
     parent = api.ApiCollection.api_get(i.parent_id(), request)

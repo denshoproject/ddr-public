@@ -620,6 +620,9 @@ class ApiEntity(object):
         data['links']['children-files'] = reverse(
             'ui-api-object-nodes', args=[oid], request=request
         )
+#        # segment URL
+#        if (data.get('format','') == 'vh') and data.get('alternate_id'):
+#            data['links']['img'] = segment_img_url(data['alternate_id'])
         for facet in ['facility', 'topics']:
             for x in data.get(facet, []):
                 x['json'] = reverse(
