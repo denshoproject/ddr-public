@@ -9,6 +9,7 @@ from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 
 from ui import api
+from ui import archivedotorg
 from ui.identifier import Identifier
 from ui.models import DEFAULT_SIZE
 from ui.views import filter_if_branded
@@ -97,6 +98,7 @@ def interview(request, oid):
         segment['next'] = segments['objects'][nx]['id']
     
     transcripts = api.ApiEntity.transcripts(si, request)
+    download_meta = archivedotorg.segment_download_meta(si.id)
     
     return render_to_response(
         'ui/entities/segment.html',
@@ -104,6 +106,7 @@ def interview(request, oid):
             'segment': segment,
             'segments': segments,
             'transcripts': transcripts,
+            'downloads': download_meta,
             'entity': entity,
             'parent': parent,
             'organization': organization,

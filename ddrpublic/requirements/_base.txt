@@ -8,6 +8,7 @@
 -e git+git@github.com:densho/namesdb.git#egg=namesdb
 
                                    # LICENSE  Python3
+beautifulsoup4==4.3.2              # MIT      y
 Django==1.8                        # MIT      y
 django-bootstrap-pagination==1.5.1 # MIT      ???
 django-redis==3.8.3                # BSD      y

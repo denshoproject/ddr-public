@@ -83,8 +83,16 @@
               Download full transcript
             </a>
             <br />
-            <a href="https://archive.org/download/ddr-densho-1000-400-1/format=mpeg2" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download MP4 (36.3MB)</a>
-            <a href="https://archive.org/download/ddr-densho-1000-400-1/format=mpeg2" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download full-size MPEG2 (1.5GB)</a>
+            <a href="{{ downloads.mp4.url }}" class="btn btn-default btn-xs">
+              <i class="fa fa-download"></i>
+              Download MP4
+              ({{ downloads.mp4.size|filesizeformat }})
+            </a>
+            <a href="{{ downloads.mpg.url }}" class="btn btn-default btn-xs">
+              <i class="fa fa-download"></i>
+              Download full-size MPEG2
+              ({{ downloads.mpg.size|filesizeformat }})
+            </a>
 
           </div><!-- #dls_tab .tab-pane -->
           <!-- end Left Tab -------------------------------------- -->
