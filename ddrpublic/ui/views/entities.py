@@ -110,6 +110,7 @@ def interview(request, oid):
             'entity': entity,
             'parent': parent,
             'organization': organization,
+            'tableft': request.GET.get('tableft', 'downloads'),
             'api_url': reverse('ui-api-object', args=[entity['id']]),
         },
         context_instance=RequestContext(request, processors=[])

@@ -56,12 +56,12 @@
       <div id="tabs-left" class="tabs no-margin-top" style="margin:10px 0;">
 
         <ul class="nav nav-tabs">
-          <li class="active">
+          <li class="{% if tableft == "downloads" %}active{% endif %}">
             <a href="#dls_tab" data-toggle="tab">
               <i class="fa fa-download"></i> Download files
             </a>
           </li>
-          <li>
+          <li class="{% if tableft == "segments" %}active{% endif %}">
             <a href="#segs_tab" data-toggle="tab">
               <i class="fa fa-list"></i> View all segments
             </a>
@@ -72,7 +72,7 @@
 
           <!-- Left Tab ------------------------------------------ -->
 
-          <div id="dls_tab" class="tab-pane active">
+          <div id="dls_tab" class="tab-pane {% if tableft == "downloads" %}active{% endif %}">
 
             <a href="{{ transcripts.segment.links.download }}" class="btn btn-default btn-xs">
               <i class="fa fa-download"></i>
@@ -98,7 +98,7 @@
           <!-- end Left Tab -------------------------------------- -->
 
           <!-- Right Tab ----------------------------------------- -->
-          <div id="segs_tab" class="tab-pane">
+          <div id="segs_tab" class="tab-pane {% if tableft == "segments" %}active{% endif %}">
 
             <table class="table table-responsive table-condensed table-hover small">
               <tbody>
@@ -112,7 +112,7 @@
                     ({{ s.id }})
                     - {{ s.extent }}
                     {% else %}
-                    <a href="{% url "ui-interview" s.id %}">
+                    <a href="{% url "ui-interview" s.id %}?tableft=segments">
                       {{ s.title }}
                       ({{ s.id }})
                       - {{ s.extent }}
