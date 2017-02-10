@@ -36,11 +36,8 @@
           <img src="{{ img.url }}" class="img-responsive">
         </a><br />
   {% endthumbnail %}
-{% if object.signature and object.signature.access_path %}
-        <a href="{{ DOWNLOAD_URL }}{{ object.signature.access_path }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download large size</a>
-{% endif %}
 
-{% if object.signature %}
+  {% if signature %}
             <p>
               <a href="{{ signature.links.img }}" class="btn btn-default btn-xs">
                 <i class="fa fa-download"></i>
@@ -53,10 +50,11 @@
                 ({{ signature.size|filesizeformat }})
               </a>
             </p>
-{% endif %}
+  {% endif %}
 
-        {% rightspanel object.rights %}
-        {% endif %}
+{% rightspanel object.rights %}
+
+{% endif %}{# object.links.img #}
         </div>
         <!-- right meta -->
         <div class="col-sm-5 col-md-5">
