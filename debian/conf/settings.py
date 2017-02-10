@@ -95,6 +95,8 @@ DOWNLOAD_URL = config.get('public', 'download_url')
 NARRATORS_URL = config.get('public', 'narrators_url')
 # Base URL for VH interview segment images
 SEGMENT_URL = config.get('public', 'segment_url')
+# Timeout for segment file metadata from Internet Archive
+IA_SEGMENT_CACHE_TIMEOUT = int(config.get('public', 'ia_segment_cache_timeout'))
 
 ACCESS_FILE_APPEND='-a'
 ACCESS_FILE_EXTENSION='.jpg'
@@ -178,7 +180,7 @@ CACHES = {
 }
 
 # ElasticSearch
-ELASTICSEARCH_MAX_SIZE = 1000000
+ELASTICSEARCH_MAX_SIZE = 10000
 ELASTICSEARCH_QUERY_TIMEOUT = 60 * 10  # 10 min
 ELASTICSEARCH_FACETS_TIMEOUT = 60*60*1  # 1 hour
 

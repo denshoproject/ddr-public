@@ -67,9 +67,7 @@
                     </p>
                     <!-- entity.description -->
                     <h3 class="page-header">DESCRIPTION</h3>
-                    <p>
-                    {{ object.description|safe }}
-                    </p>
+                    {{ object.description|safe|linebreaks }}
 
                     <!-- core meta -->
                     <div class="row">
@@ -80,23 +78,28 @@
                                 {{ object.creation }}
                             </p>
                         </div>
-
                         <div class="col-md-7 col-sm-7">
                             <!-- entity.location -->
                             <h3 class="page-header">LOCATION</h3>
-                            {{ object.fields|ddrvalue:"location" }}
+                            <p>
+                              {{ object.location }}
+                            </p>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-5 col-sm-5">
                             <!-- entity.genre -->
                             <h3 class="page-header">OBJECT GENRE</h3>
-                            {{ object.fields|ddrvalue:"genre" }}
+                            <p>
+                              {{ object.genre }}
+                            </p>
                         </div>
                         <div class="col-md-7 col-sm-7">
                             <!-- entity.format -->
                             <h3 class="page-header">OBJECT FORMAT</h3>
-                            {{ object.fields|ddrvalue:"format" }}
+                            <p>
+                              {{ object.format }}
+                            </p>
                         </div>
                     </div>
                     <div class="row">    
@@ -104,8 +107,8 @@
                             <!-- entity.topic_terms -->
                             <h3 class="page-header">TOPICS</h3>
                             <ul class="list-unstyled">
-                                {% for term in object.topic_terms %}
-                                <li><a href="{{ term.url }}">{{ term.title }}</a></li>
+                                {% for item in object.topics %}
+                                <li><a href="{{ item.html }}">{{ item.term }}</a></li>
                                 {% endfor %}
                             </ul>
                         </div>
@@ -113,8 +116,8 @@
                             <!-- entity.facility -->
                             <h3 class="page-header">FACILITY</h3>
                             <ul class="list-unstyled">
-                              {% for term in facilities %}
-                              <li><a href="{% url "ui-browse-term" "facility" term.id %}">{{ term.term }}<a/></li>
+                              {% for item in object.facility %}
+                                <li><a href="{{ item.html }}">{{ item.term }}</a></li>
                                 {% endfor %}
                             </ul>
                         </div>
@@ -124,15 +127,19 @@
                             <!-- entity.creators -->
                             <h3 class="page-header">CREATORS</h3>
                             <ul class="list-unstyled">
-                              {% for term in creators %}
-                              <li>{{ term.namepart }} ({{ term.role }})</li>
+                              {% for item in object.creators %}
+                              <li>{{ item.namepart }} ({{ item.role }})</li>
                               {% endfor %}
                             </ul>
                         </div>
                         <div class="col-md-7 col-sm-7">
                             <!-- entity.persons -->
                             <h3 class="page-header">PERSONS/ORGANIZATIONS</h3>
-                            {{ object.fields|ddrvalue:"persons" }}
+                            <ul class="list-unstyled">
+                              {% for item in object.persons %}
+                              <li>{{ item }}</li>
+                              {% endfor %}
+                            </ul>
                         </div>
                     </div>
                     <!-- /core meta -->	
@@ -147,7 +154,9 @@
                     </p>
                     <!-- entity.rights -->
                     <h3 class="page-header">RIGHTS</h3>
-                    {{ object.fields|ddrvalue:"rights" }}
+                    <p>
+                      {{ object.rights }}
+                    </p>
 
                 </div>	
             </div>

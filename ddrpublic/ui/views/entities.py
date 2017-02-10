@@ -9,6 +9,7 @@ from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 
 from ui import api
+from ui import archivedotorg
 from ui.identifier import Identifier
 from ui.models import DEFAULT_SIZE
 from ui.views import filter_if_branded
@@ -23,6 +24,15 @@ def detail(request, oid):
     entity['identifier'] = i
     if not entity:
         raise Http404
+    
+    # if this is an interview, redirect to first segment
+    if (entity['format'] == 'vh') and (entity['model'] == 'entity'):
+        segments = api.ApiEntity.api_children(oid, request, limit=1)
+        if segments['objects'][0]:
+            sid = segments['objects'][0]['id']
+            url = reverse('ui-interview', args=[sid])
+            return HttpResponseRedirect(url)
+    
     parent = api.ApiCollection.api_get(i.parent_id(), request)
     organization = api.ApiOrganization.api_get(i.organization().id, request)
     # facet terms
@@ -59,6 +69,52 @@ def detail(request, oid):
         context_instance=RequestContext(request, processors=[])
     )
 
+def interview(request, oid):
+    si = Identifier(id=oid)
+    filter_if_branded(request, si)
+    segment = api.ApiEntity.api_get(si.id, request)
+    segment['identifier'] = si
+    if not segment:
+        raise Http404
+    ei = si.parent()
+    entity = api.ApiEntity.api_get(ei.id, request)
+    entity['identifier'] = si
+    parent = api.ApiCollection.api_get(entity['identifier'].parent_id(), request)
+    organization = api.ApiOrganization.api_get(entity['identifier'].organization().id, request)
+    
+    # TODO only id, title, extent
+    segments = api.ApiEntity.api_children(ei.id, request, limit=1000)
+    # get next,prev segments
+    segment['index'] = 0
+    num_segments = len(segments['objects'])
+    for n,s in enumerate(segments['objects']):
+        if s['id'] == si.id:
+            segment['index'] = n
+    segment['prev'] = None; segment['next'] = None
+    pr = segment['index'] - 1; nx = segment['index'] + 1
+    if pr >= 0:
+        segment['prev'] = segments['objects'][pr]['id']
+    if nx < num_segments:
+        segment['next'] = segments['objects'][nx]['id']
+    
+    transcripts = api.ApiEntity.transcripts(si, request)
+    download_meta = archivedotorg.segment_download_meta(si.id)
+    
+    return render_to_response(
+        'ui/entities/segment.html',
+        {
+            'segment': segment,
+            'segments': segments,
+            'transcripts': transcripts,
+            'downloads': download_meta,
+            'entity': entity,
+            'parent': parent,
+            'organization': organization,
+            'api_url': reverse('ui-api-object', args=[entity['id']]),
+        },
+        context_instance=RequestContext(request, processors=[])
+    )
+    
 def children( request, oid, role=None ):
     """Lists all direct children of the entity.
     """

@@ -158,6 +158,7 @@ SEARCH_RETURN_FIELDS = [
     'sort',
     'title',
     'url',
+    'extent',
 ]
 
 def api_search(text='', must=[], should=[], mustnot=[], models=[], fields=[], sort_fields=[], limit=DEFAULT_LIMIT, offset=0, request=None):
@@ -620,6 +621,9 @@ class ApiEntity(object):
         data['links']['children-files'] = reverse(
             'ui-api-object-nodes', args=[oid], request=request
         )
+#        # segment URL
+#        if (data.get('format','') == 'vh') and data.get('alternate_id'):
+#            data['links']['img'] = segment_img_url(data['alternate_id'])
         for facet in ['facility', 'topics']:
             for x in data.get(facet, []):
                 x['json'] = reverse(
@@ -677,6 +681,52 @@ class ApiEntity(object):
             request, models, i.id, sort_fields, limit=limit, offset=offset
         )
 
+    @staticmethod
+    def transcripts(sidentifier, request):
+        """Extra stuff require by interview segment page.
+        segment transcript
+        full transcript
+        """
+        data = {
+            'segment': None,
+            'interview': None,
+            'glossary': None,
+        }
+        # segment transcript
+        results = api_search(
+            should=[
+                {"wildcard": {"id": "%s-transcript-*" % sidentifier.id}},
+                {"wildcard": {"id": "%s-transcript-*" % sidentifier.parent_id()}},
+            ],
+            models=[
+                'file',
+            ],
+            fields=[
+                'id',
+                'title',
+                'access_rel',
+                'path_rel',
+                'basename_orig',
+            ],
+            #limit=1, # should only be one transcript per File
+            request=request
+        )
+        # download links
+        for d in results['objects']:
+            d['links']['download'] = img_url(
+                sidentifier.collection_id(),
+                d['path_rel'],
+                request
+            )
+        # assign to role
+        for n,d in enumerate(results['objects']):
+            if 'glossary' in d['title'].lower():
+                data['glossary'] = results['objects'][n]
+            elif 'segment' in d['title'].lower():
+                data['segment'] = results['objects'][n]
+            else:
+                data['interview'] = results['objects'][n]
+        return data
 
 class ApiRole(object):
 

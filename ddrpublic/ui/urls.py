@@ -46,6 +46,8 @@ urlpatterns = patterns(
     
     url(r'^collections/$', 'ui.views.collections.list', name='ui-collections-list'),
     
+    url(r'^interviews/(?P<oid>[\w\d-]+)/', 'ui.views.entities.interview', name='ui-interview'),
+    
     url(r'^r/(?P<oid>[\w\d-]+)/$', 'ui.views.entities.nodes', name='ui-file-role'),
     
     url(r'^(?P<oid>[\w\d-]+)/objects/$', 'ui.views.objects.children', name='ui-object-children'),
