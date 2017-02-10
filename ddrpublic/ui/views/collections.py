@@ -18,6 +18,7 @@ from ui.views import filter_if_branded
 # views ----------------------------------------------------------------
 
 def list( request ):
+    # TODO cache or restrict fields (truncate desc BEFORE caching)
     organizations = []
     repo,org = domain_org(request)
     if repo and org:
@@ -25,13 +26,19 @@ def list( request ):
         idparts = {'model':'organization', 'repo':repo, 'org':org}
         identifier = Identifier(parts=idparts)
         organization = api.ApiOrganization.api_get(identifier.id)
-        collections = api.ApiOrganization.api_children(org['id'], request)
+        collections = api.ApiOrganization.api_children(
+            org['id'], request,
+            limit=settings.ELASTICSEARCH_MAX_SIZE,
+        )
         organizations.append( (org, collections['objects']) )
     else:
         # default site
         orgs = api.ApiRepository.api_children(repo, request)
         for org in orgs['objects']:
-            collections = api.ApiOrganization.api_children(org['id'], request)
+            collections = api.ApiOrganization.api_children(
+                org['id'], request,
+                limit=settings.ELASTICSEARCH_MAX_SIZE,
+            )
             organizations.append( (org, collections['objects']) )
     return render_to_response(
         'ui/collections.html',
