@@ -85,13 +85,13 @@ def interview(request, oid):
     # TODO only id, title, extent
     segments = api.ApiEntity.api_children(ei.id, request, limit=1000)
     # get next,prev segments
-    segment_index = 0
+    segment['index'] = 0
     num_segments = len(segments['objects'])
     for n,s in enumerate(segments['objects']):
         if s['id'] == si.id:
-            segment_index = n
+            segment['index'] = n
     segment['prev'] = None; segment['next'] = None
-    pr = segment_index - 1; nx = segment_index + 1
+    pr = segment['index'] - 1; nx = segment['index'] + 1
     if pr >= 0:
         segment['prev'] = segments['objects'][pr]['id']
     if nx < num_segments:

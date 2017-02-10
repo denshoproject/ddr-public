@@ -158,6 +158,7 @@ SEARCH_RETURN_FIELDS = [
     'sort',
     'title',
     'url',
+    'extent',
 ]
 
 def api_search(text='', must=[], should=[], mustnot=[], models=[], fields=[], sort_fields=[], limit=DEFAULT_LIMIT, offset=0, request=None):

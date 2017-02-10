@@ -182,12 +182,13 @@
               <h3 class="page-header">SEGMENT DESCRIPTION</h3>
               {{ segment.description|safe|linebreaks }}
 
-              <!-- entity.extent; entity.sort; len(entity.parent.children) -->
+              <!-- segment.extent; segment.index, num_segments -->
               <p>
-                00:03:27 &mdash; Segment 3 of 27
+              {{ segment.extent }}
+              &mdash;
+              Segment {{ segment.index }} of {{ segments.objects|length }}
               </p>
               <p>
-
                 {% if segment.prev %}
                 <a class="btn btn-primary btn-xs" href="{% url "ui-interview" segment.prev %}">
                   <i class="fa fa-step-backward"></i> Previous segment
