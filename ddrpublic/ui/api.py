@@ -2,6 +2,8 @@ from collections import defaultdict, OrderedDict
 import json
 import os
 
+import requests
+
 from django.conf import settings
 from django.http import HttpResponseRedirect
 
@@ -132,6 +134,17 @@ def segment_img_url(aid):
             aid.replace('[','').replace(']','').split(':')[1].strip()
         )
     return ''
+
+def file_size(url):
+    """Get the size of a file from HTTP headers (without downloading)
+    
+    @param url: str
+    @returns: int
+    """
+    r = requests.head(url)
+    if r.status_code == 200:
+        return r.headers['Content-Length']
+    return 0
 
 def pop_field(obj, fieldname):
     """Safely remove fields from objects.
@@ -314,7 +327,7 @@ def format_object_detail(document, request, listitem=False):
         if document['_source'].get('signature_id'):
             d['links']['img'] = img_url(
                 i.collection_id(),
-                access_filename(document['_source'].pop('signature_id')),
+                access_filename(document['_source']['signature_id']),
                 request
             )
         elif i.model == 'file':

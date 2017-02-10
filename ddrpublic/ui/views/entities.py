@@ -35,6 +35,9 @@ def detail(request, oid):
     
     parent = api.ApiCollection.api_get(i.parent_id(), request)
     organization = api.ApiOrganization.api_get(i.organization().id, request)
+    # signature
+    signature = api.ApiFile.api_get(entity['signature_id'], request)
+    signature['access_size'] = api.file_size(signature['links']['img'])
     # facet terms
     facilities = [item for item in getattr(entity, 'facility', [])]
     creators = [item for item in getattr(entity, 'creators', [])]
@@ -60,6 +63,7 @@ def detail(request, oid):
             'creators': creators,
             'parent': parent,
             'organization': organization,
+            'signature': signature,
             'children_paginator': children_paginator,
             'children_page': children_paginator.page(thispage),
             'nodes_paginator': nodes_paginator,

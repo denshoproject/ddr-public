@@ -40,6 +40,21 @@
         <a href="{{ DOWNLOAD_URL }}{{ object.signature.access_path }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download large size</a>
 {% endif %}
 
+{% if object.signature %}
+            <p>
+              <a href="{{ signature.links.img }}" class="btn btn-default btn-xs">
+                <i class="fa fa-download"></i>
+                Download large
+                ({{ signature.access_size|filesizeformat }})
+              </a>
+              <a href="{{ signature.links.downloads }}" class="btn btn-default btn-xs">
+                <i class="fa fa-download"></i>
+                Download full-size
+                ({{ signature.size|filesizeformat }})
+              </a>
+            </p>
+{% endif %}
+
         {% rightspanel object.rights %}
         {% endif %}
         </div>
