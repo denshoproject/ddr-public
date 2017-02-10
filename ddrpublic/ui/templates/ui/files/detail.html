@@ -76,27 +76,40 @@
       {% rightspanel object.rights %}
     </div>
 
+	<div class="col-sm-6 col-md-6">
+	  {% addthis %}
+	  <div class="desc productDescription">
 
-		<div class="col-sm-6 col-md-6">
-			{% addthis %}
-			<div class="desc productDescription">
-                      
-                 <h3 class="page-header">PARTNER</h3>
-                 {% include "ui/partnerlogolink.html" %}
+        <h3 class="page-header">PARTNER</h3>
+        {% include "ui/partnerlogolink.html" %}
 
-	        <h3 class="page-header">PARENT OBJECT</h3>
-	        <p><a href="{{ parent.absolute_url }}">{{ parent.title|safe }} ({{ parent.id }})</a></p>
-            <h3 class="page-header">FILE ID</h3>
-            <p>{{ object.id }}</p>
-            <h3 class="page-header">SIZE</h3>
-            <p>{{ object.size|filesizeformat }}</p>
-            <h3 class="page-header">TECHNICAL DETAILS</h3>
-            <p>{{ object.tech_notes|safe }}</p>
-			<h3 class="page-header">RIGHTS</h3>
-			<p>{{ object.fields|ddrvalue:"rights" }}</p>
-			</div>
+	    <h3 class="page-header">PARENT OBJECT</h3>
+	    <p>
+          <a href="{{ parent.absolute_url }}">{{ parent.title|safe }} ({{ parent.id }})</a>
+        </p>
 
-		</div>
+        <h3 class="page-header">FILE ID</h3>
+        <p>
+          {{ object.id }}
+        </p>
+
+        <h3 class="page-header">SIZE</h3>
+        <p>
+          {{ object.size|filesizeformat }}
+        </p>
+
+        <h3 class="page-header">TECHNICAL DETAILS</h3>
+        <p>
+          {{ object.tech_notes|safe }}
+        </p>
+
+		<h3 class="page-header">RIGHTS</h3>
+		<p>
+          {{ object.rights }}
+        </p>
+	  </div>
+
+	</div>
 	</div><!-- //row-->
 
     <div class="row">

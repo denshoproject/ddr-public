@@ -211,7 +211,7 @@
                   <!-- entity.creation -->
                   <h3 class="page-header">DATE</h3>
                   <p>
-                    March 20, 2012
+                    {{ segment.creation }}
                   </p>
                 </div>
 
@@ -219,14 +219,14 @@
                   <!-- entity.location -->
                   <h3 class="page-header">LOCATION</h3>
                   <ul class="list-unstyled">
-                    <li><a href="/search/location:San%20Jose%2C%20California/">San Jose, California</a></li>
+                    <li><a href="/search/location:{{ segment.location }}/">{{ segment.location }}</a></li>
                   </ul>
                 </div>
               </div>
               <!-- entity.collection -->
               <h3 class="page-header">PARENT COLLECTION</h3>
               <p>
-                <a href="/ddr/densho/1000/">Densho Visual History Collection</a>
+                <a href="{{ parent.links.html }}">{{ parent.title }}</a>
               </p>
 
               <!-- core meta -->
@@ -235,46 +235,47 @@
                   <!-- entity.topic_terms -->
                   <h3 class="page-header">TOPICS</h3>
                   <ul class="list-unstyled">
-
-                    <li><a href="/browse/topics/188/">Exclusion orders</a></li>
-
+                    {% for item in segment.topics %}
+                    <li><a href="{{ item.html }}">{{ item.term }}</a></li>
+                    {% endfor %}
                   </ul>
                 </div>
                 <div class="col-md-7 col-sm-7">
                   <!-- entity.facility -->
                   <h3 class="page-header">FACILITY</h3>
-
+                    {% for item in segment.facility %}
+                    <li><a href="{{ item.html }}">{{ item.term }}</a></li>
+                    {% endfor %}
                 </div>
               </div>
               <div class="row">
                 <div class="col-md-12 col-sm-12">
                   <!-- entity.persons -->
                   <h3 class="page-header">PERSONS/ORGANIZATIONS</h3>
-                  <br />
+                  <p>
+                    {{ segment.persons }}
+                  </p>
                 </div>
               </div>
               <!-- /core meta -->
+
               <h3 class="page-header">CONTRIBUTOR</h3>
               <p>
-                Densho
+                {{ segment.contributor }}
               </p>
+
               <!-- entity.credit -->
               <h3 class="page-header">PREFERRED CITATION</h3>
               <p>
-                Courtesy of the National Archives and Records Administration
+                {{ segment.credit }}
               </p>
+
               <!-- entity.rights -->
               <h3 class="page-header">RIGHTS</h3>
-              <div id="license">
-                <p xmlns:dct="http://purl.org/dc/terms/">
-                  <a rel="license" href="http://creativecommons.org/publicdomain/mark/1.0/">
-                    <img src="http://i.creativecommons.org/p/mark/1.0/80x15.png"
-                         style="border-style: none;" alt="Public Domain Mark" />
-                  </a>
-                  <br />
-                  This work is free of known copyright restrictions.
-                </p>
-              </div>
+              <p>
+                {{ segment.rights }}
+              </p>
+
             </div>
 
 
@@ -322,7 +323,9 @@
                 <div class="col-md-7 col-sm-7">
                   <!-- entity.location -->
                   <h3 class="page-header">LOCATION</h3>
-                  {{ entity.fields|ddrvalue:"location" }}
+                  <p>
+                    {{ entity.location }}
+                  </p>
                 </div>
               </div>
 
@@ -330,12 +333,16 @@
                 <div class="col-md-5 col-sm-5">
                   <!-- entity.genre -->
                   <h3 class="page-header">OBJECT GENRE</h3>
-                  {{ entity.fields|ddrvalue:"genre" }}
+                  <p>
+                    {{ entity.genre }}
+                  </p>
                 </div>
                 <div class="col-md-7 col-sm-7">
                   <!-- entity.format -->
                   <h3 class="page-header">OBJECT FORMAT</h3>
-                  {{ entity.fields|ddrvalue:"format" }}
+                  <p>
+                    {{ entity.format }}
+                  </p>
                 </div>
               </div>
 
@@ -344,8 +351,8 @@
                   <!-- entity.topic_terms -->
                   <h3 class="page-header">TOPICS</h3>
                   <ul class="list-unstyled">
-                    {% for term in entity.topic_terms %}
-                    <li><a href="{{ term.url }}">{{ term.title }}</a></li>
+                    {% for term in entity.topics %}
+                    <li><a href="{{ item.html }}">{{ item.term }}</a></li>
                     {% endfor %}
                   </ul>
                 </div>
@@ -353,8 +360,8 @@
                   <!-- entity.facility -->
                   <h3 class="page-header">FACILITY</h3>
                   <ul class="list-unstyled">
-                    {% for term in facilities %}
-                    <li><a href="{% url "ui-browse-term" "facility" term.id %}">{{ term.term }}<a/></li>
+                    {% for term in entity.facility %}
+                    <li><a href="{{ item.html }}">{{ item.term }}</a></li>
                     {% endfor %}
                   </ul>
                 </div>
@@ -365,15 +372,23 @@
                   <!-- entity.creators -->
                   <h3 class="page-header">CREATORS</h3>
                   <ul class="list-unstyled">
-                    {% for term in creators %}
-                    <li>{{ term.namepart }} ({{ term.role }})</li>
+                    {% for item in entity.creators %}
+                    <li>
+                      {% if item.role == "narrator" %}
+                      <a href="{% url "ui-browse-narrator" item.id %}">{{ item.namepart }} ({{ item.role }})</a>
+                      {% else %}
+                      {{ item.namepart }} ({{ item.role }})
+                      {% endif %}
+                    </li>
                     {% endfor %}
                   </ul>
                 </div>
                 <div class="col-md-7 col-sm-7">
                   <!-- entity.persons -->
                   <h3 class="page-header">PERSONS/ORGANIZATIONS</h3>
-                  {{ entity.fields|ddrvalue:"persons" }}
+                  <p>
+                    {{ entity.persons }}
+                  </p>
                 </div>
               </div>
 
@@ -391,7 +406,9 @@
 
               <!-- entity.rights -->
               <h3 class="page-header">RIGHTS</h3>
-              {{ entity.fields|ddrvalue:"rights" }}
+              <p>
+                {{ entity.rights }}
+              </p>
 
             </div><!-- .desc .productDescription -->
 
