@@ -100,6 +100,8 @@ def interview(request, oid):
         segment['prev'] = segments['objects'][pr]['id']
     if nx < num_segments:
         segment['next'] = segments['objects'][nx]['id']
+    # segment index for humans
+    segment['this'] = segment['index'] + 1
     
     transcripts = api.ApiEntity.transcripts(si, request)
     download_meta = archivedotorg.segment_download_meta(si.id)
