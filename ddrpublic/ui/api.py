@@ -159,19 +159,23 @@ def pop_field(obj, fieldname):
 
 
 SEARCH_RETURN_FIELDS = [
+
+    'id',
+    'title',
+    'description',
     'access_rel',
+    'alternate_id',
     'bio',
     'collection_id',
-    'description',
     'display_name',
+    'extent',
     'facet',
-    'id',
+    'format',
     'image_url',
     'signature_id',
     'sort',
-    'title',
     'url',
-    'extent',
+
 ]
 
 def api_search(text='', must=[], should=[], mustnot=[], models=[], fields=[], sort_fields=[], limit=DEFAULT_LIMIT, offset=0, request=None):
@@ -324,13 +328,21 @@ def format_object_detail(document, request, listitem=False):
         #        request=request
         #    )
         # links-img
-        if document['_source'].get('signature_id'):
+        if (document['_source'].get('format','') == 'vh') \
+        and document['_source'].get('alternate_id'):
+            # interviews/segments
+            d['links']['img'] = segment_img_url(
+                document['_source']['alternate_id']
+            )
+        elif document['_source'].get('signature_id'):
+            # other collections/entities
             d['links']['img'] = img_url(
                 i.collection_id(),
                 access_filename(document['_source']['signature_id']),
                 request
             )
         elif i.model == 'file':
+            # files
             d['links']['img'] = img_url(
                 i.collection_id(),
                 os.path.basename(document['_source'].pop('access_rel')),
