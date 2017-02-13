@@ -369,7 +369,7 @@ def format_object_detail(document, request, listitem=False):
                 os.path.basename(document['_source'].pop('access_rel')),
                 request
             )
-        d['links']['thumb'] = local_thumb_url(d['links']['img'], request)
+        d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
         # title, description
         if document['_source'].get('title'):
             d['title'] = document['_source'].pop('title')
