@@ -1,6 +1,7 @@
 from collections import defaultdict, OrderedDict
 import json
 import os
+import urlparse
 
 import requests
 
@@ -285,6 +286,26 @@ def paginate_results(results, offset, limit, request=None):
     data['hits'] = [hit for hit in results['hits']['hits']]
     return data
 
+def show_sorl_links(request):
+    """Include local sorl links in API results or not
+    Is requestor the web app or somebody else?
+    """
+    if settings.DEBUG:
+        return True
+    elif '/api/' not in request.PATH_INFO:
+        return True
+    return False
+
+def local_thumb_url(url, request):
+    """Replaces public URL with local thumb URL
+    """
+    if url and show_sorl_links(request):
+        u = urlparse.urlparse(url)
+        return urlparse.urlunsplit(
+            (u.scheme, settings.MEDIA_DOM_LOCAL, u.path, u.params, u.query)
+        )
+    return ''
+
 def format_object_detail(document, request, listitem=False):
     """Formats repository objects, adds list URLs,
     """
@@ -348,6 +369,7 @@ def format_object_detail(document, request, listitem=False):
                 os.path.basename(document['_source'].pop('access_rel')),
                 request
             )
+        d['links']['thumb'] = local_thumb_url(d['links']['img'], request)
         # title, description
         if document['_source'].get('title'):
             d['title'] = document['_source'].pop('title')

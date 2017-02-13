@@ -80,6 +80,8 @@ MEDIA_URL_LOCAL = config.get('public', 'media_url_local')
 # The REST API will use MEDIA_URL_LOCAL for image URLs
 # if this query argument is present with a truthy value.
 MEDIA_URL_LOCAL_MARKER = 'internal'
+# Simplification of MEDIA_URL_LOCAL, just the domain to replace
+MEDIA_DOM_LOCAL = config.get('public', 'media_dom_local')
 
 # URL for full-size images and other downloadables.
 # Clicking this should bring up the browser's "Save As..." dialog.
