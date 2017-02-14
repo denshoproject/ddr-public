@@ -52,6 +52,7 @@ def index( request ):
         {
             'hide_header_search': True,
             'search_form': SearchForm,
+            'api_url': reverse('ui-api-search'),
         },
         context_instance=RequestContext(request, processors=[])
     )
@@ -118,9 +119,11 @@ def results(request):
         {
             'hide_header_search': True,
             'query': query,
+            'query_json': json.dumps(query),
             'search_form': form,
             'paginator': paginator,
             'page': page,
+            'api_url': reverse('ui-api-search'),
         },
         context_instance=RequestContext(request, processors=[])
     )
