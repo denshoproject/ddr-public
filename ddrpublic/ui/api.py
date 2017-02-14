@@ -16,6 +16,7 @@ from rest_framework.reverse import reverse
 
 from DDR import docstore
 from ui.identifier import Identifier, CHILDREN, CHILDREN_ALL
+from ui.urls import API_BASE
 from ui.views import filter_if_branded
 
 DEFAULT_LIMIT = 25
@@ -286,25 +287,23 @@ def paginate_results(results, offset, limit, request=None):
     data['hits'] = [hit for hit in results['hits']['hits']]
     return data
 
-def show_sorl_links(request):
-    """Include local sorl links in API results or not
-    Is requestor the web app or somebody else?
-    """
-    if settings.DEBUG:
-        return True
-    elif '/api/' not in request.PATH_INFO:
-        return True
-    return False
-
 def local_thumb_url(url, request):
-    """Replaces public URL with local thumb URL
+    """Replaces thumbnail domain with local IP addr (or domain?)
+    This is necessary because CloudFlare
     """
-    if url and show_sorl_links(request):
+    # hide thumb links in the REST API unless DEBUG is on
+    show_thumb_links = False
+    if request.META['PATH_INFO'][:len(API_BASE)] != API_BASE:
+        show_thumb_links = True
+    elif settings.DEBUG:
+        show_thumb_links = True
+    
+    if url and settings.MEDIA_DOM_LOCAL and show_thumb_links:
         u = urlparse.urlparse(url)
         return urlparse.urlunsplit(
             (u.scheme, settings.MEDIA_DOM_LOCAL, u.path, u.params, u.query)
         )
-    return ''
+    return url
 
 def format_object_detail(document, request, listitem=False):
     """Formats repository objects, adds list URLs,
@@ -397,6 +396,7 @@ def format_narrator(document, request, listitem=False):
         d['links']['html'] = reverse('ui-browse-narrator', args=[oid], request=request)
         d['links']['json'] = reverse('ui-api-narrator', args=[oid], request=request)
         d['links']['img'] = document['_source'].pop('image_url')
+        d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
         d['links']['documents'] = ''
         # title, description
         if document['_source'].get('title'):
@@ -559,6 +559,7 @@ class ApiRepository(object):
         )
         for d in data['objects']:
             d['links']['img'] = img_url(d['id'], 'logo.png', request)
+            d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
         return data
 
 
@@ -582,6 +583,7 @@ class ApiOrganization(object):
             request=request
         )
         data['links']['img'] = img_url(oid, 'logo.png', request)
+        data['links']['thumb'] = local_thumb_url(data['links'].get('img',''), request)
         return data
 
     @staticmethod
@@ -848,6 +850,7 @@ class ApiNarrator(object):
         # narrator img url
         if data['links'].get('img'):
             data['links']['img'] = '%s/%s' % (settings.NARRATORS_URL, data['links']['img'])
+            data['links']['thumb'] = local_thumb_url(data['links'].get('img',''), request)
         return data
     
     @staticmethod
@@ -920,6 +923,7 @@ class ApiNarrator(object):
         # TODO do this in formatter?
         for d in results['objects']:
             d['links']['img'] = segment_img_url(d['alternate_id'])
+            d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
         for d in results['objects']:
             r = ApiEntity.api_children(
                 d['id'], request=request,

@@ -3,6 +3,8 @@ from django.views.generic import TemplateView
 
 from rest_framework.urlpatterns import format_suffix_patterns
 
+API_BASE = '/api/0.2/'
+
 urlpatterns = patterns(
     '',
     url(r'^names', include('names.urls')),
