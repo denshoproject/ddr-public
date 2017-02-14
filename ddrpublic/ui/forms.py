@@ -13,6 +13,18 @@ MODELS_CHOICES = [
     ('narrator', 'Narrator'),
     ('term', 'Topic Term'),
 ]
+LANGUAGE_CHOICES = [
+    ('eng', 'English'),
+    ('jpn', 'Japanese'),
+    ('chi', 'Chinese'),
+]
+TOPICS_CHOICES = [
+    ('1', 'Immigration and citizenship'),
+    ('15', 'Community activities'),
+    ('29', 'Religion and churches'),
+    ('36', 'Race and racism'),
+    ('120', 'Activism and involvement'),
+]
 
 class SearchForm(forms.Form):
     
@@ -27,21 +39,11 @@ class SearchForm(forms.Form):
     )
     
     language = forms.MultipleChoiceField(
-        choices=[
-            ('eng', 'English'),
-            ('jpn', 'Japanese'),
-            ('chi', 'Chinese'),
-        ],
+        choices=LANGUAGE_CHOICES,
         required=False,
     )
     
     topics = forms.MultipleChoiceField(
-        choices=[
-            ('1', 'Immigration and citizenship'),
-            ('15', 'Community activities'),
-            ('29', 'Religion and churches'),
-            ('36', 'Race and racism'),
-            ('120', 'Activism and involvement'),
-        ],
+        choices=TOPICS_CHOICES,
         required=False,
     )
