@@ -50,19 +50,19 @@
         <!--  view selection tabs -->
         <div class="tabs no-margin-top" style="margin:10px 0;">
     <ul class="nav nav-tabs">
-        <li class="active">
+        <li class="{% if tab == "gallery" %}active{% endif %}">
             <a href="#gallery_tab" data-toggle="tab">
                 <i class="fa fa-th"></i> Gallery view
             </a>
         </li>
-        <li>
+        <li class="{% if tab == "list" %}active{% endif %}">
             <a href="#list_tab" data-toggle="tab">
                 <i class="fa fa-list"></i> List view
             </a>
         </li>
     </ul>
     <div class="tab-content">
-        <div id="gallery_tab" class="tab-pane active">
+        <div id="gallery_tab" class="tab-pane {% if tab == "gallery" %}active{% endif %}">
             <div id="item-count">
                 {{ paginator.count }} items<br/>
             </div>
@@ -82,7 +82,7 @@
 {% endif %}
 
         </div> <!-- end gallery_tab -->
-        <div id="list_tab" class="tab-pane">
+        <div id="list_tab" class="tab-pane {% if tab == "list" %}active{% endif %}">
               <div id="item-count">
                 {{ paginator.count }} items<br/>
               </div>

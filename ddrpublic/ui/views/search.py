@@ -118,6 +118,7 @@ def results(request):
         'ui/search/results.html',
         {
             'hide_header_search': True,
+            'tab': request.GET.get('tab', 'list'),
             'query': query,
             'query_json': json.dumps(query),
             'search_form': form,
