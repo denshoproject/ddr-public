@@ -160,7 +160,7 @@
 {% if not hide_header_search %}
                     <div class="col-sm-3 col-md-3">
                         <form action="{% url "ui-search-results" %}" method="get" class="input-group nomargin-bottom">
-                            <input class="form-control" id="id_query" name="query" type="text" value="{{ query }}" placeholder="Search..." />
+                            <input class="form-control" id="id_fulltext" name="fulltext" type="text" value="{{ query }}" placeholder="Search..." />
                             <span class="input-group-btn">
                                 <button class="btn btn-primary"><i class="fa fa-search"></i></button>
                             </span>
