@@ -116,6 +116,7 @@ def results(request):
     return render_to_response(
         'ui/search/results.html',
         {
+            'hide_header_search': True,
             'query': query,
             'search_form': form,
             'paginator': paginator,
