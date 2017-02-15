@@ -18,6 +18,18 @@ def ddrvalue( fields, field ):
     except:
         return ''
 
+@register.filter(name='segmentoneline')
+def segmentoneline( description):
+    """returns one line description for segment list; trims at first paragraph tag
+    """
+    if '<p>' in description:
+        oneline = description[0:description.find('<p>')]
+    elif '<P>' in description:
+        oneline = description[0:description.find('<P>')]
+    else:
+        oneline = description
+    return oneline
+
 def homeslideitem( target_url, img_src ):
     """Slide item for homepage gallery
     
