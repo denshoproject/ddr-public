@@ -3,7 +3,68 @@ logger = logging.getLogger(__name__)
 
 from django import forms
 from django.conf import settings
+from django.core.cache import cache
 
+from ui import api
+
+from repo_models.entity import FORMAT_CHOICES
+from repo_models.entity import GENRE_CHOICES
+from repo_models.entity import RIGHTS_CHOICES
+
+
+def flatten(path, indent='--'):
+    paths = [x for x in path.split(':')]
+    # TODO replace instead of make new list
+    flat = []
+    for x in paths[:-1]:
+        flat.append(indent)
+    flat.append(paths[-1])
+    return ''.join(flat)
+
+def topics_flattened():
+    oid = 'topics'
+    request = None
+    key = 'search:filters:%s' % oid
+    cached = cache.get(key)
+    if not cached:
+        terms = api.ApiFacet.make_tree(
+            api.ApiFacet.api_children(
+                oid, request,
+                sort=[('sort','asc')],
+                limit=10000, raw=True
+                )
+            )
+        choices = [
+            (term['id'], flatten(term['path']))
+            for term in terms
+        ]
+        cached = choices
+        cache.set(key, cached, 15) # settings.ELASTICSEARCH_QUERY_TIMEOUT)
+    return cached
+
+TOPICS_CHOICES = topics_flattened()
+
+def facilities():
+    oid = 'facility'
+    request = None
+    key = 'search:filters:%s' % oid
+    cached = cache.get(key)
+    if not cached:
+        terms = api.ApiFacet.api_children(
+            oid, request,
+            sort=[('title','asc')],
+            limit=10000, raw=True
+        )
+        # for some reason ES does not sort
+        terms = sorted(terms, key=lambda term: term['title'])
+        cached = [
+            (term['id'], term['title'])
+            for term in terms
+        ]
+        cache.set(key, cached, 15) # settings.ELASTICSEARCH_QUERY_TIMEOUT)
+    return cached
+
+FACILITY_CHOICES = facilities()
 
 MODELS_CHOICES = [
     ('collection', 'Collection'),
@@ -18,13 +79,7 @@ LANGUAGE_CHOICES = [
     ('jpn', 'Japanese'),
     ('chi', 'Chinese'),
 ]
-TOPICS_CHOICES = [
-    ('1', 'Immigration and citizenship'),
-    ('15', 'Community activities'),
-    ('29', 'Religion and churches'),
-    ('36', 'Race and racism'),
-    ('120', 'Activism and involvement'),
-]
+
 
 class SearchForm(forms.Form):
     
@@ -33,17 +88,23 @@ class SearchForm(forms.Form):
         required=False,
     )
     
-    models = forms.MultipleChoiceField(
-        choices=MODELS_CHOICES,
+    format_ = forms.MultipleChoiceField(
+        choices=FORMAT_CHOICES,
         required=False,
     )
-    
-    language = forms.MultipleChoiceField(
-        choices=LANGUAGE_CHOICES,
+    genre = forms.MultipleChoiceField(
+        choices=GENRE_CHOICES,
         required=False,
     )
-    
     topics = forms.MultipleChoiceField(
         choices=TOPICS_CHOICES,
+        required=False,
+    )
+    facility = forms.MultipleChoiceField(
+        choices=FACILITY_CHOICES,
+        required=False,
+    )
+    rights = forms.MultipleChoiceField(
+        choices=RIGHTS_CHOICES,
         required=False,
     )

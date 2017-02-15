@@ -67,27 +67,30 @@ def results(request):
     pagesize = settings.RESULTS_PER_PAGE
     
     # query dict
-    EXCLUDED_MODELS = ['repo','org']
-    models = [
-        x
-        for x in form.cleaned_data.get('models', [])
-        if x not in EXCLUDED_MODELS
+    MODELS = [
+        'collection',
+        'entity',
+        'segment',
     ]
     query = {
         'fulltext': form.cleaned_data.get('fulltext', ''),
         'must': [],
-        'models': models,
+        'models': MODELS,
         'offset': thispage - 1,
         'limit': pagesize,
     }
-    if form.cleaned_data.get('language'):
-        query['must'].append(
-            {"terms": {"language": force_list(form.cleaned_data['language'])}}
-        )
-    if form.cleaned_data.get('topics'):
-        query['must'].append(
-            {"terms": {"topics": force_list(form.cleaned_data['topics'])}}
-        )
+
+    def add_must(form, fieldname, query):
+        if form.cleaned_data.get(fieldname):
+            query['must'].append(
+                {"terms": {fieldname: force_list(form.cleaned_data[fieldname])}}
+            )
+    
+    add_must(form, 'format_', query)
+    add_must(form, 'genre', query)
+    add_must(form, 'topic', query)
+    add_must(form, 'facility', query)
+    add_must(form, 'rights', query)
     
     # remove match _all from must, keeping fulltext arg
     for item in query['must']:
