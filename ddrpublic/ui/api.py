@@ -305,6 +305,18 @@ def local_thumb_url(url, request):
         )
     return url
 
+class AttributeDict():
+    """Wraps OrderedDict, makes it appear to be an object.
+    Lets user access data as attributes (using .) rather than dict keys (['']).
+    """
+    data = OrderedDict()
+    def __repr__(self):
+        return str(self.data)
+    def __getattr__(self, attr):
+        return self.data[attr]
+    def __setattr__(self, attr, value):
+        self.data[attr] = value
+
 def format_object_detail(document, request, listitem=False):
     """Formats repository objects, adds list URLs,
     """
