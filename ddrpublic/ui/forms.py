@@ -86,6 +86,13 @@ class SearchForm(forms.Form):
     fulltext = forms.CharField(
         max_length=255,
         required=False,
+        widget=forms.TextInput(
+            attrs={
+                'id': 'id_query',
+                'class': 'form-control',
+                'placeholder': 'Search...',
+            }
+        )
     )
     
     format_ = forms.MultipleChoiceField(

@@ -91,6 +91,7 @@ def results(request):
     # run query
     paginator = None
     page = None
+    searching = False
     if query['fulltext'] or query['must']:
         results = api.api_search(
             text=query['fulltext'],
@@ -106,10 +107,13 @@ def results(request):
         objects = api.pad_results(results, pagesize, thispage)
         paginator = Paginator(objects, pagesize)
         page = paginator.page(thispage)
+        searching = True
+    
     return render_to_response(
         'ui/search/results.html',
         {
             'hide_header_search': True,
+            'searching': searching,
             'tab': request.GET.get('tab', 'list'),
             'query': query,
             'query_json': json.dumps(query),
