@@ -21,7 +21,7 @@ from ui.identifier import Identifier, MODEL_CLASSES
 from ui import domain_org
 from ui import faceting
 from ui import models
-from ui.forms import SearchForm, MODELS_CHOICES
+from ui import forms
 from ui import api
 
 # TODO We should have a whitelist of chars we *do* accept, not this.
@@ -49,7 +49,7 @@ def force_list(terms):
 def results(request):
     """Results of a search query or a DDR ID query.
     """
-    form = SearchForm(request.GET)
+    form = forms.SearchForm(request.GET)
     form.is_valid()
     
     thispage = int(request.GET.get('page', 1))
