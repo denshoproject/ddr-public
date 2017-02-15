@@ -108,12 +108,12 @@
                   <td>
                     {% if s.id == segment.id %}
                     <i class="fa fa-angle-double-right"></i>
-                    {{ s.title }}
+                        {{ s.description|segmentoneline }}
                     ({{ s.id }})
                     - {{ s.extent }}
                     {% else %}
                     <a href="{% url "ui-interview" s.id %}?tableft=segments">
-                      {{ s.title }}
+                      {{ s.description|segmentoneline }}
                       ({{ s.id }})
                       - {{ s.extent }}
                     </a>
@@ -194,7 +194,9 @@
                   <i class="fa fa-step-backward"></i> Previous segment
                 </a>
                 {% else %}
+                <a class="btn btn-primary btn-xs disabled">
                   <i class="fa fa-step-backward"></i> Previous segment
+                </a>
                 {% endif %}
 
                 {% if segment.next %}
@@ -202,7 +204,9 @@
                   Next segment <i class="fa fa-step-forward" style="padding-left:10px;"></i>
                 </a>
                 {% else %}
-                Next segment <i class="fa fa-step-forward" style="padding-left:10px;"></i>
+                <a class="btn btn-primary btn-xs disabled">
+                  Next segment <i class="fa fa-step-forward" style="padding-left:10px;"></i>
+                </a>
                 {% endif %}
               </p>
 
@@ -273,7 +277,7 @@
               <!-- entity.rights -->
               <h3 class="page-header">RIGHTS</h3>
               <p>
-                {{ segment.rights }}
+                {% rightsbadge segment.rights %}
               </p>
 
             </div>
@@ -293,7 +297,7 @@
               {% include "ui/partnerlogolink.html" %}
 
               <!-- entity.entity_id -->
-              <h3 class="page-header">OBJECT ID</h3>
+              <h3 class="page-header">INTERVIEW ID</h3>
               <p>
                 {{ entity.id }}
                 {% if entity.alternate_id != None and "denshouid" not in entity.alternate_id %}
@@ -301,15 +305,28 @@
                 {% endif %}
               </p>
 
-              <!-- entity.collection -->
-              <h3 class="page-header">PARENT COLLECTION</h3>
+              <!-- entity.narrator -->
+              <h3 class="page-header">NARRATOR</h3>
               <p>
-                <a href="{{ parent.absolute_url }}">{{ parent.title }}</a>
+                {% for item in entity.creators %}
+                  {% if item.role == 'narrator' %}
+                    <a href="{% url "ui-browse-narrator" item.id %}">{{ item.namepart }}</a><br />
+                  {% endif %}
+                {% endfor %}
               </p>
 
-              <!-- entity.description -->
-              <h3 class="page-header">DESCRIPTION</h3>
-              {{ entity.description|safe|linebreaks }}
+              <!-- entity.title  -->
+              <h3 class="page-header">INTERVIEW TITLE</h3>
+              <p>
+                {{ entity.title }}
+              </p>
+
+             <!-- segment.extent; segment.index, num_segments -->
+              <p>
+              {{ entity.extent }}
+              &mdash;
+              {{ segments.objects|length }} segments
+              </p>
 
               <!-- core meta -->
               <div class="row">
@@ -329,22 +346,18 @@
                 </div>
               </div>
 
-              <div class="row">
-                <div class="col-md-5 col-sm-5">
-                  <!-- entity.genre -->
-                  <h3 class="page-header">OBJECT GENRE</h3>
-                  <p>
-                    {{ entity.genre }}
-                  </p>
-                </div>
-                <div class="col-md-7 col-sm-7">
-                  <!-- entity.format -->
-                  <h3 class="page-header">OBJECT FORMAT</h3>
-                  <p>
-                    {{ entity.format }}
-                  </p>
-                </div>
-              </div>
+             <!-- entity.description -->
+             <h3 class="page-header">DESCRIPTION</h3>
+             {{ entity.description|safe|linebreaks }}
+
+             <h3 class="page-header">PRODUCTION</h3>
+             <p>
+             {% for item in entity.creators %}
+               {% if item.role == 'interviewer' or item.role == 'videographer' %}
+                 {{ item.namepart }}, {{item.role}}{% if not forloop.last %}; {% endif %}
+               {% endif %}
+             {% endfor %}
+             </p>
 
               <div class="row">
                 <div class="col-md-5 col-sm-5">
@@ -367,30 +380,11 @@
                 </div>
               </div>
 
-              <div class="row">
-                <div class="col-md-5 col-sm-5">
-                  <!-- entity.creators -->
-                  <h3 class="page-header">CREATORS</h3>
-                  <ul class="list-unstyled">
-                    {% for item in entity.creators %}
-                    <li>
-                      {% if item.role == "narrator" %}
-                      <a href="{% url "ui-browse-narrator" item.id %}">{{ item.namepart }} ({{ item.role }})</a>
-                      {% else %}
-                      {{ item.namepart }} ({{ item.role }})
-                      {% endif %}
-                    </li>
-                    {% endfor %}
-                  </ul>
-                </div>
-                <div class="col-md-7 col-sm-7">
-                  <!-- entity.persons -->
-                  <h3 class="page-header">PERSONS/ORGANIZATIONS</h3>
-                  <p>
-                    {{ entity.persons }}
-                  </p>
-                </div>
-              </div>
+              <!-- entity.persons -->
+              <h3 class="page-header">PERSONS/ORGANIZATIONS</h3>
+                <p>
+                  {{ entity.persons }}
+                </p>
 
               <!-- /core meta -->
               <h3 class="page-header">CONTRIBUTOR</h3>
@@ -407,7 +401,7 @@
               <!-- entity.rights -->
               <h3 class="page-header">RIGHTS</h3>
               <p>
-                {{ entity.rights }}
+                {% rightsbadge entity.rights %}
               </p>
 
             </div><!-- .desc .productDescription -->

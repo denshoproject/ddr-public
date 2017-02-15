@@ -18,6 +18,18 @@ def ddrvalue( fields, field ):
     except:
         return ''
 
+@register.filter(name='segmentoneline')
+def segmentoneline( description):
+    """returns one line description for segment list; trims at first paragraph tag
+    """
+    if '<p>' in description:
+        oneline = description[0:description.find('<p>')]
+    elif '<P>' in description:
+        oneline = description[0:description.find('<P>')]
+    else:
+        oneline = description
+    return oneline
+
 def homeslideitem( target_url, img_src ):
     """Slide item for homepage gallery
     
@@ -84,6 +96,13 @@ def rightspanel( code ):
     c = template.Context({'code':code})
     return t.render(c)
 
+def rightsbadge( code ):
+    """Item rights badge
+    """
+    t = template.loader.get_template('ui/license-{}.html'.format(code))
+    c = template.Context({'code':code})
+    return t.render(c)
+
 register.simple_tag(homeslideitem)
 register.simple_tag(breadcrumbs)
 register.simple_tag(document)
@@ -92,3 +111,4 @@ register.simple_tag(listitem)
 register.simple_tag(addthis)
 register.simple_tag(cite)
 register.simple_tag(rightspanel)
+register.simple_tag(rightsbadge)

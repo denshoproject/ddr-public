@@ -76,7 +76,7 @@
                 <p>{{ object.prefercite }}</p>
                 <h3 class="page-header">RIGHTS</h3>
                 <p>
-                    {{ object.fields|ddrvalue:"rights" }}
+                    {% rightsbadge object.rights %}
                 </p>
             </div><!-- end desc -->
         </div><!-- end right meta col -->
