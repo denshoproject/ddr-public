@@ -80,14 +80,14 @@ def interview(request, oid):
     segment['identifier'] = si
     if not segment:
         raise Http404
-    ei = si.parent()
-    entity = api.ApiEntity.api_get(ei.id, request)
-    entity['identifier'] = si
-    parent = api.ApiCollection.api_get(entity['identifier'].parent_id(), request)
-    organization = api.ApiOrganization.api_get(entity['identifier'].organization().id, request)
+    ii = si.parent()
+    interview = api.ApiEntity.api_get(ii.id, request)
+    interview['identifier'] = ii
+    collection = api.ApiCollection.api_get(interview['identifier'].parent_id(), request)
+    organization = api.ApiOrganization.api_get(interview['identifier'].organization().id, request)
     
     # TODO only id, title, extent
-    segments = api.ApiEntity.api_children(ei.id, request, limit=1000)
+    segments = api.ApiEntity.api_children(ii.id, request, limit=1000)
     # get next,prev segments
     segment['index'] = 0
     num_segments = len(segments['objects'])
@@ -113,11 +113,11 @@ def interview(request, oid):
             'segments': segments,
             'transcripts': transcripts,
             'downloads': download_meta,
-            'entity': entity,
-            'parent': parent,
+            'interview': interview,
+            'collection': collection,
             'organization': organization,
             'tableft': request.GET.get('tableft', 'downloads'),
-            'api_url': reverse('ui-api-object', args=[entity['id']]),
+            'api_url': reverse('ui-api-object', args=[interview['id']]),
         },
         context_instance=RequestContext(request, processors=[])
     )
