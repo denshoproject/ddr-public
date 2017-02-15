@@ -108,12 +108,12 @@
                   <td>
                     {% if s.id == segment.id %}
                     <i class="fa fa-angle-double-right"></i>
-                    {{ s.title }}
+                    {{ s.description|truncatechars_html:150 }}
                     ({{ s.id }})
                     - {{ s.extent }}
                     {% else %}
                     <a href="{% url "ui-interview" s.id %}?tableft=segments">
-                      {{ s.title }}
+                      {{ s.description|truncatechars_html:150 }}
                       ({{ s.id }})
                       - {{ s.extent }}
                     </a>
