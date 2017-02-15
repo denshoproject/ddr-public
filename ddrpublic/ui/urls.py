@@ -42,7 +42,7 @@ urlpatterns = patterns(
     
     url(r'^search/(?P<field>[\w]+):(?P<term>[\w ,]+)/$', 'ui.views.search.term_query', name='ui-search-term-query'),
     url(r'^search/results/$', 'ui.views.search.results', name='ui-search-results'),
-    url(r'^search/$', 'ui.views.search.index', name='ui-search-index'),
+    url(r'^search/$', 'ui.views.search.results', name='ui-search-index'),
     
     url(r'^cite/(?P<model>[\w]+)/(?P<object_id>[\w\d-]+)/$', 'ui.views.cite', name='ui-cite'),
     

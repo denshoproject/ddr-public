@@ -46,17 +46,6 @@ def force_list(terms):
 
 # views ----------------------------------------------------------------
 
-def index( request ):
-    return render_to_response(
-        'ui/search/index.html',
-        {
-            'hide_header_search': True,
-            'search_form': SearchForm,
-            'api_url': reverse('ui-api-search'),
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
-
 def results(request):
     """Results of a search query or a DDR ID query.
     """
