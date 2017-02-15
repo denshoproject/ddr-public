@@ -194,7 +194,9 @@
                   <i class="fa fa-step-backward"></i> Previous segment
                 </a>
                 {% else %}
+                <a class="btn btn-primary btn-xs disabled">
                   <i class="fa fa-step-backward"></i> Previous segment
+                </a>
                 {% endif %}
 
                 {% if segment.next %}
@@ -202,7 +204,9 @@
                   Next segment <i class="fa fa-step-forward" style="padding-left:10px;"></i>
                 </a>
                 {% else %}
-                Next segment <i class="fa fa-step-forward" style="padding-left:10px;"></i>
+                <a class="btn btn-primary btn-xs disabled">
+                  Next segment <i class="fa fa-step-forward" style="padding-left:10px;"></i>
+                </a>
                 {% endif %}
               </p>
 
