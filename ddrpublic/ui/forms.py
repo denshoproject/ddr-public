@@ -80,6 +80,9 @@ LANGUAGE_CHOICES = [
     ('chi', 'Chinese'),
 ]
 
+FORM_FIELDNAMES = {
+    'format': 'format_',
+}
 
 class SearchForm(forms.Form):
     
@@ -117,21 +120,18 @@ class SearchForm(forms.Form):
     )
     
     def choice_aggs(self, aggregations):
-        logger.debug('choice_aggs')
-        for fieldname,data in aggregations.iteritems():
-            logger.debug('choice_aggs: %s' % fieldname)
-            if self.fields.get(fieldname):
-                aggs = {
-                    item['key']: item['doc_count']
-                    for item in data['buckets']
-                }
-                results_choices = [
-                    (
-                        choice[0],
-                        '%s (%s)' % (choice[1], aggs[choice[0]])
-                    )
-                    for choice in self.fields[fieldname].choices
-                    if choice[0] in aggs.keys()
-                ]
-                self.fields[fieldname].choices = results_choices
-                logger.debug('choice_aggs: %s ok' % fieldname)
+        """Apply document counts from ES aggregations to form fields choices
+        """
+        aggs = api.aggs_dict(aggregations)
+        for fieldname,choice_data in aggs.iteritems():
+            # 'format' is reserved word
+            form_fieldname = FORM_FIELDNAMES.get(fieldname, fieldname)
+            if self.fields.get(form_fieldname):
+                results_choices = []
+                for keyword,label in self.fields[form_fieldname].choices:
+                    if isinstance(keyword, int):
+                        keyword = str(keyword)
+                    if keyword in aggs[fieldname].keys():
+                        label_w_count = '%s (%s)' % (label, aggs[fieldname][keyword])
+                        results_choices.append( (keyword,label_w_count) )
+                self.fields[form_fieldname].choices = results_choices

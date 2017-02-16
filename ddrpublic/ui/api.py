@@ -57,6 +57,28 @@ def add_host_list(request, data):
         new.append(val)
     return new
 
+def aggs_dict(aggregations):
+    """Simplify aggregations data in search results
+    
+    input
+    {
+    u'format': {u'buckets': [{u'doc_count': 2, u'key': u'ds'}], u'doc_count_error_upper_bound': 0, u'sum_other_doc_count': 0},
+    u'rights': {u'buckets': [{u'doc_count': 3, u'key': u'cc'}], u'doc_count_error_upper_bound': 0, u'sum_other_doc_count': 0},
+    }
+    output
+    {
+    u'format': {u'ds': 2},
+    u'rights': {u'cc': 3},
+    }
+    """
+    return {
+        fieldname: {
+            bucket['key']: bucket['doc_count']
+            for bucket in data['buckets']
+        }
+        for fieldname,data in aggregations.iteritems()
+    }
+
 def term_urls(request, data, facet_id, fieldname):
     """Convert facet term IDs to links to term API nodes.
     """

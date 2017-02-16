@@ -70,8 +70,8 @@ def results(request):
         'aggs': {
             'format': {'terms': {'field': 'format'}},
             'genre': {'terms': {'field': 'genre'}},
-            'topics': {'terms': {'field': 'topics'}},
-            'facility': {'terms': {'field': 'facility'}},
+            'topics': {'terms': {'field': 'topics.id'}},
+            'facility': {'terms': {'field': 'facility.id'}},
             'rights': {'terms': {'field': 'rights'}},
         },
     }
