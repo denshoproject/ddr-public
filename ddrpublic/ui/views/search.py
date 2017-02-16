@@ -84,8 +84,8 @@ def results(request):
     
     add_must(form, 'format_', query)
     add_must(form, 'genre', query)
-    add_must(form, 'topic', query)
-    add_must(form, 'facility', query)
+    add_must(form, 'topics.id', query)
+    add_must(form, 'facility.id', query)
     add_must(form, 'rights', query)
     
     # remove match _all from must, keeping fulltext arg
