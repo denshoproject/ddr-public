@@ -30,14 +30,17 @@ def index( request ):
 def narrators(request):
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
-
-    results = api.ApiNarrator.api_list(
-        request,
-        limit=pagesize,
-        offset=pagesize*thispage
+    paginator = Paginator(
+        api.pad_results(
+            api.ApiNarrator.api_list(
+                request,
+                limit=pagesize,
+                offset=pagesize*thispage
+            ),
+            pagesize, thispage
+        ),
+        pagesize
     )
-    objects = api.pad_results(results, pagesize, thispage)
-    paginator = Paginator(objects, pagesize)
     page = paginator.page(thispage)
     return render_to_response(
         'ui/browse/narrators.html',
@@ -61,53 +64,27 @@ def narrator(request, oid):
     )
 
 def facet(request, facet_id):
+    terms = api.ApiFacet.api_children(
+        facet_id, request,
+        sort=[('title','asc')],
+        limit=10000, raw=True
+    )
+    for term in terms:
+        term['links'] = {}
+        term['links']['html'] = reverse(
+            'ui-browse-term', args=[facet_id, term['id']]
+        )
     
     if facet_id == 'topics':
         template_name = 'ui/browse/facet-topics.html'
+        terms = api.ApiFacet.make_tree(terms)
+        api.ApiTerm.term_aggregations('topics.id', 'topics', terms, request)
         
-        key = 'topics:terms:tree'
-        terms = cache.get(key)
-        if not terms:
-            
-            terms = api.ApiFacet.make_tree(
-                api.ApiFacet.api_children(
-                    facet_id, request,
-                    sort=[('sort','asc')],
-                    limit=10000, raw=True
-                )
-            )
-            for term in terms:
-                term['links'] = {}
-                term['links']['html'] = reverse(
-                    'ui-browse-term', args=[facet_id, term['id']]
-                )
-            api.ApiTerm.term_aggregations('topics.id', 'topics', terms, request)
-
-            cache.set(key, terms, settings.ELASTICSEARCH_QUERY_TIMEOUT)
-
     elif facet_id == 'facility':
-        
         template_name = 'ui/browse/facet-facility.html'
-        
-        key = 'facility:terms:tree'
-        terms = cache.get(key)
-        if not terms:
-            
-            terms = api.ApiFacet.api_children(
-                facet_id, request,
-                sort=[('title','asc')],
-                limit=10000, raw=True
-            )
-            # for some reason ES does not sort
-            terms = sorted(terms, key=lambda term: term['title'])
-            for term in terms:
-                term['links'] = {}
-                term['links']['html'] = reverse(
-                    'ui-browse-term', args=[facet_id, term['id']]
-                )
-            api.ApiTerm.term_aggregations('facility.id', 'facility', terms, request)
-            
-            cache.set(key, terms, settings.ELASTICSEARCH_QUERY_TIMEOUT)
+        # for some reason ES does not sort
+        terms = sorted(terms, key=lambda term: term['title'])
+        api.ApiTerm.term_aggregations('facility.id', 'facility', terms, request)
     
     return render_to_response(
         template_name,
@@ -120,23 +97,26 @@ def facet(request, facet_id):
 
 def term( request, facet_id, term_id ):
     oid = '-'.join([facet_id, term_id])
-    term = api.ApiTerm.api_get(oid, request)
     thispage = int(request.GET.get('page', 1))
-    pagesize = settings.RESULTS_PER_PAGE
-    results = api.ApiTerm.objects(
-        facet_id, term_id,
-        limit=pagesize,
-        offset=thispage,
-        request=request,
+    paginator = Paginator(
+        api.pad_results(
+            api.ApiTerm.objects(
+                facet_id, term_id,
+                limit=settings.RESULTS_PER_PAGE,
+                offset=thispage,
+                request=request,
+            ),
+            settings.RESULTS_PER_PAGE,
+            thispage
+        ),
+        settings.RESULTS_PER_PAGE
     )
-    objects = api.pad_results(results, pagesize, thispage)
-    paginator = Paginator(objects, settings.RESULTS_PER_PAGE)
-    page = paginator.page(request.GET.get('page', 1))
+    page = paginator.page(thispage)
     return render_to_response(
         'ui/browse/term.html',
         {
             'facet': api.ApiFacet.api_get(facet_id, request),
-            'term': term,
+            'term': api.ApiTerm.api_get(oid, request),
             'paginator': paginator,
             'page': page,
         },
