@@ -180,7 +180,7 @@ SEARCH_RETURN_FIELDS = [
 
 ]
 
-def api_search(text='', must=[], should=[], mustnot=[], models=[], fields=[], sort_fields=[], limit=DEFAULT_LIMIT, offset=0, request=None):
+def api_search(text='', must=[], should=[], mustnot=[], models=[], fields=[], sort_fields=[], limit=DEFAULT_LIMIT, offset=0, aggs={}, request=None):
     """Return object children list in Django REST Framework format.
     
     Returns a paged list with count/prev/next metadata
@@ -201,9 +201,9 @@ def api_search(text='', must=[], should=[], mustnot=[], models=[], fields=[], so
         text=text,
         must=must,
         should=should,
-        mustnot=mustnot
+        mustnot=mustnot,
+        aggs=aggs,
     )
-    
     return format_list_objects(
         paginate_results(
             docstore.Docstore().search(
@@ -285,6 +285,7 @@ def paginate_results(results, offset, limit, request=None):
         data['next'] = '?limit=%s&offset=%s' % (limit, n)
     
     data['hits'] = [hit for hit in results['hits']['hits']]
+    data['aggregations'] = results.get('aggregations', {})
     return data
 
 def local_thumb_url(url, request):
