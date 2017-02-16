@@ -52,7 +52,7 @@ for value in PARTNER_DOMAINS.values():
         if domain not in ALLOWED_HOSTS:
             ALLOWED_HOSTS.append(domain)
 
-CACHE_TIMEOUT = config.get('public', 'cache_timeout')
+CACHE_TIMEOUT = int(config.get('public', 'cache_timeout'))
 
 # Elasticsearch
 DOCSTORE_HOSTS = [{
