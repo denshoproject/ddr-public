@@ -1199,7 +1199,12 @@ class ApiTerm(object):
                 'segment',
             ],
             'aggs': {
-                fieldname: {'terms': {'field': field}},
+                fieldname: {
+                    'terms': {
+                        'field': field,
+                        'size': len(terms), # doc counts for all terms
+                    }
+                },
             }
         }
         results = api_search(
