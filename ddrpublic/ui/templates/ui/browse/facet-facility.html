@@ -22,7 +22,8 @@
 {% for term in terms %}
   <tr>
     <td>
-      <a href="{{ term.links.html }}">{{ term.title|safe }}</a>
+      <a href="{{ term.links.html }}">{{ term.title }}</a>
+      {% if term.doc_count %}<span class="text-muted">({{ term.doc_count }})</span>{% endif %}
     </td>
     <td>
       {{ term.type }}
