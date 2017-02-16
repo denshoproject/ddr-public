@@ -88,60 +88,62 @@
     <header id="topNav">
         <div class="container">
 
-                <!-- Mobile Menu Button -->
-                <button class="btn" data-toggle="collapse" data-target=".nav-main-collapse">
-                    <i class="fa fa-bars"></i>
-                </button>
+        <!-- Mobile Menu Button -->
+        <button class="btn btn-mobile" data-toggle="collapse" data-target=".nav-main-collapse">
+            <i class="fa fa-bars"></i>
+        </button>
 
-                <!-- Logo text or image -->
-                <a class="logo" href="/">
-                    <img src="/assets/images/denshoLogo-black-notext-150x104.png" height="40" alt="Densho" /> <span id="denshoTitle">Densho Digital Repository</span>
-                </a>
-
-                <!-- Top Nav -->
-                <div class="navbar-collapse nav-main-collapse collapse pull-right" style="padding-right: 0px;">
-                    <nav class="nav-main mega-menu">
-                        <ul class="nav nav-pills nav-main scroll-menu" id="topMain">
-                            <li class="active">
-                                <a href="/">
-                                    Home
-                                </a>
-                            </li>
-                            <li class="dropdown">
-                                <a class="dropdown-toggle" href="{% url "ui-browse-index" %}">
-                                    Browse <i class="fa fa-angle-down"></i>
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li><a href="{% url "ui-collections-list" %}">By Collection</a></li>
-                                    <li><a href="{% url "ui-browse-facet" "topics" %}">By Topic</a></li>
-                                    <li><a href="{% url "ui-browse-facet" "facility" %}">By Facility</a></li>
-                                    <li><a href="{% url "ui-browse-narrators" %}">By Narrator</a></li>
-                                </ul>
-                            </li>
-                            <li>
-                                <a href="{% url "names-index" %}">
-                                    Names
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{% url "ui-about" %}">
-                                    About
-                                </a>
-                            </li>
-                            <li>
-                                <a href="http://www.densho.org/" target="_blank">
-                                    densho.org
-                                </a>
-                            </li>
+        <!-- Logo text or image -->
+        <a class="logo" href="/">
+            <img src="assets/images/denshoLogo-black-notext-150x104.png" height="40" alt="Densho" /> <span id="denshoTitle" style="font-size:30px" class="visible-md-inline visible-sm-inline hidden-xs-inline">Densho Digital Repository</span><span id="denshoTitle-mobile" style="font-size:18px" class="visible-xs-inline hidden-md-inline">Densho Digital Repository</span>
+        </a>
+        <!-- Top Nav -->
+        <div class="navbar-collapse nav-main-collapse collapse pull-right">
+            <nav class="nav-main mega-menu">
+                <ul class="nav nav-pills nav-main scroll-menu" id="topMain">
+                    <li>
+                        <a href="/">
+                            Home
+                        </a>
+                    </li>
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" href="{% url "ui-browse-index" %}">
+                            Browse <i class="fa fa-angle-down"></i>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url "ui-collections-list" %}">By Collection</a></li>
+                            <li><a href="{% url "ui-browse-facet" "topics" %}">By Topic</a></li>
+                            <li><a href="{% url "ui-browse-facet" "facility" %}">By Facility</a></li>
+                            <li><a href="{% url "ui-browse-narrators" %}">By Narrator</a></li>
                         </ul>
-                    </nav>
-                </div>
-                <!-- /Top Nav -->
-            </div>
-        </header>
-
-        <span id="header_shadow" style="pointer-events: none;"></span>
-        <!-- /TOP NAV -->
+                     </li>
+                    <li>
+                        <a href="{% url "names-index" %}">
+                            Names
+                        </a>
+                    </li>
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" href="#">
+                            About <i class="fa fa-angle-down"></i>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url "ui-about" %}">Overview</a></li>
+                            <li><a href="{% url "ui-using" %}">Using Materials in the DDR</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="//www.densho.org">
+                            densho.org
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        <!-- /Top Nav -->
+        </div>
+    </header>
+    <span id="header_shadow" style="pointer-events:none;"></span>
+    <!-- /TOP NAV -->
 
         <!-- WRAPPER -->
         <div id="wrapper">
