@@ -68,11 +68,11 @@ def results(request):
         'offset': thispage - 1,
         'limit': pagesize,
         'aggs': {
-            'format': {'terms': {'field': 'format'}},
-            'genre': {'terms': {'field': 'genre'}},
-            'topics': {'terms': {'field': 'topics.id'}},
-            'facility': {'terms': {'field': 'facility.id'}},
-            'rights': {'terms': {'field': 'rights'}},
+            'format':   {'terms': {'size': 50, 'field': 'format'}},
+            'genre':    {'terms': {'size': 50, 'field': 'genre'}},
+            'topics':   {'terms': {'size': 50, 'field': 'topics.id'}},
+            'facility': {'terms': {'size': 50, 'field': 'facility.id'}},
+            'rights':   {'terms': {'size': 50, 'field': 'rights'}},
         },
     }
 
