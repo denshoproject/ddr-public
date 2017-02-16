@@ -1185,6 +1185,41 @@ class ApiTerm(object):
         )
     
     @staticmethod
+    def term_aggregations(field, fieldname, terms, request):
+        """Add number of documents for each facet term
+        
+        @param field: str Field name in ES (e.g. 'topics.id')
+        @param fieldname: str Fieldname in ddrpublic (e.g. 'topics')
+        @param terms list
+        """
+        # aggregations
+        query = {
+            'models': [
+                'entity',
+                'segment',
+            ],
+            'aggs': {
+                fieldname: {'terms': {'field': field}},
+            }
+        }
+        results = api_search(
+            models=query['models'],
+            aggs=query['aggs'],
+            request=request,
+        )
+        aggs = aggs_dict(results.get('aggregations'))[fieldname]
+        # assign num docs per term
+        TEMPLATE = '{title} <span class="text-muted">({count})</span>'
+        for term in terms:
+            num = aggs.get(str(term['id']), 0) # aggs keys are str(int)s
+            term['doc_count'] = num            # could be used for sorting terms!
+            if num:
+                term['title'] = TEMPLATE.format(
+                    title=term['title'],
+                    count=num
+                )
+    
+    @staticmethod
     def objects(facet_id, term_id, limit=DEFAULT_LIMIT, offset=0, request=None):
         field = '%s.id' % facet_id
         return api_search(

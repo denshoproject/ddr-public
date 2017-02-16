@@ -64,9 +64,11 @@ def facet(request, facet_id):
     
     if facet_id == 'topics':
         template_name = 'ui/browse/facet-topics.html'
-        key = '%s:terms:tree' % facet_id
+        
+        key = 'topics:terms:tree'
         terms = cache.get(key)
         if not terms:
+            
             terms = api.ApiFacet.make_tree(
                 api.ApiFacet.api_children(
                     facet_id, request,
@@ -76,25 +78,37 @@ def facet(request, facet_id):
             )
             for term in terms:
                 term['links'] = {}
-                term['links']['html'] = reverse('ui-browse-term', args=[facet_id, term['id']])
+                term['links']['html'] = reverse(
+                    'ui-browse-term', args=[facet_id, term['id']]
+                )
+            api.ApiTerm.term_aggregations('topics.id', 'topics', terms, request)
+
             cache.set(key, terms, settings.ELASTICSEARCH_QUERY_TIMEOUT)
 
     elif facet_id == 'facility':
         
         template_name = 'ui/browse/facet-facility.html'
-        terms = api.ApiFacet.api_children(
-            facet_id, request,
-            sort=[('title','asc')],
-            limit=10000, raw=True
-        )
-        # for some reason ES does not sort
-        terms = sorted(terms, key=lambda term: term['title']) 
-        for term in terms:
-            term['links'] = {}
-            term['links']['html'] = reverse(
-                'ui-browse-term', args=[facet_id, term['id']]
+        
+        key = 'facility:terms:tree'
+        terms = cache.get(key)
+        if not terms:
+            
+            terms = api.ApiFacet.api_children(
+                facet_id, request,
+                sort=[('title','asc')],
+                limit=10000, raw=True
             )
-                
+            # for some reason ES does not sort
+            terms = sorted(terms, key=lambda term: term['title'])
+            for term in terms:
+                term['links'] = {}
+                term['links']['html'] = reverse(
+                    'ui-browse-term', args=[facet_id, term['id']]
+                )
+            api.ApiTerm.term_aggregations('facility.id', 'facility', terms, request)
+            
+            cache.set(key, terms, settings.ELASTICSEARCH_QUERY_TIMEOUT)
+    
     return render_to_response(
         template_name,
         {

@@ -22,7 +22,7 @@
 {% for term in terms %}
   <tr>
     <td>
-      <a href="{{ term.links.html }}">{{ term.title }}</a>
+      <a href="{{ term.links.html }}">{{ term.title|safe }}</a>
     </td>
     <td>
       {{ term.type }}
