@@ -115,3 +115,23 @@ class SearchForm(forms.Form):
         choices=RIGHTS_CHOICES,
         required=False,
     )
+    
+    def choice_aggs(self, aggregations):
+        logger.debug('choice_aggs')
+        for fieldname,data in aggregations.iteritems():
+            logger.debug('choice_aggs: %s' % fieldname)
+            if self.fields.get(fieldname):
+                aggs = {
+                    item['key']: item['doc_count']
+                    for item in data['buckets']
+                }
+                results_choices = [
+                    (
+                        choice[0],
+                        '%s (%s)' % (choice[1], aggs[choice[0]])
+                    )
+                    for choice in self.fields[fieldname].choices
+                    if choice[0] in aggs.keys()
+                ]
+                self.fields[fieldname].choices = results_choices
+                logger.debug('choice_aggs: %s ok' % fieldname)

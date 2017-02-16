@@ -50,6 +50,11 @@
   <p>
     {{ query }}
   </p>
+  <ul>
+    {% for item in aggregations.items %}
+    <li>{{ item }}</li>
+    {% endfor %}
+  </ul>
 {% endif %}
 {% if terms %}
   <div class="terms">
