@@ -57,6 +57,28 @@ def add_host_list(request, data):
         new.append(val)
     return new
 
+def aggs_dict(aggregations):
+    """Simplify aggregations data in search results
+    
+    input
+    {
+    u'format': {u'buckets': [{u'doc_count': 2, u'key': u'ds'}], u'doc_count_error_upper_bound': 0, u'sum_other_doc_count': 0},
+    u'rights': {u'buckets': [{u'doc_count': 3, u'key': u'cc'}], u'doc_count_error_upper_bound': 0, u'sum_other_doc_count': 0},
+    }
+    output
+    {
+    u'format': {u'ds': 2},
+    u'rights': {u'cc': 3},
+    }
+    """
+    return {
+        fieldname: {
+            bucket['key']: bucket['doc_count']
+            for bucket in data['buckets']
+        }
+        for fieldname,data in aggregations.iteritems()
+    }
+
 def term_urls(request, data, facet_id, fieldname):
     """Convert facet term IDs to links to term API nodes.
     """
@@ -180,7 +202,7 @@ SEARCH_RETURN_FIELDS = [
 
 ]
 
-def api_search(text='', must=[], should=[], mustnot=[], models=[], fields=[], sort_fields=[], limit=DEFAULT_LIMIT, offset=0, request=None):
+def api_search(text='', must=[], should=[], mustnot=[], models=[], fields=[], sort_fields=[], limit=DEFAULT_LIMIT, offset=0, aggs={}, request=None):
     """Return object children list in Django REST Framework format.
     
     Returns a paged list with count/prev/next metadata
@@ -201,9 +223,9 @@ def api_search(text='', must=[], should=[], mustnot=[], models=[], fields=[], so
         text=text,
         must=must,
         should=should,
-        mustnot=mustnot
+        mustnot=mustnot,
+        aggs=aggs,
     )
-    
     return format_list_objects(
         paginate_results(
             docstore.Docstore().search(
@@ -285,6 +307,7 @@ def paginate_results(results, offset, limit, request=None):
         data['next'] = '?limit=%s&offset=%s' % (limit, n)
     
     data['hits'] = [hit for hit in results['hits']['hits']]
+    data['aggregations'] = results.get('aggregations', {})
     return data
 
 def local_thumb_url(url, request):
@@ -1160,6 +1183,40 @@ class ApiTerm(object):
             request,
             format_facet
         )
+    
+    @staticmethod
+    def term_aggregations(field, fieldname, terms, request):
+        """Add number of documents for each facet term
+        
+        @param field: str Field name in ES (e.g. 'topics.id')
+        @param fieldname: str Fieldname in ddrpublic (e.g. 'topics')
+        @param terms list
+        """
+        # aggregations
+        query = {
+            'models': [
+                'entity',
+                'segment',
+            ],
+            'aggs': {
+                fieldname: {
+                    'terms': {
+                        'field': field,
+                        'size': len(terms), # doc counts for all terms
+                    }
+                },
+            }
+        }
+        results = api_search(
+            models=query['models'],
+            aggs=query['aggs'],
+            request=request,
+        )
+        aggs = aggs_dict(results.get('aggregations'))[fieldname]
+        # assign num docs per term
+        for term in terms:
+            num = aggs.get(str(term['id']), 0) # aggs keys are str(int)s
+            term['doc_count'] = num            # could be used for sorting terms!
     
     @staticmethod
     def objects(facet_id, term_id, limit=DEFAULT_LIMIT, offset=0, request=None):

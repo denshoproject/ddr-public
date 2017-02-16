@@ -67,6 +67,13 @@ def results(request):
         'models': MODELS,
         'offset': thispage - 1,
         'limit': pagesize,
+        'aggs': {
+            'format':   {'terms': {'size': 50, 'field': 'format'}},
+            'genre':    {'terms': {'size': 50, 'field': 'genre'}},
+            'topics':   {'terms': {'size': 50, 'field': 'topics.id'}},
+            'facility': {'terms': {'size': 50, 'field': 'facility.id'}},
+            'rights':   {'terms': {'size': 50, 'field': 'rights'}},
+        },
     }
 
     def add_must(form, fieldname, query):
@@ -77,8 +84,8 @@ def results(request):
     
     add_must(form, 'format_', query)
     add_must(form, 'genre', query)
-    add_must(form, 'topic', query)
-    add_must(form, 'facility', query)
+    add_must(form, 'topics.id', query)
+    add_must(form, 'facility.id', query)
     add_must(form, 'rights', query)
     
     # remove match _all from must, keeping fulltext arg
@@ -92,6 +99,7 @@ def results(request):
     paginator = None
     page = None
     searching = False
+    aggregations = None
     if query['fulltext'] or query['must']:
         results = api.api_search(
             text=query['fulltext'],
@@ -102,8 +110,11 @@ def results(request):
             sort_fields=[],
             limit=query['limit'],
             offset=query['offset'],
+            aggs=query['aggs'],
             request=request,
         )
+        aggregations = results.get('aggregations')
+        form.choice_aggs(aggregations)
         objects = api.pad_results(results, pagesize, thispage)
         paginator = Paginator(objects, pagesize)
         page = paginator.page(thispage)
@@ -117,6 +128,7 @@ def results(request):
             'tab': request.GET.get('tab', 'list'),
             'query': query,
             'query_json': json.dumps(query),
+            'aggregations': aggregations,
             'search_form': form,
             'paginator': paginator,
             'page': page,

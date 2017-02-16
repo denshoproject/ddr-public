@@ -12,13 +12,13 @@
 {% block content %}
 <section class="container" id="portfolio">
   <div class="row">
-	<div class="col-sm-10 col-md-10">
+    <div class="col-sm-10 col-md-10">
 
-      <ol class="breadcrumb">
+<ol class="breadcrumb">
 {% for t in term.breadcrumbs %}
-        <li><a href="{{ t.url }}">{{ t.title }}</a></li>
+  <li><a href="{{ t.url }}">{{ t.title }}</a></li>
 {% endfor %}
-      </ol>
+</ol>
 
 <h1>{{ term.title }}</h1>
 {% if term.description %}
@@ -27,13 +27,10 @@
 </p>
 {% endif %}
 
-
-
-
 {% if term.children %}
 <ul id="term-children" class="list-unstyled">
 {% for t in term.children %}
-<li><a href="{{ t.url }}">{{ t.title }}</a></li>
+  <li><a href="{{ t.url }}">{{ t.title }}</a></li>
 {% endfor %}
 </ul>
 {% endif %}
@@ -50,71 +47,54 @@ Related articles from the
 </p>
 {% endif %}
 
+<!-- --------------------------------------------------------------- -->
 
 {% if page.object_list %}
-  <div id="item-count">
-    {{ paginator.count }} items<br/>
-  </div>
-{% endif %}
+      <div class="row"> <!-- results content -->
+        <div class="col-sm-12 col-md-12">
+          <!--  view selection tabs -->
+          <div class="tabs no-margin-top" style="margin:10px 0;">
 
-{% if page.object_list %}
+            <ul class="nav nav-tabs">
+              <li class="active">
+                <a href="#gallery_tab" data-toggle="tab">
+                  <i class="fa fa-th"></i> Gallery view
+                </a>
+              </li>
+              <li>
+                <a href="#list_tab" data-toggle="tab">
+                  <i class="fa fa-list"></i> List view
+                </a>
+              </li>
+            </ul>
 
+            <div class="tab-content">
+
+              <div id="gallery_tab" class="tab-pane active">
+                <div id="item-count">
+                  {{ paginator.count }} items<br/>
+                </div>
 {% if paginator.num_pages > 1 %}
 {% bootstrap_paginate page range=10 show_first_last="true" %}
 {% endif %}
-
-{% for hit in page.object_list %}
-{% document hit %}
-{% endfor %}
-
-{% if paginator.num_pages > 1 %}
-{% bootstrap_paginate page range=10 show_first_last="true" %}
-{% endif %}
-
-{% endif %}
-
-{% if page.object_list %}
-<div class="row"> <!-- results content -->
-    <div class="col-sm-12 col-md-12">
-        <!--  view selection tabs -->
-        <div class="tabs no-margin-top" style="margin:10px 0;">
-    <ul class="nav nav-tabs">
-        <li class="active">
-            <a href="#gallery_tab" data-toggle="tab">
-                <i class="fa fa-th"></i> Gallery view
-            </a>
-        </li>
-        <li>
-            <a href="#list_tab" data-toggle="tab">
-                <i class="fa fa-list"></i> List view
-            </a>
-        </li>
-    </ul>
-    <div class="tab-content">
-        <div id="gallery_tab" class="tab-pane active">
-            <div id="item-count">
-                {{ paginator.count }} items<br/>
-            </div>
-{% if paginator.num_pages > 1 %}
-{% bootstrap_paginate page range=10 show_first_last="true" %}
-{% endif %}
-            <div class="row">
-                <ul class="sort-destination isotope fullwidth" data-sort-id="isotope-list">
+                <div class="row">
+                  <ul class="sort-destination isotope fullwidth" data-sort-id="isotope-list">
 {% for object in page.object_list %}
 {% galleryitem object %}
 {% endfor %}
-                </ul>
-            </div><!-- /.masonry-container -->
+                  </ul>
+                </div><!-- /.masonry-container -->
 
 {% if paginator.num_pages > 1 %}
 {% bootstrap_paginate page range=10 show_first_last="true" %}
 {% endif %}
 
-        </div> <!-- end gallery_tab -->
-        <div id="list_tab" class="tab-pane">
-              <div id="item-count">
-                {{ paginator.count }} items<br/>
-              </div>
+              </div> <!-- end gallery_tab -->
+
+              <div id="list_tab" class="tab-pane">
+                <div id="item-count">
+                  {{ paginator.count }} items<br/>
+                </div>
 
 {% if paginator.num_pages > 1 %}
 {% bootstrap_paginate page range=10 show_first_last="true" %}
@@ -128,11 +108,20 @@ Related articles from the
 {% bootstrap_paginate page range=10 show_first_last="true" %}
 {% endif %}
 
-        </div> <!-- end list_tab -->
-    </div> <!-- end tabs content -->
-</div> <!-- end tabs -->
-    </div>
-</div> <!-- .row results content -->
-{% endif %}
+              </div> <!-- end list_tab -->
+
+            </div> <!-- end tabs content -->
+          </div> <!-- end tabs -->
+
+        </div>
+      </div> <!-- .row results content -->
+
+{% endif %}{# if page.object_list #}
+
+<!-- --------------------------------------------------------------- -->
+
+    </div><!-- .col-sm-10 col-md-10 -->
+  </div><!-- .row -->
+</section><!-- .container #portfolio -->
 
 {% endblock content %}

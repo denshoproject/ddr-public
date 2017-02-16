@@ -7,6 +7,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
+from django.views.decorators.cache import cache_page
 
 from ui import api
 from ui import domain_org
@@ -17,6 +18,7 @@ from ui.views import filter_if_branded
 
 # views ----------------------------------------------------------------
 
+@cache_page(settings.CACHE_TIMEOUT)
 def list( request ):
     # TODO cache or restrict fields (truncate desc BEFORE caching)
     organizations = []
@@ -48,6 +50,7 @@ def list( request ):
         context_instance=RequestContext(request, processors=[])
     )
 
+@cache_page(settings.CACHE_TIMEOUT)
 def detail(request, oid):
     i = Identifier(id=oid)
     filter_if_branded(request, i)
