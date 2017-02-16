@@ -177,22 +177,7 @@
 
     <div class="row">
         <div class="col-sm-12 col-md-12">
-
-          <h3>
-            <a href="{% url "ui-object-children" object.identifier.id %}">
-              {{ children_paginator.count }} Objects
-            </a>
-          </h3>
-          {% for file in children_page.object_list %}
-          {% document file %}
-          {% endfor %}
-          {% if children_paginator.count > 10 %}
-          <br />
-          <p>
-            <a class="btn btn-primary btn-md" href="{% url "ui-object-children" object.identifier.id %}">See all objects <i class="fa fa-arrow-circle-right"></i></a>
-          </p>
-          {% endif %}
-
+            
           <h3>
             <a href="{% url "ui-object-nodes" object.identifier.id %}">
               {{ nodes_paginator.count }} Files
