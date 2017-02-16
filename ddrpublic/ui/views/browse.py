@@ -2,12 +2,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 from django.conf import settings
-from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
+from django.views.decorators.cache import cache_page
 
 from ui import domain_org
 from ui import faceting
@@ -19,6 +19,7 @@ SHOW_THESE = ['topics', 'facility', 'location', 'format', 'genre',]
 
 # views ----------------------------------------------------------------
 
+@cache_page(settings.CACHE_TIMEOUT)
 def index( request ):
     return render_to_response(
         'ui/browse/index.html',
@@ -27,6 +28,7 @@ def index( request ):
         context_instance=RequestContext(request, processors=[])
     )
 
+@cache_page(settings.CACHE_TIMEOUT)
 def narrators(request):
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
@@ -53,6 +55,7 @@ def narrators(request):
         context_instance=RequestContext(request, processors=[])
     )
 
+@cache_page(settings.CACHE_TIMEOUT)
 def narrator(request, oid):
     return render_to_response(
         'ui/browse/narrator-detail.html',
@@ -63,6 +66,7 @@ def narrator(request, oid):
         context_instance=RequestContext(request, processors=[])
     )
 
+@cache_page(settings.CACHE_TIMEOUT)
 def facet(request, facet_id):
     terms = api.ApiFacet.api_children(
         facet_id, request,
@@ -95,6 +99,7 @@ def facet(request, facet_id):
         context_instance=RequestContext(request, processors=[])
     )
 
+@cache_page(settings.CACHE_TIMEOUT)
 def term( request, facet_id, term_id ):
     oid = '-'.join([facet_id, term_id])
     thispage = int(request.GET.get('page', 1))
