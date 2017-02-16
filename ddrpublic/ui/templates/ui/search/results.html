@@ -46,16 +46,6 @@
 
 <div id="querymeta">
 
-{% if searching %}
-  <p>
-    {{ query }}
-  </p>
-  <ul>
-    {% for item in aggregations.items %}
-    <li>{{ item }}</li>
-    {% endfor %}
-  </ul>
-{% endif %}
 {% if terms %}
   <div class="terms">
     <b>Terms</b>
@@ -63,12 +53,6 @@
     <strong><a href="{% url "ui-browse-facet" terms.field %}">{{ terms.field }}</a>:</strong>
     {{ terms.term }}
 
-  </div>
-{% endif %}
-
-{% if page.object_list %}
-  <div id="item-count">
-    {{ paginator.count }} items<br/>
   </div>
 {% endif %}
 
