@@ -11,7 +11,7 @@
                                     </span>
                                 </a>
 {% load thumbnail %}
-{% thumbnail object.links.img "110x110" as img %}
+{% thumbnail object.links.img "x323" padding=True as img %}
                                 <!-- src: {{ img.url }} -->
                                 <img src="{{ img.url }}" class="img-responsive" width="260" height="260" alt="{{ object.title|safe }} ({{ object.id }})" />
 {% endthumbnail %}
