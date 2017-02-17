@@ -117,13 +117,17 @@ def term( request, facet_id, term_id ):
         ),
         pagesize
     )
+    facet = api.ApiFacet.api_get(facet_id, request)
+    term = api.ApiTerm.api_get(oid, request)
+    template_name = 'ui/browse/term-%s.html' % facet_id
     return render_to_response(
-        'ui/browse/term.html',
+        template_name,
         {
-            'facet': api.ApiFacet.api_get(facet_id, request),
-            'term': api.ApiTerm.api_get(oid, request),
+            'facet': facet,
+            'term': term,
             'paginator': paginator,
             'page': paginator.page(thispage),
+            'api_url': reverse('ui-api-term', args=[facet['id'], term['id']]),
         },
         context_instance=RequestContext(request, processors=[])
     )
