@@ -60,6 +60,7 @@ def results(request):
         'collection',
         'entity',
         'segment',
+        'narrator',
     ]
     query = {
         'fulltext': form.cleaned_data.get('fulltext', ''),
