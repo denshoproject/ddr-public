@@ -96,11 +96,12 @@ def results(request):
             query['must'].remove(item)
     
     # run query
-    paginator = None
-    page = None
     searching = False
     aggregations = None
+    paginator = None
+    page = None
     if query['fulltext'] or query['must']:
+        searching = True
         results = api.api_search(
             text=query['fulltext'],
             must=query['must'],
@@ -115,10 +116,16 @@ def results(request):
         )
         aggregations = results.get('aggregations')
         form.choice_aggs(aggregations)
-        objects = api.pad_results(results, pagesize, thispage)
-        paginator = Paginator(objects, pagesize)
+        
+        paginator = Paginator(
+            api.pad_results(
+                results,
+                pagesize,
+                thispage
+            ),
+            pagesize
+        )
         page = paginator.page(thispage)
-        searching = True
     
     return render_to_response(
         'ui/search/results.html',

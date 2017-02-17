@@ -43,13 +43,26 @@ def detail(request, oid):
     creators = [item for item in getattr(entity, 'creators', [])]
     # children/nodes
     thispage = request.GET.get('page', 1)
+    pagesize = 5
     children_paginator = Paginator(
-        api.ApiEntity.api_children(i.id, request)['objects'],
-        DEFAULT_SIZE
+        api.pad_results(
+            api.ApiEntity.api_children(
+                i.id, request, limit=pagesize, offset=0,
+            ),
+            pagesize,
+            thispage
+        ),
+        pagesize
     )
     nodes_paginator = Paginator(
-        api.ApiEntity.api_nodes(i.id, request)['objects'],
-        DEFAULT_SIZE
+        api.pad_results(
+            api.ApiEntity.api_nodes(
+                i.id, request, limit=pagesize, offset=0,
+            ),
+            pagesize,
+            thispage
+        ),
+        pagesize
     )
     return render_to_response(
         'ui/entities/detail.html',
@@ -132,10 +145,20 @@ def children( request, oid, role=None ):
     if not entity:
         raise Http404
     # children
-    thispage = request.GET.get('page', 1)
-    children_paginator = Paginator(
-        api.ApiEntity.api_children(i.id, request)['objects'],
-        DEFAULT_SIZE
+    thispage = int(request.GET.get('page', 1))
+    pagesize = settings.RESULTS_PER_PAGE
+    paginator = Paginator(
+        api.pad_results(
+            api.ApiEntity.api_children(
+                i.id,
+                request,
+                limit=pagesize,
+                offset=pagesize*(thispage-1),
+            ),
+            pagesize,
+            thispage
+        ),
+        pagesize
     )
     return render_to_response(
         'ui/entities/children.html',
@@ -145,8 +168,8 @@ def children( request, oid, role=None ):
             'cid': i.parts['cid'],
             'eid': i.parts['eid'],
             'object': entity,
-            'paginator': children_paginator,
-            'page': children_paginator.page(thispage),
+            'paginator': paginator,
+            'page': paginator.page(thispage),
             'api_url': reverse('ui-api-object-children', args=[oid]),
         },
         context_instance=RequestContext(request, processors=[])
@@ -162,10 +185,20 @@ def nodes( request, oid, role=None ):
     if not entity:
         raise Http404
     # nodes
-    thispage = request.GET.get('page', 1)
-    nodes_paginator = Paginator(
-        api.ApiEntity.api_nodes(i.id, request)['objects'],
-        DEFAULT_SIZE
+    thispage = int(request.GET.get('page', 1))
+    pagesize = settings.RESULTS_PER_PAGE
+    paginator = Paginator(
+        api.pad_results(
+            api.ApiEntity.api_nodes(
+                i.id,
+                request,
+                limit=pagesize,
+                offset=pagesize*(thispage-1),
+            ),
+            pagesize,
+            thispage
+        ),
+        pagesize
     )
     return render_to_response(
         'ui/entities/nodes.html',
@@ -175,8 +208,8 @@ def nodes( request, oid, role=None ):
             'cid': i.parts['cid'],
             'eid': i.parts['eid'],
             'object': entity,
-            'paginator': nodes_paginator,
-            'page': nodes_paginator.page(thispage),
+            'paginator': paginator,
+            'page': paginator.page(thispage),
             'api_url': reverse('ui-api-object-nodes', args=[oid]),
         },
         context_instance=RequestContext(request, processors=[])

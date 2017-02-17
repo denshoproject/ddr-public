@@ -39,16 +39,16 @@ def narrators(request):
                 limit=pagesize,
                 offset=pagesize*thispage
             ),
-            pagesize, thispage
+            pagesize,
+            thispage
         ),
         pagesize
     )
-    page = paginator.page(thispage)
     return render_to_response(
         'ui/browse/narrators.html',
         {
             'paginator': paginator,
-            'page': page,
+            'page': paginator.page(thispage),
             'thispage': thispage,
             'tab': request.GET.get('tab', 'gallery'),
         },
@@ -103,27 +103,27 @@ def facet(request, facet_id):
 def term( request, facet_id, term_id ):
     oid = '-'.join([facet_id, term_id])
     thispage = int(request.GET.get('page', 1))
+    pagesize = settings.RESULTS_PER_PAGE
     paginator = Paginator(
         api.pad_results(
             api.ApiTerm.objects(
                 facet_id, term_id,
-                limit=settings.RESULTS_PER_PAGE,
+                limit=pagesize,
                 offset=thispage,
                 request=request,
             ),
-            settings.RESULTS_PER_PAGE,
+            pagesize,
             thispage
         ),
-        settings.RESULTS_PER_PAGE
+        pagesize
     )
-    page = paginator.page(thispage)
     return render_to_response(
         'ui/browse/term.html',
         {
             'facet': api.ApiFacet.api_get(facet_id, request),
             'term': api.ApiTerm.api_get(oid, request),
             'paginator': paginator,
-            'page': page,
+            'page': paginator.page(thispage),
         },
         context_instance=RequestContext(request, processors=[])
     )

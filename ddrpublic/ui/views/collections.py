@@ -60,11 +60,20 @@ def detail(request, oid):
         raise Http404
     organization = api.ApiOrganization.api_get(i.parent_id(stubs=1), request)
     thispage = 1
+    pagesize = 10
     paginator = Paginator(
-        api.ApiCollection.api_children(i.id, request)['objects'],
-        settings.RESULTS_PER_PAGE
+        api.pad_results(
+            api.ApiCollection.api_children(
+                i.id,
+                request,
+                limit=pagesize,
+                offset=0,
+            ),
+            pagesize,
+            thispage
+        ),
+        pagesize
     )
-    page = paginator.page(thispage)
     return render_to_response(
         'ui/collections/detail.html',
         {
@@ -74,7 +83,7 @@ def detail(request, oid):
             'object': collection,
             'organization': organization,
             'paginator': paginator,
-            'page': page,
+            'page': paginator.page(thispage),
             'api_url': reverse('ui-api-object', args=[oid]),
         },
         context_instance=RequestContext(request, processors=[])
@@ -89,12 +98,21 @@ def children(request, oid):
     collection['identifier'] = i
     if not collection:
         raise Http404
-    thispage = request.GET.get('page', 1)
+    thispage = int(request.GET.get('page', 1))
+    pagesize = settings.RESULTS_PER_PAGE
     paginator = Paginator(
-        api.ApiCollection.api_children(i.id, request)['objects'],
-        settings.RESULTS_PER_PAGE
+        api.pad_results(
+            api.ApiCollection.api_children(
+                i.id,
+                request,
+                limit=pagesize,
+                offset=pagesize*(thispage-1),
+            ),
+            pagesize,
+            thispage
+        ),
+        pagesize
     )
-    page = paginator.page(thispage)
     return render_to_response(
         'ui/collections/children.html',
         {
@@ -103,7 +121,7 @@ def children(request, oid):
             'cid': i.parts['cid'],
             'object': collection,
             'paginator': paginator,
-            'page': page,
+            'page': paginator.page(thispage),
             'api_url': reverse('ui-api-object-children', args=[oid]),
         },
         context_instance=RequestContext(request, processors=[])
@@ -112,25 +130,4 @@ def children(request, oid):
 def nodes(request, oid):
     """Lists all nodes of the collection.
     """
-    i = Identifier(id=oid)
-    filter_if_branded(request, i)
-    collection = Collection.get(i)
-    if not collection:
-        raise Http404
-    thispage = request.GET.get('page', 1)
-    files = collection.files(thispage, settings.RESULTS_PER_PAGE)
-    paginator = Paginator(files, settings.RESULTS_PER_PAGE)
-    page = paginator.page(thispage)
-    return render_to_response(
-        'ui/collections/nodes.html',
-        {
-            'repo': i.parts['repo'],
-            'org': i.parts['org'],
-            'cid': i.parts['cid'],
-            'object': collection,
-            'paginator': paginator,
-            'page': page,
-            'api_url': reverse('ui-api-object-nodes', args=[oid]),
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
+    raise Exception('no longer implemented')
