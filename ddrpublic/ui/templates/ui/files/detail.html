@@ -32,10 +32,10 @@
 
       <!-- main display -------------------------------------------- -->
 
-      {% if object.external_urls %}
+{% if object.external_urls %}
 
-      {% for link in object.external_urls %}
-      {% if "stream" in link.label %}
+  {% for link in object.external_urls %}
+    {% if "stream" in link.label %}
       <!-- Internet Archive player -->
       <iframe
          src="{{ link.url }}"
@@ -43,31 +43,33 @@
          webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen
          ></iframe>
       <br/>
-      {% endif %}
-      {% if "download" in link.label %}
+    {% endif %}
+  {% endfor %}
+  {% for link in object.external_urls %}
+    {% if "download" in link.label %}
       <!-- download -->
       <a class="btn btn-default btn-xs" href="{{ link.url }}"><i class="fa fa-download"></i> {{ link.label }}</a><br/>
-      {% endif %}
-      {% endfor %}
+    {% endif %}
+  {% endfor %}
 
-      {% else %}{# object.external_urls #}
+{% else %}{# object.external_urls #}
 
-      <!-- local static -->
-      {% thumbnail object.links.img "480x480" as img %}
-      <a href="{{ object.links.img }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
-        <img src="{{ img.url }}" class="img-responsive">
-      </a><br />
-      {% endthumbnail %}
+  <!-- local static -->
+  {% thumbnail object.links.img "480x480" as img %}
+    <a href="{{ object.links.img }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
+      <img src="{{ img.url }}" class="img-responsive">
+    </a><br />
+  {% endthumbnail %}
 
-      <!-- download/external links -->
-      {% if object.access_path %}
-      <a href="{{ DOWNLOAD_URL }}{{ object.access_path }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download large size</a>
-      {% endif %}
-      {% if object.file_path %}
-      <a href="{{ DOWNLOAD_URL }}{{ object.file_path }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download fullsize ({{ object.size|filesizeformat }})</a>
-      {% endif %}
+  <!-- download/external links -->
+  {% if object.links.img %}
+    <a href="{{ object.links.img }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download large size</a>
+  {% endif %}
+  {% if object.links.download %}
+    <a href="{{ object.links.download }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download fullsize ({{ object.size|filesizeformat }})</a>
+  {% endif %}
 
-      {% endif %}{# object.external_urls #}
+{% endif %}{# object.external_urls #}
 
       {% rightspanel object.rights %}
     </div>
