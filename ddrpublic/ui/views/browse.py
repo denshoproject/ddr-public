@@ -121,7 +121,7 @@ def term( request, facet_id, term_id ):
     facet = api.ApiFacet.api_get(facet_id, request)
     term = api.ApiTerm.api_get(oid, request)
     # API urls for elinks
-    for item in term['elinks']:
+    for item in term.get('elinks', []):
         try:
             url = urlparse.urlparse(item['url'])
             item['api_url'] = item['url'].replace(
