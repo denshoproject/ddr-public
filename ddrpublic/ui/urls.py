@@ -52,6 +52,7 @@ urlpatterns = patterns(
     
     url(r'^r/(?P<oid>[\w\d-]+)/$', 'ui.views.entities.nodes', name='ui-file-role'),
     
+    url(r'^(?P<oid>[\w\d-]+)/search/$', 'ui.views.objects.search_within', name='ui-object-search'),
     url(r'^(?P<oid>[\w\d-]+)/objects/$', 'ui.views.objects.children', name='ui-object-children'),
     url(r'^(?P<oid>[\w\d-]+)/files/$', 'ui.views.objects.nodes', name='ui-object-nodes'),
     url(r'^(?P<oid>[\w\d-]+)/', 'ui.views.objects.detail', name='ui-object-detail'),

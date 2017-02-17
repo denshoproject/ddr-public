@@ -45,10 +45,12 @@ def force_list(terms):
 
 
 # views ----------------------------------------------------------------
-
-def results(request):
+    
+def results(request, object_=None):
     """Results of a search query or a DDR ID query.
     """
+    this_url = reverse('ui-search-results')
+    
     form = forms.SearchForm(request.GET)
     form.is_valid()
     
@@ -76,6 +78,13 @@ def results(request):
         },
     }
 
+    if object_ and (object_['model'] == 'collection'):
+        this_url = reverse('ui-object-search', args=[object_['id']])
+        query['models'] = ['entity', 'segment']
+        query['must'].append(
+            {"wildcard": {"id": "%s-*" % object_['id']}}
+        )
+    
     def add_must(form, fieldname, query):
         if form.cleaned_data.get(fieldname):
             query['must'].append(
@@ -132,6 +141,7 @@ def results(request):
         {
             'hide_header_search': True,
             'searching': searching,
+            'object': object_,
             'tab': request.GET.get('tab', 'list'),
             'query': query,
             'query_json': json.dumps(query),
@@ -139,6 +149,7 @@ def results(request):
             'search_form': form,
             'paginator': paginator,
             'page': page,
+            'this_url': this_url,
             'api_url': reverse('ui-api-search'),
         },
         context_instance=RequestContext(request, processors=[])
