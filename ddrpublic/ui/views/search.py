@@ -77,17 +77,22 @@ def results(request):
         },
     }
 
-    def add_must(form, fieldname, query):
-        if form.cleaned_data.get(fieldname):
+    def add_must(form, form_fieldname, es_fieldname, query):
+        """
+        This form_fieldname/es_fieldname mess is because we have a field
+        (e.g. format) whose name is a Python reserved word, and several
+        fields (e.g. topics, facility) where the real value is a subfield.
+        """
+        if form.cleaned_data.get(form_fieldname):
             query['must'].append(
-                {"terms": {fieldname: force_list(form.cleaned_data[fieldname])}}
+                {"terms": {es_fieldname: force_list(form.cleaned_data[form_fieldname])}}
             )
     
-    add_must(form, 'format_', query)
-    add_must(form, 'genre', query)
-    add_must(form, 'topics.id', query)
-    add_must(form, 'facility.id', query)
-    add_must(form, 'rights', query)
+    add_must(form, 'filter_format',   'format',      query)
+    add_must(form, 'filter_genre',    'genre',       query)
+    add_must(form, 'filter_topics',   'topics.id',   query)
+    add_must(form, 'filter_facility', 'facility.id', query)
+    add_must(form, 'filter_rights',   'rights',      query)
     
     # remove match _all from must, keeping fulltext arg
     for item in query['must']:

@@ -80,10 +80,6 @@ LANGUAGE_CHOICES = [
     ('chi', 'Chinese'),
 ]
 
-FORM_FIELDNAMES = {
-    'format': 'format_',
-}
-
 class SearchForm(forms.Form):
     
     fulltext = forms.CharField(
@@ -98,23 +94,23 @@ class SearchForm(forms.Form):
         )
     )
     
-    format_ = forms.MultipleChoiceField(
+    filter_format = forms.MultipleChoiceField(
         choices=FORMAT_CHOICES,
         required=False,
     )
-    genre = forms.MultipleChoiceField(
+    filter_genre = forms.MultipleChoiceField(
         choices=GENRE_CHOICES,
         required=False,
     )
-    topics = forms.MultipleChoiceField(
+    filter_topics = forms.MultipleChoiceField(
         choices=TOPICS_CHOICES,
         required=False,
     )
-    facility = forms.MultipleChoiceField(
+    filter_facility = forms.MultipleChoiceField(
         choices=FACILITY_CHOICES,
         required=False,
     )
-    rights = forms.MultipleChoiceField(
+    filter_rights = forms.MultipleChoiceField(
         choices=RIGHTS_CHOICES,
         required=False,
     )
@@ -130,8 +126,7 @@ class SearchForm(forms.Form):
         """
         aggs = api.aggs_dict(aggregations)
         for fieldname,choice_data in aggs.iteritems():
-            # 'format' is reserved word
-            form_fieldname = FORM_FIELDNAMES.get(fieldname, fieldname)
+            form_fieldname = 'filter_%s' % fieldname
             if self.fields.get(form_fieldname):
                 
                 # add score from aggregations to each choice tuple
