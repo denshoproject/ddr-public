@@ -121,17 +121,38 @@ class SearchForm(forms.Form):
     
     def choice_aggs(self, aggregations):
         """Apply document counts from ES aggregations to form fields choices
+        
+        Choices are sorted in descending order by doc count.
+        Choices with no doc counts are removed.
+        
+        @params aggregations: dict Aggregations section of raw ES results
+        @returns: nothing, modifies form.choices in-place
         """
         aggs = api.aggs_dict(aggregations)
         for fieldname,choice_data in aggs.iteritems():
             # 'format' is reserved word
             form_fieldname = FORM_FIELDNAMES.get(fieldname, fieldname)
             if self.fields.get(form_fieldname):
+                
+                # add score from aggregations to each choice tuple
                 results_choices = []
                 for keyword,label in self.fields[form_fieldname].choices:
+                    # dict keys must be str, aggs keys are ints
                     if isinstance(keyword, int):
                         keyword = str(keyword)
-                    if keyword in aggs[fieldname].keys():
-                        label_w_count = '%s (%s)' % (label, aggs[fieldname][keyword])
-                        results_choices.append( (keyword,label_w_count) )
-                self.fields[form_fieldname].choices = results_choices
+                    # terms with zero doc_count are not in aggs so assign 0
+                    count = aggs[fieldname].get(keyword, 0)
+                    if count:
+                        label = '%s (%s)' % (label, count)
+                    results_choices.append( (keyword, label, count) )
+                
+                # sort doc_count desc
+                self.fields[form_fieldname].choices = [
+                    (keyword,label)
+                    for keyword,label,count in sorted(
+                        results_choices,
+                        key=lambda choice: choice[2],
+                        reverse=True
+                    )
+                    if count
+                ]
