@@ -35,7 +35,7 @@ def topics_flattened():
                 )
             )
         choices = [
-            (term['id'], flatten(term['path']))
+            (term['id'], term['path'])
             for term in terms
         ]
         cached = choices
