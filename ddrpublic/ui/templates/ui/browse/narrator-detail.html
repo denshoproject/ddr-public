@@ -23,6 +23,7 @@
 
 {{ narrator.bio|linebreaks }}
 
+{% if interviews.objects %}
 <h4>Interviews</h4>
 
 {% for object in interviews.objects %}
@@ -49,6 +50,8 @@
   </div><!-- .media-body -->
 </div><!-- .media -->
 {% endfor %}{# interview in interviews #}
+
+{% endif %}{# interviews.objects #}
 
     </div><!-- .column -->
     <div class="col-sm-4 col-md-4">
