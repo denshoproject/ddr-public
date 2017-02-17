@@ -1,5 +1,6 @@
 import logging
 logger = logging.getLogger(__name__)
+import urlparse
 
 from django.conf import settings
 from django.core.paginator import Paginator
@@ -119,6 +120,16 @@ def term( request, facet_id, term_id ):
     )
     facet = api.ApiFacet.api_get(facet_id, request)
     term = api.ApiTerm.api_get(oid, request)
+    # API urls for elinks
+    for item in term['elinks']:
+        try:
+            url = urlparse.urlparse(item['url'])
+            item['api_url'] = item['url'].replace(
+                url.path,
+                '/api/0.1%s' % url.path
+            )
+        except:
+            pass
     template_name = 'ui/browse/term-%s.html' % facet_id
     return render_to_response(
         template_name,
