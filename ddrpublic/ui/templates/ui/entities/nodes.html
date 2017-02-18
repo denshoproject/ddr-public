@@ -25,28 +25,89 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
-<section id="shop" class="container">
+<section id="portfolio" class="container">
+
+<h2>{{ object.title }} <small>{{ object.id }}</small></h2>
+
+  <p>
+     <a class="btn btn-primary btn-sm" href="{% url "ui-object-detail" object.identifier.id %}"><i class="fa fa-arrow-circle-left"></i> Back to object detail</a>       
+  </p>
+
   <div class="row">
     <div class="col-sm-12 col-md-12">
-      <div id="item-count">
-        {{ paginator.count }} objects<br/>
-      </div>
 
 {% if page.object_list %}
+      <div class="row"> <!-- results content -->
+        <div class="col-sm-12 col-md-12">
+          <!--  view selection tabs -->
+          <div class="tabs no-margin-top" style="margin:10px 0;">
+
+            <ul class="nav nav-tabs">
+              <li class="active">
+                <a href="#gallery_tab" data-toggle="tab">
+                  <i class="fa fa-th"></i> Gallery view
+                </a>
+              </li>
+              <li>
+                <a href="#list_tab" data-toggle="tab">
+                  <i class="fa fa-list"></i> List view
+                </a>
+              </li>
+            </ul>
+
+            <div class="tab-content">
+
+              <div id="gallery_tab" class="tab-pane active">
+                <div id="item-count">
+                  {{ paginator.count }} items<br/>
+                </div>
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+                <div class="row">
+                  <ul class="sort-destination isotope fullwidth" data-sort-id="isotope-list">
+{% for object in page.object_list %}
+{% galleryitem object %}
+{% endfor %}
+                  </ul>
+                </div><!-- /.masonry-container -->
 
 {% if paginator.num_pages > 1 %}
 {% bootstrap_paginate page range=10 show_first_last="true" %}
 {% endif %}
 
-{% for file in page.object_list %}
-{% document file %}
+              </div> <!-- end gallery_tab -->
+
+              <div id="list_tab" class="tab-pane">
+                <div id="item-count">
+                  {{ paginator.count }} items<br/>
+                </div>
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+
+{% for object in page.object_list %}
+{% listitem object %}
 {% endfor %}
 
 {% if paginator.num_pages > 1 %}
 {% bootstrap_paginate page range=10 show_first_last="true" %}
 {% endif %}
 
-{% endif %}
+              </div> <!-- end list_tab -->
+
+            </div> <!-- end tabs content -->
+          </div> <!-- end tabs -->
+
+        </div>
+      </div> <!-- .row results content -->
+
+{% endif %}{# if page.object_list #}
+
+  <p>
+     <a class="btn btn-primary btn-sm" href="{% url "ui-object-detail" object.identifier.id %}"><i class="fa fa-arrow-circle-left"></i> Back to object detail</a>
+  </p>
 
     </div><!-- .col-sm-12 col-md-12 -->
   </div><!-- .row -->
