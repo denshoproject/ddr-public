@@ -18,29 +18,44 @@
 
 <form action="{% url "ui-search-results" %}" method="get">
   <div class="row">
-	<div class="col-sm-10 col-md-10">
-
-      {{ search_form.fulltext }}
-
-      <span class="input-group-btn">
-        <button class="btn btn-primary"><i class="fa fa-search"></i></button>
-      </span>
-    </div>
+    <div class="col-sm-10 col-md-10">
+      <div class="input-group">
+        {{ search_form.fulltext }}
+        <span class="input-group-btn">
+          <button class="btn btn-primary"><i class="fa fa-search"></i></button>
+        </span>
+      </div>
+    </div><!-- .col -->
   </div><!-- .row -->
 {% if searching %}
   <div class="row">
 	<div class="col-sm-12 col-md-12">
 
-      {{ search_form.filter_topics }}
+          <div class="panel-group" id="filters_accordion">
+              <div class="panel panel-default">
+                  <div class="panel-heading">
+                      <h4 class="panel-title">
+                          <a data-toggle="collapse" data-parent="#filters_accordion" href="#acordion1">
+                              <i class="fa fa-filter"></i> Filters
+                          </a>
+                      </h4>
+                  </div>
+                  <div id="acordion1" class="collapse">
+                      <div class="panel-body">
+                          {{ search_form.filter_topics }}
+                          <br />
+                          {{ search_form.filter_facility }}
+                          {{ search_form.filter_format }}
+                          {{ search_form.filter_genre }}
+                          {{ search_form.filter_rights }}
+                          <br />
+                          <button class="btn btn-sm btn-primary"><i class="fa fa-filter"></i> Apply filters</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
 
-      <br/>
-
-      {{ search_form.filter_facility }}
-      {{ search_form.filter_format }}
-      {{ search_form.filter_genre }}
-      {{ search_form.filter_rights }}
-
-    </div>
+        </div>
   </div><!-- .row -->
 {% endif %}{# searching #}
 </form>
