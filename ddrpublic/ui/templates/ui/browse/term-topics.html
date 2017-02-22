@@ -36,12 +36,12 @@
 {% endif %}
 
 
-{% if term.encyc_articles %}
+{% if term.encyc_urls %}
 <!-- topic.encycarticles -->
 <p>
 Related articles from the
 <a target="encyc" href="http://encyclopedia.densho.org/">Densho Encyclopedia</a>:<br />
-{% for article in term.encyc_articles %}
+{% for article in term.encyc_urls %}
   <a target="encyc" href="{{ article.url }}">{{ article.title }}</a>{% if not forloop.last %},{% endif %}
 {% endfor %}
 </p>

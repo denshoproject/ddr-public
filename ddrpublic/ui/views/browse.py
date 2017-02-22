@@ -11,6 +11,7 @@ from django.template import RequestContext
 from django.views.decorators.cache import cache_page
 
 from ui import domain_org
+from ui import encyc
 from ui import faceting
 from ui import models
 from ui import api
@@ -130,6 +131,14 @@ def term( request, facet_id, term_id ):
             )
         except:
             pass
+    # add titles to encyclopedia urls on topics
+    # facilities elinks already have titles
+    if term.get('encyc_urls'):
+        # topics
+        term['encyc_urls'] = [
+            encyc.article_url_title(url)
+            for url in term['encyc_urls']
+        ]
     template_name = 'ui/browse/term-%s.html' % facet_id
     return render_to_response(
         template_name,

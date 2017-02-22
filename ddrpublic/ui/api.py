@@ -18,6 +18,7 @@ from DDR import docstore
 from ui.identifier import Identifier, CHILDREN, CHILDREN_ALL
 from ui.urls import API_BASE
 from ui.views import filter_if_branded
+from ui import encyc
 
 DEFAULT_LIMIT = 25
 
