@@ -28,16 +28,20 @@ def detail(request, oid):
     # if this is an interview, redirect to first segment
     if (entity['format'] == 'vh') and (entity['model'] == 'entity'):
         segments = api.ApiEntity.api_children(oid, request, limit=1)
-        if segments['objects'][0]:
-            sid = segments['objects'][0]['id']
-            url = reverse('ui-interview', args=[sid])
-            return HttpResponseRedirect(url)
+        if segments['objects']:
+            # make sure this is actually a segment before redirecting
+            si = Identifier(id=segments['objects'][0]['id'])
+            if si.model == 'segment':
+                return HttpResponseRedirect(reverse('ui-interview', args=[si.id]))
     
     parent = api.ApiCollection.api_get(i.parent_id(), request)
     organization = api.ApiOrganization.api_get(i.organization().id, request)
     # signature
-    signature = api.ApiFile.api_get(entity['signature_id'], request)
-    signature['access_size'] = api.file_size(signature['links']['img'])
+    if entity.get('signature_id'):
+        signature = api.ApiFile.api_get(entity['signature_id'], request)
+        signature['access_size'] = api.file_size(signature['links']['img'])
+    else:
+        signature = None
     # facet terms
     facilities = [item for item in getattr(entity, 'facility', [])]
     creators = [item for item in getattr(entity, 'creators', [])]
@@ -93,6 +97,10 @@ def interview(request, oid):
     segment['identifier'] = si
     if not segment:
         raise Http404
+    # die if not a segment
+    if segment['model'] != 'segment':
+        raise Http404
+    
     ei = si.parent()
     entity = api.ApiEntity.api_get(ei.id, request)
     entity['identifier'] = si

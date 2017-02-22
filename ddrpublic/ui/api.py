@@ -371,15 +371,9 @@ def format_object_detail(document, request, listitem=False):
                     args=[i.parent_id()],
                     request=request
                 )
-        if (document['_source'].get('format','') == 'vh'): 
-            d['links']['html'] = reverse( 
-                'ui.views.entities.interview', args=[oid], request=request
-            )
-        else:
-            d['links']['html'] = reverse(
-                'ui-object-detail', args=[oid], request=request
-            )
-
+        d['links']['html'] = reverse(
+            'ui-object-detail', args=[oid], request=request
+        )
         d['links']['json'] = reverse(
             'ui-api-object', args=[oid], request=request
         )
