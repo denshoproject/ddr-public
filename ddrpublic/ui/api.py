@@ -417,7 +417,8 @@ def format_object_detail(document, request, listitem=False):
             d['description'] = document['_source'].pop('description')
         # everything else
         HIDDEN_FIELDS = [
-            'repo','org','cid','eid','sid','role','sha1'
+            'repo','org','cid','eid','sid','sha1'
+             # don't hide role, used in file list-object
         ]
         for key in document['_source'].iterkeys():
             if key not in HIDDEN_FIELDS:
