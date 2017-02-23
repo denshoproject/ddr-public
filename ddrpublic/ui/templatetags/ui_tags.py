@@ -30,6 +30,17 @@ def segmentoneline( description):
         oneline = description
     return oneline
 
+@register.filter(name='formaticon')
+def formaticon( code ):
+    """returns fa icon for the given entity.format code
+    """
+    icon = 'fa-text-o'
+    if code == 'img':
+        icon = 'fa-file-image-o'
+    elif code == 'vh' or code == 'av':
+        icon = 'fa-film'
+    return icon
+
 def homeslideitem( target_url, img_src ):
     """Slide item for homepage gallery
     
