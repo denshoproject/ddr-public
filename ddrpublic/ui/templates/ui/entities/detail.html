@@ -31,8 +31,8 @@
             <h2>{{ object.title|safe }}</h2>
 
 {% if object.links.img %}
-  {% thumbnail object.links.img "480x480" as img %}
-        <a href="{{ object.links.signature }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
+  {% thumbnail object.links.thumb "480x480" as img %}
+        <a href="{{ object.links.img }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
           <img src="{{ img.url }}" class="img-responsive">
         </a><br />
   {% endthumbnail %}
@@ -44,7 +44,7 @@
                 Download large
                 ({{ signature.access_size|filesizeformat }})
               </a>
-              <a href="{{ signature.links.downloads }}" class="btn btn-default btn-xs">
+              <a href="{{ signature.links.download }}" class="btn btn-default btn-xs">
                 <i class="fa fa-download"></i>
                 Download full-size
                 ({{ signature.size|filesizeformat }})
