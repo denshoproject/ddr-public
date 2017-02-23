@@ -919,10 +919,6 @@ class ApiNarrator(object):
             from_=offset,
             size=limit,
         )
-        # narrator img url
-        for o in results['hits']['hits']:
-            if o['_source'].get('image_url'):
-                o['_source']['image_url'] = '%s/%s' % (settings.NARRATORS_URL, o['_source']['image_url'])
         return format_list_objects(
             paginate_results(
                 results,
