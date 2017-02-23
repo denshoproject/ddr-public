@@ -839,6 +839,9 @@ class ApiFile(object):
     @staticmethod
     def api_get(oid, request):
         i = Identifier(id=oid)
+        # some object have Densho UIDs in signature_id field
+        if not i.model == 'file':
+            return None
         idparts = [x for x in i.parts.itervalues()]
         collection_id = i.collection_id()
         document = docstore.Docstore().get(

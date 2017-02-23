@@ -37,11 +37,11 @@ def detail(request, oid):
     parent = api.ApiCollection.api_get(i.parent_id(), request)
     organization = api.ApiOrganization.api_get(i.organization().id, request)
     # signature
+    signature = None
     if entity.get('signature_id'):
         signature = api.ApiFile.api_get(entity['signature_id'], request)
+    if signature:
         signature['access_size'] = api.file_size(signature['links']['img'])
-    else:
-        signature = None
     # facet terms
     facilities = [item for item in getattr(entity, 'facility', [])]
     creators = [item for item in getattr(entity, 'creators', [])]
