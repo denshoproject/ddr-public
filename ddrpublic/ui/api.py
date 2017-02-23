@@ -150,11 +150,15 @@ def segment_img_url(denshouid):
     
     >>> segment_img("denshovh-mkiyo_2-01")
     'http://ddr.densho.org/media/denshovh/denshovh-mkiyo_2-01.jpg'
-    
+    http://ddrstage.densho.org/media/ddr-densho-1000/denshovh-hgordon-01-a.jpg
+
     @param aid: str denshouid
     @returns: str URL
     """
-    return '%s/%s.jpg' % (settings.SEGMENT_URL, denshouid)
+    return os.path.join(settings.SEGMENT_URL, denshouid)
+
+def narrator_img_url(image_url):
+    return os.path.join(settings.NARRATORS_URL, image_url)
 
 def file_size(url):
     """Get the size of a file from HTTP headers (without downloading)
@@ -429,7 +433,7 @@ def format_narrator(document, request, listitem=False):
         d['links'] = OrderedDict()
         d['links']['html'] = reverse('ui-browse-narrator', args=[oid], request=request)
         d['links']['json'] = reverse('ui-api-narrator', args=[oid], request=request)
-        d['links']['img'] = document['_source'].pop('image_url')
+        d['links']['img'] = narrator_img_url(document['_source'].pop('image_url'))
         d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
         d['links']['documents'] = ''
         # title, description
@@ -884,10 +888,6 @@ class ApiNarrator(object):
         ]
         for field in HIDDEN_FIELDS:
             pop_field(data, field)
-        # narrator img url
-        if data['links'].get('img'):
-            data['links']['img'] = '%s/%s' % (settings.NARRATORS_URL, data['links']['img'])
-            data['links']['thumb'] = local_thumb_url(data['links'].get('img',''), request)
         return data
     
     @staticmethod
