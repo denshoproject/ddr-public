@@ -382,8 +382,10 @@ def format_object_detail(document, request, listitem=False):
         # links-img
         if (document['_source'].get('format','') == 'vh'):
             # interviews/segments
-            d['links']['img'] = segment_img_url(
-                document['_source']['signature_id']
+            d['links']['img'] = img_url(
+                i.collection_id(),
+                access_filename(document['_source']['signature_id']),
+                request
             )
         elif document['_source'].get('signature_id'):
             # other collections/entities
