@@ -145,21 +145,16 @@ def img_url(bucket, filename, request=None):
         return '%s%s/%s' % (settings.MEDIA_URL, bucket, filename)
     return None
 
-def segment_img_url(aid):
-    """Make a VH interview segment image URL given an Entity.alternate_id
+def segment_img_url(denshouid):
+    """Make a VH interview segment image URL given a denshouid
     
-    >>> segment_img("[denshouid: denshovh-mkiyo_2-01]")
+    >>> segment_img("denshovh-mkiyo_2-01")
     'http://ddr.densho.org/media/denshovh/denshovh-mkiyo_2-01.jpg'
     
-    @param aid: str Entity.alternate_id
+    @param aid: str denshouid
     @returns: str URL
     """
-    if aid and isinstance(aid, basestring) and (':' in aid):
-        return '%s/%s.jpg' % (
-            settings.SEGMENT_URL,
-            aid.replace('[','').replace(']','').split(':')[1].strip()
-        )
-    return ''
+    return '%s/%s.jpg' % (settings.SEGMENT_URL, denshouid)
 
 def file_size(url):
     """Get the size of a file from HTTP headers (without downloading)
@@ -385,11 +380,10 @@ def format_object_detail(document, request, listitem=False):
         #        request=request
         #    )
         # links-img
-        if (document['_source'].get('format','') == 'vh') \
-        and document['_source'].get('alternate_id'):
+        if (document['_source'].get('format','') == 'vh'):
             # interviews/segments
             d['links']['img'] = segment_img_url(
-                document['_source']['alternate_id']
+                document['_source']['signature_id']
             )
         elif document['_source'].get('signature_id'):
             # other collections/entities
