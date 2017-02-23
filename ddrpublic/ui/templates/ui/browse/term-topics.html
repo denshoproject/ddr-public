@@ -9,6 +9,17 @@
 <li>{{ term.title }}</li>
 {% endblock breadcrumbs %}
 
+{% block pagecss %}
+<style type="text/css">
+.indent0 { padding-left:0px; }
+.indent1 { padding-left:30px; }
+.indent2 { padding-left:60px; }
+.indent3 { padding-left:90px; }
+.indent4 { padding-left:120px; }
+.indent5 { padding-left:150px; }
+</style>
+{% endblock pagecss %}
+
 {% block content %}
 <section class="container" id="portfolio">
   <div class="row">
@@ -28,17 +39,17 @@
 </p>
 {% endif %}
 
-{% if term.children %}
-<ul id="term-children" class="list-unstyled">
-  {% for t in term.children %}
-  <li>
-    <a href="{{ t.url }}">{{ t.title }}</a>
-    {% if t.doc_count %}({{ t.doc_count }}){% endif %}
-  </li>
-{% endfor %}
-</ul>
-{% endif %}
-
+<p>
+  {% for t in term.tree %}
+  {% if t.id == term.id %}
+  <span class="indent{{ t.depth }}">{{ t.title }}</span>
+  {% else %}
+  <a class="indent{{ t.depth }}" href="{{ t.links.html }}">{{ t.title }}</a>
+  {% endif %}
+  {% if t.doc_count %}<span class="text-muted">({{ t.doc_count }})</span>{% endif %}
+  <br/>
+  {% endfor %}
+</p>
 
 {% if term.encyc_urls %}
 <!-- topic.encycarticles -->

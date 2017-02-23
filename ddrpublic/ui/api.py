@@ -6,6 +6,7 @@ import urlparse
 import requests
 
 from django.conf import settings
+from django.core.cache import cache
 from django.http import HttpResponseRedirect
 
 from rest_framework import status
@@ -490,17 +491,17 @@ def format_term(document, request, listitem=False):
         if document['_source'].get('ancestors'):
             d['links']['ancestors'] = [
                 reverse('ui-api-term', args=[fid,oid], request=request)
-                for oid in document['_source'].pop('ancestors')
+                for oid in document['_source']['ancestors']
             ]
         if document['_source'].get('siblings'):
             d['links']['siblings'] = [
                 reverse('ui-api-term', args=[fid,oid], request=request)
-                for oid in document['_source'].get('siblings')
+                for oid in document['_source']['siblings']
             ]
         if document['_source'].get('children'):
             d['links']['children'] = [
                 reverse('ui-api-term', args=[fid,oid], request=request)
-                for oid in document['_source'].get('children')
+                for oid in document['_source']['children']
             ]
         d['links']['objects'] = reverse('ui-api-term-objects', args=[fid,tid], request=request)
         # title, description
@@ -513,8 +514,8 @@ def format_term(document, request, listitem=False):
             'modified',
             'parent_id',
             #'ancestors',
-            'siblings',
-            'children',
+            #'siblings',
+            #'children',
         ]
         for key in document['_source'].iterkeys():
             if key not in HIDDEN_FIELDS:
@@ -1123,6 +1124,67 @@ class ApiFacet(object):
         terms = []
         flatten(terms_tree)
         return terms
+
+    @staticmethod
+    def topics_terms(request):
+        """List of topics facet terms, with tree indents and doc counts
+        
+        TODO ES does query and aggregations caching.
+        Does caching this mean the query/aggs won't be cached in ES?
+        
+        @param request: Django request object.
+        @returns: list of ApiTerms
+        """
+        facet_id = 'topics'
+        key = 'facet:%s:terms' % facet_id
+        cached = cache.get(key)
+        if not cached:
+            terms = ApiFacet.api_children(
+                facet_id, request,
+                sort=[('title','asc')],
+                limit=10000, raw=True
+            )
+            for term in terms:
+                term['links'] = {}
+                term['links']['html'] = reverse(
+                    'ui-browse-term', args=[facet_id, term['id']]
+                )
+            terms = ApiFacet.make_tree(terms)
+            ApiTerm.term_aggregations('topics.id', 'topics', terms, request)
+            cached = terms
+            cache.set(key, cached, settings.CACHE_TIMEOUT)
+        return cached
+
+    @staticmethod
+    def facility_terms(request):
+        """List of facility facet terms, sorted and with doc counts
+        
+        TODO ES does query and aggregations caching.
+        Does caching this mean the query/aggs won't be cached in ES?
+        
+        @param request: Django request object.
+        @returns: list of ApiTerms
+        """
+        facet_id = 'facility'
+        key = 'facet:%s:terms' % facet_id
+        cached = cache.get(key)
+        if not cached:
+            terms = ApiFacet.api_children(
+                facet_id, request,
+                sort=[('title','asc')],
+                limit=10000, raw=True
+            )
+            for term in terms:
+                term['links'] = {}
+                term['links']['html'] = reverse(
+                    'ui-browse-term', args=[facet_id, term['id']]
+                )
+            terms = sorted(terms, key=lambda term: term['title'])
+            ApiTerm.term_aggregations('facility.id', 'facility', terms, request)
+            cached = terms
+            cache.set(key, cached, settings.CACHE_TIMEOUT)
+        return cached
+
 
 class ApiTerm(object):
     

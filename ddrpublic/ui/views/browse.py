@@ -71,27 +71,14 @@ def narrator(request, oid):
 
 @cache_page(settings.CACHE_TIMEOUT)
 def facet(request, facet_id):
-    terms = api.ApiFacet.api_children(
-        facet_id, request,
-        sort=[('title','asc')],
-        limit=10000, raw=True
-    )
-    for term in terms:
-        term['links'] = {}
-        term['links']['html'] = reverse(
-            'ui-browse-term', args=[facet_id, term['id']]
-        )
-    
     if facet_id == 'topics':
         template_name = 'ui/browse/facet-topics.html'
-        terms = api.ApiFacet.make_tree(terms)
-        api.ApiTerm.term_aggregations('topics.id', 'topics', terms, request)
+        terms = api.ApiFacet.topics_terms(request)
         
     elif facet_id == 'facility':
         template_name = 'ui/browse/facet-facility.html'
         # for some reason ES does not sort
-        terms = sorted(terms, key=lambda term: term['title'])
-        api.ApiTerm.term_aggregations('facility.id', 'facility', terms, request)
+        terms = api.ApiFacet.facility_terms(request)
     
     return render_to_response(
         template_name,
@@ -105,41 +92,18 @@ def facet(request, facet_id):
 @cache_page(settings.CACHE_TIMEOUT)
 def term( request, facet_id, term_id ):
     oid = '-'.join([facet_id, term_id])
-    thispage = int(request.GET.get('page', 1))
-    pagesize = settings.RESULTS_PER_PAGE
-    paginator = Paginator(
-        api.pad_results(
-            api.ApiTerm.objects(
-                facet_id, term_id,
-                limit=pagesize,
-                offset=thispage,
-                request=request,
-            ),
-            pagesize,
-            thispage
-        ),
-        pagesize
-    )
+    template_name = 'ui/browse/term-%s.html' % facet_id
     facet = api.ApiFacet.api_get(facet_id, request)
     term = api.ApiTerm.api_get(oid, request)
-
-    # Get term title,url,doc_count for each of terms' children
-    # TODO this should not be in a view function
-    # TODO cache for performance
-    # TODO this whole thing seems a bit back-asswards
-    children_tids = [
-        int(os.path.normpath(urlparse.urlparse(url).path).split('/')[-1])
-        for url in term['links'].get('children', [])
-    ]
-    terms = api.ApiFacet.api_children(
-        facet_id, request,
-        limit=10000, raw=True
-    )
-    # add doc_counts
-    api.ApiTerm.term_aggregations('topics.id', 'topics', terms, request)
-    term['children'] = [t for t in terms if int(t['id']) in children_tids]
-    for t in term['children']:
-        t['url'] = reverse('ui-browse-term', args=['topics',t['id']])
+    
+    # terms tree (topics)
+    if facet_id == 'topics':
+        term['tree'] = [
+            t for t in api.ApiFacet.topics_terms(request)
+            if (t['id'] in term['ancestors']) # ancestors of current term
+            or (t['id'] == term['id'])        # current term
+            or (term['id'] in t['ancestors']) # children of current term
+        ]
     
     # API urls for elinks
     for item in term.get('elinks', []):
@@ -159,7 +123,23 @@ def term( request, facet_id, term_id ):
             encyc.article_url_title(url)
             for url in term['encyc_urls']
         ]
-    template_name = 'ui/browse/term-%s.html' % facet_id
+    
+    # term objects
+    thispage = int(request.GET.get('page', 1))
+    pagesize = settings.RESULTS_PER_PAGE
+    paginator = Paginator(
+        api.pad_results(
+            api.ApiTerm.objects(
+                facet_id, term_id,
+                limit=pagesize,
+                offset=thispage,
+                request=request,
+            ),
+            pagesize,
+            thispage
+        ),
+        pagesize
+    )
     return render_to_response(
         template_name,
         {
