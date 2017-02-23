@@ -54,6 +54,7 @@ def narrators(request):
             'page': paginator.page(thispage),
             'thispage': thispage,
             'tab': request.GET.get('tab', 'gallery'),
+            'api_url': reverse('ui-api-narrators'),
         },
         context_instance=RequestContext(request, processors=[])
     )
