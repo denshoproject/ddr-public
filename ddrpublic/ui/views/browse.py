@@ -1,5 +1,6 @@
 import logging
 logger = logging.getLogger(__name__)
+import os
 import urlparse
 
 from django.conf import settings
@@ -121,6 +122,25 @@ def term( request, facet_id, term_id ):
     )
     facet = api.ApiFacet.api_get(facet_id, request)
     term = api.ApiTerm.api_get(oid, request)
+
+    # Get term title,url,doc_count for each of terms' children
+    # TODO this should not be in a view function
+    # TODO cache for performance
+    # TODO this whole thing seems a bit back-asswards
+    children_tids = [
+        int(os.path.normpath(urlparse.urlparse(url).path).split('/')[-1])
+        for url in term['links'].get('children', [])
+    ]
+    terms = api.ApiFacet.api_children(
+        facet_id, request,
+        limit=10000, raw=True
+    )
+    # add doc_counts
+    api.ApiTerm.term_aggregations('topics.id', 'topics', terms, request)
+    term['children'] = [t for t in terms if int(t['id']) in children_tids]
+    for t in term['children']:
+        t['url'] = reverse('ui-browse-term', args=['topics',t['id']])
+    
     # API urls for elinks
     for item in term.get('elinks', []):
         try:

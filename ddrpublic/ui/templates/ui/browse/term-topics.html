@@ -29,8 +29,11 @@
 
 {% if term.children %}
 <ul id="term-children" class="list-unstyled">
-{% for t in term.children %}
-  <li><a href="{{ t.url }}">{{ t.title }}</a></li>
+  {% for t in term.children %}
+  <li>
+    <a href="{{ t.url }}">{{ t.title }}</a>
+    {% if t.doc_count %}({{ t.doc_count }}){% endif %}
+  </li>
 {% endfor %}
 </ul>
 {% endif %}
