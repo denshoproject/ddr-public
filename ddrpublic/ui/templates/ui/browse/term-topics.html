@@ -15,6 +15,7 @@
     <div class="col-sm-10 col-md-10">
 
 <ol class="breadcrumb">
+  <li><a href="{% url "ui-browse-facet" "topics" %}">Topics</a></li>
 {% for t in term.breadcrumbs %}
   <li><a href="{{ t.url }}">{{ t.title }}</a></li>
 {% endfor %}
