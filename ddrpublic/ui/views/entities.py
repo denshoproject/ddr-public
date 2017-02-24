@@ -109,6 +109,7 @@ def interview(request, oid):
     entity = api.ApiEntity.api_get(ei.id, request)
     entity['identifier'] = si
     parent = api.ApiCollection.api_get(entity['identifier'].parent_id(), request)
+    collection = api.ApiCollection.api_get(si.collection_id(), request)
     organization = api.ApiOrganization.api_get(entity['identifier'].organization().id, request)
     
     # TODO only id, title, extent
@@ -140,6 +141,7 @@ def interview(request, oid):
             'downloads': download_meta,
             'entity': entity,
             'parent': parent,
+            'collection': collection,
             'organization': organization,
             'tableft': request.GET.get('tableft', 'downloads'),
             'api_url': reverse('ui-api-object', args=[entity['id']]),
