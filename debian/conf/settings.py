@@ -85,6 +85,9 @@ MEDIA_URL_LOCAL_MARKER = 'internal'
 # Simplification of MEDIA_URL_LOCAL, just the domain to replace
 MEDIA_DOM_LOCAL = config.get('public', 'media_dom_local')
 
+# used when document signature image field not populated
+MISSING_IMG = config.get('public', 'missing_img')
+
 # URL for full-size images and other downloadables.
 # Clicking this should bring up the browser's "Save As..." dialog.
 # Requires extra config on the web server!
