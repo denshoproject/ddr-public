@@ -26,8 +26,8 @@
 
 {% if term.type or term.location_geopoint %}
 <p>
-  {% if term.type %}{{ term.type }}{% endif %}
-  {% if term.type and term.location_geopoint %}<br/>{% endif %}
+  {% if term.type %}<b>{{ term.type }}</b>{% endif %}
+  {% if term.type and term.location_geopoint %}</p><p>{% endif %}
   {% if term.location_geopoint.geopoint %}
   {{ term.location_geopoint.label }}
   <a href="https://www.google.com/maps/@{{ term.location_geopoint.geopoint.lat }},{{ term.location_geopoint.geopoint.lng }},14z">Google Maps</a>
@@ -39,12 +39,16 @@
 <!-- topic.encycarticles -->
 <p>
 Related articles from the
-<a target="encyc" href="http://encyclopedia.densho.org/">Densho Encyclopedia</a>:<br />
+<a target="encyc" href="//encyclopedia.densho.org/">Densho Encyclopedia <i class="fa fa-external-link"></i></a>:<br />
+<span class="indent1">
 {% for article in term.elinks %}
 <a target="encyc" href="{{ article.url }}">{{ article.label }}</a>{% if not forloop.last %},{% endif %}
 {% endfor %}
+</span>
 </p>
 {% endif %}
+
+</div><!-- row -->
 
 <!-- --------------------------------------------------------------- -->
 
