@@ -4,8 +4,8 @@
 {% block parent %}
 <!--
 <div id="parent">
-<a href="{{ object.parent.absolute_url }}"><span class="label label-default">{{ object.parent.id }}</span></a>
-<a href="{{ object.parent.absolute_url }}">{{ object.parent.title }}</a>
+<a href="{{ object.parent.links.html }}"><span class="label label-default">{{ object.parent.id }}</span></a>
+<a href="{{ object.parent.links.html }}">{{ object.parent.title }}</a>
 </div>
 -->
 {% endblock %}

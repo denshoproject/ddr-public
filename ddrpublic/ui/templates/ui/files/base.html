@@ -1,5 +1,5 @@
 {% extends "ui/entities/base.html" %}
 
 {% block breadcrumbs %}{{ block.super }}
-<li><a href="{{ file.absolute_url }}">{{ file.id }}</a></li>
+<li><a href="{{ file.links.html }}">{{ file.id }}</a></li>
 {% endblock breadcrumbs %}

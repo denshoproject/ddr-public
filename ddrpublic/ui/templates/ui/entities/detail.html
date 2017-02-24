@@ -3,8 +3,8 @@
 
 {% block parent %}
 <div id="parent">
-<a href="{{ parent.absolute_url }}"><span class="label label-default">{{ parent.id }}</span></a>
-<a href="{{ parent.absolute_url }}">{{ parent.title|safe }}</a>
+<a href="{{ parent.links.html }}"><span class="label label-default">{{ parent.id }}</span></a>
+<a href="{{ parent.links.html }}">{{ parent.title|safe }}</a>
 </div>
 {% endblock %}
 
