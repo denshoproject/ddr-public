@@ -65,7 +65,7 @@
   {% if object.links.img %}
     <a href="{{ object.links.img }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download large size</a>
   {% endif %}
-  {% if object.links.download %}
+  {% if not object.role == 'master' and object.links.download %}
     <a href="{{ object.links.download }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download fullsize ({{ object.size|filesizeformat }})</a>
   {% endif %}
 
@@ -74,9 +74,9 @@
       {% rightspanel object.rights %}
     </div>
 
-	<div class="col-sm-5 col-md-5">
-	  {% addthis %}
-	  <div class="desc productDescription">
+    <div class="col-sm-5 col-md-5">
+        {% addthis %}
+      <div class="desc productDescription">
 
         <h3 class="page-header">PARTNER</h3>
         {% include "ui/partnerlogolink.html" %}
@@ -101,14 +101,14 @@
           {{ object.tech_notes|safe }}
         </p>
 
-		<h3 class="page-header">RIGHTS</h3>
-		<p>
+        <h3 class="page-header">RIGHTS</h3>
+        <p>
           {% rightsbadge object.rights %}
         </p>
-	  </div>
+    </div>
 
-	</div>
-	</div><!-- //row-->
+    </div>
+    </div><!-- //row-->
 
     <div class="row">
         <div class="col-sm-12 col-md-12 text-muted text-right">
