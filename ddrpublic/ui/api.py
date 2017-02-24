@@ -197,6 +197,7 @@ SEARCH_RETURN_FIELDS = [
     'facet',
     'format',
     'image_url',
+    'mimetype',
     'role',
     'signature_id',
     'sort',
