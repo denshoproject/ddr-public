@@ -26,15 +26,17 @@ def detail(request, oid):
         raise Http404
     
     # if this is an interview, redirect to first segment
-    if (entity['format'] == 'vh') and (i.model == 'entity'):
-        segments = api.ApiEntity.api_children(oid, request, limit=1)
-        if segments['objects']:
-            # make sure this is actually a segment before redirecting
-            si = Identifier(id=segments['objects'][0]['id'])
-            if si.model == 'segment':
-                return HttpResponseRedirect(reverse('ui-interview', args=[si.id]))
-    elif i.model == 'segment':
-        return HttpResponseRedirect(reverse('ui-interview', args=[i.id]))
+    format_ = entity['format']['id']  # format is wrapped in ApiEntity.api_get
+    if format_ == 'vh':
+        if i.model == 'segment':
+            return HttpResponseRedirect(reverse('ui-interview', args=[i.id]))
+        elif (i.model == 'entity'):
+            segments = api.ApiEntity.api_children(oid, request, limit=1)
+            if segments['objects']:
+                # make sure this is actually a segment before redirecting
+                si = Identifier(id=segments['objects'][0]['id'])
+                if si.model == 'segment':
+                    return HttpResponseRedirect(reverse('ui-interview', args=[si.id]))
     
     parent = api.ApiCollection.api_get(i.parent_id(), request)
     organization = api.ApiOrganization.api_get(i.organization().id, request)
