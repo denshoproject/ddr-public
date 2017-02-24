@@ -1,12 +1,12 @@
 {% load ui_tags %} 
-                   <!-- {{ object.id }} -->
+                   <!-- {{ object.id }} format: {{ object.format }} -->
                     <li class="isotope-item"><!-- slide item -->
                         <div class="item-box">
                             <figure>
                                 <a class="item-hover" href="{{ object.links.html }}" data-plugin-options='{"type":"image"}'>
                                     <span class="overlay color2"></span>
                                     <span class="inner">
-                                        <span class="block fa {{ object.format.id|formaticon }} fsize26"></span>
+                                        <span class="block fa {{ object.format|formaticon }} fsize26"></span>
                                         <span class="gallery-list-text">{{ object.title|safe }}</span>
                                         <span class="gallery-list-id">({{ object.id }})</span>
                                     </span>
