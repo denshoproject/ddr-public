@@ -55,12 +55,16 @@
 <!-- topic.encycarticles -->
 <p>
 Related articles from the
-<a target="encyc" href="http://encyclopedia.densho.org/">Densho Encyclopedia</a>:<br />
+<a target="encyc" href="//encyclopedia.densho.org/">Densho Encyclopedia <i class="fa fa-external-link"></i></a>:<br />
+<span class="indent1">
 {% for article in term.encyc_urls %}
   <a target="encyc" href="{{ article.url }}">{{ article.title }}</a>{% if not forloop.last %},{% endif %}
 {% endfor %}
+</span>
 </p>
 {% endif %}
+
+</div><!-- row -->
 
 <!-- --------------------------------------------------------------- -->
 
