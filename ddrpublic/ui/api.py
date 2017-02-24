@@ -462,6 +462,7 @@ def format_facet(document, request, listitem=False):
         d['links'] = OrderedDict()
         d['links']['html'] = reverse('ui-browse-facet', args=[oid], request=request)
         d['links']['json'] = reverse('ui-api-facet', args=[oid], request=request)
+        d['links']['children'] = reverse('ui-api-facetterms', args=[oid], request=request)
         # everything else
         HIDDEN_FIELDS = [
         ]
@@ -1421,6 +1422,17 @@ def facets(request, oid, format=None):
     offset = int(request.GET.get('offset', 0))
     data = ApiEntity.api_nodes(oid, request, offset=offset)
     return _list(request, data)
+
+@api_view(['GET'])
+def facetterms(request, facet_id, format=None):
+    offset = int(request.GET.get('offset', 0))
+    data = ApiFacet.api_children(
+        facet_id, request,
+        sort=[('id','asc')],
+        offset=offset,
+        raw=True
+    )
+    return Response(data)
 
 
 @api_view(['GET'])

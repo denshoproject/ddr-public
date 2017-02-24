@@ -87,6 +87,7 @@ def facet(request, facet_id):
         {
             'facet': api.ApiFacet.api_get(facet_id, request),
             'terms': terms,
+            'api_url': reverse('ui-api-facetterms', args=[facet_id]),
         },
         context_instance=RequestContext(request, processors=[])
     )

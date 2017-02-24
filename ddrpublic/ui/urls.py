@@ -15,6 +15,7 @@ urlpatterns = patterns(
     url(r'^api/0.2/narrator/(?P<oid>[\w]+)/$', 'ui.api.narrator', name='ui-api-narrator'),
     url(r'^api/0.2/narrator/$', 'ui.api.narrator_index', name='ui-api-narrators'),
     
+    url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/children/$', 'ui.api.facetterms', name='ui-api-facetterms'),
     url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/objects/$', 'ui.api.term_objects', name='ui-api-term-objects'),
     url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/$', 'ui.api.term', name='ui-api-term'),
     url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/$', 'ui.api.facet', name='ui-api-facet'),
