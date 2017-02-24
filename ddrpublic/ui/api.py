@@ -754,7 +754,7 @@ class ApiEntity(object):
         for fieldname in FACET_LABELS.keys():
             if not fieldname in fields:
                 continue
-            field_data = document[fieldname]
+            field_data = document.get(fieldname)
             if isinstance(field_data, basestring):
                 document[fieldname] = _wrap(fieldname,field_data)
             elif isinstance(field_data, list):
