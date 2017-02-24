@@ -385,26 +385,35 @@ def format_object_detail(document, request, listitem=False):
         #        args=[i.id],
         #        request=request
         #    )
+        # gfroh: every object must have signature_id
+        # gjost: except objects that don't have them
+        HAS_SIGNATURE_IDS = [
+            'collection', 'entity', 'segment', 'file'
+        ]
+        if (document['_type'] in HAS_SIGNATURE_IDS) \
+        and (not document['_source'].get('signature_id')):
+            document['_source']['signature_id'] = settings.MISSING_IMG
         # links-img
-        if (document['_source'].get('format','') == 'vh'):
-            # interviews/segments
+        if i.model == 'file':
+            # files
             d['links']['img'] = img_url(
                 i.collection_id(),
-                access_filename(document['_source']['signature_id']),
+                os.path.basename(document['_source'].pop('access_rel')),
                 request
             )
+        elif (document['_source'].get('format','') == 'vh'):
+            # interviews/segments
+            if document['_source'].get('signature_id'):
+                d['links']['img'] = img_url(
+                    i.collection_id(),
+                    access_filename(document['_source']['signature_id']),
+                    request
+                )
         elif document['_source'].get('signature_id'):
             # other collections/entities
             d['links']['img'] = img_url(
                 i.collection_id(),
                 access_filename(document['_source']['signature_id']),
-                request
-            )
-        elif i.model == 'file':
-            # files
-            d['links']['img'] = img_url(
-                i.collection_id(),
-                os.path.basename(document['_source'].pop('access_rel')),
                 request
             )
         d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
