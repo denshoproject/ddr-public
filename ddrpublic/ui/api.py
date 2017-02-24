@@ -1019,6 +1019,7 @@ class ApiNarrator(object):
                 'id',
                 'title',
                 'alternate_id',
+                'signature_id',
                 'creation',
                 'location',
                 'extent',
@@ -1026,10 +1027,7 @@ class ApiNarrator(object):
             #limit=limit, offset=offset,
             request=request
         )
-        # TODO do this in formatter?
-        for d in results['objects']:
-            d['links']['img'] = segment_img_url(d['alternate_id'])
-            d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
+        # add segment count per interview
         for d in results['objects']:
             r = ApiEntity.api_children(
                 d['id'], request=request,

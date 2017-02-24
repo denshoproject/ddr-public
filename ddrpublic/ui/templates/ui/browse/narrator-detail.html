@@ -1,4 +1,5 @@
 {% extends "ui/browse/base.html" %}
+{% load thumbnail %}
 
 {% block title %}{{ narrator.display_name }}{% endblock %}
 {% block pagetitle %}{{ narrator.display_name }}{% endblock %}
@@ -29,9 +30,11 @@
 {% for object in interviews.objects %}
 <div class="media ">
   <!-- {{ object.id }} -->
+  {% thumbnail object.links.thumb "110x110" as img %}
   <a class="pull-left" href="{{ object.links.html }}">
-    <img class="media-object" src="{{ object.links.img }}" width="180" class="img-responsive">
+    <img class="media-object" src="{{ img.url }}" class="img-responsive">
   </a>
+{% endthumbnail %}
   <div class="media-body">
     <b class="media-heading">
       <a href="{{ object.links.html }}">{{ object.title }} &mdash; {{ object.id }}</a>
