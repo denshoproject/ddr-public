@@ -565,6 +565,45 @@ def pad_results(results, pagesize, thispage):
         results['objects'].append({'n':n})
     return results['objects']
 
+def facet_labels():
+    """Labels for the various facet types.
+    
+    @returns: dict of facet ids mapped to labels
+    """
+    key = 'facet:ids-labels'
+    cached = cache.get(key)
+    if not cached:
+        
+        SORT_FIELDS = ['id', 'title',]
+        LIST_FIELDS = ['id', 'facet', 'title',]
+        q = docstore.search_query(
+            should=[
+                {"terms": {"facet": [
+                    'format', 'genre', 'language', 'rights',
+                ]}}
+            ]
+        )
+        results = docstore.Docstore().search(
+            doctypes=['facetterm'],
+            query=q,
+            sort=SORT_FIELDS,
+            fields=LIST_FIELDS,
+            from_=0,
+            size=10000,
+        )
+        ids_labels = {}
+        for hit in results['hits']['hits']:
+            d = hit['_source']
+            if not ids_labels.get(d['facet']):
+                ids_labels[d['facet']] = {}
+            ids_labels[d['facet']][d['id']] = d['title']
+        
+        cached = ids_labels
+        cache.set(key, cached, settings.CACHE_TIMEOUT)
+    return cached
+
+FACET_LABELS = facet_labels()
+
 
 # classes --------------------------------------------------------------
 
@@ -694,50 +733,26 @@ class ApiEntity(object):
             elif tid:
                 url = reverse('ui-api-term', args=(facet_id, tid), request=request)
         assert False
-
-    @staticmethod
-    def _facet_labels():
-        """Labels for the various Entity facet types.
-        TODO i've been coding for 14 hours pls rewrite this
-        """
-        # TODO cache this
-        SORT_FIELDS = ['id', 'title',]
-        LIST_FIELDS = ['id', 'facet', 'title',]
-        q = docstore.search_query(
-            should=[
-                {"terms": {"facet": [
-                    'format', 'genre', 'language',
-                ]}}
-            ]
-        )
-        results = docstore.Docstore().search(
-            doctypes=['facetterm'],
-            query=q,
-            sort=SORT_FIELDS,
-            fields=LIST_FIELDS,
-            from_=0,
-            size=10000,
-        )
-        facet_labels = {}
-        for hit in results['hits']['hits']:
-            d = hit['_source']
-            if not facet_labels.get(d['facet']):
-                facet_labels[d['facet']] = {}
-            facet_labels[d['facet']][d['id']] = d['title']
-        return facet_labels
     
     @staticmethod
-    def _labelify(document, facet_labels):
+    def _labelify(document, fields=[]):
         """
         TODO i've been coding for 14 hours pls rewrite this
+        
+        @param document: dict/OrderedDict
+        @param facetlabels: dict Output of facet_labels()
+        @returns: dict document
         """
         def _wrap(fname,fdata):
             return {
                 'id': fdata,
                 'query': '?filter_%s=%s' % (fname,fdata),
-                'label': facet_labels[fname][fdata],
+                'label': FACET_LABELS[fname][fdata],
             }
-        for fieldname in facet_labels.keys():
+        
+        for fieldname in FACET_LABELS.keys():
+            if not fieldname in fields:
+                continue
             field_data = document[fieldname]
             if isinstance(field_data, basestring):
                 document[fieldname] = _wrap(fieldname,field_data)
@@ -783,7 +798,7 @@ class ApiEntity(object):
         for field in HIDDEN_FIELDS:
             pop_field(data, field)
 
-        data = ApiEntity._labelify(data, ApiEntity._facet_labels())
+        data = ApiEntity._labelify(data, fields=['format', 'genre', 'language',])
         return data
     
     @staticmethod
