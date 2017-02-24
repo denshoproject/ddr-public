@@ -40,7 +40,7 @@ def narrators(request):
             api.ApiNarrator.api_list(
                 request,
                 limit=pagesize,
-                offset=pagesize*thispage
+                offset=pagesize*(thispage-1),
             ),
             pagesize,
             thispage
@@ -135,7 +135,7 @@ def term( request, facet_id, term_id ):
             api.ApiTerm.objects(
                 facet_id, term_id,
                 limit=pagesize,
-                offset=thispage,
+                offset=pagesize*(thispage-1),
                 request=request,
             ),
             pagesize,
