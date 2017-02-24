@@ -961,6 +961,7 @@ class ApiNarrator(object):
             'birth_location',
             'b_date',
             'd_date',
+            'bio',
         ]
         q = docstore.search_query(
             must=[
