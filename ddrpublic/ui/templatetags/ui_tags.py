@@ -34,7 +34,7 @@ def segmentoneline( description):
 def formaticon( code ):
     """returns fa icon for the given entity.format code
     """
-    icon = 'fa-text-o'
+    icon = 'fa-file-text-o'
     if code == 'img':
         icon = 'fa-file-image-o'
     elif code == 'vh' or code == 'av':
