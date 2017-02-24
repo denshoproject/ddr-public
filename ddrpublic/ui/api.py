@@ -694,7 +694,60 @@ class ApiEntity(object):
             elif tid:
                 url = reverse('ui-api-term', args=(facet_id, tid), request=request)
         assert False
+
+    @staticmethod
+    def _facet_labels():
+        """Labels for the various Entity facet types.
+        TODO i've been coding for 14 hours pls rewrite this
+        """
+        # TODO cache this
+        SORT_FIELDS = ['id', 'title',]
+        LIST_FIELDS = ['id', 'facet', 'title',]
+        q = docstore.search_query(
+            should=[
+                {"terms": {"facet": [
+                    'format', 'genre', 'language',
+                ]}}
+            ]
+        )
+        results = docstore.Docstore().search(
+            doctypes=['facetterm'],
+            query=q,
+            sort=SORT_FIELDS,
+            fields=LIST_FIELDS,
+            from_=0,
+            size=10000,
+        )
+        facet_labels = {}
+        for hit in results['hits']['hits']:
+            d = hit['_source']
+            if not facet_labels.get(d['facet']):
+                facet_labels[d['facet']] = {}
+            facet_labels[d['facet']][d['id']] = d['title']
+        return facet_labels
     
+    @staticmethod
+    def _labelify(document, facet_labels):
+        """
+        TODO i've been coding for 14 hours pls rewrite this
+        """
+        def _wrap(fname,fdata):
+            return {
+                'id': fdata,
+                'query': '?filter_%s=%s' % (fname,fdata),
+                'label': facet_labels[fname][fdata],
+            }
+        for fieldname in facet_labels.keys():
+            field_data = document[fieldname]
+            if isinstance(field_data, basestring):
+                document[fieldname] = _wrap(fieldname,field_data)
+            elif isinstance(field_data, list):
+                document[fieldname] = [
+                    _wrap(fieldname,fd)
+                    for fd in field_data
+                ]
+        return document
+
     @staticmethod
     def api_get(oid, request):
         i = Identifier(id=oid)
@@ -729,8 +782,10 @@ class ApiEntity(object):
         ]
         for field in HIDDEN_FIELDS:
             pop_field(data, field)
-        return data
 
+        data = ApiEntity._labelify(data, ApiEntity._facet_labels())
+        return data
+    
     @staticmethod
     def api_children(oid, request, limit=DEFAULT_LIMIT, offset=0, just_count=False):
         i = Identifier(id=oid)

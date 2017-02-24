@@ -95,7 +95,9 @@
                             <!-- entity.location -->
                             <h3 class="page-header">LOCATION</h3>
                             <p>
-                              {{ object.location }}
+                              <a href="{% url "ui-search-results" %}?fulltext=location:{{ object.location }}">
+                                {{ object.location }}
+                              </a>
                             </p>
                         </div>
                     </div>
@@ -104,14 +106,18 @@
                             <!-- entity.genre -->
                             <h3 class="page-header">OBJECT GENRE</h3>
                             <p>
-                              {{ object.genre }}
+                              <a href="{% url "ui-search-results" %}{{ object.genre.query }}">
+                                {{ object.genre.label }}
+                              </a>
                             </p>
                         </div>
                         <div class="col-md-7 col-sm-7">
                             <!-- entity.format -->
                             <h3 class="page-header">OBJECT FORMAT</h3>
                             <p>
-                              {{ object.format }}
+                              <a href="{% url "ui-search-results" %}{{ object.format.query }}">
+                                {{ object.format.label }}
+                              </a>
                             </p>
                         </div>
                     </div>
@@ -141,7 +147,11 @@
                             <h3 class="page-header">CREATORS</h3>
                             <ul class="list-unstyled">
                               {% for item in object.creators %}
-                              <li>{{ item.namepart }} ({{ item.role }})</li>
+                              <li>
+                                <a href="{% url "ui-search-results" %}?fulltext=creators:{{ item.namepart }}">
+                                  {{ item.namepart }} ({{ item.role }})
+                                </a>
+                              </li>
                               {% endfor %}
                             </ul>
                         </div>
