@@ -1,7 +1,7 @@
 {% load thumbnail %}
 <!-- {{ object.id }} -->
   <div class="media {{ object.model }}">
-{% thumbnail object.links.img "110x110" as img %}
+{% thumbnail object.links.thumb "110x110" as img %}
   <a class="pull-left" href="{{ object.links.html }}">
     <img class="media-object" src="{{ img.url }}" class="img-responsive">
   </a>

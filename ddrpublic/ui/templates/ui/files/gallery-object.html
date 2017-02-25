@@ -16,7 +16,7 @@
     <i class="fa fa-file-text-o fsize60" style="font-size:80px !important; line-height:100px !important;"></i>
   </div>
 {% else %}
-{% thumbnail object.links.img "480x323" crop="0px 0px" as img %}
+{% thumbnail object.links.thumb "480x323" crop="0px 0px" as img %}
                                 <!-- src: {{ img.url }} -->
                                 <img src="{{ img.url }}" class="img-responsive" width="260" height="260" alt="{{ object.title|safe }} ({{ object.id }})" />
 {% endthumbnail %}
