@@ -2,8 +2,9 @@
 <!-- {{ object.id }} -->
 <div class="media {{ object.model }}">
 {% if object.mimetype == "text/html" %}
-    <i class="pull-left fa fa-file-text-o fsize60" style="font-size:60px !important; line-height:60px !important;"></i>
-    <br />
+  <div class="pull-left" style="width:120px; text-align:center;">
+    <i class="fa fa-file-text-o fsize60" style="font-size:80px !important; line-height:80px !important;"></i>
+  </div>
 {% else %}
 {% thumbnail object.links.thumb "110x110" padding=True padding_color="#cdcdcd" as img %}     <a class="pull-left" href="{{ object.links.html }}">
     <img class="media-object" src="{{ img.url }}" class="img-responsive">

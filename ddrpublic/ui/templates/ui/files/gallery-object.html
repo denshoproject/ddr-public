@@ -1,3 +1,4 @@
+{% load thumbnail %}
                     <!-- {{ object.id }} -->
                     <li class="isotope-item"><!-- slide item -->
                         <div class="item-box">
@@ -10,11 +11,16 @@
                                         <span class="fsize11">({{ object.id }})</span>
                                     </span>
                                 </a>
-{% load thumbnail %}
+{% if object.mimetype == "text/html" %}
+  <div class="pull-left" style="width:230px; text-align:center;">
+    <i class="fa fa-file-text-o fsize60" style="font-size:80px !important; line-height:100px !important;"></i>
+  </div>
+{% else %}
 {% thumbnail object.links.img "480x323" crop="0px 0px" as img %}
                                 <!-- src: {{ img.url }} -->
                                 <img src="{{ img.url }}" class="img-responsive" width="260" height="260" alt="{{ object.title|safe }} ({{ object.id }})" />
 {% endthumbnail %}
+{% endif %}{# mimetype #}
                             </figure>
                         </div>
                     </li>
