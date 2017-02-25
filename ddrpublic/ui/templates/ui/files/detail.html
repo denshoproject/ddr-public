@@ -54,12 +54,17 @@
 
 {% else %}{# object.external_urls #}
 
-  <!-- local static -->
-  {% thumbnail object.links.img "480x480" as img %}
+    <!-- local static -->
+{% if object.mimetype == "text/html" %}
+    <i class="fa fa-file-text-o fsize60" style="font-size:100px !important; line-height:130px !important;"></i>
+    <br />
+{% else %}
+  {% thumbnail object.links.thumb "480x480" as img %}
     <a href="{{ object.links.img }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
       <img src="{{ img.url }}" class="img-responsive">
     </a><br />
   {% endthumbnail %}
+{% endif %}{# mimetype #}
 
   <!-- download/external links -->
   {% if object.links.img and not object.mimetype == "text/html" %}
