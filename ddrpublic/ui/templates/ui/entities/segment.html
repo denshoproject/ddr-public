@@ -175,7 +175,14 @@
               <!-- segment.entity_id -->
               <h3 class="page-header">SEGMENT ID</h3>
               <p>
-                {{ segment.id }}
+                {{ segment.id }} 
+                {% if segment.alternate_id != '' %}
+                  {% if "denshouid" in segment.alternate_id %}                                                                                                                                      
+                    <span class="small">(Legacy UID: {{ segment.alternate_id|legacydenshouid }})</span>                                                                                        
+                  {% else %}
+                    <span class="small">({{ segment.alternate_id }})</span>
+                  {% endif %}
+                {% endif %}
               </p>
 
               <!-- segment.description -->
