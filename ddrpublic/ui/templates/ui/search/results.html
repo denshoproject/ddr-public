@@ -42,14 +42,31 @@
                   </div>
                   <div id="acordion1" class="collapse {% if filters %}in{% endif %}">
                       <div class="panel-body">
-                          {{ search_form.filter_topics }}
-                          <br />
-                          {{ search_form.filter_facility }}
-                          {{ search_form.filter_format }}
-                          {{ search_form.filter_genre }}
-                          {{ search_form.filter_rights }}
-                          <br />
-                          <button class="btn btn-sm btn-primary"><i class="fa fa-filter"></i> Apply filters</button>
+                          <div class="row">
+                            <div class="col-sm-12 col-md-12">
+                              <b>Topics</b><br />
+			      {{ search_form.filter_topics }}
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-sm-3 col-md-3">
+                              <b>Facilities</b><br />{{ search_form.filter_facility }}
+                            </div>
+                            <div class="col-sm-3 col-md-3">
+                              <b>Format</b><br />{{ search_form.filter_format }}
+                            </div>
+                            <div class="col-sm-3 col-md-3">
+                              <b>Genre</b><br />{{ search_form.filter_genre }}
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-sm-3 col-md-3">
+                              <b>Usage</b><br />{{ search_form.filter_rights }}
+                            </div>
+                          </div>
+                          <p>
+                            <button class="btn btn-sm btn-primary"><i class="fa fa-filter"></i> Apply filters</button> <span class="muted small" style="padding-left:20px;">Use &lt;Ctrl&gt; or (⌘) keys to select multiple terms</span>
+                          </p>
                       </div>
                   </div>
               </div>
