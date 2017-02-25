@@ -62,10 +62,10 @@
   {% endthumbnail %}
 
   <!-- download/external links -->
-  {% if object.links.img %}
+  {% if object.links.img and not object.mimetype == "text/html" %}
     <a href="{{ object.links.img }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download large size</a>
   {% endif %}
-  {% if not object.role == 'master' and object.links.download %}
+  {% if object.links.download and not object.role == 'master' %}
     <a href="{{ object.links.download }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download fullsize ({{ object.size|filesizeformat }})</a>
   {% endif %}
 
