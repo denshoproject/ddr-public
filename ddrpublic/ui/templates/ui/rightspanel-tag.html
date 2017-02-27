@@ -1,12 +1,16 @@
 {% ifequal code "nocc" %}<strong><div class="alert alert-warning"><i class="fa fa-warning"></i>Caution</strong>{% else %}{% ifequal code "pcc" %}<div class="alert alert-info"><strong><i class="fa fa-info-circle"></i>Free re-use available</strong>{% else %}<div class="alert alert-success"><strong><i class="fa fa-thumbs-up"></i>Free to use</strong>{% endifequal %}{% endifequal %}
     {% ifequal code "nocc" %}
     This object is protected by copyright. You must ask permission from the rights holder if you re-use or publish it elsewhere, unless your project falls under a fair-use exception. 
+    <p class="small"><strong><a href="/using/#reusingcontent" style="color: #8a6d3b;">Learn more...</a></strong></p>
     {% else %}{% ifequal code "cc" %}
     This object is offered under a Creative Commons license. You are free to use it for any non-commercial purpose as long as you properly cite it, and if you share what you have created.
+    <p class="small"><strong><a href="/using/#reusingcontent" style="color: #3c763d;">Learn more...</a></strong></p>
     {% else %}{% ifequal code "pdm" %}
     This object is in the public domain. You may freely use it for any purpose.
+    <p class="small"><strong><a href="/using/#reusingcontent" style="color: #3c763d;">Learn more...</a></strong></p>
     {% else %}
     This object is protected by copyright, but the rights holder has allowed us to make it available to you for non-commercial, educational projects. 
+    <p class="small"><strong><a href="/using/#reusingcontent" style="color: #337ab7;">Learn more...</a></strong></p>
     {% endifequal %}
     {% endifequal %}
     {% endifequal %}
