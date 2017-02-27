@@ -11,6 +11,16 @@ from ui.identifier import Identifier
 from ui.views import repo, organizations, collections, entities, files
 
 
+def legacy(request, repo, org, cid, eid=None, role=None, sha1=None):
+    # TODO this knows too much about structure of ID
+    # but then, then old site was like that
+    oid = '-'.join([
+        part
+        for part in [repo, org, cid, eid, role, sha1]
+        if part
+    ])
+    return HttpResponseRedirect(reverse('ui-object-detail', args=[oid]))
+
 def detail(request, oid):
     i = Identifier(id=oid)
     if i.model == 'repository': return repo.detail(request, oid)
