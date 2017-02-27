@@ -37,7 +37,7 @@ JQUERY=jquery-1.11.0.min.js
 BOOTSTRAP=bootstrap-3.1.1-dist.zip
 ASSETS_VERSION=20170206
 ASSETS=ddr-public-assets-$(ASSETS_VERSION).tar.gz
-ASSETS_BASE=$(MEDIA_ROOT)/assets/$(ASSETS_VERSION)
+ASSETS_BASE=$(MEDIA_BASE)/assets/$(ASSETS_VERSION)
 # wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-2.4.4.deb
 # wget http://code.jquery.com/jquery-1.11.0.min.js
 # wget https://github.com/twbs/bootstrap/releases/download/v3.1.1/bootstrap-3.1.1-dist.zip
