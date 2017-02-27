@@ -1,6 +1,10 @@
 SHELL = /bin/bash
 DEBIAN_CODENAME := $(shell lsb_release -sc)
 
+# Media assets and Elasticsearch will be downloaded from this location.
+# See https://github.com/densho/ansible-colo.git for more info:
+# - templates/proxy/nginx.conf.j2
+# - templates/static/nginx.conf.j2
 PACKAGE_SERVER=ddr.densho.org/static/ddrpublic
 
 SRC_REPO_CMDLN=https://github.com/densho/ddr-cmdln.git
@@ -31,16 +35,15 @@ MEDIA_BASE=/var/www/ddrpublic
 MEDIA_ROOT=$(MEDIA_BASE)/media
 STATIC_ROOT=$(MEDIA_BASE)/static
 
-ELASTICSEARCH=elasticsearch-2.4.4.deb
-MODERNIZR=modernizr-2.6.2.js
-JQUERY=jquery-1.11.0.min.js
-BOOTSTRAP=bootstrap-3.1.1-dist.zip
+# Media assets are packaged in an "assets/" dir, *without the version*.
+# The assets/ dir must be tgz'd into an $(ASSETS_TGZ) file
+# and available for download from http://$(PACKAGE_SERVER)/$(ASSETS_TGZ).
+# You can also place $(ASSETS_TGZ) in /tmp/$(ASSETS_VERSION)/$(ASSETS_TGZ).
 ASSETS_VERSION=20170206
-ASSETS=ddr-public-assets-$(ASSETS_VERSION).tar.gz
-ASSETS_BASE=$(MEDIA_BASE)/assets/$(ASSETS_VERSION)
-# wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-2.4.4.deb
-# wget http://code.jquery.com/jquery-1.11.0.min.js
-# wget https://github.com/twbs/bootstrap/releases/download/v3.1.1/bootstrap-3.1.1-dist.zip
+ASSETS_TGZ=ddr-public-assets-$(ASSETS_VERSION).tar.gz
+ASSETS_INSTALL_DIR=$(MEDIA_BASE)/assets/$(ASSETS_VERSION)
+
+ELASTICSEARCH=elasticsearch-2.4.4.deb
 
 SUPERVISOR_GUNICORN_CONF=/etc/supervisor/conf.d/gunicorn_ddrpublic.conf
 NGINX_CONF=/etc/nginx/sites-available/ddrpublic.conf
@@ -307,27 +310,34 @@ branch:
 	cd $(INSTALL_PUBLIC)/ddrpublic; python ./bin/git-checkout-branch.py $(BRANCH)
 
 
-install-static: get-ddrpublic-assets install-restframework
+install-static: get-ddrpublic-assets install-ddrpublic-assets install-restframework
 
 clean-static: clean-ddrpublic-assets clean-restframework
 
 get-ddrpublic-assets:
 	@echo ""
 	@echo "get assets --------------------------------------------------------------"
-	rm -Rf $(ASSETS_BASE)
-	-mkdir -p $(ASSETS_BASE)
 	-mkdir -p /tmp/$(ASSETS_VERSION)
-	wget -nc -P /tmp http://$(PACKAGE_SERVER)/$(ASSETS)
-	tar xzf /tmp/$(ASSETS) -C /tmp/$(ASSETS_VERSION)
-	mv /tmp/$(ASSETS_VERSION)/assets/* $(ASSETS_BASE)
+	wget -nc -P /tmp http://$(PACKAGE_SERVER)/$(ASSETS_TGZ)
+
+install-ddrpublic-assets:
+	@echo ""
+	@echo "install assets ----------------------------------------------------------"
+	rm -Rf $(ASSETS_INSTALL_DIR)
+	-mkdir -p $(ASSETS_INSTALL_DIR)
+	-mkdir -p /tmp/$(ASSETS_VERSION)
+	tar xzf /tmp/$(ASSETS_TGZ) -C /tmp/$(ASSETS_VERSION)
+	mv /tmp/$(ASSETS_VERSION)/assets/* $(ASSETS_INSTALL_DIR)
 
 clean-ddrpublic-assets:
-	-rm -Rf $(ASSETS_BASE)
+	@echo ""
+	@echo "clean assets ------------------------------------------------------------"
+	-rm -Rf $(ASSETS_INSTALL_DIR)
 	-mkdir -p /tmp/$(ASSETS_VERSION)
 
 install-restframework:
 	@echo ""
-	@echo "rest_framework ----------------------------------------------------------"
+	@echo "rest-framework assets ---------------------------------------------------"
 	-mkdir -p $(MEDIA_BASE)
 	cp -R /usr/local/src/env/ddrpublic/lib/python2.7/site-packages/rest_framework/static/rest_framework/ $(STATIC_ROOT)/
 
