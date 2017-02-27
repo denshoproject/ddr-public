@@ -35,7 +35,9 @@ ELASTICSEARCH=elasticsearch-2.4.4.deb
 MODERNIZR=modernizr-2.6.2.js
 JQUERY=jquery-1.11.0.min.js
 BOOTSTRAP=bootstrap-3.1.1-dist.zip
-ASSETS=ddr-public-assets-20170206.tar.gz
+ASSETS_VERSION=20170206
+ASSETS=ddr-public-assets-$(ASSETS_VERSION).tar.gz
+ASSETS_BASE=$(MEDIA_ROOT)/assets/$(ASSETS_VERSION)
 # wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-2.4.4.deb
 # wget http://code.jquery.com/jquery-1.11.0.min.js
 # wget https://github.com/twbs/bootstrap/releases/download/v3.1.1/bootstrap-3.1.1-dist.zip
@@ -305,52 +307,32 @@ branch:
 	cd $(INSTALL_PUBLIC)/ddrpublic; python ./bin/git-checkout-branch.py $(BRANCH)
 
 
-install-static: get-ddrpublic-assets install-restframework install-modernizr install-bootstrap install-jquery
+install-static: get-ddrpublic-assets install-restframework
 
-clean-static: clean-modernizr clean-bootstrap clean-jquery
-
+clean-static: clean-ddrpublic-assets clean-restframework
 
 get-ddrpublic-assets:
 	@echo ""
 	@echo "get assets --------------------------------------------------------------"
-	-mkdir $(MEDIA_BASE)
+	rm -Rf $(ASSETS_BASE)
+	-mkdir -p $(ASSETS_BASE)
+	-mkdir -p /tmp/$(ASSETS_VERSION)
 	wget -nc -P /tmp http://$(PACKAGE_SERVER)/$(ASSETS)
-	tar xzvf /tmp/$(ASSETS) -C $(MEDIA_BASE)/
+	tar xzf /tmp/$(ASSETS) -C /tmp/$(ASSETS_VERSION)
+	mv /tmp/$(ASSETS_VERSION)/assets/* $(ASSETS_BASE)
+
+clean-ddrpublic-assets:
+	-rm -Rf $(ASSETS_BASE)
+	-mkdir -p /tmp/$(ASSETS_VERSION)
 
 install-restframework:
 	@echo ""
 	@echo "rest_framework ----------------------------------------------------------"
-	-mkdir $(MEDIA_BASE)
+	-mkdir -p $(MEDIA_BASE)
 	cp -R /usr/local/src/env/ddrpublic/lib/python2.7/site-packages/rest_framework/static/rest_framework/ $(STATIC_ROOT)/
 
-install-modernizr:
-	@echo ""
-	@echo "Modernizr --------------------------------------------------------------"
-	-rm $(STATIC_ROOT)/js/$(MODERNIZR)*
-	wget -nc -P $(STATIC_ROOT)/js http://$(PACKAGE_SERVER)/$(MODERNIZR)
-
-clean-modernizr:
-	-rm $(STATIC_ROOT)/js/$(MODERNIZR)*
-
-install-bootstrap:
-	@echo ""
-	@echo "Bootstrap --------------------------------------------------------------"
-	wget -nc -P $(STATIC_ROOT) http://$(PACKAGE_SERVER)/$(BOOTSTRAP)
-	7z x -y -o$(STATIC_ROOT) $(STATIC_ROOT)/$(BOOTSTRAP)
-
-clean-bootstrap:
-	-rm -Rf $(STATIC_ROOT)/$(BOOTSTRAP)
-
-install-jquery:
-	@echo ""
-	@echo "jQuery -----------------------------------------------------------------"
-	wget -nc -P $(STATIC_ROOT)/js http://$(PACKAGE_SERVER)/$(JQUERY)
-	-rm $(STATIC_ROOT)/js/jquery.js
-	-ln -s $(STATIC_ROOT)/js/$(JQUERY) $(STATIC_ROOT)/js/jquery.js
-
-clean-jquery:
-	-rm -Rf $(STATIC_ROOT)/js/$(JQUERY)
-	-rm $(STATIC_ROOT)/js/jquery.js
+clean-restframework:
+	-rm -Rf $(STATIC_ROOT)/rest_framework/
 
 
 install-configs:

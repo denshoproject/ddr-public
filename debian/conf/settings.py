@@ -70,6 +70,10 @@ NAMESDB_DOCSTORE_INDEX = config.get('public', 'namesdb_index')
 STATIC_ROOT = config.get('public', 'static_root')
 STATIC_URL='/static/'
 
+# Version number appended to Bootstrap, etc URLs so updates are always
+# picked up by browser. IMPORTANT: must be same as ASSETS_VERSION in Makefile!
+ASSETS_VERSION = config.get('public', 'assets_version')
+
 # Filesystem path and URL for media to be manipulated by ddrlocal
 # (collection repositories, thumbnail cache, etc).
 MEDIA_ROOT = config.get('public', 'media_root')
