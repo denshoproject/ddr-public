@@ -45,7 +45,7 @@
                           <div class="row">
                             <div class="col-sm-12 col-md-12">
                               <b>Topics</b><br />
-			      {{ search_form.filter_topics }}
+                              {{ search_form.filter_topics }}
                             </div>
                           </div>
                           <div class="row">
@@ -165,11 +165,11 @@
     <div class="col-sm-12 col-md-12 text-muted text-right">
       <small><a class="api" href="{{ api_url }}">API</a></small>
     </div>
-    <div class="col-sm-12 col-md-12 text-muted">
+
 {% if searching %}
-    {{ query_json }}
+    <!-- {{ query_json }} -->
 {% endif %}
-    </div>
+
   </div><!-- .row -->
 
 </section><!-- .container-fluid -->
