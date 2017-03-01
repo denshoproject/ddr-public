@@ -30,9 +30,9 @@ with open('/etc/ddr/ddrpublic-secret-key.txt') as f:
 LANGUAGE_CODE='en-us'
 TIME_ZONE='America/Los_Angeles'
 
-DEBUG = config.get('debug', 'debug')
+DEBUG = config.getboolean('debug', 'debug')
 TEMPLATE_DEBUG = DEBUG
-THUMBNAIL_DEBUG = config.get('debug', 'thumbnail')
+THUMBNAIL_DEBUG = config.getboolean('debug', 'thumbnail')
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
