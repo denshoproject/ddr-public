@@ -56,12 +56,12 @@
 
 <div class="row">
     <div class="col-sm-10 col-md-10">
-    <span class="fsize20">Immigration Detention Stations</span><br />
+    <span class="fsize20">Immigration Detention Centers</span><br />
     <p class="muted">
       Temporary holding facilities for foreign nationals considered "enemy aliens."
     </p>
 {% for term in terms %}
-    {% if term.type == "Immigration Detention Station" %}
+    {% if term.type == "Immigration Detention Center" %}
     <a href="{{ term.links.html }}">{{ term.title }}</a>
     {% if term.doc_count %}<span class="text-muted">({{ term.doc_count }})</span>{% endif %}<br />
     {% endif %}
