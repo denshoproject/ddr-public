@@ -29,22 +29,15 @@
   {% if term.type %}<b>{{ term.type }}</b>{% endif %}
   {% if term.type and term.location_geopoint %}</p><p>{% endif %}
   {% if term.location_geopoint.geopoint %}
-  {{ term.location_geopoint.label }}
-  <a href="https://www.google.com/maps/@{{ term.location_geopoint.geopoint.lat }},{{ term.location_geopoint.geopoint.lng }},14z">Google Maps</a>
+  Location: <a target="_blank" href="https://www.google.com/maps/@{{ term.location_geopoint.geopoint.lat }},{{ term.location_geopoint.geopoint.lng }},14z">{{ term.location_geopoint.label }} <i class="fa fa-map-marker"></i></a> 
   {% endif %}
 </p>
 {% endif %}
 
 {% if term.elinks %}
-<!-- topic.encycarticles -->
+<!-- topic.encycarticles {{term.elinks.url }}-->
 <p>
-Related articles from the
-<a target="encyc" href="//encyclopedia.densho.org/">Densho Encyclopedia <i class="fa fa-external-link"></i></a>:<br />
-<span class="indent1">
-{% for article in term.elinks %}
-<a target="encyc" href="{{ article.url }}">{{ article.label }}</a>{% if not forloop.last %},{% endif %}
-{% endfor %}
-</span>
+<a target="encyc" href="{{ term.elinks.0.url }}">More information in the Densho Encyclopedia <i class="fa fa-external-link"></i></a>...
 </p>
 {% endif %}
 
