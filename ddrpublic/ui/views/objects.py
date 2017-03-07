@@ -23,6 +23,8 @@ def legacy(request, repo, org, cid, eid=None, role=None, sha1=None):
 
 def detail(request, oid):
     i = Identifier(id=oid)
+    if not i:
+        raise Http404
     if i.model == 'repository': return repo.detail(request, oid)
     elif i.model == 'organization': return organizations.detail(request, oid)
     elif i.model == 'collection': return collections.detail(request, oid)
@@ -33,6 +35,8 @@ def detail(request, oid):
 
 def children(request, oid):
     i = Identifier(id=oid)
+    if not i:
+        raise Http404
     if i.model == 'repository': return repo.children(request, oid)
     elif i.model == 'organization': return organizations.children(request, oid)
     elif i.model == 'collection': return collections.children(request, oid)
@@ -43,6 +47,8 @@ def children(request, oid):
 
 def nodes(request, oid):
     i = Identifier(id=oid)
+    if not i:
+        raise Http404
     if i.model == 'repository': return repo.nodes(request, oid)
     elif i.model == 'organization': return organizations.nodes(request, oid)
     elif i.model == 'collection': return collections.nodes(request, oid)
