@@ -1,5 +1,6 @@
 import datetime
 import os
+import re
 
 from django import template
 from django.conf import settings
@@ -29,6 +30,28 @@ def segmentoneline( description):
     else:
         oneline = description
     return oneline
+
+@register.filter(name='formaticon')
+def formaticon( code ):
+    """returns fa icon for the given entity.format code
+    """
+    icon = 'fa-file-text-o'
+    if code == 'img':
+        icon = 'fa-file-image-o'
+    elif code == 'vh' or code == 'av':
+        icon = 'fa-film'
+    return icon
+
+@register.filter(name='legacydenshouid')
+def legacydenshouid( value ):
+    """returns plain legacy denshouid
+    """
+    uid = ''
+    p = re.compile('\[denshouid:[ ]*([a-z_\-0-9]+)\]')
+    m = p.findall(value)
+    if m is not None:
+        uid = m[0]
+    return uid
 
 def homeslideitem( target_url, img_src ):
     """Slide item for homepage gallery

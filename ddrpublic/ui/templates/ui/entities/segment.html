@@ -3,8 +3,8 @@
 
 {% block parent %}
 <div id="parent">
-<a href="{{ parent.absolute_url }}"><span class="label label-default">{{ parent.id }}</span></a>
-<a href="{{ parent.absolute_url }}">{{ parent.title|safe }}</a>
+<a href="{{ parent.links.html }}"><span class="label label-default">{{ parent.id }}</span></a>
+<a href="{{ parent.links.html }}">{{ parent.title|safe }}</a>
 </div>
 {% endblock %}
 
@@ -175,7 +175,14 @@
               <!-- segment.entity_id -->
               <h3 class="page-header">SEGMENT ID</h3>
               <p>
-                {{ segment.id }}
+                {{ segment.id }} 
+                {% if segment.alternate_id != '' %}
+                  {% if "denshouid" in segment.alternate_id %}                                                                                                                                      
+                    <span class="small">(Legacy UID: {{ segment.alternate_id|legacydenshouid }})</span>                                                                                        
+                  {% else %}
+                    <span class="small">({{ segment.alternate_id }})</span>
+                  {% endif %}
+                {% endif %}
               </p>
 
               <!-- segment.description -->
@@ -230,7 +237,7 @@
               <!-- entity.collection -->
               <h3 class="page-header">PARENT COLLECTION</h3>
               <p>
-                <a href="{{ parent.links.html }}">{{ parent.title }}</a>
+                <a href="{{ collection.links.html }}">{{ collection.title }}</a>
               </p>
 
               <!-- core meta -->

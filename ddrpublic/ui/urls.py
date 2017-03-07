@@ -15,6 +15,7 @@ urlpatterns = patterns(
     url(r'^api/0.2/narrator/(?P<oid>[\w]+)/$', 'ui.api.narrator', name='ui-api-narrator'),
     url(r'^api/0.2/narrator/$', 'ui.api.narrator_index', name='ui-api-narrators'),
     
+    url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/children/$', 'ui.api.facetterms', name='ui-api-facetterms'),
     url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/objects/$', 'ui.api.term_objects', name='ui-api-term-objects'),
     url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/$', 'ui.api.term', name='ui-api-term'),
     url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/$', 'ui.api.facet', name='ui-api-facet'),
@@ -51,6 +52,12 @@ urlpatterns = patterns(
     url(r'^interviews/(?P<oid>[\w\d-]+)/', 'ui.views.entities.interview', name='ui-interview'),
     
     url(r'^r/(?P<oid>[\w\d-]+)/$', 'ui.views.entities.nodes', name='ui-file-role'),
+    
+    # match legacy urls
+    url(r'^(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/(?P<role>[\w]+)/(?P<sha1>[\w\d]+)/', 'ui.views.objects.legacy', name='ui-legacy'),
+    url(r'^(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/(?P<role>[\w]+)/', 'ui.views.objects.legacy', name='ui-legacy'),
+    url(r'^(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/', 'ui.views.objects.legacy', name='ui-legacy'),
+    url(r'^(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/', 'ui.views.objects.legacy', name='ui-legacy'),
     
     url(r'^(?P<oid>[\w\d-]+)/search/$', 'ui.views.objects.search_within', name='ui-object-search'),
     url(r'^(?P<oid>[\w\d-]+)/objects/$', 'ui.views.objects.children', name='ui-object-children'),

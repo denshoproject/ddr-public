@@ -114,10 +114,7 @@
         <a href="{{ narrator.links.html }}">{{ narrator.display_name }}</a>
       </h4>
       <div class="source muted">
-        {% if narrator.generation %}{{ narrator.generation }}.{% endif %}
-        {% if narrator.birth_location %}Born in {{ narrator.birth_location }}.{% endif %}
-        {% if narrator.b_date %}{{ narrator.b_date|date:"j F Y" }}{% endif %}
-        {% if narrator.d_date %}- {{ narrator.d_date|date:"j F Y" }}{% endif %}
+        {{ narrator.bio|truncatewords_html:25 }}
       </div>
     </div><!-- .media-body -->
   </div><!-- .media -->
@@ -140,6 +137,12 @@
       </div> <!-- end tabs -->
     </div>
   </div> <!-- .row results content -->
+
+  <div class="row">
+    <div class="col-sm-12 col-md-12 text-muted text-right">
+      <small><a class="api" href="{{ api_url }}">API</a></small>
+    </div>
+  </div><!-- .row -->
 
 </section><!-- .container-fluid -->
 {% endblock content %}

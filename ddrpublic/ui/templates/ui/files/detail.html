@@ -3,8 +3,8 @@
 
 {% block parent %}
 <div id="parent">
-<a href="{{ parent.absolute_url }}"><span class="label label-default">{{ parent.id }}</span></a>
-<a href="{{ parent.absolute_url }}">{{ parent.title|safe }}</a>
+<a href="{{ parent.links.html }}"><span class="label label-default">{{ parent.id }}</span></a>
+<a href="{{ parent.links.html }}">{{ parent.title|safe }}</a>
 </div>
 {% endblock %}
 
@@ -26,17 +26,16 @@
 
   <div class="row">
 
-    <div class="col-sm-6 col-md-6">
-      <h2>{{ object.title }}</h2>
+    <div class="col-sm-7 col-md-7">
       <h2>{{ parent.title|safe }} {% if object.label %}({{ object.label }}){% endif %}</h2>
 
 
       <!-- main display -------------------------------------------- -->
 
-      {% if object.external_urls %}
+{% if object.external_urls %}
 
-      {% for link in object.external_urls %}
-      {% if "stream" in link.label %}
+  {% for link in object.external_urls %}
+    {% if "stream" in link.label %}
       <!-- Internet Archive player -->
       <iframe
          src="{{ link.url }}"
@@ -44,48 +43,52 @@
          webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen
          ></iframe>
       <br/>
-      {% endif %}
-      {% if "download" in link.label %}
+    {% endif %}
+  {% endfor %}
+  {% for link in object.external_urls %}
+    {% if "download" in link.label %}
       <!-- download -->
       <a class="btn btn-default btn-xs" href="{{ link.url }}"><i class="fa fa-download"></i> {{ link.label }}</a><br/>
-      {% endif %}
-      {% endfor %}
+    {% endif %}
+  {% endfor %}
 
-      {% else %}{# object.external_urls #}
+{% else %}{# object.external_urls #}
 
-      <!-- local static -->
-      {% thumbnail object.links.img "480x480" as img %}
-      <a href="{{ object.links.img }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
-        <img src="{{ img.url }}" class="img-responsive">
-      </a><br />
-      {% endthumbnail %}
+    <!-- local static -->
+{% if object.mimetype == "text/html" %}
+    <i class="fa fa-file-text-o fsize60" style="font-size:100px !important; line-height:130px !important;"></i>
+    <br />
+{% else %}
+  {% thumbnail object.links.thumb "480x480" as img %}
+    <a href="{{ object.links.img }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
+      <img src="{{ img.url }}" class="img-responsive">
+    </a><br />
+  {% endthumbnail %}
+{% endif %}{# mimetype #}
 
-      <!-- download/external links -->
-      {% if object.access_path %}
-      <a href="{{ DOWNLOAD_URL }}{{ object.access_path }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download large size</a>
-      {% endif %}
-      {% if object.file_path %}
-      <a href="{{ DOWNLOAD_URL }}{{ object.file_path }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download fullsize ({{ object.size|filesizeformat }})</a>
-      {% endif %}
+  <!-- download/external links -->
+  {% if object.links.img and not object.mimetype == "text/html" %}
+    <a href="{{ object.links.img }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download large size</a>
+  {% endif %}
+  {% if object.links.download and not object.role == 'master' %}
+    <a href="{{ object.links.download }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download fullsize ({{ object.size|filesizeformat }})</a>
+  {% endif %}
 
-      {% endif %}{# object.external_urls #}
+{% endif %}{# object.external_urls #}
 
-      <div class="divider"><!-- divider -->
-        <i class="fa fa-chevron-down"></i>
-      </div>
       {% rightspanel object.rights %}
     </div>
 
-	<div class="col-sm-6 col-md-6">
-	  {% addthis %}
-	  <div class="desc productDescription">
+    <div class="col-sm-5 col-md-5">
+        {% addthis %}
+      <div class="desc productDescription">
 
         <h3 class="page-header">PARTNER</h3>
         {% include "ui/partnerlogolink.html" %}
 
 	    <h3 class="page-header">PARENT OBJECT</h3>
 	    <p>
-          <a href="{{ parent.absolute_url }}">{{ parent.title|safe }} ({{ parent.id }})</a>
+          <a href="{{ parent.links.html }}">{{ parent.title|safe }} ({{ parent.id }})</a>
         </p>
 
         <h3 class="page-header">FILE ID</h3>
@@ -103,14 +106,14 @@
           {{ object.tech_notes|safe }}
         </p>
 
-		<h3 class="page-header">RIGHTS</h3>
-		<p>
-          {{ object.rights }}
+        <h3 class="page-header">RIGHTS</h3>
+        <p>
+          {% rightsbadge object.rights %}
         </p>
-	  </div>
+    </div>
 
-	</div>
-	</div><!-- //row-->
+    </div>
+    </div><!-- //row-->
 
     <div class="row">
         <div class="col-sm-12 col-md-12 text-muted text-right">

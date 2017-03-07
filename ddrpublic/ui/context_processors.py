@@ -31,6 +31,8 @@ def sitewide(request):
         'BASE_TEMPLATE': base_template,
         'ENCYC_BASE': settings.ENCYC_BASE,
         'MEDIA_URL': settings.MEDIA_URL,
+        'ASSETS_VERSION': settings.ASSETS_VERSION,
+        'MISSING_IMG': settings.MISSING_IMG,
         'DOWNLOAD_URL': settings.DOWNLOAD_URL,
         'STATIC_URL': settings.STATIC_URL,
         'DOCSTORE_HOSTS': settings.DOCSTORE_HOSTS,

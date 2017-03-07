@@ -6,6 +6,7 @@ import urlparse
 import requests
 
 from django.conf import settings
+from django.core.cache import cache
 from django.http import HttpResponseRedirect
 
 from rest_framework import status
@@ -18,6 +19,7 @@ from DDR import docstore
 from ui.identifier import Identifier, CHILDREN, CHILDREN_ALL
 from ui.urls import API_BASE
 from ui.views import filter_if_branded
+from ui import encyc
 
 DEFAULT_LIMIT = 25
 
@@ -143,21 +145,20 @@ def img_url(bucket, filename, request=None):
         return '%s%s/%s' % (settings.MEDIA_URL, bucket, filename)
     return None
 
-def segment_img_url(aid):
-    """Make a VH interview segment image URL given an Entity.alternate_id
+def segment_img_url(denshouid):
+    """Make a VH interview segment image URL given a denshouid
     
-    >>> segment_img("[denshouid: denshovh-mkiyo_2-01]")
+    >>> segment_img("denshovh-mkiyo_2-01")
     'http://ddr.densho.org/media/denshovh/denshovh-mkiyo_2-01.jpg'
-    
-    @param aid: str Entity.alternate_id
+    http://ddrstage.densho.org/media/ddr-densho-1000/denshovh-hgordon-01-a.jpg
+
+    @param aid: str denshouid
     @returns: str URL
     """
-    if aid and isinstance(aid, basestring) and (':' in aid):
-        return '%s/%s.jpg' % (
-            settings.SEGMENT_URL,
-            aid.replace('[','').replace(']','').split(':')[1].strip()
-        )
-    return ''
+    return os.path.join(settings.SEGMENT_URL, denshouid)
+
+def narrator_img_url(image_url):
+    return os.path.join(settings.NARRATORS_URL, image_url)
 
 def file_size(url):
     """Get the size of a file from HTTP headers (without downloading)
@@ -196,6 +197,8 @@ SEARCH_RETURN_FIELDS = [
     'facet',
     'format',
     'image_url',
+    'mimetype',
+    'role',
     'signature_id',
     'sort',
     'url',
@@ -382,25 +385,35 @@ def format_object_detail(document, request, listitem=False):
         #        args=[i.id],
         #        request=request
         #    )
+        # gfroh: every object must have signature_id
+        # gjost: except objects that don't have them
+        HAS_SIGNATURE_IDS = [
+            'collection', 'entity', 'segment', 'file'
+        ]
+        if (document['_type'] in HAS_SIGNATURE_IDS) \
+        and (not document['_source'].get('signature_id')):
+            document['_source']['signature_id'] = settings.MISSING_IMG
         # links-img
-        if (document['_source'].get('format','') == 'vh') \
-        and document['_source'].get('alternate_id'):
-            # interviews/segments
-            d['links']['img'] = segment_img_url(
-                document['_source']['alternate_id']
+        if i.model == 'file':
+            # files
+            d['links']['img'] = img_url(
+                i.collection_id(),
+                os.path.basename(document['_source'].pop('access_rel')),
+                request
             )
+        elif (document['_source'].get('format','') == 'vh'):
+            # interviews/segments
+            if document['_source'].get('signature_id'):
+                d['links']['img'] = img_url(
+                    i.collection_id(),
+                    access_filename(document['_source']['signature_id']),
+                    request
+                )
         elif document['_source'].get('signature_id'):
             # other collections/entities
             d['links']['img'] = img_url(
                 i.collection_id(),
                 access_filename(document['_source']['signature_id']),
-                request
-            )
-        elif i.model == 'file':
-            # files
-            d['links']['img'] = img_url(
-                i.collection_id(),
-                os.path.basename(document['_source'].pop('access_rel')),
                 request
             )
         d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
@@ -411,7 +424,8 @@ def format_object_detail(document, request, listitem=False):
             d['description'] = document['_source'].pop('description')
         # everything else
         HIDDEN_FIELDS = [
-            'repo','org','cid','eid','sid','role','sha1'
+            'repo','org','cid','eid','sid','sha1'
+             # don't hide role, used in file list-object
         ]
         for key in document['_source'].iterkeys():
             if key not in HIDDEN_FIELDS:
@@ -430,7 +444,7 @@ def format_narrator(document, request, listitem=False):
         d['links'] = OrderedDict()
         d['links']['html'] = reverse('ui-browse-narrator', args=[oid], request=request)
         d['links']['json'] = reverse('ui-api-narrator', args=[oid], request=request)
-        d['links']['img'] = document['_source'].pop('image_url')
+        d['links']['img'] = narrator_img_url(document['_source'].pop('image_url'))
         d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
         d['links']['documents'] = ''
         # title, description
@@ -459,6 +473,7 @@ def format_facet(document, request, listitem=False):
         d['links'] = OrderedDict()
         d['links']['html'] = reverse('ui-browse-facet', args=[oid], request=request)
         d['links']['json'] = reverse('ui-api-facet', args=[oid], request=request)
+        d['links']['children'] = reverse('ui-api-facetterms', args=[oid], request=request)
         # everything else
         HIDDEN_FIELDS = [
         ]
@@ -488,17 +503,17 @@ def format_term(document, request, listitem=False):
         if document['_source'].get('ancestors'):
             d['links']['ancestors'] = [
                 reverse('ui-api-term', args=[fid,oid], request=request)
-                for oid in document['_source'].pop('ancestors')
+                for oid in document['_source']['ancestors']
             ]
         if document['_source'].get('siblings'):
             d['links']['siblings'] = [
                 reverse('ui-api-term', args=[fid,oid], request=request)
-                for oid in document['_source'].get('siblings')
+                for oid in document['_source']['siblings']
             ]
         if document['_source'].get('children'):
             d['links']['children'] = [
                 reverse('ui-api-term', args=[fid,oid], request=request)
-                for oid in document['_source'].get('children')
+                for oid in document['_source']['children']
             ]
         d['links']['objects'] = reverse('ui-api-term-objects', args=[fid,tid], request=request)
         # title, description
@@ -511,8 +526,8 @@ def format_term(document, request, listitem=False):
             'modified',
             'parent_id',
             #'ancestors',
-            'siblings',
-            'children',
+            #'siblings',
+            #'children',
         ]
         for key in document['_source'].iterkeys():
             if key not in HIDDEN_FIELDS:
@@ -560,6 +575,45 @@ def pad_results(results, pagesize, thispage):
     for n in range(page_next, results['total']):
         results['objects'].append({'n':n})
     return results['objects']
+
+def facet_labels():
+    """Labels for the various facet types.
+    
+    @returns: dict of facet ids mapped to labels
+    """
+    key = 'facet:ids-labels'
+    cached = cache.get(key)
+    if not cached:
+        
+        SORT_FIELDS = ['id', 'title',]
+        LIST_FIELDS = ['id', 'facet', 'title',]
+        q = docstore.search_query(
+            should=[
+                {"terms": {"facet": [
+                    'format', 'genre', 'language', 'rights',
+                ]}}
+            ]
+        )
+        results = docstore.Docstore().search(
+            doctypes=['facetterm'],
+            query=q,
+            sort=SORT_FIELDS,
+            fields=LIST_FIELDS,
+            from_=0,
+            size=10000,
+        )
+        ids_labels = {}
+        for hit in results['hits']['hits']:
+            d = hit['_source']
+            if not ids_labels.get(d['facet']):
+                ids_labels[d['facet']] = {}
+            ids_labels[d['facet']][d['id']] = d['title']
+        
+        cached = ids_labels
+        cache.set(key, cached, settings.CACHE_TIMEOUT)
+    return cached
+
+FACET_LABELS = facet_labels()
 
 
 # classes --------------------------------------------------------------
@@ -692,6 +746,35 @@ class ApiEntity(object):
         assert False
     
     @staticmethod
+    def _labelify(document, fields=[]):
+        """
+        TODO i've been coding for 14 hours pls rewrite this
+        
+        @param document: dict/OrderedDict
+        @param facetlabels: dict Output of facet_labels()
+        @returns: dict document
+        """
+        def _wrap(fname,fdata):
+            return {
+                'id': fdata,
+                'query': '?filter_%s=%s' % (fname,fdata),
+                'label': FACET_LABELS[fname][fdata],
+            }
+        
+        for fieldname in FACET_LABELS.keys():
+            if not fieldname in fields:
+                continue
+            field_data = document.get(fieldname)
+            if isinstance(field_data, basestring):
+                document[fieldname] = _wrap(fieldname,field_data)
+            elif isinstance(field_data, list):
+                document[fieldname] = [
+                    _wrap(fieldname,fd)
+                    for fd in field_data
+                ]
+        return document
+
+    @staticmethod
     def api_get(oid, request):
         i = Identifier(id=oid)
         document = docstore.Docstore().get(model=i.model, document_id=i.id)
@@ -725,8 +808,10 @@ class ApiEntity(object):
         ]
         for field in HIDDEN_FIELDS:
             pop_field(data, field)
-        return data
 
+        data = ApiEntity._labelify(data, fields=['format', 'genre', 'language',])
+        return data
+    
     @staticmethod
     def api_children(oid, request, limit=DEFAULT_LIMIT, offset=0, just_count=False):
         i = Identifier(id=oid)
@@ -837,6 +922,9 @@ class ApiFile(object):
     @staticmethod
     def api_get(oid, request):
         i = Identifier(id=oid)
+        # some object have Densho UIDs in signature_id field
+        if not i.model == 'file':
+            return None
         idparts = [x for x in i.parts.itervalues()]
         collection_id = i.collection_id()
         document = docstore.Docstore().get(
@@ -882,10 +970,6 @@ class ApiNarrator(object):
         ]
         for field in HIDDEN_FIELDS:
             pop_field(data, field)
-        # narrator img url
-        if data['links'].get('img'):
-            data['links']['img'] = '%s/%s' % (settings.NARRATORS_URL, data['links']['img'])
-            data['links']['thumb'] = local_thumb_url(data['links'].get('img',''), request)
         return data
     
     @staticmethod
@@ -903,6 +987,7 @@ class ApiNarrator(object):
             'birth_location',
             'b_date',
             'd_date',
+            'bio',
         ]
         q = docstore.search_query(
             must=[
@@ -917,10 +1002,6 @@ class ApiNarrator(object):
             from_=offset,
             size=limit,
         )
-        # narrator img url
-        for o in results['hits']['hits']:
-            if o['_source'].get('image_url'):
-                o['_source']['image_url'] = '%s/%s' % (settings.NARRATORS_URL, o['_source']['image_url'])
         return format_list_objects(
             paginate_results(
                 results,
@@ -948,6 +1029,7 @@ class ApiNarrator(object):
                 'id',
                 'title',
                 'alternate_id',
+                'signature_id',
                 'creation',
                 'location',
                 'extent',
@@ -955,10 +1037,7 @@ class ApiNarrator(object):
             #limit=limit, offset=offset,
             request=request
         )
-        # TODO do this in formatter?
-        for d in results['objects']:
-            d['links']['img'] = segment_img_url(d['alternate_id'])
-            d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
+        # add segment count per interview
         for d in results['objects']:
             r = ApiEntity.api_children(
                 d['id'], request=request,
@@ -1118,6 +1197,67 @@ class ApiFacet(object):
         terms = []
         flatten(terms_tree)
         return terms
+
+    @staticmethod
+    def topics_terms(request):
+        """List of topics facet terms, with tree indents and doc counts
+        
+        TODO ES does query and aggregations caching.
+        Does caching this mean the query/aggs won't be cached in ES?
+        
+        @param request: Django request object.
+        @returns: list of ApiTerms
+        """
+        facet_id = 'topics'
+        key = 'facet:%s:terms' % facet_id
+        cached = cache.get(key)
+        if not cached:
+            terms = ApiFacet.api_children(
+                facet_id, request,
+                sort=[('title','asc')],
+                limit=10000, raw=True
+            )
+            for term in terms:
+                term['links'] = {}
+                term['links']['html'] = reverse(
+                    'ui-browse-term', args=[facet_id, term['id']]
+                )
+            terms = ApiFacet.make_tree(terms)
+            ApiTerm.term_aggregations('topics.id', 'topics', terms, request)
+            cached = terms
+            cache.set(key, cached, settings.CACHE_TIMEOUT)
+        return cached
+
+    @staticmethod
+    def facility_terms(request):
+        """List of facility facet terms, sorted and with doc counts
+        
+        TODO ES does query and aggregations caching.
+        Does caching this mean the query/aggs won't be cached in ES?
+        
+        @param request: Django request object.
+        @returns: list of ApiTerms
+        """
+        facet_id = 'facility'
+        key = 'facet:%s:terms' % facet_id
+        cached = cache.get(key)
+        if not cached:
+            terms = ApiFacet.api_children(
+                facet_id, request,
+                sort=[('title','asc')],
+                limit=10000, raw=True
+            )
+            for term in terms:
+                term['links'] = {}
+                term['links']['html'] = reverse(
+                    'ui-browse-term', args=[facet_id, term['id']]
+                )
+            terms = sorted(terms, key=lambda term: term['title'])
+            ApiTerm.term_aggregations('facility.id', 'facility', terms, request)
+            cached = terms
+            cache.set(key, cached, settings.CACHE_TIMEOUT)
+        return cached
+
 
 class ApiTerm(object):
     
@@ -1362,6 +1502,17 @@ def facets(request, oid, format=None):
     offset = int(request.GET.get('offset', 0))
     data = ApiEntity.api_nodes(oid, request, offset=offset)
     return _list(request, data)
+
+@api_view(['GET'])
+def facetterms(request, facet_id, format=None):
+    offset = int(request.GET.get('offset', 0))
+    data = ApiFacet.api_children(
+        facet_id, request,
+        sort=[('id','asc')],
+        offset=offset,
+        raw=True
+    )
+    return Response(data)
 
 
 @api_view(['GET'])

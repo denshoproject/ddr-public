@@ -18,22 +18,148 @@
 </p>
 {% endif %}
 
-<table>
+<p>
+    Learn more about the different types of detention facilities in the <a target="encyc" href="//encyclopedia.densho.org">Densho Encyclopedia <i class="fa fa-external-link"></i></a>
+</p>
+
+<div class="row">
+  <div class="col-md-10 col-sm-10">
+    <span class="fsize20">Concentration Camps</span><br />
+    <p class="muted">
+      Ten large self-contained communities constructed by the War Relocation Authority to incarcerate persons of Japanese ancestry.
+    </p>
 {% for term in terms %}
-  <tr>
-    <td>
-      <a href="{{ term.links.html }}">{{ term.title }}</a>
-      {% if term.doc_count %}<span class="text-muted">({{ term.doc_count }})</span>{% endif %}
-    </td>
-    <td>
-      {{ term.type }}
-    </td>
-  </tr>
+    {% if term.type == "Concentration Camp" %}
+    <a href="{{ term.links.html }}">{{ term.title }}</a>
+    {% if term.doc_count %}<span class="text-muted">({{ term.doc_count }})</span>{% endif %}<br />
+    {% endif %}
 {% endfor %}
-</table>
+    <br />
+  </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-10 col-md-10">
+    <span class="fsize20">Temporary Assembly Centers</span><br />
+    <p class="muted">    
+      Hastily-built temporary camps on the West Coast for holding people of Japanese ancestry before more permanent camps were erected.
+    </p>
+{% for term in terms %}
+    {% if term.type == "Temporary Assembly Center" %}
+    <a href="{{ term.links.html }}">{{ term.title }}</a>
+    {% if term.doc_count %}<span class="text-muted">({{ term.doc_count }})</span>{% endif %}<br />
+    {% endif %}
+{% endfor %}
+    <br />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-10 col-md-10">
+    <span class="fsize20">Immigration Detention Centers</span><br />
+    <p class="muted">
+      Temporary holding facilities for foreign nationals considered "enemy aliens."
+    </p>
+{% for term in terms %}
+    {% if term.type == "Immigration Detention Center" %}
+    <a href="{{ term.links.html }}">{{ term.title }}</a>
+    {% if term.doc_count %}<span class="text-muted">({{ term.doc_count }})</span>{% endif %}<br />
+    {% endif %}
+{% endfor %}
+    <br />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-10 col-md-10">
+    <span class="fsize20">Department of Justice Internment Camps</span><br />
+    <p class="muted">    
+      Facilities operated by the Department of Justice that interned foreign nationals considered "enemy aliens."
+    </p>
+{% for term in terms %}
+    {% if term.type == "Department of Justice Internment Camp" %}
+    <a href="{{ term.links.html }}">{{ term.title }}</a>
+    {% if term.doc_count %}<span class="text-muted">({{ term.doc_count }})</span>{% endif %}<br />
+    {% endif %}
+{% endfor %}
+    <br />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-10 col-md-10">
+    <span class="fsize20">U.S. Army Internment Camps</span><br />
+    <p class="muted">
+      U.S. Army sites in Hawaii, Alaska and the mainland that interned foreign nationals considered "enemy aliens."
+    </p>
+{% for term in terms %}
+    {% if term.type == "U.S. Army Internment Camp" %}
+    <a href="{{ term.links.html }}">{{ term.title }}</a>
+    {% if term.doc_count %}<span class="text-muted">({{ term.doc_count }})</span>{% endif %}<br />
+    {% endif %}
+{% endfor %}
+    <br />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-10 col-md-10">
+    <span class="fsize20">Citizen Isolation Centers</span><br />
+    <p class="muted">  
+      Detention centers that held U.S. citizens of Japanese ancestry who had been labeled as "troublemakers" by concentration camp administrators. 
+    </p>
+{% for term in terms %}
+    {% if term.type == "Citizen Isolation Center" %}
+    <a href="{{ term.links.html }}">{{ term.title }}</a>
+    {% if term.doc_count %}<span class="text-muted">({{ term.doc_count }})</span>{% endif %}<br />
+    {% endif %}
+{% endfor %}
+    <br />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-10 col-md-10">
+    <span class="fsize20">Additional Facilities</span><br />
+    <p class="muted">
+      Sites that served as emergency short-term housing to defuse tensions at the concentration camps.    
+    </p>
+{% for term in terms %}
+    {% if term.type == "Additional Facility" %}
+    <a href="{{ term.links.html }}">{{ term.title }}</a>
+    {% if term.doc_count %}<span class="text-muted">({{ term.doc_count }})</span>{% endif %}<br />
+    {% endif %}
+{% endfor %}
+    <br />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-10 col-md-10">
+    <span class="fsize20">U.S. Federal Prisons</span><br />
+    <p class="muted">
+      Prisons that held U.S. citizens of Japanese ancestry who resisted the military draft.     
+    </p>
+{% for term in terms %}
+    {% if term.type == "U.S. Federal Prison" %}
+    <a href="{{ term.links.html }}">{{ term.title }}</a>
+    {% if term.doc_count %}<span class="text-muted">({{ term.doc_count }})</span>{% endif %}<br />
+    {% endif %}
+{% endfor %}
+    <br />
+    </div>
+</div>
+
 
 	</div>
   </div><!-- .row -->
+
+  <div class="row">
+    <div class="col-sm-12 col-md-12 text-muted text-right">
+      <small><a class="api" href="{{ api_url }}">API</a></small>
+    </div>
+  </div><!-- .row -->
+
 </section><!-- .container-fluid -->
 {% endblock content %}
 

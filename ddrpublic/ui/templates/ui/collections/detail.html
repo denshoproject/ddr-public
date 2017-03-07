@@ -5,8 +5,8 @@
 {% block parent %}
 <!--
 <div id="parent">
-<a href="{{ object.parent.absolute_url }}"><span class="label label-default">{{ object.parent.id }}</span></a>
-<a href="{{ object.parent.absolute_url }}">{{ object.parent.title|safe }}</a>
+<a href="{{ object.parent.links.html }}"><span class="label label-default">{{ object.parent.id }}</span></a>
+<a href="{{ object.parent.links.html }}">{{ object.parent.title|safe }}</a>
 </div>
 -->
 {% endblock %}
@@ -33,8 +33,8 @@
         <div class="col-sm-6 col-md-6">
             <h2>{{ object.title }}</h2>
 {% if object.links.img %}
-  {% thumbnail object.links.img "480x480" as img %}
-          <a href="{{ object.links.signature }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
+  {% thumbnail object.links.thumb "480x480" as img %}
+          <a href="{{ object.links.img }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
             <img src="{{ img.url }}" class="img-responsive">
           </a>
   {% endthumbnail %}
@@ -82,6 +82,7 @@
         </div><!-- end right meta col -->
     </div><!-- //row-->
 
+{% if page.object_list %}
     <div class="row">
         <div class="col-sm-12 col-md-12">
             <h3>
@@ -100,6 +101,7 @@
             {% endif %}
         </div><!-- end list col -->
     </div><!-- .row -->
+{% endif %}{# page.object_list #}
 
     <div class="row">
         <div class="col-sm-12 col-md-12 text-muted text-right">

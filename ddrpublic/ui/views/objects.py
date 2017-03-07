@@ -11,8 +11,20 @@ from ui.identifier import Identifier
 from ui.views import repo, organizations, collections, entities, files
 
 
+def legacy(request, repo, org, cid, eid=None, role=None, sha1=None):
+    # TODO this knows too much about structure of ID
+    # but then, then old site was like that
+    oid = '-'.join([
+        part
+        for part in [repo, org, cid, eid, role, sha1]
+        if part
+    ])
+    return HttpResponseRedirect(reverse('ui-object-detail', args=[oid]))
+
 def detail(request, oid):
     i = Identifier(id=oid)
+    if not i:
+        raise Http404
     if i.model == 'repository': return repo.detail(request, oid)
     elif i.model == 'organization': return organizations.detail(request, oid)
     elif i.model == 'collection': return collections.detail(request, oid)
@@ -23,6 +35,8 @@ def detail(request, oid):
 
 def children(request, oid):
     i = Identifier(id=oid)
+    if not i:
+        raise Http404
     if i.model == 'repository': return repo.children(request, oid)
     elif i.model == 'organization': return organizations.children(request, oid)
     elif i.model == 'collection': return collections.children(request, oid)
@@ -33,6 +47,8 @@ def children(request, oid):
 
 def nodes(request, oid):
     i = Identifier(id=oid)
+    if not i:
+        raise Http404
     if i.model == 'repository': return repo.nodes(request, oid)
     elif i.model == 'organization': return organizations.nodes(request, oid)
     elif i.model == 'collection': return collections.nodes(request, oid)

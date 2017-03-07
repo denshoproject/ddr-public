@@ -4,7 +4,7 @@
 {% block title %}Search Results{% endblock %}
 
 {% block content %}
-<section id="shop" class="container" id="portfolio">
+<section class="container" id="portfolio">
   <div class="row">
     <div class="col-sm-12 col-md-12">
 
@@ -28,26 +28,61 @@ Search: {{ object.id }} {{ object.title }}
 
 <form action="{{ this_url }}" method="get">
   <div class="row">
-	<div class="col-sm-10 col-md-10">
-
-      {{ search_form.fulltext }}
-
-      <span class="input-group-btn">
-        <button class="btn btn-primary"><i class="fa fa-search"></i></button>
-      </span>
-    </div>
+    <div class="col-sm-10 col-md-10">
+      <div class="input-group">
+        {{ search_form.fulltext }}
+        <span class="input-group-btn">
+          <button class="btn btn-primary"><i class="fa fa-search"></i></button>
+        </span>
+      </div>
+    </div><!-- .col -->
   </div><!-- .row -->
 {% if searching %}
   <div class="row">
 	<div class="col-sm-12 col-md-12">
 
-      {{ search_form.format_ }}
-      {{ search_form.genre }}
-      {{ search_form.topics }}
-      {{ search_form.facility }}
-      {{ search_form.rights }}
+          <div class="panel-group" id="filters_accordion">
+              <div class="panel panel-default">
+                  <div class="panel-heading">
+                      <h4 class="panel-title">
+                          <a data-toggle="collapse" data-parent="#filters_accordion" href="#acordion1">
+                              <i class="fa fa-filter"></i> Filters
+                          </a>
+                      </h4>
+                  </div>
+                  <div id="acordion1" class="collapse {% if filters %}in{% endif %}">
+                      <div class="panel-body">
+                          <div class="row">
+                            <div class="col-sm-12 col-md-12">
+                              <b>Topics</b><br />
+                              {{ search_form.filter_topics }}
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-sm-3 col-md-3">
+                              <b>Facilities</b><br />{{ search_form.filter_facility }}
+                            </div>
+                            <div class="col-sm-3 col-md-3">
+                              <b>Format</b><br />{{ search_form.filter_format }}
+                            </div>
+                            <div class="col-sm-3 col-md-3">
+                              <b>Genre</b><br />{{ search_form.filter_genre }}
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-sm-3 col-md-3">
+                              <b>Usage</b><br />{{ search_form.filter_rights }}
+                            </div>
+                          </div>
+                          <p>
+                            <button class="btn btn-sm btn-primary"><i class="fa fa-filter"></i> Apply filters</button> <span class="muted small" style="padding-left:20px;">Use &lt;Ctrl&gt; or (⌘) keys to select multiple terms</span>
+                          </p>
+                      </div>
+                  </div>
+              </div>
+          </div>
 
-    </div>
+        </div>
   </div><!-- .row -->
 {% endif %}{# searching #}
 </form>
@@ -140,11 +175,11 @@ Search: {{ object.id }} {{ object.title }}
     <div class="col-sm-12 col-md-12 text-muted text-right">
       <small><a class="api" href="{{ api_url }}">API</a></small>
     </div>
-    <div class="col-sm-12 col-md-12 text-muted">
+
 {% if searching %}
-    {{ query_json }}
+    <!-- {{ query_json }} -->
 {% endif %}
-    </div>
+
   </div><!-- .row -->
 
 </section><!-- .container-fluid -->

@@ -30,9 +30,9 @@ with open('/etc/ddr/ddrpublic-secret-key.txt') as f:
 LANGUAGE_CODE='en-us'
 TIME_ZONE='America/Los_Angeles'
 
-DEBUG = config.get('debug', 'debug')
+DEBUG = config.getboolean('debug', 'debug')
 TEMPLATE_DEBUG = DEBUG
-THUMBNAIL_DEBUG = config.get('debug', 'thumbnail')
+THUMBNAIL_DEBUG = config.getboolean('debug', 'thumbnail')
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
@@ -70,6 +70,10 @@ NAMESDB_DOCSTORE_INDEX = config.get('public', 'namesdb_index')
 STATIC_ROOT = config.get('public', 'static_root')
 STATIC_URL='/static/'
 
+# Version number appended to Bootstrap, etc URLs so updates are always
+# picked up by browser. IMPORTANT: must be same as ASSETS_VERSION in Makefile!
+ASSETS_VERSION = config.get('public', 'assets_version')
+
 # Filesystem path and URL for media to be manipulated by ddrlocal
 # (collection repositories, thumbnail cache, etc).
 MEDIA_ROOT = config.get('public', 'media_root')
@@ -84,6 +88,9 @@ MEDIA_URL_LOCAL = config.get('public', 'media_url_local')
 MEDIA_URL_LOCAL_MARKER = 'internal'
 # Simplification of MEDIA_URL_LOCAL, just the domain to replace
 MEDIA_DOM_LOCAL = config.get('public', 'media_dom_local')
+
+# used when document signature image field not populated
+MISSING_IMG = config.get('public', 'missing_img')
 
 # URL for full-size images and other downloadables.
 # Clicking this should bring up the browser's "Save As..." dialog.
@@ -259,7 +266,7 @@ def UI_DOWNLOAD_URL( ddrfile ):
     return None
 
 
-#SESSION_ENGINE = 'redis_sessions.session'
+SESSION_ENGINE = 'redis_sessions.session'
 
 TEMPLATE_DIRS = (
     '/usr/local/src/ddr-public/ddrpublic/names/templates',
