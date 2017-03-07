@@ -56,9 +56,3 @@ def nodes(request, oid):
     elif i.model == 'segment': return entities.nodes(request, oid)
     elif i.model == 'file': return files.nodes(request, oid)
     raise Exception("Could not match ID,model,view.")
-
-def search_within(request, oid):
-    i = Identifier(id=oid)
-    if i.model == 'collection':
-        return collections.search_within(request, oid)
-    raise Exception("Searching within object type is not supported (%s)." % i)

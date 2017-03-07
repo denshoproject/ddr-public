@@ -34,9 +34,11 @@ urlpatterns = patterns(
     url(r'^using/$', TemplateView.as_view(template_name='ui/using.html'), name='ui-using'),
     url(r'^ethicalediting/$', TemplateView.as_view(template_name='ui/ethicalediting.html'), name='ui-ethicalediting'),
     
+    url(r'^narrators/(?P<oid>[\w]+)/search/$', 'ui.views.search.narrator', name='ui-search-narrator'),
     url(r'^narrators/(?P<oid>[\w]+)/$', 'ui.views.browse.narrator', name='ui-browse-narrator'),
     url(r'^narrators/$', 'ui.views.browse.narrators', name='ui-browse-narrators'),
 
+    url(r'^browse/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/search/$', 'ui.views.search.facetterm', name='ui-search-facetterm'),
     url(r'^browse/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/$', 'ui.views.browse.term', name='ui-browse-term'),
     url(r'^browse/(?P<facet_id>[\w]+)/$', 'ui.views.browse.facet', name='ui-browse-facet'),
     url(r'^browse/$', 'ui.views.browse.index', name='ui-browse-index'),
@@ -59,7 +61,7 @@ urlpatterns = patterns(
     url(r'^(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/', 'ui.views.objects.legacy', name='ui-legacy'),
     url(r'^(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/', 'ui.views.objects.legacy', name='ui-legacy'),
     
-    url(r'^(?P<oid>[\w\d-]+)/search/$', 'ui.views.objects.search_within', name='ui-object-search'),
+    url(r'^(?P<oid>[\w\d-]+)/search/$', 'ui.views.search.collection', name='ui-search-collection'),
     url(r'^(?P<oid>[\w\d-]+)/objects/$', 'ui.views.objects.children', name='ui-object-children'),
     url(r'^(?P<oid>[\w\d-]+)/files/$', 'ui.views.objects.nodes', name='ui-object-nodes'),
     url(r'^(?P<oid>[\w\d-]+)/', 'ui.views.objects.detail', name='ui-object-detail'),

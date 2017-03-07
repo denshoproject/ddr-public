@@ -89,15 +89,6 @@ def detail(request, oid):
         context_instance=RequestContext(request, processors=[])
     )
 
-def search_within(request, oid):
-    i = Identifier(id=oid)
-    filter_if_branded(request, i)
-    collection = api.ApiCollection.api_get(i.id, request)
-    collection['identifier'] = i
-    if not collection:
-        raise Http404
-    return search.results(request, collection)
-
 def children(request, oid):
     """Lists all direct children of the collection.
     """

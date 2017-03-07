@@ -45,12 +45,32 @@ def force_list(terms):
 
 
 # views ----------------------------------------------------------------
+
+def collection(request, oid):
+    i = Identifier(id=oid)
+    #filter_if_branded(request, i)
+    collection = api.ApiCollection.api_get(i.id, request)
+    collection['identifier'] = i
+    if not collection:
+        raise Http404
+    return results(request, collection)
+
+def facetterm(request, facet_id, term_id):
+    oid = '-'.join([facet_id, term_id])
+    term = api.ApiTerm.api_get(oid, request)
+    if not term:
+        raise Http404
+    return results(request, term)
+
+def narrator(request, oid):
+    narrator = api.ApiNarrator.api_get(oid, request)
+    if not narrator:
+        raise Http404
+    return results(request, narrator)
     
-def results(request, object_=None):
+def results(request, obj=None):
     """Results of a search query or a DDR ID query.
     """
-    this_url = reverse('ui-search-results')
-    
     form = forms.SearchForm(request.GET)
     form.is_valid()
     
@@ -79,13 +99,47 @@ def results(request, object_=None):
         },
     }
 
-    # search within collection
-    if object_ and (object_['model'] == 'collection'):
-        this_url = reverse('ui-object-search', args=[object_['id']])
-        query['models'] = ['entity', 'segment']
-        query['must'].append(
-            {"wildcard": {"id": "%s-*" % object_['id']}}
-        )
+    # search within collection/facetterm/narrator  - - - - -
+    
+    this_url = reverse('ui-search-results')
+    template_extends = "ui/search/base.html"
+    
+    if obj:
+        # search collection
+        if obj['model'] == 'collection':
+            query['models'] = ['entity', 'segment']
+            query['must'].append(
+                {"wildcard": {"id": "%s-*" % obj['id']}}
+            )
+            this_url = reverse('ui-search-collection', args=[obj['id']])
+            template_extends = "ui/collections/base.html"
+        
+        # search topic
+        elif (obj['model'] == 'facetterm') and (obj['facet'] == 'topics'):
+            query['must'].append(
+                {"wildcard": {"topics.id": obj['id']}}
+            )
+            this_url = reverse('ui-search-facetterm', args=[obj['facet'], obj['id']])
+            #template_extends = "ui/collections/base.html"
+        
+        # search facility
+        elif (obj['model'] == 'facetterm') and (obj['facet'] == 'facility'):
+            query['must'].append(
+                {"wildcard": {"facility.id": obj['id']}}
+            )
+            this_url = reverse('ui-search-facetterm', args=[obj['facet'], obj['id']])
+            #template_extends = "ui/collections/base.html"
+        
+        # search narrator
+        elif obj['model'] == 'narrator':
+            query['must'].append(
+                {"wildcard": {"creators.id": obj['id']}}
+            )
+            this_url = reverse('ui-search-narrator', args=[obj['id']])
+            #template_extends = "ui/collections/base.html"
+            obj['title'] = obj['display_name']
+    
+    # end search within  - - - - - - - - - - - - - - - - - - 
     
     def add_must(form, form_fieldname, es_fieldname, query, filters=False):
         """
@@ -146,19 +200,13 @@ def results(request, object_=None):
         )
         page = paginator.page(thispage)
     
-    # collection base template or default search results template
-    if object_ and (object_['model'] == 'collection'):
-        template_extends = "ui/collections/base.html"
-    else:
-        template_extends = "ui/search/base.html"
-    
     return render_to_response(
         'ui/search/results.html',
         {
             'template_extends': template_extends,
             'hide_header_search': True,
             'searching': searching,
-            'object': object_,
+            'object': obj,
             'tab': request.GET.get('tab', 'list'),
             'filters': filters,
             'query': query,
