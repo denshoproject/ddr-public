@@ -146,9 +146,16 @@ def results(request, object_=None):
         )
         page = paginator.page(thispage)
     
+    # collection base template or default search results template
+    if object_ and (object_['model'] == 'collection'):
+        template_extends = "ui/collections/base.html"
+    else:
+        template_extends = "ui/search/base.html"
+    
     return render_to_response(
         'ui/search/results.html',
         {
+            'template_extends': template_extends,
             'hide_header_search': True,
             'searching': searching,
             'object': object_,
