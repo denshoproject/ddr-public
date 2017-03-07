@@ -48,7 +48,7 @@ def narrators(request):
         pagesize
     )
     return render_to_response(
-        'ui/browse/narrators.html',
+        'ui/narrators/list.html',
         {
             'paginator': paginator,
             'page': paginator.page(thispage),
@@ -62,7 +62,7 @@ def narrators(request):
 @cache_page(settings.CACHE_TIMEOUT)
 def narrator(request, oid):
     return render_to_response(
-        'ui/browse/narrator-detail.html',
+        'ui/narrators/detail.html',
         {
             'narrator': api.ApiNarrator.api_get(oid, request),
             'interviews': api.ApiNarrator.interviews(oid, request, limit=1000),

@@ -1,13 +1,10 @@
-{% extends "ui/browse/base.html" %}
+{% extends "ui/narrators/base.html" %}
 {% load thumbnail %}
 
 {% block title %}{{ narrator.display_name }}{% endblock %}
 {% block pagetitle %}{{ narrator.display_name }}{% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
-<li>
-  <a href="{% url "ui-browse-narrators" %}">Narrators</a>
-</li>
 <li>
   {{ narrator.display_name }}
 </li>

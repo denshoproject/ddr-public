@@ -35,9 +35,9 @@ urlpatterns = patterns(
     url(r'^ethicalediting/$', TemplateView.as_view(template_name='ui/ethicalediting.html'), name='ui-ethicalediting'),
     
     url(r'^narrators/(?P<oid>[\w]+)/search/$', 'ui.views.search.narrator', name='ui-search-narrator'),
-    url(r'^narrators/(?P<oid>[\w]+)/$', 'ui.views.browse.narrator', name='ui-browse-narrator'),
-    url(r'^narrators/$', 'ui.views.browse.narrators', name='ui-browse-narrators'),
-
+    url(r'^narrators/(?P<oid>[\w]+)/$', 'ui.views.browse.narrator', name='ui-narrators-detail'),
+    url(r'^narrators/$', 'ui.views.browse.narrators', name='ui-narrators-list'),
+    
     url(r'^browse/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/search/$', 'ui.views.search.facetterm', name='ui-search-facetterm'),
     url(r'^browse/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/$', 'ui.views.browse.term', name='ui-browse-term'),
     url(r'^browse/(?P<facet_id>[\w]+)/$', 'ui.views.browse.facet', name='ui-browse-facet'),
