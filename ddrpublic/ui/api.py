@@ -442,7 +442,7 @@ def format_narrator(document, request, listitem=False):
         d['model'] = 'narrator'
         # links
         d['links'] = OrderedDict()
-        d['links']['html'] = reverse('ui-browse-narrator', args=[oid], request=request)
+        d['links']['html'] = reverse('ui-narrators-detail', args=[oid], request=request)
         d['links']['json'] = reverse('ui-api-narrator', args=[oid], request=request)
         d['links']['img'] = narrator_img_url(document['_source'].pop('image_url'))
         d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)

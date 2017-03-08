@@ -317,7 +317,7 @@
               <p>
                 {% for item in entity.creators %}
                   {% if item.role == 'narrator' %}
-                    <a href="{% url "ui-browse-narrator" item.id %}">{{ item.namepart }}</a><br />
+                    <a href="{% url "ui-narrators-detail" item.id %}">{{ item.namepart }}</a><br />
                   {% endif %}
                 {% endfor %}
               </p>

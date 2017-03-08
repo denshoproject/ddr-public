@@ -14,7 +14,7 @@ from ui import domain_org
 from ui.identifier import Identifier
 from ui.models import DEFAULT_SIZE
 from ui.views import filter_if_branded
-
+from ui.views import search
 
 # views ----------------------------------------------------------------
 

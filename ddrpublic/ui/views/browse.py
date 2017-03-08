@@ -48,7 +48,7 @@ def narrators(request):
         pagesize
     )
     return render_to_response(
-        'ui/browse/narrators.html',
+        'ui/narrators/list.html',
         {
             'paginator': paginator,
             'page': paginator.page(thispage),
@@ -62,7 +62,7 @@ def narrators(request):
 @cache_page(settings.CACHE_TIMEOUT)
 def narrator(request, oid):
     return render_to_response(
-        'ui/browse/narrator-detail.html',
+        'ui/narrators/detail.html',
         {
             'narrator': api.ApiNarrator.api_get(oid, request),
             'interviews': api.ApiNarrator.interviews(oid, request, limit=1000),
@@ -74,11 +74,11 @@ def narrator(request, oid):
 @cache_page(settings.CACHE_TIMEOUT)
 def facet(request, facet_id):
     if facet_id == 'topics':
-        template_name = 'ui/browse/facet-topics.html'
+        template_name = 'ui/facets/facet-topics.html'
         terms = api.ApiFacet.topics_terms(request)
         
     elif facet_id == 'facility':
-        template_name = 'ui/browse/facet-facility.html'
+        template_name = 'ui/facets/facet-facility.html'
         # for some reason ES does not sort
         terms = api.ApiFacet.facility_terms(request)
     
@@ -95,7 +95,7 @@ def facet(request, facet_id):
 @cache_page(settings.CACHE_TIMEOUT)
 def term( request, facet_id, term_id ):
     oid = '-'.join([facet_id, term_id])
-    template_name = 'ui/browse/term-%s.html' % facet_id
+    template_name = 'ui/facets/term-%s.html' % facet_id
     facet = api.ApiFacet.api_get(facet_id, request)
     term = api.ApiTerm.api_get(oid, request)
     

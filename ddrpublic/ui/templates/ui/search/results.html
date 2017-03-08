@@ -1,13 +1,55 @@
-{% extends "ui/search/base.html" %}
+{% extends template_extends %}
 {% load bootstrap_pagination ui_tags %}
+
 
 {% block title %}Search Results{% endblock %}
 
+
+{% block breadcrumbs %}{{ block.super }}
+{% if object.identifier %}
+
+{% breadcrumbs object.identifier.breadcrumbs True %}
+<li>Search Results</li>
+
+{% else %}{# object.identifier #}
+
+<li>
+  <a href="{{ object.links.html }}">
+    {{ object.title }}
+  </a>
+</li>
+<li>Search Results</li>
+
+{% endif %}
+{% endblock breadcrumbs %}
+
+
 {% block content %}
+
+<!-- query
+
+{{ query_json|safe }}
+
+-->
+
 <section class="container" id="portfolio">
   <div class="row">
     <div class="col-sm-12 col-md-12">
 
+{% if object %}
+<h2>
+  Search:
+  {{ object.title }}
+  <small>{{ object.id }}</small>
+</h2>
+<p>
+  <a class="btn btn-primary btn-sm" href="{{ object.links.html }}">
+    <i class="fa fa-arrow-circle-left"></i>
+    Back to {{ object.model }} detail
+  </a>
+</p>
+{% endif %}{# object #}
+      
 {% if error_message %}
 <p class="error">
 {{ error_message }}
@@ -16,7 +58,7 @@
 
 <!-- --------------------------------------------------------------- -->
 
-<form action="{% url "ui-search-results" %}" method="get">
+<form action="{{ this_url }}" method="get">
   <div class="row">
     <div class="col-sm-10 col-md-10">
       <div class="input-group">
@@ -161,17 +203,17 @@
     </div><!-- .col-sm-12 col-md-12 -->
   </div><!-- .row -->
 
+  <!-- query
+
+{{ query_json|safe }}
+
+  -->
   <div class="row">
     <div class="col-sm-12 col-md-12 text-muted text-right">
       <small><a class="api" href="{{ api_url }}">API</a></small>
     </div>
 
-{% if searching %}
-    <!-- {{ query_json }} -->
-{% endif %}
-
   </div><!-- .row -->
 
 </section><!-- .container-fluid -->
 {% endblock content %}
-
