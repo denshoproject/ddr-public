@@ -177,7 +177,7 @@ def results(request, obj=None):
     page = None
     if query['fulltext'] or query['must']:
         searching = True
-        results = api.search(
+        results = api.docstore_search(
             text=query['fulltext'],
             must=query['must'],
             should=[],
