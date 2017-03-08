@@ -1,13 +1,23 @@
-{% extends "ui/browse/base.html" %}
+{% extends "ui/facets/base-topics.html" %}
 {% load bootstrap_pagination ui_tags %}
 
 {% block title %}{{ term.title }}{% endblock %}
 {% block pagetitle %}{{ term.title }}{% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
-<li><a href="{% url "ui-browse-facet" facet.id %}">{{ facet.title }}</a></li>
 <li>{{ term.title }}</li>
 {% endblock breadcrumbs %}
+
+{% block pagecss %}
+<style type="text/css">
+.indent0 { padding-left:0px; }
+.indent1 { padding-left:30px; }
+.indent2 { padding-left:60px; }
+.indent3 { padding-left:90px; }
+.indent4 { padding-left:120px; }
+.indent5 { padding-left:150px; }
+</style>
+{% endblock pagecss %}
 
 {% block content %}
 <section class="container" id="portfolio">
@@ -15,29 +25,41 @@
     <div class="col-sm-10 col-md-10">
 
 <ol class="breadcrumb">
+  <li><a href="{% url "ui-browse-facet" "topics" %}">Topics</a></li>
 {% for t in term.breadcrumbs %}
   <li><a href="{{ t.url }}">{{ t.title }}</a></li>
 {% endfor %}
 </ol>
 
-<h1>
-  {{ term.title }}
-</h1>
-
-{% if term.type or term.location_geopoint %}
+<h1>{{ term.title }}</h1>
+{% if term.description %}
 <p>
-  {% if term.type %}<b>{{ term.type }}</b>{% endif %}
-  {% if term.type and term.location_geopoint %}</p><p>{% endif %}
-  {% if term.location_geopoint.geopoint %}
-  Location: <a target="_blank" href="https://www.google.com/maps/@{{ term.location_geopoint.geopoint.lat }},{{ term.location_geopoint.geopoint.lng }},14z">{{ term.location_geopoint.label }} <i class="fa fa-map-marker"></i></a> 
-  {% endif %}
+{{ term.description }}
 </p>
 {% endif %}
 
-{% if term.elinks %}
-<!-- topic.encycarticles {{term.elinks.url }}-->
 <p>
-<a target="encyc" href="{{ term.elinks.0.url }}">More information in the Densho Encyclopedia <i class="fa fa-external-link"></i></a>...
+  {% for t in term.tree %}
+  {% if t.id == term.id %}
+  <span class="indent{{ t.depth }}">{{ t.title }}</span>
+  {% else %}
+  <a class="indent{{ t.depth }}" href="{{ t.links.html }}">{{ t.title }}</a>
+  {% endif %}
+  {% if t.doc_count %}<span class="text-muted">({{ t.doc_count }})</span>{% endif %}
+  <br/>
+  {% endfor %}
+</p>
+
+{% if term.encyc_urls %}
+<!-- topic.encycarticles -->
+<p>
+Related articles from the
+<a target="encyc" href="//encyclopedia.densho.org/">Densho Encyclopedia <i class="fa fa-external-link"></i></a>:<br />
+<span class="indent1">
+{% for article in term.encyc_urls %}
+  <a target="encyc" href="{{ article.url }}">{{ article.title }}</a>{% if not forloop.last %},{% endif %}
+{% endfor %}
+</span>
 </p>
 {% endif %}
 
