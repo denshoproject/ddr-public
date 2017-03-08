@@ -20,7 +20,7 @@ from ui.views import filter_if_branded
 def detail(request, oid):
     i = Identifier(id=oid)
     filter_if_branded(request, i)
-    entity = api.ApiEntity.api_get(i.id, request)
+    entity = api.Entity.get(i.id, request)
     entity['identifier'] = i
     if not entity:
         raise Http404
@@ -30,25 +30,25 @@ def detail(request, oid):
     if entity.get('format') and isinstance(entity['format'], basestring):
         format_ = entity['format']
     elif entity.get('format') and isinstance(entity['format'], dict):
-        format_ = entity['format']['id']  # format is wrapped in ApiEntity.api_get
-    format_ = entity['format']['id']  # format is wrapped in ApiEntity.api_get
+        format_ = entity['format']['id']  # format is wrapped in Entity.get
+    format_ = entity['format']['id']  # format is wrapped in Entity.get
     if format_ == 'vh':
         if i.model == 'segment':
             return HttpResponseRedirect(reverse('ui-interview', args=[i.id]))
         elif (i.model == 'entity'):
-            segments = api.ApiEntity.api_children(oid, request, limit=1)
+            segments = api.Entity.children(oid, request, limit=1)
             if segments['objects']:
                 # make sure this is actually a segment before redirecting
                 si = Identifier(id=segments['objects'][0]['id'])
                 if si.model == 'segment':
                     return HttpResponseRedirect(reverse('ui-interview', args=[si.id]))
     
-    parent = api.ApiCollection.api_get(i.parent_id(), request)
-    organization = api.ApiOrganization.api_get(i.organization().id, request)
+    parent = api.Collection.get(i.parent_id(), request)
+    organization = api.Organization.get(i.organization().id, request)
     # signature
     signature = None
     if entity.get('signature_id'):
-        signature = api.ApiFile.api_get(entity['signature_id'], request)
+        signature = api.File.get(entity['signature_id'], request)
     if signature:
         signature['access_size'] = api.file_size(signature['links']['img'])
     # facet terms
@@ -59,7 +59,7 @@ def detail(request, oid):
     pagesize = 5
     children_paginator = Paginator(
         api.pad_results(
-            api.ApiEntity.api_children(
+            api.Entity.children(
                 i.id, request, limit=pagesize, offset=0,
             ),
             pagesize,
@@ -69,7 +69,7 @@ def detail(request, oid):
     )
     nodes_paginator = Paginator(
         api.pad_results(
-            api.ApiEntity.api_nodes(
+            api.Entity.nodes(
                 i.id, request, limit=pagesize, offset=0,
             ),
             pagesize,
@@ -102,7 +102,7 @@ def detail(request, oid):
 def interview(request, oid):
     si = Identifier(id=oid)
     filter_if_branded(request, si)
-    segment = api.ApiEntity.api_get(si.id, request)
+    segment = api.Entity.get(si.id, request)
     segment['identifier'] = si
     if not segment:
         raise Http404
@@ -111,14 +111,14 @@ def interview(request, oid):
         raise Http404
     
     ei = si.parent()
-    entity = api.ApiEntity.api_get(ei.id, request)
+    entity = api.Entity.get(ei.id, request)
     entity['identifier'] = si
-    parent = api.ApiCollection.api_get(entity['identifier'].parent_id(), request)
-    collection = api.ApiCollection.api_get(si.collection_id(), request)
-    organization = api.ApiOrganization.api_get(entity['identifier'].organization().id, request)
+    parent = api.Collection.get(entity['identifier'].parent_id(), request)
+    collection = api.Collection.get(si.collection_id(), request)
+    organization = api.Organization.get(entity['identifier'].organization().id, request)
     
     # TODO only id, title, extent
-    segments = api.ApiEntity.api_children(ei.id, request, limit=1000)
+    segments = api.Entity.children(ei.id, request, limit=1000)
     # get next,prev segments
     segment['index'] = 0
     num_segments = len(segments['objects'])
@@ -134,7 +134,7 @@ def interview(request, oid):
     # segment index for humans
     segment['this'] = segment['index'] + 1
     
-    transcripts = api.ApiEntity.transcripts(si, request)
+    transcripts = api.Entity.transcripts(si, request)
     download_meta = archivedotorg.segment_download_meta(si.id)
     
     return render_to_response(
@@ -159,7 +159,7 @@ def children( request, oid, role=None ):
     """
     i = Identifier(id=oid)
     filter_if_branded(request, i)
-    entity = api.ApiEntity.api_get(i.id, request)
+    entity = api.Entity.get(i.id, request)
     entity['identifier'] = i
     if not entity:
         raise Http404
@@ -168,7 +168,7 @@ def children( request, oid, role=None ):
     pagesize = settings.RESULTS_PER_PAGE
     paginator = Paginator(
         api.pad_results(
-            api.ApiEntity.api_children(
+            api.Entity.children(
                 i.id,
                 request,
                 limit=pagesize,
@@ -199,7 +199,7 @@ def nodes( request, oid, role=None ):
     """
     i = Identifier(id=oid)
     filter_if_branded(request, i)
-    entity = api.ApiEntity.api_get(i.id, request)
+    entity = api.Entity.get(i.id, request)
     entity['identifier'] = i
     if not entity:
         raise Http404
@@ -208,7 +208,7 @@ def nodes( request, oid, role=None ):
     pagesize = settings.RESULTS_PER_PAGE
     paginator = Paginator(
         api.pad_results(
-            api.ApiEntity.api_nodes(
+            api.Entity.nodes(
                 i.id,
                 request,
                 limit=pagesize,

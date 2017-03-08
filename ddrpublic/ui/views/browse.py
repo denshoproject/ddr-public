@@ -37,7 +37,7 @@ def narrators(request):
     pagesize = settings.RESULTS_PER_PAGE
     paginator = Paginator(
         api.pad_results(
-            api.ApiNarrator.api_list(
+            api.Narrator.narrators(
                 request,
                 limit=pagesize,
                 offset=pagesize*(thispage-1),
@@ -64,8 +64,8 @@ def narrator(request, oid):
     return render_to_response(
         'ui/narrators/detail.html',
         {
-            'narrator': api.ApiNarrator.api_get(oid, request),
-            'interviews': api.ApiNarrator.interviews(oid, request, limit=1000),
+            'narrator': api.Narrator.get(oid, request),
+            'interviews': api.Narrator.interviews(oid, request, limit=1000),
             'api_url': reverse('ui-api-narrator', args=[oid]),
         },
         context_instance=RequestContext(request, processors=[])
@@ -75,17 +75,17 @@ def narrator(request, oid):
 def facet(request, facet_id):
     if facet_id == 'topics':
         template_name = 'ui/facets/facet-topics.html'
-        terms = api.ApiFacet.topics_terms(request)
+        terms = api.Facet.topics_terms(request)
         
     elif facet_id == 'facility':
         template_name = 'ui/facets/facet-facility.html'
         # for some reason ES does not sort
-        terms = api.ApiFacet.facility_terms(request)
+        terms = api.Facet.facility_terms(request)
     
     return render_to_response(
         template_name,
         {
-            'facet': api.ApiFacet.api_get(facet_id, request),
+            'facet': api.Facet.get(facet_id, request),
             'terms': terms,
             'api_url': reverse('ui-api-facetterms', args=[facet_id]),
         },
@@ -96,13 +96,13 @@ def facet(request, facet_id):
 def term( request, facet_id, term_id ):
     oid = '-'.join([facet_id, term_id])
     template_name = 'ui/facets/term-%s.html' % facet_id
-    facet = api.ApiFacet.api_get(facet_id, request)
-    term = api.ApiTerm.api_get(oid, request)
+    facet = api.Facet.get(facet_id, request)
+    term = api.Term.get(oid, request)
     
     # terms tree (topics)
     if facet_id == 'topics':
         term['tree'] = [
-            t for t in api.ApiFacet.topics_terms(request)
+            t for t in api.Facet.topics_terms(request)
             if (t['id'] in term['ancestors']) # ancestors of current term
             or (t['id'] == term['id'])        # current term
             or (term['id'] in t['ancestors']) # children of current term
@@ -132,7 +132,7 @@ def term( request, facet_id, term_id ):
     pagesize = settings.RESULTS_PER_PAGE
     paginator = Paginator(
         api.pad_results(
-            api.ApiTerm.objects(
+            api.Term.objects(
                 facet_id, term_id,
                 limit=pagesize,
                 offset=pagesize*(thispage-1),

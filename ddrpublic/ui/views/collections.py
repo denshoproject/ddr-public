@@ -27,17 +27,17 @@ def list( request ):
         # partner site
         idparts = {'model':'organization', 'repo':repo, 'org':org}
         identifier = Identifier(parts=idparts)
-        organization = api.ApiOrganization.api_get(identifier.id)
-        collections = api.ApiOrganization.api_children(
+        organization = api.Organization.get(identifier.id)
+        collections = api.Organization.children(
             org['id'], request,
             limit=settings.ELASTICSEARCH_MAX_SIZE,
         )
         organizations.append( (org, collections['objects']) )
     else:
         # default site
-        orgs = api.ApiRepository.api_children(repo, request)
+        orgs = api.Repository.children(repo, request)
         for org in orgs['objects']:
-            collections = api.ApiOrganization.api_children(
+            collections = api.Organization.children(
                 org['id'], request,
                 limit=settings.ELASTICSEARCH_MAX_SIZE,
             )
@@ -54,16 +54,16 @@ def list( request ):
 def detail(request, oid):
     i = Identifier(id=oid)
     filter_if_branded(request, i)
-    collection = api.ApiCollection.api_get(i.id, request)
+    collection = api.Collection.get(i.id, request)
     collection['identifier'] = i
     if not collection:
         raise Http404
-    organization = api.ApiOrganization.api_get(i.parent_id(stubs=1), request)
+    organization = api.Organization.get(i.parent_id(stubs=1), request)
     thispage = 1
     pagesize = 10
     paginator = Paginator(
         api.pad_results(
-            api.ApiCollection.api_children(
+            api.Collection.children(
                 i.id,
                 request,
                 limit=pagesize,
@@ -94,7 +94,7 @@ def children(request, oid):
     """
     i = Identifier(id=oid)
     filter_if_branded(request, i)
-    collection = api.ApiCollection.api_get(i.id, request)
+    collection = api.Collection.get(i.id, request)
     collection['identifier'] = i
     if not collection:
         raise Http404
@@ -102,7 +102,7 @@ def children(request, oid):
     pagesize = settings.RESULTS_PER_PAGE
     paginator = Paginator(
         api.pad_results(
-            api.ApiCollection.api_children(
+            api.Collection.children(
                 i.id,
                 request,
                 limit=pagesize,

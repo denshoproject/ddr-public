@@ -17,12 +17,12 @@ from ui.views import filter_if_branded
 def detail(request, oid):
     i = Identifier(id=oid)
     filter_if_branded(request, i)
-    ffile = api.ApiFile.api_get(i.id, request)
+    ffile = api.File.get(i.id, request)
     ffile['identifier'] = i
     if not ffile:
         raise Http404
-    parent = api.ApiEntity.api_get(i.parent_id(), request)
-    organization = api.ApiOrganization.api_get(i.organization().id, request)
+    parent = api.Entity.get(i.parent_id(), request)
+    organization = api.Organization.get(i.organization().id, request)
     return render_to_response(
         'ui/files/detail.html',
         {
