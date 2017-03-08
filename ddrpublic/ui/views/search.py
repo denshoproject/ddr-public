@@ -49,7 +49,7 @@ def force_list(terms):
 def collection(request, oid):
     i = Identifier(id=oid)
     #filter_if_branded(request, i)
-    collection = api.ApiCollection.api_get(i.id, request)
+    collection = api.Collection.get(i.id, request)
     collection['identifier'] = i
     if not collection:
         raise Http404
@@ -57,13 +57,13 @@ def collection(request, oid):
 
 def facetterm(request, facet_id, term_id):
     oid = '-'.join([facet_id, term_id])
-    term = api.ApiTerm.api_get(oid, request)
+    term = api.Term.get(oid, request)
     if not term:
         raise Http404
     return results(request, term)
 
 def narrator(request, oid):
-    narrator = api.ApiNarrator.api_get(oid, request)
+    narrator = api.Narrator.get(oid, request)
     if not narrator:
         raise Http404
     return results(request, narrator)
@@ -177,7 +177,7 @@ def results(request, obj=None):
     page = None
     if query['fulltext'] or query['must']:
         searching = True
-        results = api.api_search(
+        results = api.search(
             text=query['fulltext'],
             must=query['must'],
             should=[],

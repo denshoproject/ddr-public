@@ -27,8 +27,8 @@ def topics_flattened():
     key = 'search:filters:%s' % oid
     cached = cache.get(key)
     if not cached:
-        terms = api.ApiFacet.make_tree(
-            api.ApiFacet.api_children(
+        terms = api.Facet.make_tree(
+            api.Facet.children(
                 oid, request,
                 sort=[('sort','asc')],
                 limit=10000, raw=True
@@ -50,7 +50,7 @@ def facilities():
     key = 'search:filters:%s' % oid
     cached = cache.get(key)
     if not cached:
-        terms = api.ApiFacet.api_children(
+        terms = api.Facet.children(
             oid, request,
             sort=[('title','asc')],
             limit=10000, raw=True

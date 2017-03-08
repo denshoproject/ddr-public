@@ -205,7 +205,7 @@ SEARCH_RETURN_FIELDS = [
 
 ]
 
-def api_search(text='', must=[], should=[], mustnot=[], models=[], fields=[], sort_fields=[], limit=DEFAULT_LIMIT, offset=0, aggs={}, request=None):
+def docstore_search(text='', must=[], should=[], mustnot=[], models=[], fields=[], sort_fields=[], limit=DEFAULT_LIMIT, offset=0, aggs={}, request=None):
     """Return object children list in Django REST Framework format.
     
     Returns a paged list with count/prev/next metadata
@@ -244,7 +244,7 @@ def api_search(text='', must=[], should=[], mustnot=[], models=[], fields=[], so
         request
     )
 
-def api_children(request, model, object_id, sort_fields, limit=DEFAULT_LIMIT, offset=0, just_count=False):
+def children(request, model, object_id, sort_fields, limit=DEFAULT_LIMIT, offset=0, just_count=False):
     """Return object children list in Django REST Framework format.
     
     Returns a paged list with count/prev/next metadata
@@ -618,10 +618,10 @@ FACET_LABELS = facet_labels()
 
 # classes --------------------------------------------------------------
 
-class ApiRepository(object):
+class Repository(object):
     
     @staticmethod
-    def api_get(oid, request):
+    def get(oid, request):
         i = Identifier(id=oid)
         document = docstore.Docstore().get(model=i.model, document_id=i.id)
         if not document:
@@ -636,14 +636,14 @@ class ApiRepository(object):
         return data
 
     @staticmethod
-    def api_children(oid, request, limit=DEFAULT_LIMIT, offset=0):
+    def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
         i = Identifier(id=oid)
         sort_fields = [
             ['repo','asc'],
             ['org','asc'],
             ['id','asc'],
         ]
-        data = api_children(
+        data = children(
             request, CHILDREN[i.model], i.id, sort_fields, limit=limit, offset=offset
         )
         for d in data['objects']:
@@ -652,10 +652,10 @@ class ApiRepository(object):
         return data
 
 
-class ApiOrganization(object):
+class Organization(object):
     
     @staticmethod
-    def api_get(oid, request):
+    def get(oid, request):
         i = Identifier(id=oid)
         document = docstore.Docstore().get(model=i.model, document_id=i.id)
         if not document:
@@ -676,7 +676,7 @@ class ApiOrganization(object):
         return data
 
     @staticmethod
-    def api_children(oid, request, limit=DEFAULT_LIMIT, offset=0):
+    def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
         i = Identifier(id=oid)
         sort_fields = [
             ['repo','asc'],
@@ -684,15 +684,15 @@ class ApiOrganization(object):
             ['cid','asc'],
             ['id','asc'],
         ]
-        return api_children(
+        return children(
             request, CHILDREN[i.model], i.id, sort_fields, limit=limit, offset=offset
         )
 
 
-class ApiCollection(object):
+class Collection(object):
     
     @staticmethod
-    def api_get(oid, request):
+    def get(oid, request):
         i = Identifier(id=oid)
         idparts = [x for x in i.parts.itervalues()]
         document = docstore.Docstore().get(model=i.model, document_id=i.id)
@@ -717,7 +717,7 @@ class ApiCollection(object):
         return data
 
     @staticmethod
-    def api_children(oid, request, limit=DEFAULT_LIMIT, offset=0):
+    def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
         i = Identifier(id=oid)
         sort_fields = [
             ['repo','asc'],
@@ -726,12 +726,12 @@ class ApiCollection(object):
             ['eid','asc'],
             ['id','asc'],
         ]
-        return api_children(
+        return children(
             request, CHILDREN[i.model], i.id, sort_fields, limit=limit, offset=offset
         )
 
 
-class ApiEntity(object):
+class Entity(object):
 
     @staticmethod
     def term_url(request, data, facet_id, fieldname):
@@ -775,7 +775,7 @@ class ApiEntity(object):
         return document
 
     @staticmethod
-    def api_get(oid, request):
+    def get(oid, request):
         i = Identifier(id=oid)
         document = docstore.Docstore().get(model=i.model, document_id=i.id)
         if not document:
@@ -809,11 +809,11 @@ class ApiEntity(object):
         for field in HIDDEN_FIELDS:
             pop_field(data, field)
 
-        data = ApiEntity._labelify(data, fields=['format', 'genre', 'language',])
+        data = Entity._labelify(data, fields=['format', 'genre', 'language',])
         return data
     
     @staticmethod
-    def api_children(oid, request, limit=DEFAULT_LIMIT, offset=0, just_count=False):
+    def children(oid, request, limit=DEFAULT_LIMIT, offset=0, just_count=False):
         i = Identifier(id=oid)
         sort_fields = [
             ['repo','asc'],
@@ -828,12 +828,12 @@ class ApiEntity(object):
         models = CHILDREN[i.model]
         if 'file' in models:
             models.remove('file')
-        return api_children(
+        return children(
             request, models, i.id, sort_fields, limit=limit, offset=offset, just_count=just_count
         )
 
     @staticmethod
-    def api_nodes(oid, request, limit=DEFAULT_LIMIT, offset=0):
+    def nodes(oid, request, limit=DEFAULT_LIMIT, offset=0):
         i = Identifier(id=oid)
         sort_fields = [
             ['repo','asc'],
@@ -846,7 +846,7 @@ class ApiEntity(object):
             ['id','asc'],
         ]
         models = ['file']
-        return api_children(
+        return children(
             request, models, i.id, sort_fields, limit=limit, offset=offset
         )
 
@@ -862,7 +862,7 @@ class ApiEntity(object):
             'glossary': None,
         }
         # segment transcript
-        results = api_search(
+        results = docstore_search(
             should=[
                 {"wildcard": {"id": "%s-transcript-*" % sidentifier.id}},
                 {"wildcard": {"id": "%s-transcript-*" % sidentifier.parent_id()}},
@@ -897,10 +897,10 @@ class ApiEntity(object):
                 data['interview'] = results['objects'][n]
         return data
 
-class ApiRole(object):
+class Role(object):
 
     @staticmethod
-    def api_children(oid, request, limit=DEFAULT_LIMIT, offset=0):
+    def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
         i = Identifier(id=oid)
         sort_fields = [
             ['repo','asc'],
@@ -912,15 +912,15 @@ class ApiRole(object):
             ['sha1','asc'],
             ['id','asc'],
         ]
-        return api_children(
+        return children(
             request, CHILDREN[i.model], i.id, sort_fields, limit=limit, offset=offset
         )
 
 
-class ApiFile(object):
+class File(object):
     
     @staticmethod
-    def api_get(oid, request):
+    def get(oid, request):
         i = Identifier(id=oid)
         # some object have Densho UIDs in signature_id field
         if not i.model == 'file':
@@ -946,7 +946,7 @@ class ApiFile(object):
         return data
 
     @staticmethod
-    def api_children(oid, request, limit=DEFAULT_LIMIT, offset=0):
+    def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
         return {
             "count": 0,
             "prev": None,
@@ -955,10 +955,10 @@ class ApiFile(object):
         }
 
 
-class ApiNarrator(object):
+class Narrator(object):
     
     @staticmethod
-    def api_get(oid, request):
+    def get(oid, request):
         document = docstore.Docstore().get(
             model='narrator', document_id=oid
         )
@@ -973,7 +973,7 @@ class ApiNarrator(object):
         return data
     
     @staticmethod
-    def api_list(request, limit=DEFAULT_LIMIT, offset=0):
+    def narrators(request, limit=DEFAULT_LIMIT, offset=0):
         SORT_FIELDS = [
             ['last_name','asc'],
             ['first_name','asc'],
@@ -1017,7 +1017,7 @@ class ApiNarrator(object):
     def interviews(narrator_id, request, limit=DEFAULT_LIMIT, offset=0):
         """Interview (Entity) objects for specified narrator.
         """
-        results = api_search(
+        results = docstore_search(
             must=[
                 {"term": {"creators.id": narrator_id}},
                 {"term": {"format": "vh"}},
@@ -1039,7 +1039,7 @@ class ApiNarrator(object):
         )
         # add segment count per interview
         for d in results['objects']:
-            r = ApiEntity.api_children(
+            r = Entity.children(
                 d['id'], request=request,
                 just_count=1
             )
@@ -1047,10 +1047,10 @@ class ApiNarrator(object):
         return results
 
 
-class ApiFacet(object):
+class Facet(object):
     
     @staticmethod
-    def api_get(oid, request):
+    def get(oid, request):
         document = docstore.Docstore().get(
             model='facet', document_id=oid
         )
@@ -1063,7 +1063,7 @@ class ApiFacet(object):
         return data
     
     @staticmethod
-    def api_list(request, limit=DEFAULT_LIMIT, offset=0):
+    def facets(request, limit=DEFAULT_LIMIT, offset=0):
         SORT_FIELDS = [
         ]
         LIST_FIELDS = [
@@ -1095,7 +1095,7 @@ class ApiFacet(object):
         )
     
     @staticmethod
-    def api_children(oid, request, sort=[], limit=DEFAULT_LIMIT, offset=0, raw=False):
+    def children(oid, request, sort=[], limit=DEFAULT_LIMIT, offset=0, raw=False):
         LIST_FIELDS = [
             'id',
             'sort',
@@ -1206,13 +1206,13 @@ class ApiFacet(object):
         Does caching this mean the query/aggs won't be cached in ES?
         
         @param request: Django request object.
-        @returns: list of ApiTerms
+        @returns: list of Terms
         """
         facet_id = 'topics'
         key = 'facet:%s:terms' % facet_id
         cached = cache.get(key)
         if not cached:
-            terms = ApiFacet.api_children(
+            terms = Facet.children(
                 facet_id, request,
                 sort=[('title','asc')],
                 limit=10000, raw=True
@@ -1222,8 +1222,8 @@ class ApiFacet(object):
                 term['links']['html'] = reverse(
                     'ui-browse-term', args=[facet_id, term['id']]
                 )
-            terms = ApiFacet.make_tree(terms)
-            ApiTerm.term_aggregations('topics.id', 'topics', terms, request)
+            terms = Facet.make_tree(terms)
+            Term.term_aggregations('topics.id', 'topics', terms, request)
             cached = terms
             cache.set(key, cached, settings.CACHE_TIMEOUT)
         return cached
@@ -1236,13 +1236,13 @@ class ApiFacet(object):
         Does caching this mean the query/aggs won't be cached in ES?
         
         @param request: Django request object.
-        @returns: list of ApiTerms
+        @returns: list of Terms
         """
         facet_id = 'facility'
         key = 'facet:%s:terms' % facet_id
         cached = cache.get(key)
         if not cached:
-            terms = ApiFacet.api_children(
+            terms = Facet.children(
                 facet_id, request,
                 sort=[('title','asc')],
                 limit=10000, raw=True
@@ -1253,16 +1253,16 @@ class ApiFacet(object):
                     'ui-browse-term', args=[facet_id, term['id']]
                 )
             terms = sorted(terms, key=lambda term: term['title'])
-            ApiTerm.term_aggregations('facility.id', 'facility', terms, request)
+            Term.term_aggregations('facility.id', 'facility', terms, request)
             cached = terms
             cache.set(key, cached, settings.CACHE_TIMEOUT)
         return cached
 
 
-class ApiTerm(object):
+class Term(object):
     
     @staticmethod
-    def api_get(oid, request):
+    def get(oid, request):
         document = docstore.Docstore().get(
             model='facetterm', document_id=oid
         )
@@ -1293,7 +1293,7 @@ class ApiTerm(object):
         return data
     
     @staticmethod
-    def api_list(request, limit=DEFAULT_LIMIT, offset=0):
+    def terms(request, limit=DEFAULT_LIMIT, offset=0):
         SORT_FIELDS = [
         ]
         LIST_FIELDS = [
@@ -1347,7 +1347,7 @@ class ApiTerm(object):
                 },
             }
         }
-        results = api_search(
+        results = docstore_search(
             models=query['models'],
             aggs=query['aggs'],
             request=request,
@@ -1361,7 +1361,7 @@ class ApiTerm(object):
     @staticmethod
     def objects(facet_id, term_id, limit=DEFAULT_LIMIT, offset=0, request=None):
         field = '%s.id' % facet_id
-        return api_search(
+        return docstore_search(
             must=[
                 {'terms': {field: [term_id]}},
             ],
@@ -1411,7 +1411,7 @@ def search(request, format=None):
     
     if query['fulltext'] or query['must'] or query['should'] or query['mustnot']:
         # do the query
-        data = api_search(
+        data = docstore_search(
             text = query['fulltext'],
             must = query['must'],
             should = query['should'],
@@ -1470,43 +1470,43 @@ def _list(request, data):
 @api_view(['GET'])
 def organizations(request, oid, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = ApiRepository.api_children(oid, request, offset=offset)
+    data = Repository.children(oid, request, offset=offset)
     return _list(request, data)
 
 @api_view(['GET'])
 def collections(request, oid, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = ApiOrganization.api_children(oid, request, offset=offset)
+    data = Organization.children(oid, request, offset=offset)
     return _list(request, data)
 
 @api_view(['GET'])
 def entities(request, oid, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = ApiCollection.api_children(oid, request, offset=offset)
+    data = Collection.children(oid, request, offset=offset)
     return _list(request, data)
 
 @api_view(['GET'])
 def segments(request, oid, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = ApiEntity.api_children(oid, request, offset=offset)
+    data = Entity.children(oid, request, offset=offset)
     return _list(request, data)
 
 @api_view(['GET'])
 def files(request, oid, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = ApiEntity.api_nodes(oid, request, offset=offset)
+    data = Entity.nodes(oid, request, offset=offset)
     return _list(request, data)
 
 @api_view(['GET'])
 def facets(request, oid, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = ApiEntity.api_nodes(oid, request, offset=offset)
+    data = Entity.nodes(oid, request, offset=offset)
     return _list(request, data)
 
 @api_view(['GET'])
 def facetterms(request, facet_id, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = ApiFacet.api_children(
+    data = Facet.children(
         facet_id, request,
         sort=[('id','asc')],
         offset=offset,
@@ -1537,63 +1537,63 @@ def _detail(request, data):
 
 @api_view(['GET'])
 def repository(request, oid, format=None):
-    data = ApiRepository.api_get(oid, request)
+    data = Repository.get(oid, request)
     return _detail(request, data)
 
 @api_view(['GET'])
 def organization(request, oid, format=None):
-    data = ApiOrganization.api_get(oid, request)
+    data = Organization.get(oid, request)
     return _detail(request, data)
 
 @api_view(['GET'])
 def collection(request, oid, format=None):
     filter_if_branded(request, oid)
-    data = ApiCollection.api_get(oid, request)
+    data = Collection.get(oid, request)
     return _detail(request, data)
 
 @api_view(['GET'])
 def entity(request, oid, format=None):
     filter_if_branded(request, oid)
-    data = ApiEntity.api_get(oid, request)
+    data = Entity.get(oid, request)
     return _detail(request, data)
 
 @api_view(['GET'])
 def file(request, oid, format=None):
     filter_if_branded(request, oid)
-    data = ApiFile.api_get(oid, request)
+    data = File.get(oid, request)
     return _detail(request, data)
 
 @api_view(['GET'])
 def narrator_index(request, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = ApiNarrator.api_list(request, offset=offset)
+    data = Narrator.narrators(request, offset=offset)
     return _list(request, data)
 
 @api_view(['GET'])
 def narrator(request, oid, format=None):
-    data = ApiNarrator.api_get(oid, request)
+    data = Narrator.get(oid, request)
     return _detail(request, data)
 
 @api_view(['GET'])
 def facet_index(request, format=None):
-    data = ApiFacet.api_list(request)
+    data = Facet.facets(request)
     return Response(data)
 
 @api_view(['GET'])
 def facet(request, facet_id, format=None):
-    data = ApiFacet.api_get(facet_id, request)
+    data = Facet.get(facet_id, request)
     return _detail(request, data)
 
 @api_view(['GET'])
 def term(request, facet_id, term_id, format=None):
     oid = '%s-%s' % (facet_id, term_id)
-    data = ApiTerm.api_get(oid, request)
+    data = Term.get(oid, request)
     return _detail(request, data)
 
 @api_view(['GET'])
 def term_objects(request, facet_id, term_id, limit=DEFAULT_LIMIT, offset=0):
     oid = '%s-%s' % (facet_id, term_id)
-    data = ApiTerm.objects(
+    data = Term.objects(
         facet_id=facet_id,
         term_id=term_id,
         offset=offset,
