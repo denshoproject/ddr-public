@@ -5,12 +5,23 @@
 {% block title %}Search Results{% endblock %}
 
 
-{% if object.identifier %}
 {% block breadcrumbs %}{{ block.super }}
+{% if object.identifier %}
+
 {% breadcrumbs object.identifier.breadcrumbs True %}
 <li>Search Results</li>
+
+{% else %}{# object.identifier #}
+
+<li>
+  <a href="{{ object.links.html }}">
+    {{ object.title }}
+  </a>
+</li>
+<li>Search Results</li>
+
+{% endif %}
 {% endblock breadcrumbs %}
-{% endif %}{# object.identifier #}
 
 
 {% block content %}

@@ -120,7 +120,8 @@ def results(request, obj=None):
                 {"wildcard": {"topics.id": obj['id']}}
             )
             this_url = reverse('ui-search-facetterm', args=[obj['facet'], obj['id']])
-            #template_extends = "ui/collections/base.html"
+            template_extends = "ui/facets/base-topics.html"
+            obj['model'] = 'topics'
         
         # search facility
         elif (obj['model'] == 'facetterm') and (obj['facet'] == 'facility'):
@@ -128,7 +129,8 @@ def results(request, obj=None):
                 {"wildcard": {"facility.id": obj['id']}}
             )
             this_url = reverse('ui-search-facetterm', args=[obj['facet'], obj['id']])
-            #template_extends = "ui/collections/base.html"
+            template_extends = "ui/facets/base-facility.html"
+            obj['model'] = 'facilities'
         
         # search narrator
         elif obj['model'] == 'narrator':
@@ -136,7 +138,7 @@ def results(request, obj=None):
                 {"wildcard": {"creators.id": obj['id']}}
             )
             this_url = reverse('ui-search-narrator', args=[obj['id']])
-            #template_extends = "ui/collections/base.html"
+            template_extends = "ui/narrators/base.html"
             obj['title'] = obj['display_name']
     
     # end search within  - - - - - - - - - - - - - - - - - - 
