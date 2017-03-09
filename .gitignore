@@ -6,3 +6,4 @@ build/
 ddrpublic/ddrpublic/settings.py
 src/
 tmp/
+venv/

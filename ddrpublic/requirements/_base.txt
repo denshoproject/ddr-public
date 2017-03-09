@@ -24,3 +24,5 @@ requests==2.6.0                    # Apache2  y
 djangorestframework==3.1.1         # BSD      y
 sorl-thumbnail==12.2               # BSD      y
 unicodecsv==0.9.4
+
+bpython==0.16

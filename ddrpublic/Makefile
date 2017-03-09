@@ -17,7 +17,7 @@ INSTALL_PUBLIC=$(INSTALL_BASE)/ddr-public
 INSTALL_DEFS=$(INSTALL_BASE)/ddr-defs
 INSTALL_MANUAL=$(INSTALL_BASE)/ddr-manual
 
-VIRTUALENV=$(INSTALL_BASE)/env/ddrpublic
+VIRTUALENV=$(INSTALL_PUBLIC)/venv/ddrpublic
 SETTINGS=$(INSTALL_PUBLIC)/ddrpublic/ddrpublic/settings.py
 
 CONF_BASE=/etc/ddr
@@ -201,7 +201,7 @@ install-setuptools: install-virtualenv
 	@echo "install-setuptools -----------------------------------------------------"
 	apt-get --assume-yes install python-dev
 	source $(VIRTUALENV)/bin/activate; \
-	pip install -U bpython setuptools
+	pip install -U setuptools
 
 
 get-app: get-ddr-cmdln get-ddr-public get-ddr-manual
@@ -339,7 +339,7 @@ install-restframework:
 	@echo ""
 	@echo "rest-framework assets ---------------------------------------------------"
 	-mkdir -p $(MEDIA_BASE)
-	cp -R /usr/local/src/env/ddrpublic/lib/python2.7/site-packages/rest_framework/static/rest_framework/ $(STATIC_ROOT)/
+	cp -R $(VIRTUALENV)/lib/python2.7/site-packages/rest_framework/static/rest_framework/ $(STATIC_ROOT)/
 
 clean-restframework:
 	-rm -Rf $(STATIC_ROOT)/rest_framework/
