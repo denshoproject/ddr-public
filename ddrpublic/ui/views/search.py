@@ -76,6 +76,7 @@ def results(request, obj=None):
     
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
+    offset = api.search_offset(thispage, pagesize)
     
     # query dict
     MODELS = [
@@ -88,7 +89,7 @@ def results(request, obj=None):
         'fulltext': form.cleaned_data.get('fulltext', ''),
         'must': [],
         'models': MODELS,
-        'offset': thispage - 1,
+        'offset': offset,
         'limit': pagesize,
         'aggs': {
             'format':   {'terms': {'size': 50, 'field': 'format'}},

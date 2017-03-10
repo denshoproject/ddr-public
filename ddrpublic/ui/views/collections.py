@@ -100,13 +100,14 @@ def children(request, oid):
         raise Http404
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
+    offset = api.search_offset(thispage, pagesize)
     paginator = Paginator(
         api.pad_results(
             api.Collection.children(
                 i.id,
                 request,
                 limit=pagesize,
-                offset=pagesize*(thispage-1),
+                offset=offset,
             ),
             pagesize,
             thispage

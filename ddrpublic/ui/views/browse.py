@@ -35,12 +35,13 @@ def index( request ):
 def narrators(request):
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
+    offset = api.search_offset(thispage, pagesize)
     paginator = Paginator(
         api.pad_results(
             api.Narrator.narrators(
                 request,
                 limit=pagesize,
-                offset=pagesize*(thispage-1),
+                offset=offset,
             ),
             pagesize,
             thispage
@@ -130,12 +131,14 @@ def term( request, facet_id, term_id ):
     # term objects
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
+    offset = api.search_offset(thispage, pagesize)
+    
     paginator = Paginator(
         api.pad_results(
             api.Term.objects(
                 facet_id, term_id,
                 limit=pagesize,
-                offset=pagesize*(thispage-1),
+                offset=offset,
                 request=request,
             ),
             pagesize,

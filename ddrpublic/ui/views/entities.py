@@ -166,13 +166,14 @@ def children( request, oid, role=None ):
     # children
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
+    offset = api.search_offset(thispage, pagesize)
     paginator = Paginator(
         api.pad_results(
             api.Entity.children(
                 i.id,
                 request,
                 limit=pagesize,
-                offset=pagesize*(thispage-1),
+                offset=offset,
             ),
             pagesize,
             thispage
@@ -206,13 +207,14 @@ def nodes( request, oid, role=None ):
     # nodes
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
+    offset = api.search_offset(thispage, pagesize)
     paginator = Paginator(
         api.pad_results(
             api.Entity.nodes(
                 i.id,
                 request,
                 limit=pagesize,
-                offset=pagesize*(thispage-1),
+                offset=offset,
             ),
             pagesize,
             thispage

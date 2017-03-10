@@ -183,6 +183,15 @@ def pop_field(obj, fieldname):
         pass
 
 
+def search_offset(thispage, pagesize):
+    """Calculate index for start of current page
+    
+    @param thispage: int The current pagep (1-indexed)
+    @param pagesize: int Number of items per page
+    @returns: int offset
+    """
+    return pagesize * (thispage - 1)
+
 SEARCH_RETURN_FIELDS = [
 
     'id',
