@@ -74,12 +74,13 @@ Related articles from the
           <div class="tabs no-margin-top" style="margin:10px 0;">
 
             <ul class="nav nav-tabs">
-              <li class="active">
+              <li class="gallery {% if tab == "gallery" %}active{% endif %}">
                 <a href="#gallery_tab" data-toggle="tab">
                   <i class="fa fa-th"></i> Gallery view
                 </a>
               </li>
               <li>
+              <li class="list {% if tab == "list" %}active{% endif %}">
                 <a href="#list_tab" data-toggle="tab">
                   <i class="fa fa-list"></i> List view
                 </a>

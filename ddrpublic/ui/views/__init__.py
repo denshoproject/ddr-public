@@ -1,3 +1,4 @@
+import json
 import logging
 logger = logging.getLogger(__name__)
 
@@ -33,3 +34,21 @@ def cite( request ):
         {},
         context_instance=RequestContext(request, processors=[])
     )
+
+def choose_tab(request):
+    """Remember which results view type between pages.
+    """
+    TAB_CHOICES = [
+        'gallery',
+        'list',
+    ]
+    if request.GET.get('tab') in TAB_CHOICES:
+        request.session['tab'] = request.GET['tab']
+        return HttpResponse(
+            json.dumps({
+                'selected': request.GET['tab'],
+            }),
+            content_type="application/json"
+        )
+    else:
+        raise Http404

@@ -9,6 +9,8 @@ urlpatterns = patterns(
     '',
     url(r'^names', include('names.urls')),
     
+    url(r'^api/0.2/choose-tab/$', 'ui.views.choose_tab', name='ui-api-choose-tab'),
+    
     url(r'^api/0.2/search/help/', TemplateView.as_view(template_name="ui/search/help.html"), name='ui-about'),
     url(r'^api/0.2/search/$', 'ui.api.search', name='ui-api-search'),
     

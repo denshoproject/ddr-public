@@ -28,6 +28,7 @@ def sitewide(request):
         'host': os.uname()[1],
         'commit': git_commit(),
         'partner': partner,
+        'tab': request.session.get('tab', 'gallery'),
         'BASE_TEMPLATE': base_template,
         'ENCYC_BASE': settings.ENCYC_BASE,
         'MEDIA_URL': settings.MEDIA_URL,

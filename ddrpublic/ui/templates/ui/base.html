@@ -271,6 +271,21 @@ Include all compiled plugins (below), or include individual files as needed
 {% block javascript %}{% endblock %}
 
 <script>
+  /* register tab choice in session */
+  $("ul.nav-tabs li.gallery a").click(function() {
+    $.ajax({
+      url: "{% url "ui-api-choose-tab" %}?tab=gallery",
+    });
+  });
+  $("ul.nav-tabs li.list a").click(function() {
+    $.ajax({
+      url: "{% url "ui-api-choose-tab" %}?tab=list",
+    });
+  });
+
+</script>
+
+<script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
   m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)

@@ -210,7 +210,6 @@ def results(request, obj=None):
             'hide_header_search': True,
             'searching': searching,
             'object': obj,
-            'tab': request.GET.get('tab', 'list'),
             'filters': filters,
             'query': query,
             'query_json': json.dumps(query),
