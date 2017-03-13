@@ -44,7 +44,6 @@
 
         <div class="tab-content">
 
-          {% if tab == "gallery" %}
           <div id="gallery_tab" class="tab-pane {% if tab == "gallery" %}active{% endif %}">
 
             <div id="item-count">
@@ -85,8 +84,6 @@
 {% endif %}
 
           </div> <!-- end gallery_tab -->
-          {% endif %}{# tab == "gallery" #}
-          {% if tab == "list" %}
           <div id="list_tab" class="tab-pane {% if tab == "list" %}active{% endif %}">
 
             <div id="item-count">
@@ -130,8 +127,6 @@
 {% endif %}
 
           </div> <!-- end list_tab -->
-          {% endif %}{# tab == "list" #}
-
         </div> <!-- end tabs content -->
 
       </div> <!-- end tabs -->
