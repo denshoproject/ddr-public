@@ -57,7 +57,7 @@
 
             <div class="tab-content">
 
-              <div id="gallery_tab" class="tab-pane active">
+              <div id="gallery_tab" class="tab-pane {% if tab == "gallery" %}active{% endif %}">
                 <div id="item-count">
                   {{ paginator.count }} items<br/>
                 </div>
@@ -78,7 +78,7 @@
 
               </div> <!-- end gallery_tab -->
 
-              <div id="list_tab" class="tab-pane">
+              <div id="list_tab" class="tab-pane {% if tab == "list" %}active{% endif %}">
                 <div id="item-count">
                   {{ paginator.count }} items<br/>
                 </div>
