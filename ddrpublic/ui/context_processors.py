@@ -10,6 +10,20 @@ from ui.forms import SearchForm
 from ui.models import Organization
 
 
+def assets_base(request):
+    """Return HTTP protocol (http,https), domain, and assets base URL
+    The purpose of this is to deliver all assets in the same HTTP protocol
+    so as to not generate mixed content messages when in HTTPS.
+    Starting assets URLs with double slashes (e.g. "//assets/...") is supposed
+    to do the same thing but doesn't work in local dev e.g. with an IP address
+    and no domain name.
+    """
+    return '%s://%s/assets/%s' % (
+        request.META.get('HTTP_X_FORWARDED_PROTO', 'http'),
+        request.META.get('HTTP_HOST', 'ddr.densho.org'),
+        settings.ASSETS_VERSION,
+    )
+
 def sitewide(request):
     """Variables that need to be inserted into all templates.
     """
@@ -21,6 +35,7 @@ def sitewide(request):
     base_template = request.session.get('base_template', choose_base_template(org))
     return {
         'request': request,
+        'ASSETS_BASE': assets_base(request),
         'hide_header_search': False,
         'search_form': SearchForm,
         'time': datetime.now().isoformat(),
