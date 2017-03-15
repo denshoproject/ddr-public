@@ -322,6 +322,10 @@ def paginate_results(results, offset, limit, request=None):
     data['aggregations'] = results.get('aggregations', {})
     return data
 
+
+MEDIA_LOCAL_SCHEME = urlparse.urlparse(settings.MEDIA_URL_LOCAL).scheme
+MEDIA_LOCAL_HOSTNAME = urlparse.urlparse(settings.MEDIA_URL_LOCAL).hostname
+
 def local_thumb_url(url, request=None):
     """Replaces thumbnail domain with local IP addr (or domain?)
     This is necessary because CloudFlare
@@ -333,10 +337,10 @@ def local_thumb_url(url, request=None):
     elif settings.DEBUG:
         show_thumb_links = True
     
-    if url and settings.MEDIA_DOM_LOCAL and show_thumb_links:
+    if url and settings.MEDIA_URL_LOCAL and show_thumb_links:
         u = urlparse.urlparse(url)
         return urlparse.urlunsplit(
-            (u.scheme, settings.MEDIA_DOM_LOCAL, u.path, u.params, u.query)
+            (MEDIA_LOCAL_SCHEME, MEDIA_LOCAL_HOSTNAME, u.path, u.params, u.query)
         )
     return url
 
