@@ -322,13 +322,13 @@ def paginate_results(results, offset, limit, request=None):
     data['aggregations'] = results.get('aggregations', {})
     return data
 
-def local_thumb_url(url, request):
+def local_thumb_url(url, request=None):
     """Replaces thumbnail domain with local IP addr (or domain?)
     This is necessary because CloudFlare
     """
     # hide thumb links in the REST API unless DEBUG is on
     show_thumb_links = False
-    if request.META['PATH_INFO'][:len(API_BASE)] != API_BASE:
+    if request and (request.META['PATH_INFO'][:len(API_BASE)] != API_BASE):
         show_thumb_links = True
     elif settings.DEBUG:
         show_thumb_links = True
@@ -630,8 +630,9 @@ FACET_LABELS = facet_labels()
 class Repository(object):
     
     @staticmethod
-    def get(oid, request):
-        i = Identifier(id=oid)
+    def get(oid, request, i=None):
+        if not i:
+            i = Identifier(id=oid)
         document = docstore.Docstore().get(model=i.model, document_id=i.id)
         if not document:
             raise NotFound()
@@ -664,8 +665,9 @@ class Repository(object):
 class Organization(object):
     
     @staticmethod
-    def get(oid, request):
-        i = Identifier(id=oid)
+    def get(oid, request, i=None):
+        if not i:
+            i = Identifier(id=oid)
         document = docstore.Docstore().get(model=i.model, document_id=i.id)
         if not document:
             raise NotFound()
@@ -701,8 +703,9 @@ class Organization(object):
 class Collection(object):
     
     @staticmethod
-    def get(oid, request):
-        i = Identifier(id=oid)
+    def get(oid, request, i=None):
+        if not i:
+            i = Identifier(id=oid)
         idparts = [x for x in i.parts.itervalues()]
         document = docstore.Docstore().get(model=i.model, document_id=i.id)
         if not document:
@@ -784,8 +787,9 @@ class Entity(object):
         return document
 
     @staticmethod
-    def get(oid, request):
-        i = Identifier(id=oid)
+    def get(oid, request, i=None):
+        if not i:
+            i = Identifier(id=oid)
         document = docstore.Docstore().get(model=i.model, document_id=i.id)
         if not document:
             raise NotFound()
@@ -929,8 +933,9 @@ class Role(object):
 class File(object):
     
     @staticmethod
-    def get(oid, request):
-        i = Identifier(id=oid)
+    def get(oid, request, i=None):
+        if not i:
+            i = Identifier(id=oid)
         # some object have Densho UIDs in signature_id field
         if not i.model == 'file':
             return None
@@ -1385,6 +1390,28 @@ class Term(object):
             offset=offset,
             request=request,
         )
+
+
+MODEL_CLASSES = {
+    'repository': Repository,
+    'organization': Organization,
+    'collection': Collection,
+    'entity': Entity,
+    'segment': Entity,
+    'file': File,
+}
+
+def id_object(oid=None, oi=None, request=None):
+    """Get object from its Identifier or ID
+    
+    @param oid: str Object ID
+    @param oi: identifier.Identifier
+    @returns: object
+    """
+    assert oid or oi
+    if oid and not oi:
+        oi = Identifier(oid)
+    return MODEL_CLASSES[oi.model].get(oid=oi.id, request=request, i=oi)
 
 
 # views ----------------------------------------------------------------
