@@ -330,6 +330,8 @@ def local_thumb_url(url, request=None):
     """Replaces thumbnail domain with local IP addr (or domain?)
     This is necessary because CloudFlare
     """
+    if not request:
+        return ''
     # hide thumb links in the REST API unless DEBUG is on
     show_thumb_links = False
     if request and (request.META['PATH_INFO'][:len(API_BASE)] != API_BASE):
