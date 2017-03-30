@@ -4,8 +4,10 @@ logger = logging.getLogger(__name__)
 import os
 
 from django.conf import settings
+from django.core.cache import cache
 
-from ui import git_commit, domain_org, choose_base_template
+from ui import git_commits, domain_org, choose_base_template
+from ui.api import aliases_indices
 from ui.forms import SearchForm
 from ui.models import Organization
 
@@ -24,6 +26,40 @@ def assets_base(request):
         settings.ASSETS_VERSION,
     )
 
+def commits():
+    key = 'git-commits'
+    cached = cache.get(key)
+    if not cached:
+        
+        text = '\n'.join([
+            '%s: %s' % (k,v)
+            for k,v in git_commits().iteritems()
+        ])
+        
+        cached = text
+        cache.set(key, cached, settings.CACHE_TIMEOUT)
+    return cached
+
+def docstore_info():
+    """
+    {
+    'hosts': [{'host': '192.168.56.1', 'port': '9200'}],
+    'aliases': [{'index': u'ddrpub-20170321', 'alias': u'ddrpublic-dev'}]
+    }
+    """
+    key = 'hosts-aliases-indices'
+    cached = cache.get(key)
+    if not cached:
+
+        text = '\n'.join([
+            '%s -> %s' % (x['alias'], x['index'])
+            for x in aliases_indices()
+        ])
+        
+        cached = text
+        cache.set(key, cached, settings.CACHE_TIMEOUT)
+    return cached
+
 def sitewide(request):
     """Variables that need to be inserted into all templates.
     """
@@ -41,7 +77,7 @@ def sitewide(request):
         'time': datetime.now().isoformat(),
         'pid': os.getpid(),
         'host': os.uname()[1],
-        'commit': git_commit(),
+        'commits': commits(),
         'partner': partner,
         'tab': request.session.get('tab', 'gallery'),
         'BASE_TEMPLATE': base_template,
@@ -51,6 +87,5 @@ def sitewide(request):
         'MISSING_IMG': settings.MISSING_IMG,
         'DOWNLOAD_URL': settings.DOWNLOAD_URL,
         'STATIC_URL': settings.STATIC_URL,
-        'DOCSTORE_HOSTS': settings.DOCSTORE_HOSTS,
-        'DOCSTORE_INDEX': settings.DOCSTORE_INDEX,
+        'docstore': docstore_info(),
     }

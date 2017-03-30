@@ -296,9 +296,8 @@ Include all compiled plugins (below), or include individual files as needed
 
 <!--
 Rendered at {{ time }} by {{ pid }} on {{ host }}
-Running {{ commit }}
-DOCSTORE_HOSTS: {{ DOCSTORE_HOSTS|safe }}
-DOCSTORE_INDEX: {{ DOCSTORE_INDEX|safe }}
+{{ commits|safe }}
+{{ docstore|safe }}
 -->
 
 </body>

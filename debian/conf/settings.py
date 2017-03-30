@@ -24,6 +24,8 @@ REPO_MODELS_PATH = config.get('cmdln','repo_models_path')
 if REPO_MODELS_PATH not in sys.path:
     sys.path.append(REPO_MODELS_PATH)
 
+CMDLN_INSTALL_PATH = config.get('cmdln','install_path')
+
 with open('/etc/ddr/ddrpublic-secret-key.txt') as f:
     SECRET_KEY = f.read().strip()
 

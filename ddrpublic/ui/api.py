@@ -36,6 +36,21 @@ CHILDREN = {
 
 URL_FIELDS = ['ancestors', 'siblings', 'children']
 
+def aliases_indices():
+    """Lists host and alias(es) with target index(es).
+    
+    @returns: dict {'host', 'aliases': []}
+    """
+    return [
+        {'index':a[0], 'alias':a[1]}
+        for a in docstore.Docstore().aliases()
+        if a[1] in [
+            settings.DOCSTORE_INDEX,
+            settings.NAMESDB_DOCSTORE_INDEX
+        ]
+    ]
+
+
 def http_host(request):
     return 'http://%s' % request.META['HTTP_HOST']
 
