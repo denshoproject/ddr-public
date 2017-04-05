@@ -1,0 +1,25 @@
+{% extends "ui/base.html" %}
+
+{% block title %}400{% endblock %}
+{% block pagetitle %}{% endblock %}
+{% block pageheader %}{% endblock %}
+
+{% block content %}
+<section class="container">
+  <div class="row">
+    <div class="col-md-9">
+      <h2>
+        <strong>Oops</strong>, Looks Like A Syntax Problem!
+      </h2>
+      <div class="e404">400</div>
+    </div>
+    <aside class="col-md-3">
+      <p>400 Bad Request</p>
+      <p>The request cannot be fulfilled due to bad syntax.</p>
+      <p>
+        Questions? Please contact <a href="mailto:info@densho.org?subject='DDR Error 400'">info@densho.org</a>
+      </p>
+    </aside>
+  </div>
+</section>
+{% endblock content %}

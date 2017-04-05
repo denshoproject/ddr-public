@@ -54,10 +54,11 @@ def list( request ):
 def detail(request, oid):
     i = Identifier(id=oid)
     filter_if_branded(request, i)
-    collection = api.Collection.get(i.id, request)
-    collection['identifier'] = i
-    if not collection:
+    try:
+        collection = api.Collection.get(i.id, request)
+    except api.NotFound:
         raise Http404
+    collection['identifier'] = i
     organization = api.Organization.get(i.parent_id(stubs=1), request)
     thispage = 1
     pagesize = 10
@@ -94,10 +95,11 @@ def children(request, oid):
     """
     i = Identifier(id=oid)
     filter_if_branded(request, i)
-    collection = api.Collection.get(i.id, request)
-    collection['identifier'] = i
-    if not collection:
+    try:
+        collection = api.Collection.get(i.id, request)
+    except api.NotFound:
         raise Http404
+    collection['identifier'] = i
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
     offset = api.search_offset(thispage, pagesize)

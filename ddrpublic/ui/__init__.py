@@ -9,6 +9,20 @@ from django.template.loader import get_template
 from django.template import TemplateDoesNotExist
 
 
+def assets_base(request):
+    """Return HTTP protocol (http,https), domain, and assets base URL
+    The purpose of this is to deliver all assets in the same HTTP protocol
+    so as to not generate mixed content messages when in HTTPS.
+    Starting assets URLs with double slashes (e.g. "//assets/...") is supposed
+    to do the same thing but doesn't work in local dev e.g. with an IP address
+    and no domain name.
+    """
+    return '%s://%s/assets/%s' % (
+        request.META.get('HTTP_X_FORWARDED_PROTO', 'http'),
+        request.META.get('HTTP_HOST', 'ddr.densho.org'),
+        settings.ASSETS_VERSION,
+    )
+
 def git_commits():
     """Returns various repos' most recent Git commit.
     """

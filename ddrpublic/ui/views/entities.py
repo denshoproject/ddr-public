@@ -20,10 +20,11 @@ from ui.views import filter_if_branded
 def detail(request, oid):
     i = Identifier(id=oid)
     filter_if_branded(request, i)
-    entity = api.Entity.get(i.id, request)
-    entity['identifier'] = i
-    if not entity:
+    try:
+        entity = api.Entity.get(i.id, request)
+    except api.NotFound:
         raise Http404
+    entity['identifier'] = i
     
     # if this is an interview, redirect to first segment
     format_ = None
@@ -102,10 +103,11 @@ def detail(request, oid):
 def interview(request, oid):
     si = Identifier(id=oid)
     filter_if_branded(request, si)
-    segment = api.Entity.get(si.id, request)
-    segment['identifier'] = si
-    if not segment:
+    try:
+        segment = api.Entity.get(si.id, request)
+    except api.NotFound:
         raise Http404
+    segment['identifier'] = si
     # die if not a segment
     if segment['model'] != 'segment':
         raise Http404
@@ -159,10 +161,11 @@ def children( request, oid, role=None ):
     """
     i = Identifier(id=oid)
     filter_if_branded(request, i)
-    entity = api.Entity.get(i.id, request)
-    entity['identifier'] = i
-    if not entity:
+    try:
+        entity = api.Entity.get(i.id, request)
+    except api.NotFound:
         raise Http404
+    entity['identifier'] = i
     # children
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
@@ -200,10 +203,11 @@ def nodes( request, oid, role=None ):
     """
     i = Identifier(id=oid)
     filter_if_branded(request, i)
-    entity = api.Entity.get(i.id, request)
-    entity['identifier'] = i
-    if not entity:
+    try:
+        entity = api.Entity.get(i.id, request)
+    except api.NotFound:
         raise Http404
+    entity['identifier'] = i
     # nodes
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
