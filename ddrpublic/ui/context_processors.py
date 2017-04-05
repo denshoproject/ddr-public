@@ -6,25 +6,11 @@ import os
 from django.conf import settings
 from django.core.cache import cache
 
-from ui import domain_org, choose_base_template
+from ui import assets_base, domain_org, choose_base_template
 from ui.api import aliases_indices
 from ui.forms import SearchForm
 from ui.models import Organization
 
-
-def assets_base(request):
-    """Return HTTP protocol (http,https), domain, and assets base URL
-    The purpose of this is to deliver all assets in the same HTTP protocol
-    so as to not generate mixed content messages when in HTTPS.
-    Starting assets URLs with double slashes (e.g. "//assets/...") is supposed
-    to do the same thing but doesn't work in local dev e.g. with an IP address
-    and no domain name.
-    """
-    return '%s://%s/assets/%s' % (
-        request.META.get('HTTP_X_FORWARDED_PROTO', 'http'),
-        request.META.get('HTTP_HOST', 'ddr.densho.org'),
-        settings.ASSETS_VERSION,
-    )
 
 def docstore_info():
     """

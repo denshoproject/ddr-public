@@ -71,4 +71,9 @@ urlpatterns = patterns(
     url(r'^$', 'ui.views.index', name='ui-index'),
 )
 
+handler400 = 'ui.views.error400'
+handler403 = 'ui.views.error403'
+handler404 = 'ui.views.error404'
+handler500 = 'ui.views.error500'
+
 urlpatterns = format_suffix_patterns(urlpatterns)
