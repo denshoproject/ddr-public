@@ -67,6 +67,8 @@ for value in PARTNER_DOMAINS.values():
         if domain not in ALLOWED_HOSTS:
             ALLOWED_HOSTS.append(domain)
 
+LOG_LEVEL = config.get('public', 'log_level')
+
 CACHE_TIMEOUT = int(config.get('public', 'cache_timeout'))
 
 # Elasticsearch
@@ -320,7 +322,7 @@ LOGGING = {
             'formatter': 'simple',
         },
         'file': {
-            'level': 'DEBUG',
+            'level': LOG_LEVEL,
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': '/var/log/ddr/public.log',
             'when': 'D',
@@ -343,7 +345,7 @@ LOGGING = {
     },
     # This is the only way I found to write log entries from the whole DDR stack.
     'root': {
-        'level': 'DEBUG',
+        'level': LOG_LEVEL,
         'handlers': ['file'],
     },
 }
