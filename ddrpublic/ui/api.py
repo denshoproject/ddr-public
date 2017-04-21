@@ -422,6 +422,7 @@ def format_object_detail(document, request, listitem=False):
         ]
         if (document['_type'] in HAS_SIGNATURE_IDS) \
         and (not document['_source'].get('signature_id')):
+            # empty quotes so we don't have to ...get('signature_id') everywhere
             document['_source']['signature_id'] = settings.MISSING_IMG
         # links-img
         if i.model == 'file':
