@@ -21,14 +21,14 @@ from ui.identifier import Identifier, MODEL_CLASSES
 
 DEFAULT_SIZE = 10
 
-# TODO move to DDR.identifier?
+# TODO move to ddr-defs
 REPOSITORY_LIST_FIELDS = ['id', 'title', 'description', 'url',]
 ORGANIZATION_LIST_FIELDS = ['id', 'title', 'description', 'url',]
-COLLECTION_LIST_FIELDS = ['id', 'title', 'description', 'signature_file',]
-ENTITY_LIST_FIELDS = ['id', 'title', 'description', 'signature_file',]
-FILE_LIST_FIELDS = ['id', 'basename_orig', 'label', 'access_rel','sort',]
+COLLECTION_LIST_FIELDS = ['id', 'title', 'description', 'signature_id',]
+ENTITY_LIST_FIELDS = ['id', 'title', 'description', 'signature_id',]
+FILE_LIST_FIELDS = ['id', 'title', 'description', 'access_rel','sort',]
 
-# TODO refactor: knows too much about structure of ID
+# TODO mode to ddr-defs: knows too much about structure of ID
 #      Does Elasticsearch have lambda functions for sorting?
 REPOSITORY_LIST_SORT = [
     ['repo','asc'],
@@ -65,6 +65,7 @@ MODEL_LIST_SETTINGS = {
     'organization': {'fields': ORGANIZATION_LIST_FIELDS, 'sort': ORGANIZATION_LIST_SORT},
     'collection': {'fields': COLLECTION_LIST_FIELDS, 'sort': COLLECTION_LIST_SORT},
     'entity': {'fields': ENTITY_LIST_FIELDS, 'sort': ENTITY_LIST_SORT},
+    'segment': {'fields': ENTITY_LIST_FIELDS, 'sort': ENTITY_LIST_SORT},
     'file': {'fields': FILE_LIST_FIELDS, 'sort': FILE_LIST_SORT},
 }
 
@@ -90,8 +91,8 @@ def absolute_url(identifier):
     """Takes a list of object ID parts and returns URL for that object.
     """
     return reverse(
-        'ui-%s' % identifier.model,
-        args=identifier.parts.values()
+        'ui-object-detail',
+        args=[identifier.id]
     )
 
 def backend_url(identifier):
@@ -100,6 +101,12 @@ def backend_url(identifier):
     if settings.DEBUG:
         return 'http://%s/%s/%s/%s' % (HOSTS, INDEX, identifier.model, identifier.id)
     return ''
+
+def api_url(identifier):
+    return reverse(
+        'ui-api-object',
+        args=[identifier.id]
+    )
 
 def cite_url(identifier):
     """Link to object's citation page
@@ -111,12 +118,12 @@ def org_logo_url(identifier):
     """
     return os.path.join(settings.MEDIA_URL, identifier.organization_id(), 'logo.png')
 
-def signature_url(identifier, signature_file):
+def signature_url(identifier, signature_id):
     """
     @param identifier: Identifier
-    @param signature_file: str File ID
+    @param signature_id: str File ID
     """
-    return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, identifier.collection_id(), signature_file)
+    return '%s%s/%s-a.jpg' % (settings.MEDIA_URL, identifier.collection_id(), signature_id)
 
 def media_url_local( url ):
     """Replace media_url with one that points to "local" media server
@@ -259,9 +266,11 @@ def cached_query(host, index, model='', query='', terms={}, filters={}, fields=[
     key = hashlib.sha1(json.dumps(query_args)).hexdigest()
     cached = cache.get(key)
     if not cached:
-        cached = docstore.search(hosts=HOSTS, index=index, model=model,
-                                 query=query, term=terms, filters=filters,
-                                 fields=fields, sort=sort, size=size)
+        cached = docstore.Docstore().search(
+            model=model,
+            query=query, term=terms, filters=filters,
+            fields=fields, sort=sort, size=size
+        )
         cache.set(key, cached, settings.ELASTICSEARCH_QUERY_TIMEOUT)
     return cached
 
@@ -295,8 +304,8 @@ def massage_query_results( results, thispage, page_size ):
                 identifier = Identifier(o['id'])
                 o['identifier'] = identifier
                 o['url'] = reverse(
-                    'ui-%s' % identifier.model,
-                    args=identifier.parts.values()
+                    'ui-object-detail',
+                    args=[identifier.id]
                 )
     return objects
 
@@ -371,16 +380,15 @@ def build_object(identifier, source, rename={} ):
                     contents_display = field_display_handler[style](fieldname, contents)
                 o.fields.append( (fieldname, label, contents_display) )
     # signature file
-    if source.get('signature_file', None):
-        o.signature_file = source['signature_file']
+    if source.get('signature_id', None):
+        o.signature_id = source['signature_id']
     return o
 
 
 # ----------------------------------------------------------------------
 
 def get_stub_object(identifier):
-    document = docstore.get(
-        HOSTS, index=INDEX,
+    document = docstore.Docstore().get(
         model=identifier.model, document_id=identifier.id
     )
     if document and (document['found'] or document['exists']):
@@ -393,8 +401,7 @@ def get_stub_object(identifier):
     return None
 
 def get_object(identifier):
-    document = docstore.get(
-        HOSTS, index=INDEX,
+    document = docstore.Docstore().get(
         model=identifier.model, document_id=identifier.id
     )
     if document and (document['found'] or document['exists']):
@@ -488,7 +495,7 @@ class Collection( object ):
     index = INDEX
     identifier = None
     fieldnames = []
-    signature_file = None
+    signature_id = None
     
     def __repr__( self ):
         return "<%s.%s %s:%s>" % (
@@ -506,6 +513,9 @@ class Collection( object ):
     
     def backend_url( self ):
         return backend_url(self.identifier)
+    
+    def api_url(self):
+        return api_url(self.identifier)
     
     def cite_url( self ):
         return cite_url(self.identifier)
@@ -542,8 +552,8 @@ class Collection( object ):
         return org_logo_url(self.identifier)
     
     def signature_url( self ):
-        if self.signature_file:
-            return signature_url(self.identifier, self.signature_file)
+        if self.signature_id:
+            return signature_url(self.identifier, self.signature_id)
         return None
     
     def signature_url_local( self ):
@@ -559,7 +569,7 @@ class Entity( object ):
     index = INDEX
     identifier = None
     fieldnames = []
-    signature_file = None
+    signature_id = None
     _signature = None
     _topics = []
     _encyc_articles = []
@@ -573,13 +583,30 @@ class Entity( object ):
     
     @staticmethod
     def get(identifier):
-        return get_object(identifier)
+        document = docstore.Docstore().get(
+            model=identifier.model, document_id=identifier.id
+        )
+        if document and (document['found'] or document['exists']):
+            entity = build_object(identifier, document['_source'])
+            
+            entity.children = document['_source'].get('children', [])
+            
+            # NOTE role:files instead of list of dicts
+            entity.file_groups = {
+                fgroup['role']: fgroup['files']
+                for fgroup in document['_source'].get('file_groups', [])
+            }
+            return entity
+        return None
     
     def absolute_url( self ):
         return absolute_url(self.identifier)
     
     def backend_url( self ):
         return backend_url(self.identifier)
+    
+    def api_url(self):
+        return api_url(self.identifier)
     
     def cite_url( self ):
         return cite_url(self.identifier)
@@ -588,41 +615,43 @@ class Entity( object ):
         # TODO should be .parent()
         return Collection.get(self.identifier.parent())
     
-    def children( self, page=1, page_size=DEFAULT_SIZE, role=None ):
+    def children_meta(self):
         """Gets all the files in an entity; paging optional.
         
         @param index: start on this index in result set
         @param size: number of results to return
         @param role: String 'mezzanine' or 'master'
         """
-        files = []
-        query = 'id:"%s"' % self.identifier.id
-        if role:
-            query = 'id:"%s-%s"' % (self.identifier.id, role)
-        results = cached_query(
-            host=HOSTS, index=INDEX, model='file',
-            query=query,
-            fields=FILE_LIST_FIELDS,
-            sort=FILE_LIST_SORT
-        )
-        massaged = massage_query_results(results, page, page_size)
-        objects = instantiate_query_objects(massaged)
-        return objects
+        return [
+            build_object(Identifier(data['id']), data)
+            for data in self.children
+        ]
 
+    def nodes_meta(self, role=None):
+        """Loads File objects from Entity.file_groups into single list
+        """
+        if role: roles = [role]
+        else: roles = self.file_groups.iterkeys()
+        return [
+            build_object(Identifier(data['id']), data)
+            for role in roles
+            for data in self.file_groups.get(role, [])
+        ]
+    
     def org_logo_url( self ):
         return org_logo_url(self.identifier)
     
     def signature(self):
-        if self.signature_file and not self._signature:
-            oid = Identity.split_object_id(self.signature_file)
+        if self.signature_id and not self._signature:
+            oid = Identity.split_object_id(self.signature_id)
             self._signature = File.get(oid[1], oid[2], oid[3], oid[4], oid[5], oid[6])
         if self._signature:
             return self._signature
         return None
     
     def signature_url( self ):
-        if self.signature_file:
-            return signature_url(self.identifier, self.signature_file)
+        if self.signature_id:
+            return signature_url(self.identifier, self.signature_id)
         return None
     
     def signature_url_local( self ):
@@ -635,7 +664,15 @@ class Entity( object ):
             topics = self.topics
         else:
             topics = []
-        return [faceting.Term('topics', int(tid)) for tid in topics if tid]
+        # TODO refactor this -- topics terms are now {'id':...,'term':...} dicts 
+        terms = []
+        for t in topics:
+            tid = t.get('id')
+            if tid and isinstance(tid, basestring) and tid.isdigit():
+                tid = int(tid)
+            if tid and (isinstance(tid, int) or tid.isdigit()):
+                terms.append(faceting.Term('topics', tid))
+        return terms
 
     def encyc_articles( self ):
         if not self._encyc_articles:
@@ -644,6 +681,10 @@ class Entity( object ):
                 for article in term.encyc_articles():
                     self._encyc_articles.append(article)
         return self._encyc_articles
+
+
+class Role( object ):
+    pass
 
 
 class File( object ):
@@ -671,7 +712,10 @@ class File( object ):
         """S3 bucket-style path to access file, suitable for appending to MEDI_URL
         """
         if hasattr(self, 'access_rel') and self.access_rel and not self._access_path:
-            self._access_path = '%s/%s' % (self.identifier.collection_id(), self.access_rel)
+            self._access_path = '%s/%s' % (
+                self.identifier.collection_id(),
+                os.path.basename(self.access_rel)
+            )
         return self._access_path
     
     def access_url( self ):
@@ -684,6 +728,9 @@ class File( object ):
     
     def backend_url( self ):
         return backend_url(identifier)
+    
+    def api_url(self):
+        return api_url(self.identifier)
     
     def cite_url( self ):
         return cite_url(self.identifier)

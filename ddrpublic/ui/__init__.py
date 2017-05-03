@@ -1,3 +1,5 @@
+import os
+
 import envoy
 
 from django.conf import settings
@@ -7,21 +9,32 @@ from django.template.loader import get_template
 from django.template import TemplateDoesNotExist
 
 
-def git_commit():
-    """Returns the ddr-local repo's most recent Git commit.
-    
-    Cached for 15min.
+def assets_base(request):
+    """Return HTTP protocol (http,https), domain, and assets base URL
+    The purpose of this is to deliver all assets in the same HTTP protocol
+    so as to not generate mixed content messages when in HTTPS.
+    Starting assets URLs with double slashes (e.g. "//assets/...") is supposed
+    to do the same thing but doesn't work in local dev e.g. with an IP address
+    and no domain name.
     """
-    key = 'ddrpub:git_commit'
-    timeout = 60 * 5
-    cached = cache.get(key)
-    if not cached:
-        try:
-            cached = envoy.run('git log --pretty=format:"%h %ci%d" -1').std_out
-        except:
-            cached = 'unknown'
-        cache.set(key, cached, timeout)
-    return cached
+    return '%s://%s/assets/%s' % (
+        request.META.get('HTTP_X_FORWARDED_PROTO', 'http'),
+        request.META.get('HTTP_HOST', 'ddr.densho.org'),
+        settings.ASSETS_VERSION,
+    )
+
+def git_commits():
+    """Returns various repos' most recent Git commit.
+    """
+    commits = {}
+    pub_path = os.getcwd()
+    cmd_path = settings.CMDLN_INSTALL_PATH
+    def_path = settings.REPO_MODELS_PATH
+    cmd = 'git log --pretty=format:"%h %ci%d" -1'
+    os.chdir(pub_path); commits['pub'] = envoy.run(cmd).std_out
+    os.chdir(cmd_path); commits['cmd'] = envoy.run(cmd).std_out
+    os.chdir(def_path); commits['def'] = envoy.run(cmd).std_out
+    return commits
 
 def domain_org(request):
     """Match request domain with repo,org

@@ -7,16 +7,21 @@ from django.core.urlresolvers import reverse
 from django.http import HttpRequest
 
 from DDR.identifier import Identifier as DDRIdentifier
-from DDR.identifier import format_id
-from DDR.identifier import CHILDREN, CHILDREN_ALL
+from DDR.identifier import format_id, IdentifierFormatException
+from DDR.identifier import CHILDREN, CHILDREN_ALL, MODEL_REPO_MODELS
 
 
+# TODO Hard-coded! Get this data from ddr-defs!
 MODEL_CLASSES = {
     'file':         {'module': 'ui.models', 'class':'File', 'stub':0, 'templatedir':'files',},
+    'segment':      {'module': 'ui.models', 'class':'Entity', 'stub':0, 'templatedir':'entities',},
     'entity':       {'module': 'ui.models', 'class':'Entity', 'stub':0, 'templatedir':'entities',},
     'collection':   {'module': 'ui.models', 'class':'Collection', 'stub':0, 'templatedir':'collections',},
     'organization': {'module': 'ui.models', 'class':'Organization', 'stub':1, 'templatedir':'',},
     'repository':   {'module': 'ui.models', 'class':'Repository', 'stub':1, 'templatedir':'',},
+    'narrator':     {'templatedir':'narrators',},
+    'facet':        {'templatedir':'facet',},
+    'facetterm':    {'templatedir':'facetterm',},
 }
 
 
@@ -41,6 +46,21 @@ class Identifier(DDRIdentifier):
             ]
             kwargs['id'] = object_id
         super(Identifier, self).__init__(*args, **kwargs)
+        
+    def parent(self, stubs=False):
+        """Parent of the Identifier
+        
+        @param stub: boolean An archival object not just a Stub
+        """
+        parent_parts = self._parent_parts()
+        for model in self._parent_models(stubs):
+            idparts = parent_parts
+            idparts['model'] = model
+            try:
+                return Identifier(idparts, base_path=self.basepath)
+            except IdentifierFormatException:
+                pass
+        return None
 
     def organization_id(self):
         #return self.parts.values()[:2]
@@ -63,13 +83,12 @@ class Identifier(DDRIdentifier):
           {'url:'', 'label':'37409ecadb'},
         ]
         """
-        INCLUDE = ['collection', 'entity', 'file',]
         crumbs = []
         for i in self.lineage(stubs=True):
-            if i.model in INCLUDE:
+            if i.model in MODEL_REPO_MODELS.keys():
                 crumb = {
                     'identifier': i,
-                    'url': reverse('ui-%s' % i.model, kwargs=i.parts),
+                    'url': reverse('ui-object-detail', args=[i.id]),
                     'label': i.parts.values()[-1],
                 }
                 crumbs.append(crumb)

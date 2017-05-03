@@ -5,8 +5,8 @@
 {% block parent %}
 <!--
 <div id="parent">
-<a href="{{ object.parent.absolute_url }}"><span class="label label-default">{{ object.parent.id }}</span></a>
-<a href="{{ object.parent.absolute_url }}">{{ object.parent.title|safe }}</a>
+<a href="{{ object.parent.links.html }}"><span class="label label-default">{{ object.parent.id }}</span></a>
+<a href="{{ object.parent.links.html }}">{{ object.parent.title|safe }}</a>
 </div>
 -->
 {% endblock %}
@@ -28,13 +28,13 @@
 {% block content %}
 <section id="shop" class="container">
 
-	<div class="row">
+    <div class="row">
 
-		<div class="col-sm-6 col-md-6">
-		<h2>{{ object.title }}</h2>
-{% if object.signature_url %}
-  {% thumbnail object.signature_url_local "480x480" as img %}
-          <a href="{{ object.signature_url }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
+        <div class="col-sm-6 col-md-6">
+            <h2>{{ object.title }}</h2>
+{% if object.links.img %}
+  {% thumbnail object.links.thumb "480x480" as img %}
+          <a href="{{ object.links.img }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
             <img src="{{ img.url }}" class="img-responsive">
           </a>
   {% endthumbnail %}
@@ -42,101 +42,73 @@
             <i class="fa fa-chevron-down"></i>
           </div>
 {% endif %}
-		</div>
+        </div>
 
+        <div class="col-sm-6 col-md-6"><!-- right meta col-->
+            {% addthis %}
+            <div class="desc productDescription">
+                <h3 class="page-header">PARTNER</h3>
+                    {% include "ui/partnerlogolink.html" %}
+                <h3 class="page-header">COLLECTION ID</h3>
+                <p>{{ object.id }}</p>
+                <h3 class="page-header">DESCRIPTION</h3>
+                <p>{{ object.description|safe }}</p>
 
-		<div class="col-sm-6 col-md-6">
-			{% addthis %}
-			<div class="desc productDescription">
-                        <h3 class="page-header">PARTNER</h3>
-                        {% include "ui/partnerlogolink.html" %}
-			<h3 class="page-header">COLLECTION ID</h3>
-                        <p>{{ object.id }}
-                        <h3 class="page-header">DESCRIPTION</h3>
-			<p>{{ object.description|safe }}</p>
-			
-				<!-- core meta -->
-					<div class="row">
-						<div class="col">
+                <!-- core meta -->
+                <div class="row">
+                        <div class="col-md-5 col-sm-5">
+                            <h3 class="page-header">INCLUSIVE UNIT DATE</h3>
+                            <p>{{ object.unitdateinclusive }}</p>
+                        </div>
 
-							<div class="col-md-5 col-sm-5">
-								<h3 class="page-header">INCLUSIVE UNIT DATE</h3>
-								<p>{{ object.unitdateinclusive }}</p>
+                        <div class="col-md-7 col-sm-7">
+                            <h3 class="page-header">BULK UNIT DATE</h3>
+                            <p>{{ object.unitdatebulk }}</p>
+                        </div>
+                </div><!-- end row core meta -->
+                <!-- /core meta -->		
 
-							</div>
-							
-							<div class="col-md-7 col-sm-7">
-								<h3 class="page-header">BULK UNIT DATE</h3>
-								<p>{{ object.unitdatebulk }}</p>
-							</div>
+                <h3 class="page-header">PHYSICAL DESCRIPTION</h3>
+                <p>{{ object.extent }}</p>
+                <h3 class="page-header">CONTRIBUTOR</h3>
+                <p>{{ object.contributor }}</p>
+                <h3 class="page-header">PREFERRED CITATION</h3>
+                <p>{{ object.prefercite }}</p>
+                <h3 class="page-header">RIGHTS</h3>
+                <p>
+                    {% rightsbadge object.rights %}
+                </p>
+            </div><!-- end desc -->
+        </div><!-- end right meta col -->
+    </div><!-- //row-->
 
+{% if page.object_list %}
+    <div class="row">
+        <div class="col-sm-12 col-md-12">
+            <h3>
+                <a href="{% url "ui-object-children" object.identifier.id %}">{{ paginator.count }} Objects</a>
+            </h3>
 
-						</div>
+            {% for entity in page.object_list %}
+            {% listitem entity %}
+            {% endfor %}
 
-					</div>
-			<!-- /core meta -->		
-
-			<h3 class="page-header">PHYSICAL DESCRIPTION</h3>
-			<p>{{ object.extent }}</p>
-
-                        <h3 class="page-header">CONTRIBUTOR</h3>
-                        <p>{{ object.contributor }}</p>
-			<h3 class="page-header">PREFERRED CITATION</h3>
-			<p>{{ object.prefercite }}</p>
-			<h3 class="page-header">RIGHTS</h3>
-			<p>
-			{{ object.fields|ddrvalue:"rights" }}
-			</p>
-			
-			
-			</div>
-			<!-- collection.id -->
-			<!-- collection.title -->
-			<!-- collection.record_created -->
-			<!-- collection.record_lastmod -->
-			
-			<!-- collection.unitdateinclusive -->
-			<!-- collection.unitdatebulk -->
-			
-			<!-- collection.creators -->
-			<!-- collection.extent -->
-			<!-- collection.language -->
-			<!-- collection.contributor -->
-			<!-- collection.description -->
-			
-			<!-- collection.physloc -->
-			<!-- collection.acqinfo -->
-			<!-- collection.custodhist -->
-			<!-- collection.accruals -->
-			<!-- collection.processinfo -->
-			
-			<!-- collection.rights -->
-			<!-- collection.accessrestrict -->
-			<!-- collection.userrestrict -->
-			<!-- collection.prefercite -->
-			<!-- collection.bioghist -->
-			<!-- collection.scopecontent -->
-			<!-- collection.relatedmaterial -->
-			<!-- collection.separatedmaterial -->
-			
-		</div>
-	</div><!-- //row-->
-
-	<div class="row">
-		<div class="col-sm-12 col-md-12">
-			<h3>{{ paginator.count }} Objects</h3>
-			{% for entity in page.object_list %}
-			{% document entity %}
-			{% endfor %}
-			
             {% if paginator.count > 10 %}
-			<br />
-			<p>
-			<a class="btn btn-primary btn-md" href="{% url "ui-collection-entities" repo org cid %}">See all objects  <i class="fa fa-arrow-circle-right"></i></a>
-			</p>
+            <br />
+            <p>
+                <a class="btn btn-primary btn-md" href="{% url "ui-object-children" object.identifier.id %}">See all objects  <i class="fa fa-arrow-circle-right"></i></a>
+            </p>
             {% endif %}
-		</div>
-	</div><!-- .row -->
+        </div><!-- end list col -->
+    </div><!-- .row -->
+{% endif %}{# page.object_list #}
+
+    <div class="row">
+        <div class="col-sm-12 col-md-12 text-muted text-right">
+            <small><a class="api" href="{{ api_url }}">API</a></small>
+        </div>
+    </div><!-- .row -->
+
 </section><!-- .container -->
 {% endblock content %}
 

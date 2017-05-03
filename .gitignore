@@ -3,6 +3,9 @@
 *.db
 *.svg
 build/
+ddr-cmdln/
+ddr-defs/
 ddrpublic/ddrpublic/settings.py
 src/
 tmp/
+venv/

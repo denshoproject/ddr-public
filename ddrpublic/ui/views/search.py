@@ -1,8 +1,11 @@
+from copy import deepcopy
 from datetime import datetime
+import json
 import logging
 logger = logging.getLogger(__name__)
 
 from dateutil import parser
+import requests
 
 from django.conf import settings
 from django.core.cache import cache
@@ -18,7 +21,8 @@ from ui.identifier import Identifier, MODEL_CLASSES
 from ui import domain_org
 from ui import faceting
 from ui import models
-from ui.forms import SearchForm
+from ui import forms
+from ui import api
 
 # TODO We should have a whitelist of chars we *do* accept, not this.
 SEARCH_INPUT_BLACKLIST = ('{', '}', '[', ']')
@@ -32,87 +36,191 @@ def kosher( query ):
             return False
     return True
 
+def force_list(terms):
+    if isinstance(terms, list):
+        return terms
+    elif isinstance(terms, basestring):
+        return [terms]
+    raise Exception('Not a list or a string')
+
 
 # views ----------------------------------------------------------------
 
-def index( request ):
-    return render_to_response(
-        'ui/search/index.html',
-        {'hide_header_search': True,
-         'search_form': SearchForm,},
-        context_instance=RequestContext(request, processors=[])
-    )
+def collection(request, oid):
+    i = Identifier(id=oid)
+    #filter_if_branded(request, i)
+    collection = api.Collection.get(i.id, request)
+    collection['identifier'] = i
+    if not collection:
+        raise Http404
+    return results(request, collection)
 
-def results( request ):
+def facetterm(request, facet_id, term_id):
+    oid = '-'.join([facet_id, term_id])
+    term = api.Term.get(oid, request)
+    if not term:
+        raise Http404
+    return results(request, term)
+
+def narrator(request, oid):
+    narrator = api.Narrator.get(oid, request)
+    if not narrator:
+        raise Http404
+    return results(request, narrator)
+    
+def results(request, obj=None):
     """Results of a search query or a DDR ID query.
     """
-    template = 'ui/search/results.html'
-    context = {
-        'hide_header_search': True,
-        'query': '',
-        'error_message': '',
-        'search_form': SearchForm(),
-        'paginator': None,
-        'page': None,
-        'filters': None,
-        'sort': None,
+    form = forms.SearchForm(request.GET)
+    form.is_valid()
+    
+    thispage = int(request.GET.get('page', 1))
+    pagesize = settings.RESULTS_PER_PAGE
+    offset = api.search_offset(thispage, pagesize)
+    
+    # query dict
+    MODELS = [
+        'collection',
+        'entity',
+        'segment',
+        'narrator',
+    ]
+    query = {
+        'fulltext': form.cleaned_data.get('fulltext', ''),
+        'must': [],
+        'models': MODELS,
+        'offset': offset,
+        'limit': pagesize,
+        'aggs': {
+            'format':   {'terms': {'size': 50, 'field': 'format'}},
+            'genre':    {'terms': {'size': 50, 'field': 'genre'}},
+            'topics':   {'terms': {'size': 50, 'field': 'topics.id'}},
+            'facility': {'terms': {'size': 50, 'field': 'facility.id'}},
+            'rights':   {'terms': {'size': 50, 'field': 'rights'}},
+        },
     }
-    context['query'] = request.GET.get('query', '').strip()
-    # silently strip out bad chars
-    query = context['query']
-    for char in SEARCH_INPUT_BLACKLIST:
-        query = query.replace(char, '')
-    if query:
-        context['search_form'] = SearchForm({'query': query})
-        nonstub_models = [key for key,val in MODEL_CLASSES.iteritems() if not val['stub']]
+
+    # search within collection/facetterm/narrator  - - - - -
+    
+    this_url = reverse('ui-search-results')
+    template_extends = "ui/search/base.html"
+    
+    if obj:
+        # search collection
+        if obj['model'] == 'collection':
+            query['models'] = ['entity', 'segment']
+            query['must'].append(
+                {"wildcard": {"id": "%s-*" % obj['id']}}
+            )
+            this_url = reverse('ui-search-collection', args=[obj['id']])
+            template_extends = "ui/collections/base.html"
         
-        # if query is DDR ID just go to document page
-        # will get a 404 if no object exists
-        try:
-            identifier = Identifier(query)
-        except:
-            identifier = None
-        if identifier and (identifier.model in nonstub_models):
-            return HttpResponseRedirect(models.absolute_url(identifier))
-            
-        # prep query for elasticsearch
-        filters = {}
-        fields = models.all_list_fields()
-        sort = {
-            'record_created': request.GET.get('record_created', ''),
-            'record_lastmod': request.GET.get('record_lastmod', ''),
-        }
-        # filter by partner
-        repo,org = domain_org(request)
-        if repo and org:
-            filters['repo'] = repo
-            filters['org'] = org
+        # search topic
+        elif (obj['model'] == 'facetterm') and (obj['facet'] == 'topics'):
+            query['must'].append(
+                {"wildcard": {"topics.id": obj['id']}}
+            )
+            this_url = reverse('ui-search-facetterm', args=[obj['facet'], obj['id']])
+            template_extends = "ui/facets/base-topics.html"
+            obj['model'] = 'topics'
         
-        # do query and cache the results
-        nonstub_models_str = ','.join(nonstub_models)
-        results = models.cached_query(
-            settings.DOCSTORE_HOSTS, settings.DOCSTORE_INDEX,
-            # limit search to non-stub (e.g. collection,entity,file) objects
-            model=nonstub_models_str,
-            query=query, filters=filters,
-            fields=fields, sort=sort
+        # search facility
+        elif (obj['model'] == 'facetterm') and (obj['facet'] == 'facility'):
+            query['must'].append(
+                {"wildcard": {"facility.id": obj['id']}}
+            )
+            this_url = reverse('ui-search-facetterm', args=[obj['facet'], obj['id']])
+            template_extends = "ui/facets/base-facility.html"
+            obj['model'] = 'facilities'
+        
+        # search narrator
+        elif obj['model'] == 'narrator':
+            query['must'].append(
+                {"wildcard": {"creators.id": obj['id']}}
+            )
+            this_url = reverse('ui-search-narrator', args=[obj['id']])
+            template_extends = "ui/narrators/base.html"
+            obj['title'] = obj['display_name']
+    
+    # end search within  - - - - - - - - - - - - - - - - - - 
+    
+    def add_must(form, form_fieldname, es_fieldname, query, filters=False):
+        """
+        This form_fieldname/es_fieldname mess is because we have a field
+        (e.g. format) whose name is a Python reserved word, and several
+        fields (e.g. topics, facility) where the real value is a subfield.
+        """
+        if form.cleaned_data.get(form_fieldname):
+            query['must'].append(
+                {"terms": {es_fieldname: force_list(form.cleaned_data[form_fieldname])}}
+            )
+            filters = True
+        return filters
+    
+    filters = False
+    filters = add_must(form, 'filter_format',   'format',      query, filters)
+    filters = add_must(form, 'filter_genre',    'genre',       query, filters)
+    filters = add_must(form, 'filter_topics',   'topics.id',   query, filters)
+    filters = add_must(form, 'filter_facility', 'facility.id', query, filters)
+    filters = add_must(form, 'filter_rights',   'rights',      query, filters)
+    
+    # remove match _all from must, keeping fulltext arg
+    for item in query['must']:
+        if item.get('match') \
+        and item['match'].get('_all') \
+        and (item['match']['_all'] == query.get('fulltext')):
+            query['must'].remove(item)
+    
+    # run query
+    searching = False
+    aggregations = None
+    paginator = None
+    page = None
+    if query['fulltext'] or query['must']:
+        searching = True
+        results = api.docstore_search(
+            text=query['fulltext'],
+            must=query['must'],
+            should=[],
+            mustnot=[],
+            models=query['models'],
+            sort_fields=[],
+            limit=query['limit'],
+            offset=query['offset'],
+            aggs=query['aggs'],
+            request=request,
         )
+        aggregations = results.get('aggregations')
+        form.choice_aggs(aggregations)
         
-        if results.get('hits',None) and not results.get('status',None):
-            # OK -- prep results for display
-            thispage = request.GET.get('page', 1)
-            massaged = models.massage_query_results(results, thispage, settings.RESULTS_PER_PAGE)
-            objects = models.instantiate_query_objects(massaged)
-            paginator = Paginator(objects, settings.RESULTS_PER_PAGE)
-            page = paginator.page(thispage)
-            context['paginator'] = paginator
-            context['page'] = page
-        else:
-            # FAIL -- elasticsearch error
-            context['error_message'] = 'Search query "%s" caused an error. Please try again.' % query
+        paginator = Paginator(
+            api.pad_results(
+                results,
+                pagesize,
+                thispage
+            ),
+            pagesize
+        )
+        page = paginator.page(thispage)
     
     return render_to_response(
-        template, context, context_instance=RequestContext(request, processors=[])
+        'ui/search/results.html',
+        {
+            'template_extends': template_extends,
+            'hide_header_search': True,
+            'searching': searching,
+            'object': obj,
+            'filters': filters,
+            'query': query,
+            'query_json': json.dumps(query),
+            'aggregations': aggregations,
+            'search_form': form,
+            'paginator': paginator,
+            'page': page,
+            'this_url': this_url,
+            'api_url': reverse('ui-api-search'),
+        },
+        context_instance=RequestContext(request, processors=[])
     )
 
 def term_query( request, field, term ):
@@ -158,11 +266,13 @@ def term_query( request, field, term ):
     page = paginator.page(request.GET.get('page', 1))
     return render_to_response(
         'ui/search/results.html',
-        {'hide_header_search': True,
-         'paginator': paginator,
-         'page': page,
-         'terms': terms_display,
-         'filters': filters,
-         'sort': sort,},
+        {
+            'hide_header_search': True,
+            'paginator': paginator,
+            'page': page,
+            'terms': terms_display,
+            'filters': filters,
+            'sort': sort,
+        },
         context_instance=RequestContext(request, processors=[])
     )

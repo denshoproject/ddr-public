@@ -19,32 +19,32 @@
 <!-- custom theme -->
 
 <!-- WEB FONTS -->
-<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700,800" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700,800" />
 
 <!-- CORE CSS -->
-<link href="/assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-<link href="/assets/css/font-awesome.css" rel="stylesheet" type="text/css" />
-<link href="/assets/plugins/owl-carousel/owl.carousel.css" rel="stylesheet" type="text/css" />
-<link href="/assets/plugins/owl-carousel/owl.theme.css" rel="stylesheet" type="text/css" />
-<link href="/assets/plugins/owl-carousel/owl.transitions.css" rel="stylesheet" type="text/css" />
-<link href="/assets/plugins/magnific-popup/magnific-popup.css" rel="stylesheet" type="text/css" />
-<link href="/assets/css/animate.css" rel="stylesheet" type="text/css" />
-<link href="/assets/css/superslides.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/assets/{{ ASSETS_VERSION }}/plugins/bootstrap/css/bootstrap.min.css" />
+<link rel="stylesheet" type="text/css" href="/assets/{{ ASSETS_VERSION }}/css/font-awesome.css" />
+<link rel="stylesheet" type="text/css" href="/assets/{{ ASSETS_VERSION }}/plugins/owl-carousel/owl.carousel.css" />
+<link rel="stylesheet" type="text/css" href="/assets/{{ ASSETS_VERSION }}/plugins/owl-carousel/owl.theme.css" />
+<link rel="stylesheet" type="text/css" href="/assets/{{ ASSETS_VERSION }}/plugins/owl-carousel/owl.transitions.css" />
+<link rel="stylesheet" type="text/css" href="/assets/{{ ASSETS_VERSION }}/plugins/magnific-popup/magnific-popup.css" />
+<link rel="stylesheet" type="text/css" href="/assets/{{ ASSETS_VERSION }}/css/animate.css" />
+<link rel="stylesheet" type="text/css" href="/assets/{{ ASSETS_VERSION }}/css/superslides.css" />
 
 <!-- SHOP CSS -->
-<link href="/assets/css/shop.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/assets/{{ ASSETS_VERSION }}/css/shop.css" />
 
 <!-- PORTFOLIO CSS -->
-<link href="/assets/css/portfolio.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/assets/{{ ASSETS_VERSION }}/css/portfolio.css" />
 
 <!-- THEME CSS -->
-<link href="/assets/css/essentials.css" rel="stylesheet" type="text/css" />
-<link href="/assets/css/layout.css" rel="stylesheet" type="text/css" />
-<link href="/assets/css/layout-responsive.css" rel="stylesheet" type="text/css" />
-<link href="/assets/css/color_scheme/orange.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="/assets/{{ ASSETS_VERSION }}/css/essentials.css" />
+<link rel="stylesheet" type="text/css" href="/assets/{{ ASSETS_VERSION }}/css/layout.css" />
+<link rel="stylesheet" type="text/css" href="/assets/{{ ASSETS_VERSION }}/css/layout-responsive.css" />
+<link rel="stylesheet" type="text/css" href="/assets/{{ ASSETS_VERSION }}/css/color_scheme/orange.css" />
 
 <!-- Modernizr -->
-<script type="text/javascript" src="/assets/plugins/modernizr.min.js"></script>
+<script type="text/javascript" src="/assets/{{ ASSETS_VERSION }}/plugins/modernizr.min.js"></script>
 
  <!--[if lt IE 11]>
     
@@ -67,6 +67,22 @@
 
 <!-- /custom theme -->
 
+<style type="text/css">
+  .list-object a.pull-left { width:110px; }
+  .gallery-list-text {
+    color: #ffffff !important;
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+    display: block;
+  }
+  .gallery-list-id {
+    font-size: 10px !important;
+    line-height: 1.2 !important;
+  }
+</style>
+
 {% block pagecss %}{% endblock %}
 
 <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -78,170 +94,154 @@
 
 </head>
 
-
-
 <body class="boxed pattern7">
+    <a id="top"></a>
+    <!-- TOP NAV -->
+    <header id="topNav">
+        <div class="container">
 
-	<!-- TOP NAV -->
-	<header id="topNav">
-		<div class="container">
+        <!-- Mobile Menu Button -->
+        <button class="btn btn-mobile" data-toggle="collapse" data-target=".nav-main-collapse">
+            <i class="fa fa-bars"></i>
+        </button>
 
-				<!-- Mobile Menu Button -->
-				<button class="btn" data-toggle="collapse" data-target=".nav-main-collapse">
-					<i class="fa fa-bars"></i>
-				</button>
+        <!-- Logo text or image -->
+        <a class="logo" href="/">
+            <img src="/assets/{{ ASSETS_VERSION }}/images/denshoLogo-black-notext-150x104.png" height="40" alt="Densho" />
+            <span id="denshoTitle" style="font-size:30px" class="visible-lg-inline visible-md-inline visible-sm-inline hidden-xs-inline">Densho Digital Repository</span>
+            <span id="denshoTitle-mobile" style="font-size:18px" class="visible-xs-inline hidden-md-inline hidden-sm-inline hidden-lg-inline">Densho Digital Repository</span>
+        </a>
+        <!-- Top Nav -->
+        <div class="navbar-collapse nav-main-collapse collapse pull-right">
+            <nav class="nav-main mega-menu">
+                <ul class="nav nav-pills nav-main scroll-menu" id="topMain">
+                    <li>
+                        <a href="/">
+                            Home
+                        </a>
+                    </li>
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" href="{% url "ui-browse-index" %}">
+                            Browse <i class="fa fa-angle-down"></i>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url "ui-narrators-list" %}">By Narrator</a></li>
+                            <li><a href="{% url "ui-collections-list" %}">By Collection</a></li>
+                            <li><a href="{% url "ui-browse-facet" "topics" %}">By Topic</a></li>
+                            <li><a href="{% url "ui-browse-facet" "facility" %}">By Facility</a></li>
+                        </ul>
+                     </li>
+                    <li>
+                        <a href="{% url "names-index" %}">
+                            Names
+                        </a>
+                    </li>
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" href="#">
+                            About <i class="fa fa-angle-down"></i>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url "ui-about" %}">Overview</a></li>
+                            <li><a href="{% url "ui-using" %}">Using Materials in the DDR</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="//www.densho.org">
+                            densho.org
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        <!-- /Top Nav -->
+        </div>
+    </header>
+    <span id="header_shadow" style="pointer-events:none;"></span>
+    <!-- /TOP NAV -->
 
-				<!-- Logo text or image -->
-				<a class="logo" href="/">
-					<img src="/assets/images/denshoLogo-black-notext-150x104.png" height="40" alt="Densho" /> <span id="denshoTitle">Densho Digital Repository</span>
-				</a>
+        <!-- WRAPPER -->
+        <div id="wrapper">
 
-				<!-- Top Nav -->
-				<div class="navbar-collapse nav-main-collapse collapse pull-right" style="padding-right: 0px;">
-					<nav class="nav-main mega-menu">
-						<ul class="nav nav-pills nav-main scroll-menu" id="topMain">
-							<li class="active">
-								<a href="/">
-									Home
-								</a>
-							</li>
-							<li class="dropdown">
-								<a class="dropdown-toggle" href="{% url "ui-browse-index" %}">
-									Browse <i class="fa fa-angle-down"></i>
-								</a>
-								<ul class="dropdown-menu">
-									<li><a href="{% url "ui-collections-list" %}">By Collection</a></li>
-									<li><a href="{% url "ui-browse-facet" "topics" %}">By Topic</a></li>
-									<li><a href="{% url "ui-browse-facet" "facility" %}">By Facility</a></li>
-								</ul>
-							</li>
-							<li>
-								<a href="{% url "names-index" %}">
-									Names
-								</a>
-							</li>
-							<li>
-								<a href="{% url "ui-about" %}">
-									About
-								</a>
-							</li>
-							<li>
-								<a href="http://www.densho.org/" target="_blank">
-									densho.org
-								</a>
-							</li>
-						</ul>
-					</nav>
-				</div>
-				<!-- /Top Nav -->
-
-		</div>
-	</header>
-
-	<span id="header_shadow" style="pointer-events: none;"></span>
-	<!-- /TOP NAV -->
-
-
-	<!-- WRAPPER -->
-	<div id="wrapper">
-
-	{% block pageheader %}
-		<!-- PAGE TITLE -->
-		<header id="page-title">
-			<div class="container">
-			<div class="row">
-
-				<div class="col-sm-9 col-md-9">
-						<ul class="breadcrumb">
-							<li><a href="{% url "ui-index" %}">Home</a></li>
-							{% block breadcrumbs %}{% endblock breadcrumbs %}
-						</ul>
-				
-				</div>
+        {% block pageheader %}
+        <!-- PAGE TITLE -->
+        <header id="page-title">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-9 col-md-9">
+                        <ul class="breadcrumb">
+                            <li><a href="{% url "ui-index" %}">Home</a></li>
+                            {% block breadcrumbs %}{% endblock breadcrumbs %}
+                        </ul>
+                    </div>
 {% if not hide_header_search %}
-				<div class="col-sm-3 col-md-3">
-<form action="{% url "ui-search-results" %}" method="get" class="input-group nomargin-bottom">
-  <input class="form-control" id="id_query" name="query" type="text" value="{{ query }}" placeholder="Search..." />
-  <span class="input-group-btn">
-    <button class="btn btn-primary"><i class="fa fa-search"></i></button>
-  </span>
-</form>
-				</div>
+                    <div class="col-sm-3 col-md-3">
+                        <form action="{% url "ui-search-results" %}" method="get" class="input-group nomargin-bottom">
+                            <input class="form-control" id="id_fulltext" name="fulltext" type="text" value="{{ query }}" placeholder="Search..." />
+                            <span class="input-group-btn">
+                                <button class="btn btn-primary"><i class="fa fa-search"></i></button>
+                            </span>
+                        </form>
+                    </div>
 {% endif %}
-			</div>
-			</div>	
-		</header><!-- #page-title -->
-	{% endblock pageheader %}
+                </div>
+            </div>	
+        </header><!-- #page-title -->
+{% endblock pageheader %}
 
-<div id="content">
-{% block content %}{% endblock content %}
-</div><!-- #content -->
-
+    <div id="content">
+        {% block content %}{% endblock content %}
+    </div><!-- #content -->
 
     </div><!--WRAPPER -->
 
-	<!-- FOOTER -->
-	<footer>
+    <!-- FOOTER -->
+    <footer>
 
-				<!-- copyright , scrollTo Top -->
-				<div class="footer-bar">
-					<div class="container">
-						<span class="copyright">&copy; Densho, {% now "Y" %}. <!--<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-nc-sa/4.0/80x15.png" /></a>--> <a href="{% url 'ui-terms' %}">Terms of Use/Privacy Policy</a></span>
-						<a class="toTop" href="#topNav">BACK TO TOP <i class="fa fa-arrow-circle-up"></i></a>
-					</div>
-				</div>
-				<!-- copyright , scrollTo Top -->
+        <!-- copyright , scrollTo Top -->
+        <div class="footer-bar">
+            <div class="container">
+                <span class="copyright">&copy; Densho, {% now "Y" %}. <!--<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/80x15.png" /></a>--> <a href="{% url 'ui-terms' %}">Terms of Use/Privacy Policy</a></span>
+                <a class="toTop" href="#topNav">BACK TO TOP <i class="fa fa-arrow-circle-up"></i></a>
+            </div>
+        </div>
+        <!-- copyright , scrollTo Top -->
 
-				<!-- footer content -->
-				<div class="footer-content">
-					<div class="container">
+        <!-- footer content -->
+        <div class="footer-content">
+            <div class="container">
+                <div class="row">
+                    <!-- FOOTER CONTACT INFO -->
+                    <div class="column col-md-4">
+                        <p class="contact-desc">	
+                            The text of this page is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>. Where indicated, images and other primary source materials may be subject to use restrictions by their respective rights holders. <a href="{% url "ui-using" %}">More information</a>
+                            <br /><br />
+                            <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a>
+                        </p>
+                    </div>
+                    <!-- /FOOTER CONTACT INFO -->
 
-						<div class="row">
+                    <!-- FOOTER LOGO -->
+                    <div class="column logo col-md-4 text-center">
+                        <div class="logo-content">
+                            <img class="animate_fade_in" src="/assets/{{ ASSETS_VERSION }}/images/logo-densho-footer2.png" width="200" alt="" />
+                        </div>
+                    </div>
+                    <!-- /FOOTER LOGO -->
 
+                    <!-- FOOTER NPS STATEMENT -->
+                    <div class="column col-md-4 text-right">
+                        <p>This material is based upon work assisted by a grant from the U.S. Department of the Interior, National Park Service. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the U.S. Department of the Interior.</p>
 
-							<!-- FOOTER CONTACT INFO -->
-							<div class="column col-md-4">
+                        <a href="http://www.densho.org/" target="_blank" class="view-more pull-right">Visit Densho.org <i class="fa fa-arrow-right"></i></a>
+                    </div>
+                    <!-- /FOOTER NPS STATEMENT -->
+                </div>
+            </div>
+        </div>
+        <!-- footer content -->
 
-								<p class="contact-desc">	
-									The text of this page is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>. Where indicated, images and other primary source materials may be subject to use restrictions by their respective rights holders. <a href="{% url "ui-using" %}">More information</a>
-
-	<br /><br />
-									<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a>
-	</p>
-
-							</div>
-							<!-- /FOOTER CONTACT INFO -->
-
-
-							<!-- FOOTER LOGO -->
-							<div class="column logo col-md-4 text-center">
-								<div class="logo-content">
-									<img class="animate_fade_in" src="/assets/images/logo-densho-footer2.png" width="200" alt="" />
-								</div>											
-
-							</div>
-							<!-- /FOOTER LOGO -->
-
-
-							<!-- FOOTER NPS STATEMENT -->
-							<div class="column col-md-4 text-right">
-
-								<p>This material is based upon work assisted by a grant from the U.S. Department of the Interior, National Park Service. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the U.S. Department of the Interior.</p>
-
-								<a href="http://www.densho.org/" target="_blank" class="view-more pull-right">Visit Densho.org <i class="fa fa-arrow-right"></i></a>
-
-							</div>
-							<!-- /FOOTER NPS STATEMENT -->
-
-						</div>
-
-					</div>
-				</div>
-				<!-- footer content -->
-
-
-			</footer>
-	<!-- /FOOTER -->
+    </footer>
+    <!-- /FOOTER -->
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins)
 <script src="https://code.jquery.com/jquery.js"></script>
@@ -251,24 +251,39 @@ Include all compiled plugins (below), or include individual files as needed
 
 <!-- custom theme js -->
 <!-- JAVASCRIPT FILES -->
-<script type="text/javascript" src="/assets/plugins/jquery-2.0.3.min.js"></script>
-<script type="text/javascript" src="/assets/plugins/jquery.easing.1.3.js"></script>
-<script type="text/javascript" src="/assets/plugins/jquery.cookie.js"></script>
-<script type="text/javascript" src="/assets/plugins/jquery.appear.js"></script>
-<script type="text/javascript" src="/assets/plugins/jquery.isotope.js"></script>
-<script type="text/javascript" src="/assets/plugins/masonry.js"></script>
+<script type="text/javascript" src="/assets/{{ ASSETS_VERSION }}/plugins/jquery-2.2.3.min.js"></script>
+<script type="text/javascript" src="/assets/{{ ASSETS_VERSION }}/plugins/jquery.easing.1.3.js"></script>
+<script type="text/javascript" src="/assets/{{ ASSETS_VERSION }}/plugins/jquery.cookie.js"></script>
+<script type="text/javascript" src="/assets/{{ ASSETS_VERSION }}/plugins/jquery.appear.js"></script>
+<script type="text/javascript" src="/assets/{{ ASSETS_VERSION }}/plugins/jquery.isotope.js"></script>
+<script type="text/javascript" src="/assets/{{ ASSETS_VERSION }}/plugins/masonry.js"></script>
 
-<script type="text/javascript" src="/assets/plugins/bootstrap/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="/assets/plugins/magnific-popup/jquery.magnific-popup.min.js"></script>
-<script type="text/javascript" src="/assets/plugins/owl-carousel/owl.carousel.min.js"></script>
-<script type="text/javascript" src="/assets/plugins/stellar/jquery.stellar.min.js"></script>
-<script type="text/javascript" src="/assets/plugins/knob/js/jquery.knob.js"></script>
-<script type="text/javascript" src="/assets/plugins/jquery.backstretch.min.js"></script>
-<script type="text/javascript" src="/assets/plugins/superslides/dist/jquery.superslides.min.js"></script>
-<script type="text/javascript" src="/assets/js/scripts.js"></script>
+<script type="text/javascript" src="/assets/{{ ASSETS_VERSION }}/plugins/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="/assets/{{ ASSETS_VERSION }}/plugins/magnific-popup/jquery.magnific-popup.min.js"></script>
+<script type="text/javascript" src="/assets/{{ ASSETS_VERSION }}/plugins/owl-carousel/owl.carousel.min.js"></script>
+<script type="text/javascript" src="/assets/{{ ASSETS_VERSION }}/plugins/stellar/jquery.stellar.min.js"></script>
+<script type="text/javascript" src="/assets/{{ ASSETS_VERSION }}/plugins/knob/js/jquery.knob.js"></script>
+<script type="text/javascript" src="/assets/{{ ASSETS_VERSION }}/plugins/jquery.backstretch.min.js"></script>
+<script type="text/javascript" src="/assets/{{ ASSETS_VERSION }}/plugins/superslides/dist/jquery.superslides.min.js"></script>
+<script type="text/javascript" src="/assets/{{ ASSETS_VERSION }}/js/scripts.js"></script>
 <!-- /custom theme js -->
 
 {% block javascript %}{% endblock %}
+
+<script>
+  /* register tab choice in session */
+  $("ul.nav-tabs li.gallery a").click(function() {
+    $.ajax({
+      url: "{% url "ui-api-choose-tab" %}?tab=gallery",
+    });
+  });
+  $("ul.nav-tabs li.list a").click(function() {
+    $.ajax({
+      url: "{% url "ui-api-choose-tab" %}?tab=list",
+    });
+  });
+
+</script>
 
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -281,9 +296,8 @@ Include all compiled plugins (below), or include individual files as needed
 
 <!--
 Rendered at {{ time }} by {{ pid }} on {{ host }}
-Running {{ commit }}
-DOCSTORE_HOSTS: {{ DOCSTORE_HOSTS|safe }}
-DOCSTORE_INDEX: {{ DOCSTORE_INDEX|safe }}
+{{ commits|safe }}
+{{ docstore|safe }}
 -->
 
 </body>

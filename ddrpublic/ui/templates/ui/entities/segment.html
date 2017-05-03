@@ -1,0 +1,438 @@
+{% extends "ui/collections/base.html" %}
+{% load thumbnail ui_tags %}
+
+{% block parent %}
+<div id="parent">
+<a href="{{ parent.links.html }}"><span class="label label-default">{{ parent.id }}</span></a>
+<a href="{{ parent.links.html }}">{{ parent.title|safe }}</a>
+</div>
+{% endblock %}
+
+{% block title %}
+{{ segment.id }} {% if segment.title %}&mdash;{% endif %} {{ segment.title|safe }}
+{% endblock %}
+
+{% block pagetitle %}
+<span class="label label-default">{{ segment.id }}</span>
+{{ segment.title|safe }}
+{% endblock %}
+
+{% block breadcrumbs %}{{ block.super }}
+{% breadcrumbs segment.identifier.breadcrumbs %}
+{% endblock breadcrumbs %}
+
+{% block javascript %}
+<script src="https://archive.org/jw/6.8/jwplayer.js"></script>
+<script>jwplayer.key="sZbikYlI/xtW0U/3Tw1DOdjC1EahhtUCJF5KggVdqDY=";</script>
+<script>
+  jwplayer("clip").setup({
+    "playlist": [
+      {
+        title:"{{ segment.title }}",
+        image:"https://archive.org/download/{{ segment.id }}/format=Thumbnail",
+        sources:[ {file:"https://archive.org/download/{{ segment.id }}/format=h.264",type:"video/mp4"}]
+      }
+    ],
+    "width":"100%",
+    "height":384,
+  });
+</script>
+{% endblock javascript %}
+
+
+{% block content %}
+
+<section id="shop" class="container">
+
+  <div class="row">
+
+    <!-- LEFT SIDE ================================================= -->
+
+    <div id="left-content" class="col-sm-7 col-md-7">
+      <h2>{{ segment.title|safe }}</h2>
+
+      <div id="clip"></div>
+
+      <div id="tabs-left" class="tabs no-margin-top" style="margin:10px 0;">
+
+        <ul class="nav nav-tabs">
+          <li class="{% if tableft == "downloads" %}active{% endif %}">
+            <a href="#dls_tab" data-toggle="tab">
+              <i class="fa fa-download"></i> Download files
+            </a>
+          </li>
+          <li class="{% if tableft == "segments" %}active{% endif %}">
+            <a href="#segs_tab" data-toggle="tab">
+              <i class="fa fa-list"></i> View all segments
+            </a>
+          </li>
+        </ul><!-- .nav .nav-tabs -->
+
+        <div class="tab-content">
+
+          <!-- Left Tab ------------------------------------------ -->
+
+          <div id="dls_tab" class="tab-pane {% if tableft == "downloads" %}active{% endif %}">
+
+            <a href="{{ transcripts.segment.links.download }}" class="btn btn-default btn-xs">
+              <i class="fa fa-download"></i>
+              Download segment transcript
+            </a>
+            <a href="{{ transcripts.interview.links.download }}" class="btn btn-default btn-xs">
+              <i class="fa fa-download"></i>
+              Download full transcript
+            </a>
+            <br />
+            <a href="{{ downloads.mp4.url }}" class="btn btn-default btn-xs">
+              <i class="fa fa-download"></i>
+              Download MP4
+              ({{ downloads.mp4.size|filesizeformat }})
+            </a>
+            <a href="{{ downloads.mpg.url }}" class="btn btn-default btn-xs">
+              <i class="fa fa-download"></i>
+              Download full-size MPEG2
+              ({{ downloads.mpg.size|filesizeformat }})
+            </a>
+
+          </div><!-- #dls_tab .tab-pane -->
+          <!-- end Left Tab -------------------------------------- -->
+
+          <!-- Right Tab ----------------------------------------- -->
+          <div id="segs_tab" class="tab-pane {% if tableft == "segments" %}active{% endif %}">
+
+            <table class="table table-responsive table-condensed table-hover small">
+              <tbody>
+
+                {% for s in segments.objects %}
+                <tr>
+                  <td>
+                    {% if s.id == segment.id %}
+                    <i class="fa fa-angle-double-right"></i>
+                        {{ s.description|segmentoneline }}
+                    ({{ s.id }})
+                    - {{ s.extent }}
+                    {% else %}
+                    <a href="{% url "ui-interview" s.id %}?tableft=segments">
+                      {{ s.description|segmentoneline }}
+                      ({{ s.id }})
+                      - {{ s.extent }}
+                    </a>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+
+              </tbody>
+            </table> <!-- end segs list -->
+
+          </div><!-- #segs_tab .tab-pane -->
+          <!-- end Right Tab ------------------------------------- -->
+
+        </div><!-- .tab-content -->
+      </div><!-- .tabs -->
+
+{% rightspanel segment.rights %}
+
+    </div><!-- #left-content -->
+    <!-- end LEFT SIDE ============================================= -->
+
+
+    <!-- RIGHT SIDE ================================================ -->
+    <div id="right-meta" class="col-sm-5 col-md-5">
+
+{% addthis %}
+
+      <!-- metatabs here  -->
+      <div class="tabs nomargin-top">
+
+        <!-- tabs -->
+        <ul class="nav nav-tabs">
+          <li class="active">
+            <a href="#segment_tab" data-toggle="tab">
+              <i class="fa fa-file-o"></i> Segment info
+            </a>
+          </li>
+          <li>
+            <a href="#interview_tab" data-toggle="tab">
+              <i class="fa fa-files-o"></i> Interview info
+            </a>
+          </li>
+        </ul>
+
+        <!-- tab content -->
+        <div class="tab-content">
+
+          <!-- Left Tab ------------------------------------------ -->
+          <div id="segment_tab" class="tab-pane active">
+
+
+            <div class="desc productDescription">
+
+              <!-- segment.partner -->
+              <h3 class="page-header">PARTNER</h3>
+              {% include "ui/partnerlogolink.html" %}
+
+              <!-- segment.entity_id -->
+              <h3 class="page-header">SEGMENT ID</h3>
+              <p>
+                {{ segment.id }} 
+                {% if segment.alternate_id != '' %}
+                  {% if "denshouid" in segment.alternate_id %}                                                                                                                                      
+                    <span class="small">(Legacy UID: {{ segment.alternate_id|legacydenshouid }})</span>                                                                                        
+                  {% else %}
+                    <span class="small">({{ segment.alternate_id }})</span>
+                  {% endif %}
+                {% endif %}
+              </p>
+
+              <!-- segment.description -->
+              <h3 class="page-header">SEGMENT DESCRIPTION</h3>
+              {{ segment.description|safe|linebreaks }}
+
+              <!-- segment.extent; segment.index, num_segments -->
+              <p>
+              {{ segment.extent }}
+              &mdash;
+              Segment {{ segment.this }} of {{ segments.objects|length }}
+              </p>
+              <p>
+                {% if segment.prev %}
+                <a class="btn btn-primary btn-xs" href="{% url "ui-interview" segment.prev %}">
+                  <i class="fa fa-step-backward"></i> Previous segment
+                </a>
+                {% else %}
+                <a class="btn btn-primary btn-xs disabled">
+                  <i class="fa fa-step-backward"></i> Previous segment
+                </a>
+                {% endif %}
+
+                {% if segment.next %}
+                <a class="btn btn-primary btn-xs" href="{% url "ui-interview" segment.next %}">
+                  Next segment <i class="fa fa-step-forward" style="padding-left:10px;"></i>
+                </a>
+                {% else %}
+                <a class="btn btn-primary btn-xs disabled">
+                  Next segment <i class="fa fa-step-forward" style="padding-left:10px;"></i>
+                </a>
+                {% endif %}
+              </p>
+
+              <div class="row">
+                <div class="col-md-5 col-sm-5">
+                  <!-- entity.creation -->
+                  <h3 class="page-header">DATE</h3>
+                  <p>
+                    {{ segment.creation }}
+                  </p>
+                </div>
+
+                <div class="col-md-7 col-sm-7">
+                  <!-- entity.location -->
+                  <h3 class="page-header">LOCATION</h3>
+                  <ul class="list-unstyled">
+                    <li><a href="/search/location:{{ segment.location }}/">{{ segment.location }}</a></li>
+                  </ul>
+                </div>
+              </div>
+              <!-- entity.collection -->
+              <h3 class="page-header">PARENT COLLECTION</h3>
+              <p>
+                <a href="{{ collection.links.html }}">{{ collection.title }}</a>
+              </p>
+
+              <!-- core meta -->
+              <div class="row">
+                <div class="col-md-5 col-sm-5">
+                  <!-- entity.topic_terms -->
+                  <h3 class="page-header">TOPICS</h3>
+                  <ul class="list-unstyled">
+                    {% for item in segment.topics %}
+                    <li><a href="{{ item.html }}">{{ item.term }}</a></li>
+                    {% endfor %}
+                  </ul>
+                </div>
+                <div class="col-md-7 col-sm-7">
+                  <!-- entity.facility -->
+                  <h3 class="page-header">FACILITY</h3>
+                    {% for item in segment.facility %}
+                    <li><a href="{{ item.html }}">{{ item.term }}</a></li>
+                    {% endfor %}
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12 col-sm-12">
+                  <!-- entity.persons -->
+                  <h3 class="page-header">PERSONS/ORGANIZATIONS</h3>
+                  <p>
+                    {{ segment.persons }}
+                  </p>
+                </div>
+              </div>
+              <!-- /core meta -->
+
+              <h3 class="page-header">CONTRIBUTOR</h3>
+              <p>
+                {{ segment.contributor }}
+              </p>
+
+              <!-- entity.credit -->
+              <h3 class="page-header">PREFERRED CITATION</h3>
+              <p>
+                {{ segment.credit }}
+              </p>
+
+              <!-- entity.rights -->
+              <h3 class="page-header">RIGHTS</h3>
+              <p>
+                {% rightsbadge segment.rights %}
+              </p>
+
+            </div>
+
+
+          </div> <!-- end segment_tab -->
+          <!-- end Left Tab -------------------------------------- -->
+
+          <!-- Right Tab ----------------------------------------- -->
+          <div id="interview_tab" class="tab-pane">
+
+
+            <div class="desc productDescription">
+
+              <!-- entity.partner -->
+              <h3 class="page-header">PARTNER</h3>
+              {% include "ui/partnerlogolink.html" %}
+
+              <!-- entity.entity_id -->
+              <h3 class="page-header">INTERVIEW ID</h3>
+              <p>
+                {{ entity.id }}
+                {% if entity.alternate_id != None and "denshouid" not in entity.alternate_id %}
+                <span class="small">({{ entity.alternate_id }})</span>
+                {% endif %}
+              </p>
+
+              <!-- entity.narrator -->
+              <h3 class="page-header">NARRATOR</h3>
+              <p>
+                {% for item in entity.creators %}
+                  {% if item.role == 'narrator' %}
+                    <a href="{% url "ui-narrators-detail" item.id %}">{{ item.namepart }}</a><br />
+                  {% endif %}
+                {% endfor %}
+              </p>
+
+              <!-- entity.title  -->
+              <h3 class="page-header">INTERVIEW TITLE</h3>
+              <p>
+                {{ entity.title }}
+              </p>
+
+             <!-- segment.extent; segment.index, num_segments -->
+              <p>
+              {{ entity.extent }}
+              &mdash;
+              {{ segments.objects|length }} segments
+              </p>
+
+              <!-- core meta -->
+              <div class="row">
+                <div class="col-md-5 col-sm-5">
+                  <!-- entity.creation -->
+                  <h3 class="page-header">DATE</h3>
+                  <p>
+                    {{ entity.creation }}
+                  </p>
+                </div>
+                <div class="col-md-7 col-sm-7">
+                  <!-- entity.location -->
+                  <h3 class="page-header">LOCATION</h3>
+                  <p>
+                    {{ entity.location }}
+                  </p>
+                </div>
+              </div>
+
+             <!-- entity.description -->
+             <h3 class="page-header">DESCRIPTION</h3>
+             {{ entity.description|safe|linebreaks }}
+
+             <h3 class="page-header">PRODUCTION</h3>
+             <p>
+             {% for item in entity.creators %}
+               {% if item.role == 'interviewer' or item.role == 'videographer' %}
+                 {{ item.namepart }}, {{item.role}}{% if not forloop.last %}; {% endif %}
+               {% endif %}
+             {% endfor %}
+             </p>
+
+              <div class="row">
+                <div class="col-md-5 col-sm-5">
+                  <!-- entity.topic_terms -->
+                  <h3 class="page-header">TOPICS</h3>
+                  <ul class="list-unstyled">
+                    {% for term in entity.topics %}
+                    <li><a href="{{ item.html }}">{{ item.term }}</a></li>
+                    {% endfor %}
+                  </ul>
+                </div>
+                <div class="col-md-7 col-sm-7">
+                  <!-- entity.facility -->
+                  <h3 class="page-header">FACILITY</h3>
+                  <ul class="list-unstyled">
+                    {% for term in entity.facility %}
+                    <li><a href="{{ item.html }}">{{ item.term }}</a></li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              </div>
+
+              <!-- entity.persons -->
+              <h3 class="page-header">PERSONS/ORGANIZATIONS</h3>
+                <p>
+                  {{ entity.persons }}
+                </p>
+
+              <!-- /core meta -->
+              <h3 class="page-header">CONTRIBUTOR</h3>
+              <p>
+                {{ entity.contributor }}
+              </p>
+
+              <!-- entity.credit -->
+              <h3 class="page-header">PREFERRED CITATION</h3>
+              <p>
+                {{ entity.credit }}
+              </p>
+
+              <!-- entity.rights -->
+              <h3 class="page-header">RIGHTS</h3>
+              <p>
+                {% rightsbadge entity.rights %}
+              </p>
+
+            </div><!-- .desc .productDescription -->
+
+
+          </div> <!-- end interview_tab -->
+          <!-- end Right Tab ------------------------------------- -->
+
+        </div> <!-- end tabcontent -->
+      </div> <!-- end metatabs-->
+
+    </div><!-- #right-meta .col-sm-5 col-md-5 -->
+    <!-- end RIGHT SIDE ========================================== -->
+
+  </div><!-- .row -->
+  <div class="row">
+    <div class="col-sm-12 col-md-12 text-muted text-right">
+      <small><a class="api" href="{{ api_url }}">API</a></small>
+    </div>
+  </div><!-- .row -->
+
+</section>
+{% endblock content %}
+
+{% block footer %}
+{% if segment.backend_url %}&bull; <a href="{{ segment.backend_url }}">json</a>{% endif %}
+{% endblock footer %}

@@ -3,8 +3,8 @@
 
 {% block parent %}
 <div id="parent">
-<a href="{{ parent.absolute_url }}"><span class="label label-default">{{ parent.id }}</span></a>
-<a href="{{ parent.absolute_url }}">{{ parent.title|safe }}</a>
+<a href="{{ parent.links.html }}"><span class="label label-default">{{ parent.id }}</span></a>
+<a href="{{ parent.links.html }}">{{ parent.title|safe }}</a>
 </div>
 {% endblock %}
 
@@ -27,27 +27,37 @@
 
     <div class="row">
         <!-- left content -->
-        <div class="col-sm-6 col-md-6">
+        <div class="col-sm-7 col-md-7">
             <h2>{{ object.title|safe }}</h2>
 
-{% if object.signature_url %}
-  {% thumbnail object.signature_url_local "480x480" as img %}
-        <a href="{{ object.signature_url }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
+{% if object.links.img %}
+  {% thumbnail object.links.thumb "480x480" as img %}
+        <a href="{{ object.links.img }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
           <img src="{{ img.url }}" class="img-responsive">
         </a><br />
   {% endthumbnail %}
-{% if object.signature and object.signature.access_path %}
-        <a href="{{ DOWNLOAD_URL }}{{ object.signature.access_path }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download large size</a>
-{% endif %}
 
-        <div class="divider"><!-- divider -->
-            <i class="fa fa-chevron-down"></i>
-        </div>
-        {% rightspanel object.rights %}
-        {% endif %}
+  {% if signature %}
+            <p>
+              <a href="{{ signature.links.img }}" class="btn btn-default btn-xs">
+                <i class="fa fa-download"></i>
+                Download large
+                ({{ signature.access_size|filesizeformat }})
+              </a>
+              <a href="{{ signature.links.download }}" class="btn btn-default btn-xs">
+                <i class="fa fa-download"></i>
+                Download full-size
+                ({{ signature.size|filesizeformat }})
+              </a>
+            </p>
+  {% endif %}
+
+{% rightspanel object.rights %}
+
+{% endif %}{# object.links.img #}
         </div>
         <!-- right meta -->
-        <div class="col-sm-6 col-md-6">
+        <div class="col-sm-5 col-md-5">
 
             {% addthis %}
 
@@ -59,20 +69,23 @@
                     <h3 class="page-header">OBJECT ID</h3>
                     <p>
                     {{ object.id }}
-                    {% if object.alternate_id != None and "denshouid" not in object.alternate_id %}
-                    <span class="small">({{ object.alternate_id }})</span>
+                    {% if object.alternate_id != None %}
+                      {% if "denshouid" in object.alternate_id %}
+                      <span class="small">(Legacy UID: {{ object.alternate_id|legacydenshouid }})</span>
+                      {% else %}
+                      <span class="small">({{ object.alternate_id }})</span>
+                      {% endif %}
                     {% endif %}
+                    
                     </p>
                     <!-- entity.collection -->
                     <h3 class="page-header">PARENT COLLECTION</h3>
                     <p>
-                    <a href="{{ parent.absolute_url }}">{{ parent.title }}</a>
+                    <a href="{{ parent.links.html }}">{{ parent.title }}</a>
                     </p>
                     <!-- entity.description -->
                     <h3 class="page-header">DESCRIPTION</h3>
-                    <p>
-                    {{ object.description|safe }}
-                    </p>
+                    {{ object.description|safe|linebreaks }}
 
                     <!-- core meta -->
                     <div class="row">
@@ -83,23 +96,34 @@
                                 {{ object.creation }}
                             </p>
                         </div>
-
                         <div class="col-md-7 col-sm-7">
                             <!-- entity.location -->
                             <h3 class="page-header">LOCATION</h3>
-                            {{ object.fields|ddrvalue:"location" }}
+                            <p>
+                              <a href="{% url "ui-search-results" %}?fulltext=location:{{ object.location }}">
+                                {{ object.location }}
+                              </a>
+                            </p>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-5 col-sm-5">
                             <!-- entity.genre -->
                             <h3 class="page-header">OBJECT GENRE</h3>
-                            {{ object.fields|ddrvalue:"genre" }}
+                            <p>
+                              <a href="{% url "ui-search-results" %}{{ object.genre.query }}">
+                                {{ object.genre.label }}
+                              </a>
+                            </p>
                         </div>
                         <div class="col-md-7 col-sm-7">
                             <!-- entity.format -->
                             <h3 class="page-header">OBJECT FORMAT</h3>
-                            {{ object.fields|ddrvalue:"format" }}
+                            <p>
+                              <a href="{% url "ui-search-results" %}{{ object.format.query }}">
+                                {{ object.format.label }}
+                              </a>
+                            </p>
                         </div>
                     </div>
                     <div class="row">    
@@ -107,27 +131,43 @@
                             <!-- entity.topic_terms -->
                             <h3 class="page-header">TOPICS</h3>
                             <ul class="list-unstyled">
-                                {% for term in object.topic_terms %}
-                                <li><a href="{{ term.url }}">{{ term.title }}</a></li>
+                                {% for item in object.topics %}
+                                <li><a href="{{ item.html }}">{{ item.term }}</a></li>
                                 {% endfor %}
                             </ul>
                         </div>
                         <div class="col-md-7 col-sm-7">
                             <!-- entity.facility -->
                             <h3 class="page-header">FACILITY</h3>
-                            {{ object.fields|ddrvalue:"facility" }}
+                            <ul class="list-unstyled">
+                              {% for item in object.facility %}
+                                <li><a href="{{ item.html }}">{{ item.term }}</a></li>
+                                {% endfor %}
+                            </ul>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-5 col-sm-5">
                             <!-- entity.creators -->
                             <h3 class="page-header">CREATORS</h3>
-                            {{ object.fields|ddrvalue:"creators" }}
+                            <ul class="list-unstyled">
+                              {% for item in object.creators %}
+                              <li>
+                                <a href="{% url "ui-search-results" %}?fulltext=creators:{{ item.namepart }}">
+                                  {{ item.namepart }} ({{ item.role }})
+                                </a>
+                              </li>
+                              {% endfor %}
+                            </ul>
                         </div>
                         <div class="col-md-7 col-sm-7">
                             <!-- entity.persons -->
                             <h3 class="page-header">PERSONS/ORGANIZATIONS</h3>
-                            {{ object.fields|ddrvalue:"persons" }}
+                            <ul class="list-unstyled">
+                              {% for item in object.persons %}
+                              <li>{{ item }}</li>
+                              {% endfor %}
+                            </ul>
                         </div>
                     </div>
                     <!-- /core meta -->	
@@ -142,39 +182,64 @@
                     </p>
                     <!-- entity.rights -->
                     <h3 class="page-header">RIGHTS</h3>
-                    {{ object.fields|ddrvalue:"rights" }}
-
-                    {% if object.encyc_articles %}
-                    <!-- entity.encycarticles -->
-                    <h3 class="page-header">FOR MORE INFORMATION</h3>
-                    <p class="small">
-                        Related articles from the <a target="encyc" href="http://encyclopedia.densho.org/">Densho Encyclopedia</a>
+                    <p>
+                      {% rightsbadge object.rights %}
                     </p>
-                    <ul class="list-unstyled">
-                        {% for article in object.encyc_articles %}
-                        <li><a target="encyc" href="{{ article.url }}">{{ article.title }}</a></li>
-                        {% endfor %}
-                    </ul>
-                    {% endif %}
+
                 </div>	
             </div>
-</div>
+    </div>
 
+{% if children_page.object_list %}
     <div class="row">
         <div class="col-sm-12 col-md-12">
-            <h3>{{ paginator.count }} Files</h3>
-            {% for file in page.object_list %}
-            {% document file %}
-            {% endfor %}
+          <h3>
+            <a href="{% url "ui-object-children" object.identifier.id %}">
+              {{ children_paginator.count }} Objects
+            </a>
+          </h3>
 
-            {% if paginator.count > 10 %}
-            <br />
-            <p>
-                <a class="btn btn-primary btn-md" href="{% url "ui-entity-files" repo org cid eid %}">See all files <i class="fa fa-arrow-circle-right"></i></a>
-            </p>
-            {% endif %}
+          {% for file in children_page.object_list %}
+          {% document file %}
+          {% endfor %}
+
+          {% if children_paginator.count > 10 %}
+          <br />
+          <p>
+            <a class="btn btn-primary btn-md" href="{% url "ui-object-children" object.identifier.id %}">See all objects <i class="fa fa-arrow-circle-right"></i></a>
+          </p>
+          {% endif %}
+        </div><!-- end list col -->
+    </div><!-- .row -->
+{% endif %}{# children_page.object_list #}
+
+{% if nodes_page.object_list %}
+    <div class="row">
+        <div class="col-sm-12 col-md-12">
+          <h3>
+            <a href="{% url "ui-object-nodes" object.identifier.id %}">
+              {{ nodes_paginator.count }} Files
+            </a>
+          </h3>
+
+          {% for file in nodes_page.object_list %}
+          {% listitem file %}
+          {% endfor %}
+
+          {% if nodes_paginator.count > 10 %}
+          <br />
+          <p>
+            <a class="btn btn-primary btn-md" href="{% url "ui-object-nodes" object.identifier.id %}">See all files <i class="fa fa-arrow-circle-right"></i></a>
+          </p>
+          {% endif %}
+        </div><!-- end list col -->
+    </div><!-- .row -->
+{% endif %}{# nodes_page.object_list #}
+
+    <div class="row">
+        <div class="col-sm-12 col-md-12 text-muted text-right">
+            <small><a class="api" href="{{ api_url }}">API</a></small>
         </div>
-
     </div><!-- .row -->
   
 </section>

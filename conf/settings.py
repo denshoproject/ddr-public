@@ -1,17 +1,60 @@
 # Django settings for ddrpublic.
 
-DEBUG = False
+ENCYC_BASE = 'http://encyclopedia.densho.org'
+
+# ----------------------------------------------------------------------
+
+import ConfigParser
+import logging
+import os
+import sys
+
+CONFIG_FILES = [
+    '/etc/ddr/ddrpublic.cfg',
+    '/etc/ddr/ddrpublic-local.cfg'
+]
+
+from DDR.config import NoConfigError
+config = ConfigParser.ConfigParser()
+configs_read = config.read(CONFIG_FILES)
+if not configs_read:
+    raise NoConfigError('No config file!')
+
+REPO_MODELS_PATH = config.get('cmdln','repo_models_path')
+if REPO_MODELS_PATH not in sys.path:
+    sys.path.append(REPO_MODELS_PATH)
+
+CMDLN_INSTALL_PATH = config.get('cmdln','install_path')
+
+# Latest commits for ddr-cmdln and ddr-local.
+# Include here in settings so only has to be retrieved once,
+# and so commits are visible in error pages and in page footers.
+from DDR import dvcs
+COMMITS_DDRCMDLN = dvcs.latest_commit(CMDLN_INSTALL_PATH)
+COMMITS_DDRPUBLIC = dvcs.latest_commit(os.path.dirname(__file__))
+COMMITS_DDRDEFS = dvcs.latest_commit(REPO_MODELS_PATH)
+COMMITS_TEXT = '\n'.join([
+    'cmd: %s' % COMMITS_DDRCMDLN,
+    'pub: %s' % COMMITS_DDRPUBLIC,
+    'def: %s' % COMMITS_DDRDEFS,
+])
+
+with open('/etc/ddr/ddrpublic-secret-key.txt') as f:
+    SECRET_KEY = f.read().strip()
+
+LANGUAGE_CODE='en-us'
+TIME_ZONE='America/Los_Angeles'
+
+DEBUG = config.getboolean('debug', 'debug')
 TEMPLATE_DEBUG = DEBUG
-THUMBNAIL_DEBUG = DEBUG
+THUMBNAIL_DEBUG = config.getboolean('debug', 'thumbnail')
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = [
-    'ddr.densho.org',
-    'ddrstage.densho.org',
-    '192.168.56.120',
+    host.strip()
+    for host in config.get('public', 'allowed_hosts').split(',')
 ]
-
 # partner-branded domains
 PARTNER_DOMAINS = {
     'hmwf': ['hmwf.ddr.densho.org', 'hmwf.ddr.local',],
@@ -24,51 +67,45 @@ for value in PARTNER_DOMAINS.values():
         if domain not in ALLOWED_HOSTS:
             ALLOWED_HOSTS.append(domain)
 
-ENCYC_BASE = 'http://encyclopedia.densho.org'
+LOG_LEVEL = config.get('public', 'log_level')
 
-# ----------------------------------------------------------------------
+CACHE_TIMEOUT = int(config.get('public', 'cache_timeout'))
 
-import ConfigParser
-import logging
-import os
-
-class NoConfigError(Exception):
-    def __init__(self, value):
-        self.value = value
-    def __str__(self):
-        return repr(self.value)
-
-CONFIG_FILES = [
-    '/etc/ddr/ddrpublic.cfg',
-    '/etc/ddr/ddrpublic-local.cfg'
-]
-config = ConfigParser.ConfigParser()
-configs_read = config.read(CONFIG_FILES)
-if not configs_read:
-    raise NoConfigError('No config file!')
-
-with open('/etc/ddr/ddrpublic-secret-key.txt') as f:
-    SECRET_KEY = f.read().strip()
-
-LANGUAGE_CODE='en-us'
-TIME_ZONE='America/Los_Angeles'
+# Elasticsearch
+DOCSTORE_HOSTS = [{
+    'host':config.get('public', 'docstore_host').split(':')[0],
+    'port':config.get('public', 'docstore_host').split(':')[1],
+}]
+DOCSTORE_INDEX = config.get('public', 'docstore_index')
+NAMESDB_DOCSTORE_HOSTS = [{
+    'host':config.get('public', 'namesdb_host').split(':')[0],
+    'port':config.get('public', 'namesdb_host').split(':')[1],
+}]
+NAMESDB_DOCSTORE_INDEX = config.get('public', 'namesdb_index')
 
 # Filesystem path and URL for static media (mostly used for interfaces).
-STATIC_ROOT = config.get('media', 'static_root')
+STATIC_ROOT = config.get('public', 'static_root')
 STATIC_URL='/static/'
+
+# Version number appended to Bootstrap, etc URLs so updates are always
+# picked up by browser. IMPORTANT: must be same as ASSETS_VERSION in Makefile!
+ASSETS_VERSION = config.get('public', 'assets_version')
 
 # Filesystem path and URL for media to be manipulated by ddrlocal
 # (collection repositories, thumbnail cache, etc).
-MEDIA_ROOT = config.get('media', 'media_root')
-MEDIA_URL = config.get('media', 'media_url')
+MEDIA_ROOT = config.get('public', 'media_root')
+MEDIA_URL = config.get('public', 'media_url')
 # URL of local media server ("local" = in the same cluster).
 # Use this for sorl.thumbnail so it doesn't have to go through
 # a CDN and get blocked for not including a User-Agent header.
 # TODO Hard-coded! Replace with value from ddr.cfg.
-MEDIA_URL_LOCAL = config.get('media', 'media_url_local')
+MEDIA_URL_LOCAL = config.get('public', 'media_url_local')
 # The REST API will use MEDIA_URL_LOCAL for image URLs
 # if this query argument is present with a truthy value.
 MEDIA_URL_LOCAL_MARKER = 'internal'
+
+# used when document signature image field not populated
+MISSING_IMG = config.get('public', 'missing_img')
 
 # URL for full-size images and other downloadables.
 # Clicking this should bring up the browser's "Save As..." dialog.
@@ -78,7 +115,14 @@ MEDIA_URL_LOCAL_MARKER = 'internal'
 #       set $fname $1;
 #       add_header Content-Disposition 'attachment; filename="$fname"';
 #     }
-DOWNLOAD_URL = config.get('media', 'download_url')
+DOWNLOAD_URL = config.get('public', 'download_url')
+
+# Base URL for narrator images
+NARRATORS_URL = config.get('public', 'narrators_url')
+# Base URL for VH interview segment images
+SEGMENT_URL = config.get('public', 'segment_url')
+# Timeout for segment file metadata from Internet Archive
+IA_SEGMENT_CACHE_TIMEOUT = int(config.get('public', 'ia_segment_cache_timeout'))
 
 ACCESS_FILE_APPEND='-a'
 ACCESS_FILE_EXTENSION='.jpg'
@@ -162,19 +206,7 @@ CACHES = {
 }
 
 # ElasticSearch
-docstore_host,docstore_port = config.get('elasticsearch', 'hosts').split(':')
-DOCSTORE_HOSTS = [
-    {'host':docstore_host, 'port':docstore_port}
-]
-DOCSTORE_INDEX = config.get('elasticsearch', 'index')
-
-namesdb_docstore_host,namesdb_docstore_port = config.get('namesdb', 'hosts').split(':')
-NAMESDB_DOCSTORE_HOSTS = [
-    {'host':namesdb_docstore_host, 'port':namesdb_docstore_port}
-]
-NAMESDB_DOCSTORE_INDEX = config.get('namesdb', 'index')
-
-ELASTICSEARCH_MAX_SIZE = 1000000
+ELASTICSEARCH_MAX_SIZE = 10000
 ELASTICSEARCH_QUERY_TIMEOUT = 60 * 10  # 10 min
 ELASTICSEARCH_FACETS_TIMEOUT = 60*60*1  # 1 hour
 
@@ -205,14 +237,21 @@ def UI_THUMB_URL(ddrfile):
     http://192.168.56.101/media/base/ddr-testing-123/files/ddr-testing-123-1/files/ddr-testing-123-1-master-a1b2c3d4e5-a.jpg
     """
     return 'http://192.168.56.101/media/base/%s/files/%s/files/%s' % (
-        ddrfile.identifier.collection_id(), ddrfile.parent_id(), ddrfile.access_rel)
+        ddrfile.identifier.collection_id(),
+        ddrfile.parent_id(),
+        os.path.basename(ddrfile.access_rel)
+    )
 
 # colo
 def UI_THUMB_URL(ddrfile):
     """Example:
     /media/ddr-testing-123/ddr-testing-123-1-master-a1b2c3d4e5-a.jpg
     """
-    return '%s%s/%s' % (MEDIA_URL, ddrfile.identifier.collection_id(), ddrfile.access_rel)
+    return '%s%s/%s' % (
+        MEDIA_URL,
+        ddrfile.identifier.collection_id(),
+        os.path.basename(ddrfile.access_rel)
+    )
 
 # # Amazon S3
 # def UI_THUMB_URL(ddrfile):
@@ -242,7 +281,7 @@ def UI_DOWNLOAD_URL( ddrfile ):
     return None
 
 
-#SESSION_ENGINE = 'redis_sessions.session'
+SESSION_ENGINE = 'redis_sessions.session'
 
 TEMPLATE_DIRS = (
     '/usr/local/src/ddr-public/ddrpublic/names/templates',
@@ -283,7 +322,7 @@ LOGGING = {
             'formatter': 'simple',
         },
         'file': {
-            'level': 'DEBUG',
+            'level': LOG_LEVEL,
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': '/var/log/ddr/public.log',
             'when': 'D',
@@ -306,7 +345,7 @@ LOGGING = {
     },
     # This is the only way I found to write log entries from the whole DDR stack.
     'root': {
-        'level': 'DEBUG',
+        'level': LOG_LEVEL,
         'handlers': ['file'],
     },
 }

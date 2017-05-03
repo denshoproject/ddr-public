@@ -1,0 +1,19 @@
+                    <!-- {{ object.id }} -->
+                    <li class="isotope-item"><!-- slide item -->
+                        <div class="item-box">
+                            <figure>
+                                <a class="item-hover" href="{{ object.links.html }}" data-plugin-options='{"type":"image"}'>
+                                    <span class="overlay color2"></span>
+                                    <span class="inner">
+                                        <span class="block fa fa-user-o fsize30"></span>
+                                        <span class="fsize12" style="line-height:1;">{{ object.title|safe }}</span><br />
+                                    </span>
+                                </a>
+{% load thumbnail %}
+{% thumbnail object.links.thumb "480x323" padding=True padding_color="#000000" as img %}
+                                <!-- src: {{ object.links.thumb }} -->
+                                <img src="{{ img.url }}" class="img-responsive" alt="{{ object.title|safe }}" />
+{% endthumbnail %}
+                            </figure>
+                        </div>
+                    </li>

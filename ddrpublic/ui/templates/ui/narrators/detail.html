@@ -1,0 +1,69 @@
+{% extends "ui/narrators/base.html" %}
+{% load thumbnail %}
+
+{% block title %}{{ narrator.display_name }}{% endblock %}
+{% block pagetitle %}{{ narrator.display_name }}{% endblock %}
+
+{% block breadcrumbs %}{{ block.super }}
+<li>
+  {{ narrator.display_name }}
+</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+<section class="container">
+  <div class="row">
+    <div class="col-sm-8 col-md-8">
+
+<h1>
+  {{ narrator.display_name }}
+</h1>
+
+{{ narrator.bio|linebreaks }}
+
+{% if interviews.objects %}
+<h4>Interviews</h4>
+
+{% for object in interviews.objects %}
+<div class="media ">
+  <!-- {{ object.id }} -->
+  {% thumbnail object.links.thumb "110x110" as img %}
+  <a class="pull-left" href="{{ object.links.html }}">
+    <img class="media-object" src="{{ img.url }}" class="img-responsive">
+  </a>
+{% endthumbnail %}
+  <div class="media-body">
+    <b class="media-heading">
+      <a href="{{ object.links.html }}">{{ object.title }} &mdash; {{ object.id }}</a>
+    </b>
+    <div class="source muted">
+      {% if object.creation %}{{ object.creation }}.{% endif %}
+      {% if object.location %}{{ object.location }}.{% endif %}
+      <br/>
+      {% if object.extent %}{{ object.extent }}{% endif %}
+      &mdash;
+      {{ object.num_segments }} segments.
+    </div>
+    <div class="url">
+      <a href="{{ object.links.html }}">{{ object.links.html }}</a>
+    </div>
+  </div><!-- .media-body -->
+</div><!-- .media -->
+{% endfor %}{# interview in interviews #}
+
+{% endif %}{# interviews.objects #}
+
+    </div><!-- .column -->
+    <div class="col-sm-4 col-md-4">
+        <img src="{{ narrator.links.img }}" class="img-responsive" alt="{{ narrator.display_name }}">
+    </div>
+  </div><!-- .row detail content -->
+
+  <div class="row">
+    <div class="col-sm-12 col-md-12 text-muted text-right">
+      <small><a class="api" href="{{ api_url }}">API</a></small>
+    </div>
+  </div><!-- .row -->
+
+</section><!-- .container-fluid -->
+{% endblock content %}

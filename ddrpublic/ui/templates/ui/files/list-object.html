@@ -1,18 +1,23 @@
 {% load thumbnail %}
 <!-- {{ object.id }} -->
 <div class="media {{ object.model }}">
-{% thumbnail object.access_url_local "110x110" as img %}
-  <a class="pull-left" href="{{ object.absolute_url }}">
+{% if object.mimetype == "text/html" %}
+  <div class="pull-left" style="width:120px; text-align:center;">
+    <i class="fa fa-file-text-o fsize60" style="font-size:80px !important; line-height:80px !important;"></i>
+  </div>
+{% else %}
+{% thumbnail object.links.thumb "110x110" padding=True padding_color="#cdcdcd" as img %}     <a class="pull-left" href="{{ object.links.html }}">
     <img class="media-object" src="{{ img.url }}" class="img-responsive">
   </a>
 {% endthumbnail %}
+{% endif %}{# mimetype #}
   <div class="media-body">
-    <h4 class="media-heading">
+    <b class="media-heading">
       <span class="badge badge-info">{{ object.role | capfirst }}</span>
-      <a href="{{ object.absolute_url }}">{{ object.id }} - {{ object.label }}</a>
-    </h4>
+      <a href="{{ object.links.html }}">{{ object.id }} - {{ object.title }}</a>
+    </b>
     <div class="url">
-      <a href="{{ object.absolute_url }}">{{ object.absolute_url }}</a>
+      <a href="{{ object.links.html }}">{{ object.links.html }}</a>
     </div>
   </div><!-- .media-body -->
 </div><!-- .media -->

@@ -1,0 +1,22 @@
+{% load thumbnail %}
+<!-- {{ object.id }} -->
+  <div class="media {{ object.model }}">
+{% thumbnail object.links.thumb "110x110" as img %}
+  <a class="pull-left" href="{{ object.links.html }}">
+    <img class="media-object" src="{{ img.url }}" class="img-responsive">
+  </a>
+{% endthumbnail %}
+  <div class="media-body">
+{{ object}}
+    <h4 class="media-heading">
+      <span class="badge badge-info">{{ object.model | capfirst }}</span>
+      <a href="{{ object.links.html }}">{{ object.title|safe }}</a>
+    </h4>
+    <div class="source muted">
+      {{ object.description|safe|truncatewords_html:56 }}
+    </div>
+    <div class="url">
+      <a href="{{ object.links.html }}">{{ object.links.html }}</a>
+    </div>
+  </div><!-- .media-body -->
+</div><!-- .media -->

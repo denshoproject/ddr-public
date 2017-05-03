@@ -30,7 +30,7 @@
 {% if collections %}
   <li>
     <a href="#{{ organization.id }}">
-    <img class="logo" src="{{ organization.logo_url }}" width="20" />
+    <img class="logo" src="{{ organization.links.img }}" width="20" />
     {{ organization.title }}
     </a>
   </li>
@@ -43,7 +43,7 @@
       <a name="{{ organization.title }}"></a>
       <div id="{{ organization.id }}">
 <h3>
-<img class="logo" src="{{ organization.logo_url }}" width="20" />
+<img class="logo" src="{{ organization.links.img }}" width="40" />
 {{ organization.title }}
 </h3>
 {% for collection in collections %}
