@@ -12,16 +12,15 @@ SRC_REPO_DEFS=https://github.com/densho/ddr-defs.git
 SRC_REPO_MANUAL=https://github.com/densho/ddr-manual.git
 
 INSTALL_BASE=/usr/local/src
-INSTALL_CMDLN=$(INSTALL_BASE)/ddr-cmdln
 INSTALL_PUBLIC=$(INSTALL_BASE)/ddr-public
-INSTALL_DEFS=$(INSTALL_BASE)/ddr-defs
+INSTALL_CMDLN=$(INSTALL_PUBLIC)/ddr-cmdln
+INSTALL_DEFS=$(INSTALL_PUBLIC)/ddr-defs
 INSTALL_MANUAL=$(INSTALL_BASE)/ddr-manual
 
 VIRTUALENV=$(INSTALL_PUBLIC)/venv/ddrpublic
 SETTINGS=$(INSTALL_PUBLIC)/ddrpublic/ddrpublic/settings.py
 
 CONF_BASE=/etc/ddr
-CONF_DEFS=$(CONF_BASE)/ddr-defs
 CONF_PRODUCTION=$(CONF_BASE)/ddrpublic.cfg
 CONF_LOCAL=$(CONF_BASE)/ddrpublic-local.cfg
 CONF_SECRET=$(CONF_BASE)/ddrpublic-secret-key.txt
@@ -66,7 +65,7 @@ help:
 	@echo "    install-app     - Just installer tasks for ddr-cmdln and ddr-public"
 	@echo "    install-static  - Downloads static media (Bootstrap, jquery, etc)"
 	@echo ""
-	@echo "get-ddr-defs - Installs ddr-defs in $(CONF_DEFS)."
+	@echo "get-ddr-defs - Installs ddr-defs in $(INSTALL_DEFS)."
 	@echo ""
 	@echo ""
 	@echo "syncdb  - Initialize or update Django app's database tables."
@@ -218,7 +217,7 @@ get-ddr-cmdln:
 	@echo "get-ddr-cmdln ----------------------------------------------------------"
 	if test -d $(INSTALL_CMDLN); \
 	then cd $(INSTALL_CMDLN) && git pull; \
-	else cd $(INSTALL_BASE) && git clone $(SRC_REPO_CMDLN); \
+	else cd $(INSTALL_PUBLIC) && git clone $(SRC_REPO_CMDLN); \
 	fi
 
 setup-ddr-cmdln:
@@ -292,9 +291,9 @@ clean-ddr-public:
 get-ddr-defs:
 	@echo ""
 	@echo "get-ddr-defs -----------------------------------------------------------"
-	if test -d $(CONF_DEFS); \
-	then cd $(CONF_DEFS) && git pull; \
-	else cd $(CONF_BASE) && git clone $(SRC_REPO_DEFS) $(CONF_DEFS); \
+	if test -d $(INSTALL_DEFS); \
+	then cd $(INSTALL_DEFS) && git pull; \
+	else cd $(INSTALL_PUBLIC) && git clone $(SRC_REPO_DEFS) $(INSTALL_DEFS); \
 	fi
 
 
