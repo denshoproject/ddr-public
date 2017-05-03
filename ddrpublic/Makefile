@@ -181,7 +181,7 @@ install-elasticsearch:
 	apt-get --assume-yes install openjdk-7-jre
 	wget -nc -P /tmp/downloads http://$(PACKAGE_SERVER)/$(ELASTICSEARCH)
 	gdebi --non-interactive /tmp/downloads/$(ELASTICSEARCH)
-	cp $(INSTALLDIR)/debian/conf/elasticsearch.yml /etc/elasticsearch/
+	cp $(INSTALLDIR)/conf/elasticsearch.yml /etc/elasticsearch/
 	chown root.root /etc/elasticsearch/elasticsearch.yml
 	chmod 644 /etc/elasticsearch/elasticsearch.yml
 # 	@echo "${bldgrn}search engine (re)start${txtrst}"
@@ -352,7 +352,7 @@ install-configs:
 # /etc/ddr/ddrpublic.cfg must be readable by all
 # /etc/ddr/ddrpublic-local.cfg must be readable by ddr but contains sensitive info
 	-mkdir /etc/ddr
-	cp $(INSTALL_PUBLIC)/debian/conf/ddrpublic.cfg $(CONF_PRODUCTION)
+	cp $(INSTALL_PUBLIC)/conf/ddrpublic.cfg $(CONF_PRODUCTION)
 	chown root.root $(CONF_PRODUCTION)
 	chmod 644 $(CONF_PRODUCTION)
 	touch $(CONF_LOCAL)
@@ -362,7 +362,7 @@ install-configs:
 	chown ddr.root $(CONF_SECRET)
 	chmod 640 $(CONF_SECRET)
 # web app settings
-	cp $(INSTALL_PUBLIC)/debian/conf/settings.py $(SETTINGS)
+	cp $(INSTALL_PUBLIC)/conf/settings.py $(SETTINGS)
 	chown root.root $(SETTINGS)
 	chmod 644 $(SETTINGS)
 
@@ -376,13 +376,13 @@ install-daemon-configs:
 	@echo ""
 	@echo "install-daemon-configs -------------------------------------------------"
 # nginx settings
-	cp $(INSTALL_PUBLIC)/debian/conf/ddrpublic.conf $(NGINX_CONF)
+	cp $(INSTALL_PUBLIC)/conf/ddrpublic.conf $(NGINX_CONF)
 	chown root.root $(NGINX_CONF)
 	chmod 644 $(NGINX_CONF)
 	-ln -s $(NGINX_CONF) $(NGINX_CONF_LINK)
 	-rm /etc/nginx/sites-enabled/default
 # supervisord
-	cp $(INSTALL_PUBLIC)/debian/conf/gunicorn_ddrpublic.conf $(SUPERVISOR_GUNICORN_CONF)
+	cp $(INSTALL_PUBLIC)/conf/gunicorn_ddrpublic.conf $(SUPERVISOR_GUNICORN_CONF)
 	chown root.root $(SUPERVISOR_GUNICORN_CONF)
 	chmod 644 $(SUPERVISOR_GUNICORN_CONF)
 
