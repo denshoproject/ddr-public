@@ -43,8 +43,7 @@ COMMITS_TEXT = '\n'.join([
     'def: %s' % COMMITS_DDRDEFS,
 ])
 
-with open('/etc/ddr/ddrpublic-secret-key.txt') as f:
-    SECRET_KEY = f.read().strip()
+SECRET_KEY = config.get('security', 'secret_key')
 
 LANGUAGE_CODE='en-us'
 TIME_ZONE='America/Los_Angeles'

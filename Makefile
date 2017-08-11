@@ -32,7 +32,6 @@ SETTINGS=$(INSTALL_PUBLIC)/ddrpublic/ddrpublic/settings.py
 CONF_BASE=/etc/ddr
 CONF_PRODUCTION=$(CONF_BASE)/ddrpublic.cfg
 CONF_LOCAL=$(CONF_BASE)/ddrpublic-local.cfg
-CONF_SECRET=$(CONF_BASE)/ddrpublic-secret-key.txt
 
 SQLITE_BASE=/var/lib/ddr
 LOG_BASE=/var/log/ddr
@@ -355,9 +354,6 @@ install-configs:
 	touch $(CONF_LOCAL)
 	chown ddr.root $(CONF_LOCAL)
 	chmod 640 $(CONF_LOCAL)
-	python -c 'import random; print "".join([random.choice("abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)") for i in range(50)])' > $(CONF_SECRET)
-	chown ddr.root $(CONF_SECRET)
-	chmod 640 $(CONF_SECRET)
 # web app settings
 	cp $(INSTALL_PUBLIC)/conf/settings.py $(SETTINGS)
 	chown root.root $(SETTINGS)
