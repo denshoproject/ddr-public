@@ -11,7 +11,7 @@ SRC_REPO_CMDLN=https://github.com/densho/ddr-cmdln.git
 SRC_REPO_DEFS=https://github.com/densho/ddr-defs.git
 SRC_REPO_MANUAL=https://github.com/densho/ddr-manual.git
 
-INSTALL_BASE=/usr/local/src
+INSTALL_BASE=/opt
 INSTALL_PUBLIC=$(INSTALL_BASE)/ddr-public
 INSTALL_CMDLN=$(INSTALL_PUBLIC)/ddr-cmdln
 INSTALL_DEFS=$(INSTALL_PUBLIC)/ddr-defs
