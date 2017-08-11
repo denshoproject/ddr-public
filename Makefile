@@ -1,6 +1,13 @@
+PROJECT=ddr
+APP=ddrpublic
+USER=ddr
+
 SHELL = /bin/bash
 DEBIAN_CODENAME := $(shell lsb_release -sc)
+DEBIAN_RELEASE := $(shell lsb_release -sr)
+VERSION := $(shell cat VERSION)
 
+GIT_SOURCE_URL=https://github.com/densho/ddr-public
 # Media assets and Elasticsearch will be downloaded from this location.
 # See https://github.com/densho/ansible-colo.git for more info:
 # - templates/proxy/nginx.conf.j2
@@ -16,6 +23,8 @@ INSTALL_PUBLIC=$(INSTALL_BASE)/ddr-public
 INSTALL_CMDLN=$(INSTALL_PUBLIC)/ddr-cmdln
 INSTALL_DEFS=$(INSTALL_PUBLIC)/ddr-defs
 INSTALL_MANUAL=$(INSTALL_BASE)/ddr-manual
+REQUIREMENTS=$(INSTALLDIR)/requirements.txt
+PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
 
 VIRTUALENV=$(INSTALL_PUBLIC)/venv/ddrpublic
 SETTINGS=$(INSTALL_PUBLIC)/ddrpublic/ddrpublic/settings.py
@@ -28,7 +37,7 @@ CONF_SECRET=$(CONF_BASE)/ddrpublic-secret-key.txt
 SQLITE_BASE=/var/lib/ddr
 LOG_BASE=/var/log/ddr
 
-DDR_REPO_BASE=/var/www/media
+ELASTICSEARCH=elasticsearch-2.4.4.deb
 
 MEDIA_BASE=/var/www/ddrpublic
 MEDIA_ROOT=$(MEDIA_BASE)/media
@@ -42,9 +51,7 @@ ASSETS_VERSION=20170206
 ASSETS_TGZ=ddr-public-assets-$(ASSETS_VERSION).tar.gz
 ASSETS_INSTALL_DIR=$(MEDIA_BASE)/assets/$(ASSETS_VERSION)
 
-ELASTICSEARCH=elasticsearch-2.4.4.deb
-
-SUPERVISOR_GUNICORN_CONF=/etc/supervisor/conf.d/gunicorn_ddrpublic.conf
+SUPERVISOR_GUNICORN_CONF=/etc/supervisor/conf.d/ddrpublic.conf
 NGINX_CONF=/etc/nginx/sites-available/ddrpublic.conf
 NGINX_CONF_LINK=/etc/nginx/sites-enabled/ddrpublic.conf
 
@@ -244,9 +251,6 @@ uninstall-ddr-cmdln:
 	@echo "uninstall-ddr-cmdln ----------------------------------------------------"
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_CMDLN)/ddr && pip uninstall -y -r $(INSTALL_CMDLN)/ddr/requirements/production.txt
-	-rm /usr/local/bin/ddr*
-	-rm -Rf /usr/local/lib/python2.7/dist-packages/DDR*
-	-rm -Rf /usr/local/lib/python2.7/dist-packages/ddr*
 
 clean-ddr-cmdln:
 	-rm -Rf $(INSTALL_CMDLN)/ddr/build
@@ -263,10 +267,6 @@ install-ddr-public: clean-ddr-public
 	apt-get --assume-yes install imagemagick sqlite3 supervisor
 	source $(VIRTUALENV)/bin/activate; \
 	pip install -U -r $(INSTALL_PUBLIC)/ddrpublic/requirements/production.txt
-# ddr repo
-	-mkdir -p $(DDR_REPO_BASE)
-	chown -R ddr.root $(DDR_REPO_BASE)
-	chmod -R 755 $(DDR_REPO_BASE)
 # logs dir
 	-mkdir $(LOG_BASE)
 	chown -R ddr.root $(LOG_BASE)
@@ -281,8 +281,6 @@ uninstall-ddr-public:
 	@echo "uninstall-ddr-public ---------------------------------------------------"
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_PUBLIC)/ddrpublic && pip uninstall -y -r $(INSTALL_PUBLIC)/ddrpublic/requirements/production.txt
-	-rm /usr/local/lib/python2.7/dist-packages/ddrpublic-*
-	-rm -Rf /usr/local/lib/python2.7/dist-packages/ddrpublic
 
 clean-ddr-public:
 	-rm -Rf $(INSTALL_PUBLIC)/ddrpublic/src
