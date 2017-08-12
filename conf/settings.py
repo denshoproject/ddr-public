@@ -1,12 +1,16 @@
 # Django settings for ddrpublic.
 
+import os
+
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 ENCYC_BASE = 'http://encyclopedia.densho.org'
 
 # ----------------------------------------------------------------------
 
 import ConfigParser
 import logging
-import os
 import sys
 
 CONFIG_FILES = [
@@ -39,8 +43,7 @@ COMMITS_TEXT = '\n'.join([
     'def: %s' % COMMITS_DDRDEFS,
 ])
 
-with open('/etc/ddr/ddrpublic-secret-key.txt') as f:
-    SECRET_KEY = f.read().strip()
+SECRET_KEY = config.get('security', 'secret_key')
 
 LANGUAGE_CODE='en-us'
 TIME_ZONE='America/Los_Angeles'
@@ -284,14 +287,14 @@ def UI_DOWNLOAD_URL( ddrfile ):
 SESSION_ENGINE = 'redis_sessions.session'
 
 TEMPLATE_DIRS = (
-    '/usr/local/src/ddr-public/ddrpublic/names/templates',
-    '/usr/local/src/ddr-public/ddrpublic/ui/templates',
+    os.path.join(BASE_DIR, 'names/templates'),
+    os.path.join(BASE_DIR, 'ui/templates'),
 )
 
 STATICFILES_DIRS = (
-    #'/opt/ddr-local/ddrpublic/ddrpublic/static',
-    #'/usr/local/src/ddr-local/ddrpublic/storage/static',
-    '/usr/local/src/ddr-local/ddrpublic/ui/static',
+    #os.path.join(BASE_DIR, 'ddrpublic/static'),
+    #os.path.join(BASE_DIR, 'storage/static'),
+    os.path.join(BASE_DIR, 'ui/static'),
 )
 
 LOGGING = {
