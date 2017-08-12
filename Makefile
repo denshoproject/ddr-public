@@ -1,6 +1,13 @@
+PROJECT=ddr
+APP=ddrpublic
+USER=ddr
+
 SHELL = /bin/bash
 DEBIAN_CODENAME := $(shell lsb_release -sc)
+DEBIAN_RELEASE := $(shell lsb_release -sr)
+VERSION := $(shell cat VERSION)
 
+GIT_SOURCE_URL=https://github.com/densho/ddr-public
 # Media assets and Elasticsearch will be downloaded from this location.
 # See https://github.com/densho/ansible-colo.git for more info:
 # - templates/proxy/nginx.conf.j2
@@ -11,11 +18,13 @@ SRC_REPO_CMDLN=https://github.com/densho/ddr-cmdln.git
 SRC_REPO_DEFS=https://github.com/densho/ddr-defs.git
 SRC_REPO_MANUAL=https://github.com/densho/ddr-manual.git
 
-INSTALL_BASE=/usr/local/src
+INSTALL_BASE=/opt
 INSTALL_PUBLIC=$(INSTALL_BASE)/ddr-public
 INSTALL_CMDLN=$(INSTALL_PUBLIC)/ddr-cmdln
 INSTALL_DEFS=$(INSTALL_PUBLIC)/ddr-defs
 INSTALL_MANUAL=$(INSTALL_BASE)/ddr-manual
+REQUIREMENTS=$(INSTALLDIR)/requirements.txt
+PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
 
 VIRTUALENV=$(INSTALL_PUBLIC)/venv/ddrpublic
 SETTINGS=$(INSTALL_PUBLIC)/ddrpublic/ddrpublic/settings.py
@@ -23,12 +32,11 @@ SETTINGS=$(INSTALL_PUBLIC)/ddrpublic/ddrpublic/settings.py
 CONF_BASE=/etc/ddr
 CONF_PRODUCTION=$(CONF_BASE)/ddrpublic.cfg
 CONF_LOCAL=$(CONF_BASE)/ddrpublic-local.cfg
-CONF_SECRET=$(CONF_BASE)/ddrpublic-secret-key.txt
 
 SQLITE_BASE=/var/lib/ddr
 LOG_BASE=/var/log/ddr
 
-DDR_REPO_BASE=/var/www/media
+ELASTICSEARCH=elasticsearch-2.4.4.deb
 
 MEDIA_BASE=/var/www/ddrpublic
 MEDIA_ROOT=$(MEDIA_BASE)/media
@@ -42,11 +50,18 @@ ASSETS_VERSION=20170206
 ASSETS_TGZ=ddr-public-assets-$(ASSETS_VERSION).tar.gz
 ASSETS_INSTALL_DIR=$(MEDIA_BASE)/assets/$(ASSETS_VERSION)
 
-ELASTICSEARCH=elasticsearch-2.4.4.deb
-
-SUPERVISOR_GUNICORN_CONF=/etc/supervisor/conf.d/gunicorn_ddrpublic.conf
+SUPERVISOR_GUNICORN_CONF=/etc/supervisor/conf.d/ddrpublic.conf
 NGINX_CONF=/etc/nginx/sites-available/ddrpublic.conf
 NGINX_CONF_LINK=/etc/nginx/sites-enabled/ddrpublic.conf
+
+FPM_BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr -d _ | tr -d -)
+FPM_ARCH=amd64
+FPM_NAME=$(APP)-$(FPM_BRANCH)
+FPM_FILE=$(FPM_NAME)_$(VERSION)_$(FPM_ARCH).deb
+FPM_VENDOR=Densho.org
+FPM_MAINTAINER=<geoffrey.jost@densho.org>
+FPM_DESCRIPTION=Densho Digital Repository site
+FPM_BASE=opt/ddr-public
 
 
 .PHONY: help
@@ -244,9 +259,6 @@ uninstall-ddr-cmdln:
 	@echo "uninstall-ddr-cmdln ----------------------------------------------------"
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_CMDLN)/ddr && pip uninstall -y -r $(INSTALL_CMDLN)/ddr/requirements/production.txt
-	-rm /usr/local/bin/ddr*
-	-rm -Rf /usr/local/lib/python2.7/dist-packages/DDR*
-	-rm -Rf /usr/local/lib/python2.7/dist-packages/ddr*
 
 clean-ddr-cmdln:
 	-rm -Rf $(INSTALL_CMDLN)/ddr/build
@@ -263,10 +275,6 @@ install-ddr-public: clean-ddr-public
 	apt-get --assume-yes install imagemagick sqlite3 supervisor
 	source $(VIRTUALENV)/bin/activate; \
 	pip install -U -r $(INSTALL_PUBLIC)/ddrpublic/requirements/production.txt
-# ddr repo
-	-mkdir -p $(DDR_REPO_BASE)
-	chown -R ddr.root $(DDR_REPO_BASE)
-	chmod -R 755 $(DDR_REPO_BASE)
 # logs dir
 	-mkdir $(LOG_BASE)
 	chown -R ddr.root $(LOG_BASE)
@@ -281,8 +289,6 @@ uninstall-ddr-public:
 	@echo "uninstall-ddr-public ---------------------------------------------------"
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_PUBLIC)/ddrpublic && pip uninstall -y -r $(INSTALL_PUBLIC)/ddrpublic/requirements/production.txt
-	-rm /usr/local/lib/python2.7/dist-packages/ddrpublic-*
-	-rm -Rf /usr/local/lib/python2.7/dist-packages/ddrpublic
 
 clean-ddr-public:
 	-rm -Rf $(INSTALL_PUBLIC)/ddrpublic/src
@@ -357,9 +363,6 @@ install-configs:
 	touch $(CONF_LOCAL)
 	chown ddr.root $(CONF_LOCAL)
 	chmod 640 $(CONF_LOCAL)
-	python -c 'import random; print "".join([random.choice("abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)") for i in range(50)])' > $(CONF_SECRET)
-	chown ddr.root $(CONF_SECRET)
-	chmod 640 $(CONF_SECRET)
 # web app settings
 	cp $(INSTALL_PUBLIC)/conf/settings.py $(SETTINGS)
 	chown root.root $(SETTINGS)
@@ -482,3 +485,51 @@ uninstall-ddr-manual:
 
 clean-ddr-manual:
 	-rm -Rf $(INSTALL_MANUAL)/build
+
+
+# http://fpm.readthedocs.io/en/latest/
+# https://stackoverflow.com/questions/32094205/set-a-custom-install-directory-when-making-a-deb-package-with-fpm
+# https://brejoc.com/tag/fpm/
+deb:
+	@echo ""
+	@echo "FPM packaging ----------------------------------------------------------"
+	-rm -Rf $(FPM_FILE)
+	virtualenv --relocatable $(VIRTUALENV)  # Make venv relocatable
+	fpm   \
+	--verbose   \
+	--input-type dir   \
+	--output-type deb   \
+	--name $(FPM_NAME)   \
+	--version $(VERSION)   \
+	--package $(FPM_FILE)   \
+	--url "$(GIT_SOURCE_URL)"   \
+	--vendor "$(FPM_VENDOR)"   \
+	--maintainer "$(FPM_MAINTAINER)"   \
+	--description "$(FPM_DESCRIPTION)"   \
+	--depends "imagemagick"  \
+	--depends "libxml2-dev"  \
+	--depends "libxslt1-dev"  \
+	--depends "libz-dev"  \
+	--depends "nginx"   \
+	--depends "redis-server"   \
+	--depends "sqlite3"  \
+	--depends "supervisor"   \
+	--after-install "bin/fpm-mkdir-log.sh"   \
+	--chdir $(INSTALL_PUBLIC)   \
+	conf/ddrpublic.cfg=etc/ddr/ddrpublic.cfg   \
+	conf/supervisor.conf=etc/supervisor/conf.d/ddrpublic.conf   \
+	conf/nginx.conf=etc/nginx/sites-available/ddrpublic.conf   \
+	bin=$(FPM_BASE)   \
+	conf=$(FPM_BASE)   \
+	COPYRIGHT=$(FPM_BASE)   \
+	ddr-cmdln=$(FPM_BASE)   \
+	ddr-defs=$(FPM_BASE)   \
+	ddrpublic=$(FPM_BASE)   \
+	.git=$(FPM_BASE)   \
+	.gitignore=$(FPM_BASE)   \
+	INSTALL=$(FPM_BASE)   \
+	LICENSE=$(FPM_BASE)   \
+	Makefile=$(FPM_BASE)   \
+	README.rst=$(FPM_BASE)   \
+	venv=$(FPM_BASE)   \
+	VERSION=$(FPM_BASE)
