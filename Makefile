@@ -378,13 +378,13 @@ install-daemon-configs:
 	@echo ""
 	@echo "install-daemon-configs -------------------------------------------------"
 # nginx settings
-	cp $(INSTALL_PUBLIC)/conf/ddrpublic.conf $(NGINX_CONF)
+	cp $(INSTALL_PUBLIC)/conf/nginx.conf $(NGINX_CONF)
 	chown root.root $(NGINX_CONF)
 	chmod 644 $(NGINX_CONF)
 	-ln -s $(NGINX_CONF) $(NGINX_CONF_LINK)
 	-rm /etc/nginx/sites-enabled/default
 # supervisord
-	cp $(INSTALL_PUBLIC)/conf/gunicorn_ddrpublic.conf $(SUPERVISOR_GUNICORN_CONF)
+	cp $(INSTALL_PUBLIC)/conf/supervisor.conf $(SUPERVISOR_GUNICORN_CONF)
 	chown root.root $(SUPERVISOR_GUNICORN_CONF)
 	chmod 644 $(SUPERVISOR_GUNICORN_CONF)
 
