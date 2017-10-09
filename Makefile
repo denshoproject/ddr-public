@@ -517,8 +517,6 @@ deb:
 	--after-install "bin/fpm-mkdir-log.sh"   \
 	--chdir $(INSTALL_PUBLIC)   \
 	conf/ddrpublic.cfg=etc/ddr/ddrpublic.cfg   \
-	conf/supervisor.conf=etc/supervisor/conf.d/ddrpublic.conf   \
-	conf/nginx.conf=etc/nginx/sites-available/ddrpublic.conf   \
 	bin=$(FPM_BASE)   \
 	conf=$(FPM_BASE)   \
 	COPYRIGHT=$(FPM_BASE)   \
