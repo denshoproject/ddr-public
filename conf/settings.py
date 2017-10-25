@@ -79,12 +79,12 @@ if GITPKG_DEBUG:
             return ''
         data = {}
         for line in dpkg_raw.splitlines():
-            if line and isinstance(line,str) and (':' in line):
+            if line and isinstance(line, basestring) and (':' in line):
                 key,val = line.split(':', 1)
                 data[key.strip().lower()] = val.strip()
         pkg_paths = [
             path for path in os.listdir(apt_cache_dir)
-            if (package in path) and (data['version'] in path)
+            if (package in path) and data.get('version') and (data['version'] in path)
         ]
         return pkg_paths
     
