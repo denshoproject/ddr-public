@@ -296,8 +296,10 @@ Include all compiled plugins (below), or include individual files as needed
 
 <!--
 Rendered at {{ time }} by {{ pid }} on {{ host }}
+v{{ version }} {{ packages }}
 {{ commits|safe }}
-{{ docstore|safe }}
+{{ docstore_hosts|safe }} {{ docstore_index|safe }}
+{{ namesdb_hosts|safe }} {{ namesdb_index|safe }}
 -->
 
 </body>
