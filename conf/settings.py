@@ -1,17 +1,20 @@
 # Django settings for ddrpublic.
 
+import ConfigParser
+import logging
 import os
+import subprocess
+import sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+with open(os.path.join(BASE_DIR, '..', 'VERSION'), 'r') as f:
+    VERSION = f.read().strip()
+
 ENCYC_BASE = 'http://encyclopedia.densho.org'
 
 # ----------------------------------------------------------------------
-
-import ConfigParser
-import logging
-import sys
 
 CONFIG_FILES = [
     '/etc/ddr/ddrpublic.cfg',
@@ -34,13 +37,13 @@ CMDLN_INSTALL_PATH = config.get('cmdln','install_path')
 # Include here in settings so only has to be retrieved once,
 # and so commits are visible in error pages and in page footers.
 from DDR import dvcs
+COMMITS_DDRDEFS = dvcs.latest_commit(REPO_MODELS_PATH)
 COMMITS_DDRCMDLN = dvcs.latest_commit(CMDLN_INSTALL_PATH)
 COMMITS_DDRPUBLIC = dvcs.latest_commit(os.path.dirname(__file__))
-COMMITS_DDRDEFS = dvcs.latest_commit(REPO_MODELS_PATH)
 COMMITS_TEXT = '\n'.join([
+    'def: %s' % COMMITS_DDRDEFS,
     'cmd: %s' % COMMITS_DDRCMDLN,
     'pub: %s' % COMMITS_DDRPUBLIC,
-    'def: %s' % COMMITS_DDRDEFS,
 ])
 
 SECRET_KEY = config.get('security', 'secret_key')
@@ -49,8 +52,47 @@ LANGUAGE_CODE='en-us'
 TIME_ZONE='America/Los_Angeles'
 
 DEBUG = config.getboolean('debug', 'debug')
+GITPKG_DEBUG = config.getboolean('debug', 'gitpkg_debug')
 TEMPLATE_DEBUG = DEBUG
 THUMBNAIL_DEBUG = config.getboolean('debug', 'thumbnail')
+
+if GITPKG_DEBUG:
+    # report Git branch and commit
+    # This branch is the one with the leading '* '.
+    #try:
+    GIT_BRANCH = [
+        b.decode().replace('*','').strip()
+        for b in subprocess.check_output(['git', 'branch']).splitlines()
+        if '*' in b.decode()
+       ][0]
+    
+    def package_debs(package, apt_cache_dir='/var/cache/apt/archives'):
+        """
+        @param package: str Package name
+        @param apt_cache_dir: str Absolute path
+        @returns: list of .deb files matching package and version
+        """
+        cmd = 'dpkg --status %s' % package
+        try:
+            dpkg_raw = subprocess.check_output(cmd.split(' ')).decode()
+        except subprocess.CalledProcessError:
+            return ''
+        data = {}
+        for line in dpkg_raw.splitlines():
+            if line and isinstance(line,str) and (':' in line):
+                key,val = line.split(':', 1)
+                data[key.strip().lower()] = val.strip()
+        pkg_paths = [
+            path for path in os.listdir(apt_cache_dir)
+            if (package in path) and (data['version'] in path)
+        ]
+        return pkg_paths
+    
+    PACKAGES = package_debs('ddrpublic-%s' % GIT_BRANCH)
+
+else:
+    GIT_COMMIT = 'GIT_COMMIT'
+    PACKAGES = 'PACKAGES'
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
