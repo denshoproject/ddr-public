@@ -79,12 +79,12 @@ if GITPKG_DEBUG:
             return ''
         data = {}
         for line in dpkg_raw.splitlines():
-            if line and isinstance(line,str) and (':' in line):
+            if line and isinstance(line, basestring) and (':' in line):
                 key,val = line.split(':', 1)
                 data[key.strip().lower()] = val.strip()
         pkg_paths = [
             path for path in os.listdir(apt_cache_dir)
-            if (package in path) and (data['version'] in path)
+            if (package in path) and data.get('version') and (data['version'] in path)
         ]
         return pkg_paths
     
@@ -200,6 +200,21 @@ PRETTY_DATE_FORMAT = '%d %B %Y'
 PRETTY_TIME_FORMAT = '%I:%M %p'
 PRETTY_DATETIME_FORMAT = '%d %B %Y, %I:%M %p'
 
+# django-cors-headers (see https://github.com/ottoyiu/django-cors-headers/)
+_cors_origin_whitelist = config.get('public', 'cors_origin_whitelist')
+if _cors_origin_whitelist and (';' in _cors_origin_whitelist):
+    CORS_ORIGIN_WHITELIST = [
+        domain.strip() for domain in _cors_origin_whitelist.split(';')
+    ]
+else:
+    CORS_ORIGIN_WHITELIST = []
+if CORS_ORIGIN_WHITELIST:
+    CORS_ORIGIN_ALLOW_ALL = False
+else:
+    CORS_ORIGIN_ALLOW_ALL = True
+# Only send CORS headers for API.
+CORS_URLS_REGEX = r'^/api/.*$'
+
 # ----------------------------------------------------------------------
 
 ADMINS = (
@@ -220,6 +235,7 @@ INSTALLED_APPS = (
     #'django.contrib.admin',
     #
     'bootstrap_pagination',
+    'corsheaders',
     'rest_framework',
     'sorl.thumbnail',
     #
@@ -425,6 +441,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     #'django.middleware.csrf.CsrfViewMiddleware',
