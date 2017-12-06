@@ -7,6 +7,7 @@ API_BASE = '/api/0.2/'
 
 urlpatterns = patterns(
     '',
+    url(r'^redirect/archive.densho.org$', 'ui.views.redirect', name='ui-redirect'),
     url(r'^names', include('names.urls')),
     
     url(r'^api/0.2/choose-tab/$', 'ui.views.choose_tab', name='ui-api-choose-tab'),

@@ -5,6 +5,7 @@ logger = logging.getLogger(__name__)
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 
@@ -27,6 +28,12 @@ def index( request ):
         {},
         context_instance=RequestContext(request, processors=[])
     )
+
+def redirect(request):
+    """Catch redirects from old archive.densho.org site
+    """
+    url = '/?archive.densho.org=1'
+    return HttpResponsePermanentRedirect(url)
 
 def cite( request ):
     return render_to_response(
