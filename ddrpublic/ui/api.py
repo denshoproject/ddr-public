@@ -432,6 +432,12 @@ def format_object_detail(document, request, listitem=False):
                 os.path.basename(document['_source'].pop('access_rel')),
                 request
             )
+            fullsize = i.id + os.path.splitext(document['_source']['basename_orig'])[1]
+            d['links']['download'] = img_url(
+                d['collection_id'],
+                fullsize,
+                request
+            )
         elif (document['_source'].get('format','') == 'vh'):
             # interviews/segments
             if document['_source'].get('signature_id'):
@@ -974,11 +980,6 @@ class File(object):
         ]
         for field in HIDDEN_FIELDS:
             pop_field(data, field)
-        data['links']['download'] = img_url(
-            data['collection_id'],
-            data['path_rel'],
-            request
-        )
         return data
 
     @staticmethod
