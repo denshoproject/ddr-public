@@ -16,7 +16,7 @@ from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 from django.utils.http import urlquote  as django_urlquote
 
-from DDR import docstore
+from ui import docstore
 from ui.identifier import Identifier, MODEL_CLASSES
 from ui import domain_org
 from ui import faceting

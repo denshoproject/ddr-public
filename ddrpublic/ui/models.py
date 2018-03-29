@@ -13,8 +13,7 @@ from django.template import Context, Template
 from django.template.loader import get_template
 from django.utils.http import urlquote  as django_urlquote
 
-from DDR import docstore
-
+from ui import docstore
 from ui import faceting
 from ui.identifier import Identifier, MODEL_CLASSES
 

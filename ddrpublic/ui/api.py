@@ -15,7 +15,7 @@ from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from DDR import docstore
+from ui import docstore
 from ui.identifier import Identifier, CHILDREN, CHILDREN_ALL
 from ui.urls import API_BASE
 from ui.views import filter_if_branded
