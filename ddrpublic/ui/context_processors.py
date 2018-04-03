@@ -35,6 +35,9 @@ def docstore_info():
 def sitewide(request):
     """Variables that need to be inserted into all templates.
     """
+    from_oldsite = False
+    if request.GET.get('archive.densho.org'):
+        from_oldsite = True
     repo,org = domain_org(request)
     if repo and org:
         partner = Organization.get(repo, org)

@@ -215,6 +215,9 @@ else:
 # Only send CORS headers for API.
 CORS_URLS_REGEX = r'^/api/.*$'
 
+THROTTLE_ANON = config.get('public', 'throttle_anon')
+THROTTLE_USER = config.get('public', 'throttle_user')
+
 # ----------------------------------------------------------------------
 
 ADMINS = (
@@ -243,6 +246,21 @@ INSTALLED_APPS = (
     'ui',
     'names',
 )
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': THROTTLE_ANON,
+        'user': THROTTLE_USER,
+    },
+    'PAGE_SIZE': 20,
+}
 
 DATABASES = {
     'default': {
