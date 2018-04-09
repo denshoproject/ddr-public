@@ -16,8 +16,6 @@ from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 from django.utils.http import urlquote  as django_urlquote
 
-from DDR import docstore
-from ui.identifier import Identifier, MODEL_CLASSES
 from ui import domain_org
 from ui import faceting
 from ui import models
@@ -47,9 +45,8 @@ def force_list(terms):
 # views ----------------------------------------------------------------
 
 def collection(request, oid):
-    i = Identifier(id=oid)
     #filter_if_branded(request, i)
-    collection = api.Collection.get(i.id, request)
+    collection = api.Collection.get(oid, request)
     collection['identifier'] = i
     if not collection:
         raise Http404

@@ -9,14 +9,17 @@ from django.conf import settings
 from django.core.cache import cache
 from django.http import HttpResponseRedirect
 
+from elasticsearch import Elasticsearch
+es = Elasticsearch(settings.DOCSTORE_HOSTS)
+
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from DDR import docstore
-from ui.identifier import Identifier, CHILDREN, CHILDREN_ALL
+from ui import docstore
+from ui.identifier import Identifier, CHILDREN_ALL
 from ui.urls import API_BASE
 from ui.views import filter_if_branded
 from ui import encyc
@@ -210,6 +213,11 @@ def search_offset(thispage, pagesize):
 SEARCH_RETURN_FIELDS = [
 
     'id',
+    'model',
+    'links_html',
+    'links_json',
+    'links_img',
+    'links_thumb',
     'title',
     'description',
     'access_rel',
@@ -267,6 +275,24 @@ def docstore_search(text='', must=[], should=[], mustnot=[], models=[], fields=[
         ),
         request
     )
+
+def _object_children(document, request, limit=DEFAULT_LIMIT, offset=0):
+    sort_fields = [
+        ['repo','asc'],
+        ['org','asc'],
+        ['id','asc'],
+    ]
+    data = children(
+        request,
+        CHILDREN[document['model']],
+        document['id'],
+        sort_fields,
+        limit=limit, offset=offset
+    )
+    for d in data['objects']:
+        d['links']['img'] = img_url(d['id'], 'logo.png', request)
+        d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
+    return data
 
 def children(request, model, object_id, sort_fields, limit=DEFAULT_LIMIT, offset=0, just_count=False):
     """Return object children list in Django REST Framework format.
@@ -376,13 +402,14 @@ class AttributeDict():
 def format_object_detail(document, request, listitem=False):
     """Formats repository objects, adds list URLs,
     """
-    if document and document.get('_source'):
-        oid = document['_source'].pop('id')
+    doc_dict = document.__dict__
+    if document:
+        oid = document.id
         i = Identifier(oid)
         
         d = OrderedDict()
         d['id'] = oid
-        d['model'] = document['_type']
+        d['model'] = document.meta.doc_type
         if not listitem:
             try:
                 d['collection_id'] = i.collection_id()
@@ -391,10 +418,10 @@ def format_object_detail(document, request, listitem=False):
         # links
         d['links'] = OrderedDict()
         if not listitem:
-            if document.get('parent_id'):
+            if document.parent_id:
                 d['links']['parent'] = reverse(
                     'ui-api-object',
-                    args=[document['parent_id']],
+                    args=[document.parent_id],
                     request=request
                 )
             elif i.parent_id():
@@ -420,39 +447,39 @@ def format_object_detail(document, request, listitem=False):
         HAS_SIGNATURE_IDS = [
             'collection', 'entity', 'segment', 'file'
         ]
-        if (document['_type'] in HAS_SIGNATURE_IDS) \
-        and (not document['_source'].get('signature_id')):
+        if (document.meta.doc_type in HAS_SIGNATURE_IDS) \
+        and (not document.signature_id):
             # empty quotes so we don't have to ...get('signature_id') everywhere
-            document['_source']['signature_id'] = '' # settings.MISSING_IMG
+            document.signature_id = '' # settings.MISSING_IMG
         # links-img
         if i.model == 'file':
             # files
             d['links']['img'] = img_url(
                 i.collection_id(),
-                os.path.basename(document['_source'].pop('access_rel')),
+                os.path.basename(document.access_rel),
                 request
             )
-        elif (document['_source'].get('format','') == 'vh'):
+        elif hasattr(document, 'format') and (document.format == 'vh'):
             # interviews/segments
-            if document['_source'].get('signature_id'):
+            if document.signature_id:
                 d['links']['img'] = img_url(
                     i.collection_id(),
-                    access_filename(document['_source']['signature_id']),
+                    access_filename(document.signature_id),
                     request
                 )
-        elif document['_source'].get('signature_id'):
+        elif hasattr(document, 'signature_id'):
             # other collections/entities
             d['links']['img'] = img_url(
                 i.collection_id(),
-                access_filename(document['_source']['signature_id']),
+                access_filename(document.signature_id),
                 request
             )
         d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
         # title, description
-        if document['_source'].get('title'):
-            d['title'] = document['_source'].pop('title')
-        if document['_source'].get('description'):
-            d['description'] = document['_source'].pop('description')
+        if document.title:
+            d['title'] = document.title
+        if document.description:
+            d['description'] = document.description
         # everything else
         HIDDEN_FIELDS = [
             'repo','org','cid','eid','sid','sha1'
@@ -463,6 +490,76 @@ def format_object_detail(document, request, listitem=False):
                 d[key] = document['_source'][key]
         return d
     return None
+
+def format_object_detail2(document, request, listitem=False):
+    """Formats repository objects, adds list URLs,
+    """
+    if document.get('_source'):
+        oid = document['_id']
+        model = document['_type']
+        document = document['_source']
+    else:
+        oid = document.pop('id')
+        model = document.pop('model')
+
+    d = OrderedDict()
+    d['id'] = oid
+    d['model'] = model
+    
+    if not listitem:
+        try:
+            d['collection_id'] = document['collection_id']
+        except:
+            pass
+    # links
+    d['links'] = OrderedDict()
+    d['links']['html'] = reverse(
+        'ui-object-detail', args=[document.pop('links_html')], request=request
+    )
+    d['links']['json'] = reverse(
+        'ui-api-object', args=[document.pop('links_json')], request=request
+    )
+    d['links']['img'] = '%s%s' % (settings.MEDIA_URL, document.pop('links_img'))
+    d['links']['thumb'] = '%s%s' % (settings.MEDIA_URL_LOCAL, document.pop('links_thumb'))
+    if not listitem:
+        d['links']['parent'] = reverse(
+            'ui-api-object',
+            args=[document.pop('links_parent')],
+            request=request
+        )
+        d['links']['children'] = reverse(
+            'ui-api-object-children',
+            args=[document.pop('links_children')],
+            request=request
+        )
+        d['parent_id'] = document.get('parent_id', '')
+        d['organization_id'] = document.get('organization_id', '')
+        # gfroh: every object must have signature_id
+        # gjost: except objects that don't have them
+        d['signature_id'] = document.get('signature_id', '')
+    # title, description
+    d['title'] = document['title']
+    d['description'] = document['description']
+    if not listitem:
+        if document.get('lineage'):
+            crumbs = [c for c in document.pop('lineage')[::-1]]
+            for c in crumbs:
+                c['api_url'] = reverse(
+                    'ui-api-object', args=[c['id']], request=request
+                )
+                c['url'] = reverse(
+                    'ui-object-detail', args=[c['id']], request=request
+                )
+            d['breadcrumbs'] = crumbs
+    # everything else
+    HIDDEN_FIELDS = [
+        'repo','org','cid','eid','sid','sha1'
+         # don't hide role, used in file list-object
+    ]
+    for key in document.iterkeys():
+        if key not in HIDDEN_FIELDS:
+            d[key] = document[key]
+    return d
 
 def format_narrator(document, request, listitem=False):
     if document and document.get('_source'):
@@ -572,14 +669,14 @@ FORMATTERS = {
     'facetterm': format_term,
 }
 
-def format_list_objects(results, request, function=format_object_detail):
+def format_list_objects(results, request, function=format_object_detail2):
     """Iterate through results objects apply format_object_detail function
     """
     results['objects'] = []
     while(results['hits']):
         hit = results['hits'].pop(0)
         doctype = hit['_type']
-        function = FORMATTERS.get(doctype, format_object_detail)
+        function = FORMATTERS.get(doctype, format_object_detail2)
         results['objects'].append(
             function(hit, request, listitem=True)
         )
@@ -723,32 +820,6 @@ class Organization(object):
 
 
 class Collection(object):
-    
-    @staticmethod
-    def get(oid, request, i=None):
-        if not i:
-            i = Identifier(id=oid)
-        idparts = [x for x in i.parts.itervalues()]
-        document = docstore.Docstore().get(model=i.model, document_id=i.id)
-        if not document:
-            raise NotFound()
-        data = format_object_detail(document, request)
-        data['links']['parent'] = reverse(
-            'ui-api-object',
-            args=[i.parent_id(stubs=1)],
-            request=request
-        )
-        data['links']['children'] = reverse(
-            'ui-api-object-children',
-            args=[i.id],
-            request=request
-        )
-        HIDDEN_FIELDS = [
-            'notes',
-        ]
-        for field in HIDDEN_FIELDS:
-            pop_field(data, field)
-        return data
 
     @staticmethod
     def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
@@ -869,7 +940,6 @@ class Entity(object):
 
     @staticmethod
     def nodes(oid, request, limit=DEFAULT_LIMIT, offset=0):
-        i = Identifier(id=oid)
         sort_fields = [
             ['repo','asc'],
             ['org','asc'],
@@ -882,7 +952,7 @@ class Entity(object):
         ]
         models = ['file']
         return children(
-            request, models, i.id, sort_fields, limit=limit, offset=offset
+            request, models, oid, sort_fields, limit=limit, offset=offset
         )
 
     @staticmethod
@@ -1507,13 +1577,15 @@ def object_children(request, oid):
     n - number of results AKA page size (limit)
     p - page (offset)
     """
-    i = Identifier(id=oid)
-    if i.model == 'repository': return organizations(request, oid)
-    elif i.model == 'organization': return collections(request, oid)
-    elif i.model == 'collection': return entities(request, oid)
-    elif i.model == 'entity': return segments(request, oid)
-    elif i.model == 'segment': return files(request, oid)
-    elif i.model == 'file': assert False
+    # TODO just get doc_type
+    document = es.get(index=settings.DOCSTORE_INDEX, doc_type='_all', id=oid)
+    model = document['_type']
+    if   model == 'repository': return organizations(request, oid)
+    elif model == 'organization': return collections(request, oid)
+    elif model == 'collection': return entities(request, oid)
+    elif model == 'entity': return segments(request, oid)
+    elif model == 'segment': return files(request, oid)
+    elif model == 'file': assert False
     raise Exception("Could not match ID,model,view.")
 
 def _list(request, data):
@@ -1573,17 +1645,23 @@ def facetterms(request, facet_id, format=None):
     return Response(data)
 
 
+def _object(request, oid, format=None):
+    data = es.get(index=settings.DOCSTORE_INDEX, doc_type='_all', id=oid)
+    return format_object_detail2(data, request)
+
 @api_view(['GET'])
 def object_detail(request, oid):
     """OBJECT DETAIL DOCS
     """
-    i = Identifier(id=oid)
-    if i.model == 'repository': return repository(request, oid)
-    elif i.model == 'organization': return organization(request, oid)
-    elif i.model == 'collection': return collection(request, oid)
-    elif i.model == 'entity': return entity(request, oid)
-    elif i.model == 'segment': return entity(request, oid)
-    elif i.model == 'file': return file(request, oid)
+    # TODO just get doc_type
+    document = es.get(index=settings.DOCSTORE_INDEX, doc_type='_all', id=oid)
+    model = document['_type']
+    if   model == 'repository': return repository(request, oid)
+    elif model == 'organization': return organization(request, oid)
+    elif model == 'collection': return collection(request, oid)
+    elif model == 'entity': return entity(request, oid)
+    elif model == 'segment': return entity(request, oid)
+    elif model == 'file': return file(request, oid)
     raise Exception("Could not match ID,model,view.")
 
 def _detail(request, data):
@@ -1595,31 +1673,26 @@ def _detail(request, data):
 
 @api_view(['GET'])
 def repository(request, oid, format=None):
-    data = Repository.get(oid, request)
-    return _detail(request, data)
+    return _detail(request, _object(request, oid))
 
 @api_view(['GET'])
 def organization(request, oid, format=None):
-    data = Organization.get(oid, request)
-    return _detail(request, data)
+    return _detail(request, _object(request, oid))
 
 @api_view(['GET'])
 def collection(request, oid, format=None):
     filter_if_branded(request, oid)
-    data = Collection.get(oid, request)
-    return _detail(request, data)
+    return _detail(request, _object(request, oid))
 
 @api_view(['GET'])
 def entity(request, oid, format=None):
     filter_if_branded(request, oid)
-    data = Entity.get(oid, request)
-    return _detail(request, data)
+    return _detail(request, _object(request, oid))
 
 @api_view(['GET'])
 def file(request, oid, format=None):
     filter_if_branded(request, oid)
-    data = File.get(oid, request)
-    return _detail(request, data)
+    return _detail(request, _object(request, oid))
 
 @api_view(['GET'])
 def narrator_index(request, format=None):

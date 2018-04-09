@@ -13,8 +13,7 @@ from django.template import Context, Template
 from django.template.loader import get_template
 from django.utils.http import urlquote  as django_urlquote
 
-from DDR import docstore
-
+from ui import docstore
 from ui import faceting
 from ui.identifier import Identifier, MODEL_CLASSES
 
@@ -22,11 +21,11 @@ from ui.identifier import Identifier, MODEL_CLASSES
 DEFAULT_SIZE = 10
 
 # TODO move to ddr-defs
-REPOSITORY_LIST_FIELDS = ['id', 'title', 'description', 'url',]
-ORGANIZATION_LIST_FIELDS = ['id', 'title', 'description', 'url',]
-COLLECTION_LIST_FIELDS = ['id', 'title', 'description', 'signature_id',]
-ENTITY_LIST_FIELDS = ['id', 'title', 'description', 'signature_id',]
-FILE_LIST_FIELDS = ['id', 'title', 'description', 'access_rel','sort',]
+REPOSITORY_LIST_FIELDS = ['id', 'model', 'title', 'description', 'url',]
+ORGANIZATION_LIST_FIELDS = ['id', 'model', 'title', 'description', 'url',]
+COLLECTION_LIST_FIELDS = ['id', 'model', 'title', 'description', 'signature_id',]
+ENTITY_LIST_FIELDS = ['id', 'model', 'title', 'description', 'signature_id',]
+FILE_LIST_FIELDS = ['id', 'model', 'title', 'description', 'access_rel','sort',]
 
 # TODO mode to ddr-defs: knows too much about structure of ID
 #      Does Elasticsearch have lambda functions for sorting?

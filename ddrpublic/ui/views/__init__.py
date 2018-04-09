@@ -14,7 +14,7 @@ from ui import assets_base, domain_org
 
 # helpers --------------------------------------------------------------
 
-def filter_if_branded(request, oidentifier):
+def filter_if_branded(request, organization_id):
     pass
     #partner_repo,partner_org = domain_org(request)
     #if partner_repo and partner_org and (org != partner_org):
