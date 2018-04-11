@@ -782,90 +782,48 @@ FACET_LABELS = facet_labels()
 class Repository(object):
     
     @staticmethod
-    def get(oid, request, i=None):
-        if not i:
-            i = Identifier(id=oid)
-        document = docstore.Docstore().get(model=i.model, document_id=i.id)
-        if not document:
-            raise NotFound()
-        data = format_object_detail(document, request)
-        data['links']['children'] = reverse(
-            'ui-api-object-children',
-            args=[i.id],
-            request=request
-        )
-        data['repository_url'] = data['url']
-        return data
+    def get(oid, request):
+        return _object(request, oid)
 
     @staticmethod
     def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
-        i = Identifier(id=oid)
-        sort_fields = [
-            ['repo','asc'],
-            ['org','asc'],
-            ['id','asc'],
-        ]
-        data = children(
-            request, CHILDREN[i.model], i.id, sort_fields, limit=limit, offset=offset
+        return _object_children(
+            document=_object(request, oid),
+            request=request,
+            limit=limit,
+            offset=offset
         )
-        for d in data['objects']:
-            d['links']['img'] = img_url(d['id'], 'logo.png', request)
-            d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
-        return data
 
 
 class Organization(object):
-    
+
     @staticmethod
-    def get(oid, request, i=None):
-        if not i:
-            i = Identifier(id=oid)
-        document = docstore.Docstore().get(model=i.model, document_id=i.id)
-        if not document:
-            raise NotFound()
-        data = format_object_detail(document, request)
-        data['links']['parent'] = reverse(
-            'ui-api-object',
-            args=[i.parent_id(stubs=1)],
-            request=request
-        )
-        data['links']['children'] = reverse(
-            'ui-api-object-children',
-            args=[i.id],
-            request=request
-        )
-        data['links']['img'] = img_url(oid, 'logo.png', request)
-        data['links']['thumb'] = local_thumb_url(data['links'].get('img',''), request)
-        return data
+    def get(oid, request):
+        return _object(request, oid)
 
     @staticmethod
     def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
-        i = Identifier(id=oid)
-        sort_fields = [
-            ['repo','asc'],
-            ['org','asc'],
-            ['cid','asc'],
-            ['id','asc'],
-        ]
-        return children(
-            request, CHILDREN[i.model], i.id, sort_fields, limit=limit, offset=offset
+        return _object_children(
+            document=_object(request, oid),
+            request=request,
+            limit=limit,
+            offset=offset
         )
 
 
 class Collection(object):
+    
+    @staticmethod
+    def get(oid, request):
+        return _object(request, oid)
 
     @staticmethod
     def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
-        i = Identifier(id=oid)
-        sort_fields = [
-            ['repo','asc'],
-            ['org','asc'],
-            ['cid','asc'],
-            ['eid','asc'],
-            ['id','asc'],
-        ]
-        return children(
-            request, CHILDREN[i.model], i.id, sort_fields, limit=limit, offset=offset
+        return _object_children(
+            document=_object(request, oid),
+            request=request,
+            limit=limit,
+            offset=offset
         )
 
 
@@ -911,68 +869,25 @@ class Entity(object):
                     for fd in field_data
                 ]
         return document
-
-    @staticmethod
-    def get(oid, request, i=None):
-        if not i:
-            i = Identifier(id=oid)
-        document = docstore.Docstore().get(model=i.model, document_id=i.id)
-        if not document:
-            raise NotFound()
-        data = format_object_detail(document, request)
-        pop_field(data['links'], 'children')
-        data['links']['children-objects'] = reverse(
-            'ui-api-object-children', args=[oid], request=request
-        )
-        data['links']['children-files'] = reverse(
-            'ui-api-object-nodes', args=[oid], request=request
-        )
-#        # segment URL
-#        if (data.get('format','') == 'vh') and data.get('alternate_id'):
-#            data['links']['img'] = segment_img_url(data['alternate_id'])
-        for facet in ['facility', 'topics']:
-            for x in data.get(facet, []):
-                x['json'] = reverse(
-                    'ui-api-term', args=[facet, x['id']], request=request
-                )
-                x['html'] = reverse(
-                    'ui-browse-term', args=[facet, x['id']], request=request
-                )
-        HIDDEN_FIELDS = [
-            'files',
-            'notes',
-            'parent',
-            'status',
-            'public',
-        ]
-        for field in HIDDEN_FIELDS:
-            pop_field(data, field)
-
-        data = Entity._labelify(data, fields=['format', 'genre', 'language',])
-        return data
     
     @staticmethod
-    def children(oid, request, limit=DEFAULT_LIMIT, offset=0, just_count=False):
-        i = Identifier(id=oid)
-        sort_fields = [
-            ['repo','asc'],
-            ['org','asc'],
-            ['cid','asc'],
-            ['eid','asc'],
-            ['role','desc'],
-            ['sort','asc'],
-            ['sha1','asc'],
-            ['id','asc'],
-        ]
-        models = CHILDREN[i.model]
-        if 'file' in models:
-            models.remove('file')
-        return children(
-            request, models, i.id, sort_fields, limit=limit, offset=offset, just_count=just_count
+    def get(oid, request):
+        return _object(request, oid)
+
+    @staticmethod
+    def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
+        models = ['entity','segment']
+        return _object_children(
+            document=_object(request, oid),
+            request=request,
+            models=models,
+            limit=limit,
+            offset=offset
         )
 
     @staticmethod
-    def nodes(oid, request, limit=DEFAULT_LIMIT, offset=0):
+    def files(oid, request, limit=DEFAULT_LIMIT, offset=0):
+        models = ['file']
         sort_fields = [
             ['repo','asc'],
             ['org','asc'],
@@ -983,10 +898,15 @@ class Entity(object):
             ['sha1','asc'],
             ['id','asc'],
         ]
-        models = ['file']
-        return children(
-            request, models, oid, sort_fields, limit=limit, offset=offset
+        return _object_children(
+            document=_object(request, oid),
+            request=request,
+            models=models,
+            sort_fields=sort_fields,
+            limit=limit,
+            offset=offset
         )
+
 
     @staticmethod
     def transcripts(sidentifier, request):
@@ -1039,50 +959,19 @@ class Role(object):
 
     @staticmethod
     def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
-        i = Identifier(id=oid)
-        sort_fields = [
-            ['repo','asc'],
-            ['org','asc'],
-            ['cid','asc'],
-            ['eid','asc'],
-            ['role','desc'],
-            ['sort','asc'],
-            ['sha1','asc'],
-            ['id','asc'],
-        ]
-        return children(
-            request, CHILDREN[i.model], i.id, sort_fields, limit=limit, offset=offset
+        return _object_children(
+            document=_object(request, oid),
+            request=request,
+            limit=limit,
+            offset=offset
         )
 
 
 class File(object):
     
     @staticmethod
-    def get(oid, request, i=None):
-        if not i:
-            i = Identifier(id=oid)
-        # some object have Densho UIDs in signature_id field
-        if not i.model == 'file':
-            return None
-        idparts = [x for x in i.parts.itervalues()]
-        collection_id = i.collection_id()
-        document = docstore.Docstore().get(
-            model=i.model, document_id=i.id
-        )
-        if not document:
-            raise NotFound()
-        data = format_object_detail(document, request)
-        HIDDEN_FIELDS = [
-            'public',
-        ]
-        for field in HIDDEN_FIELDS:
-            pop_field(data, field)
-        data['links']['download'] = img_url(
-            data['collection_id'],
-            data['path_rel'],
-            request
-        )
-        return data
+    def get(oid, request):
+        return _object(request, oid)
 
     @staticmethod
     def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
@@ -1633,32 +1522,37 @@ def _list(request, data):
 @api_view(['GET'])
 def organizations(request, oid, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = Repository.children(oid, request, offset=offset)
-    return _list(request, data)
+    return _list(request, Repository.children(
+        oid, request, limit=DEFAULT_LIMIT, offset=offset
+    ))
 
 @api_view(['GET'])
 def collections(request, oid, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = Organization.children(oid, request, offset=offset)
-    return _list(request, data)
+    return _list(request, Organization.children(
+        oid, request, limit=DEFAULT_LIMIT, offset=offset
+    ))
 
 @api_view(['GET'])
 def entities(request, oid, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = Collection.children(oid, request, offset=offset)
-    return _list(request, data)
+    return _list(request, Collection.children(
+        oid, request, limit=DEFAULT_LIMIT, offset=offset
+    ))
 
 @api_view(['GET'])
 def segments(request, oid, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = Entity.children(oid, request, offset=offset)
-    return _list(request, data)
+    return _list(request, Entity.children(
+        oid, request, limit=DEFAULT_LIMIT, offset=offset
+    ))
 
 @api_view(['GET'])
 def files(request, oid, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = Entity.nodes(oid, request, offset=offset)
-    return _list(request, data)
+    return _list(request, Entity.files(
+        oid, request, limit=DEFAULT_LIMIT, offset=offset
+    ))
 
 @api_view(['GET'])
 def facets(request, oid, format=None):
@@ -1706,26 +1600,26 @@ def _detail(request, data):
 
 @api_view(['GET'])
 def repository(request, oid, format=None):
-    return _detail(request, _object(request, oid))
+    return _detail(request, Repository.get(oid, request))
 
 @api_view(['GET'])
 def organization(request, oid, format=None):
-    return _detail(request, _object(request, oid))
+    return _detail(request, Organization.get(oid, request))
 
 @api_view(['GET'])
 def collection(request, oid, format=None):
     filter_if_branded(request, oid)
-    return _detail(request, _object(request, oid))
+    return _detail(request, Collection.get(oid, request))
 
 @api_view(['GET'])
 def entity(request, oid, format=None):
     filter_if_branded(request, oid)
-    return _detail(request, _object(request, oid))
+    return _detail(request, Entity.get(oid, request))
 
 @api_view(['GET'])
 def file(request, oid, format=None):
     filter_if_branded(request, oid)
-    return _detail(request, _object(request, oid))
+    return _detail(request, File.get(oid, request))
 
 @api_view(['GET'])
 def narrator_index(request, format=None):

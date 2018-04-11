@@ -73,7 +73,7 @@ def detail(request, oid):
     )
     nodes_paginator = Paginator(
         api.pad_results(
-            api.Entity.nodes(
+            api.Entity.files(
                 oid, request, limit=pagesize, offset=0,
             ),
             pagesize,
@@ -206,7 +206,7 @@ def nodes( request, oid, role=None ):
     offset = api.search_offset(thispage, pagesize)
     paginator = Paginator(
         api.pad_results(
-            api.Entity.nodes(
+            api.Entity.files(
                 oid,
                 request,
                 limit=pagesize,
