@@ -222,6 +222,7 @@ SEARCH_RETURN_FIELDS = [
     'format',
     'image_url',
     'mimetype',
+    'basename_orig',
     'role',
     'signature_id',
     'sort',
