@@ -30,7 +30,7 @@ CHILDREN = {
     'repository': ['organization'],
     'organization': ['collection'],
     'collection': ['entity'],
-    'entity': ['segment', 'file'],
+    'entity': ['entity', 'segment', 'file'],
     'segment': ['file'],
     'file': [],
 }
