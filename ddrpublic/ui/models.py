@@ -266,7 +266,7 @@ def cached_query(host, index, model='', query='', terms={}, filters={}, fields=[
     cached = cache.get(key)
     if not cached:
         cached = docstore.Docstore().search(
-            model=model,
+            doctypes=[model],
             query=query, term=terms, filters=filters,
             fields=fields, sort=sort, size=size
         )
