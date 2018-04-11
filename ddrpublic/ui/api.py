@@ -523,10 +523,7 @@ def format_object_detail2(document, request, listitem=False):
     d['model'] = model
     
     if not listitem:
-        try:
-            d['collection_id'] = document['collection_id']
-        except:
-            pass
+        d['collection_id'] = document.get('collection_id')
     # links
     d['links'] = OrderedDict()
     d['links']['html'] = reverse(
@@ -535,19 +532,39 @@ def format_object_detail2(document, request, listitem=False):
     d['links']['json'] = reverse(
         'ui-api-object', args=[document.pop('links_json')], request=request
     )
-    d['links']['img'] = '%s%s' % (settings.MEDIA_URL, document.pop('links_img'))
-    d['links']['thumb'] = '%s%s' % (settings.MEDIA_URL_LOCAL, document.pop('links_thumb'))
+    if document.get('mimetype') and ('text' in document['mimetype']):
+        d['links']['download'] = '%s%s' % (settings.MEDIA_URL, document.pop('links_img'))
+    else:
+        d['links']['img'] = '%s%s' % (settings.MEDIA_URL, document.pop('links_img'))
+        d['links']['thumb'] = '%s%s' % (settings.MEDIA_URL_LOCAL, document.pop('links_thumb'))
+    
     if not listitem:
-        d['links']['parent'] = reverse(
-            'ui-api-object',
-            args=[document.pop('links_parent')],
-            request=request
-        )
-        d['links']['children'] = reverse(
-            'ui-api-object-children',
-            args=[document.pop('links_children')],
-            request=request
-        )
+        if document.get('parent_id'):
+            d['links']['parent'] = reverse(
+                'ui-api-object',
+                args=[document.pop('links_parent')],
+                request=request
+            )
+        if CHILDREN[model]:
+            if model in ['entity', 'segment']:
+                d['links']['children-objects'] = reverse(
+                    'ui-api-object-children',
+                    args=[document['links_children']],
+                    request=request
+                )
+                d['links']['children-files'] = reverse(
+                    'ui-api-object-nodes',
+                    args=[document['links_children']],
+                    request=request
+                )
+                document.pop('links_children')
+            else:
+                d['links']['children'] = reverse(
+                    'ui-api-object-children',
+                    args=[document['links_children']],
+                    request=request
+                )
+                document.pop('links_children')
         d['parent_id'] = document.get('parent_id', '')
         d['organization_id'] = document.get('organization_id', '')
         # gfroh: every object must have signature_id
