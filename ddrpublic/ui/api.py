@@ -302,11 +302,18 @@ def _object_children(document, request, models=[], sort_fields=[], limit=DEFAULT
         d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
     return data
 
-def children(request, model, object_id, sort_fields, limit=DEFAULT_LIMIT, offset=0, just_count=False):
+def children(request, model, parent_id, sort_fields, limit=DEFAULT_LIMIT, offset=0, just_count=False):
     """Return object children list in Django REST Framework format.
     
     Returns a paged list with count/prev/next metadata
     
+    @param request: Django request object.
+    @param model: str
+    @param parent_id: str
+    @param sort_fields: list
+    @param limit: int
+    @param offset: int
+    @param just_count: boolean
     @returns: dict
     """
     if not isinstance(model, basestring):
@@ -315,9 +322,10 @@ def children(request, model, object_id, sort_fields, limit=DEFAULT_LIMIT, offset
         models = ','.join(model)
     else:
         raise Exception('model must be a string or a list')
-    
     q = docstore.search_query(
-        must=[{"wildcard": {"id": "%s-*" % object_id}}],
+        must=[
+            {"term": {"parent_id": parent_id}},
+        ],
     )
     if just_count:
         return docstore.Docstore().count(
