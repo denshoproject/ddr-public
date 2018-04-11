@@ -588,7 +588,7 @@ def format_list_objects(results, request, function=format_object_detail):
         doctype = hit['_type']
         function = FORMATTERS.get(doctype, format_object_detail)
         results['objects'].append(
-            function(hit, request, listitem=True)
+            function(hit, request, listitem=False)
         )
     return results
 
