@@ -276,17 +276,25 @@ def docstore_search(text='', must=[], should=[], mustnot=[], models=[], fields=[
         request
     )
 
-def _object_children(document, request, limit=DEFAULT_LIMIT, offset=0):
-    sort_fields = [
-        ['repo','asc'],
-        ['org','asc'],
-        ['id','asc'],
-    ]
+def _object_children(document, request, models=[], sort_fields=[], limit=DEFAULT_LIMIT, offset=0):
+    if not models:
+        models = CHILDREN[document['model']]
+    if not sort_fields:
+        sort_fields = [
+            ['repo','asc'],
+            ['org','asc'],
+            ['cid','asc'],
+            ['eid','asc'],
+            ['role','desc'],
+            ['sort','asc'],
+            ['sha1','asc'],
+            ['id','asc'],
+        ]
     data = children(
-        request,
-        CHILDREN[document['model']],
-        document['id'],
-        sort_fields,
+        request=request,
+        model=models,
+        parent_id=document['id'],
+        sort_fields=sort_fields,
         limit=limit, offset=offset
     )
     for d in data['objects']:
