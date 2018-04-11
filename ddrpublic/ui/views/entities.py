@@ -136,7 +136,10 @@ def interview(request, oid):
     # segment index for humans
     segment['this'] = segment['index'] + 1
     
-    transcripts = api.Entity.transcripts(segment['id'], request)
+    transcripts = api.Entity.transcripts(
+        segment['id'], segment['parent_id'], segment['collection_id'],
+        request
+    )
     download_meta = archivedotorg.segment_download_meta(segment['id'])
     
     return render_to_response(

@@ -909,7 +909,7 @@ class Entity(object):
 
 
     @staticmethod
-    def transcripts(sidentifier, request):
+    def transcripts(segment_id, parent_id, collection_id, request):
         """Extra stuff require by interview segment page.
         segment transcript
         full transcript
@@ -922,29 +922,15 @@ class Entity(object):
         # segment transcript
         results = docstore_search(
             should=[
-                {"wildcard": {"id": "%s-transcript-*" % sidentifier.id}},
-                {"wildcard": {"id": "%s-transcript-*" % sidentifier.parent_id()}},
+                {"wildcard": {"id": "%s-transcript-*" % segment_id}},
+                {"wildcard": {"id": "%s-transcript-*" % parent_id}},
             ],
             models=[
                 'file',
             ],
-            fields=[
-                'id',
-                'title',
-                'access_rel',
-                'path_rel',
-                'basename_orig',
-            ],
             #limit=1, # should only be one transcript per File
             request=request
         )
-        # download links
-        for d in results['objects']:
-            d['links']['download'] = img_url(
-                sidentifier.collection_id(),
-                d['path_rel'],
-                request
-            )
         # assign to role
         for n,d in enumerate(results['objects']):
             if 'glossary' in d['title'].lower():
