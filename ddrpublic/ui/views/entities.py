@@ -109,7 +109,7 @@ def interview(request, oid):
     if segment['model'] != 'segment':
         raise Http404
 
-    entity = api._object(request, entity['parent_id'])
+    entity = api._object(request, segment['parent_id'])
     parent = api._object(request, entity['parent_id'])
     collection = api._object(request, entity['collection_id'])
     organization = api._object(request, entity['organization_id'])
