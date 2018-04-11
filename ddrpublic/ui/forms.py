@@ -7,9 +7,9 @@ from django.core.cache import cache
 
 from ui import api
 
-from repo_models.common import FORMAT_CHOICES
-from repo_models.common import GENRE_CHOICES
-from repo_models.common import RIGHTS_CHOICES
+from repo_models.entity import FORMAT_CHOICES
+from repo_models.entity import GENRE_CHOICES
+from repo_models.entity import RIGHTS_CHOICES
 
 
 def flatten(path, indent='--'):
