@@ -17,6 +17,7 @@ django-redis-sessions==0.4.0       # BSD      y
 elasticsearch==1.4.0               # Apache   y
 elasticsearch-dsl==0.0.9
 envoy==0.0.3                       # MIT      ???
+GitPython                          # BSD      y
 gunicorn==19.3.0                   # MIT      y
 Markdown==2.6.7                    # BSD      y
 python-dateutil==2.2               # BSD      y

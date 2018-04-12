@@ -7,9 +7,16 @@ from django.conf import settings
 from django.core.cache import cache
 
 from ui import assets_base, domain_org, choose_base_template
+from ui import dvcs
 from ui.api import aliases_indices
 from ui.forms import SearchForm
 from ui.models import Organization
+
+# Latest commits so visible in error pages and in page footers.
+COMMITS_DDRPUBLIC = dvcs.latest_commit(os.path.dirname(__file__))
+COMMITS_TEXT = '\n'.join([
+    'pub: %s' % COMMITS_DDRPUBLIC,
+])
 
 
 def docstore_info():
@@ -49,7 +56,7 @@ def sitewide(request):
         'time': datetime.now().isoformat(),
         'pid': os.getpid(),
         'host': os.uname()[1],
-        'commits': settings.COMMITS_TEXT,
+        'commits': COMMITS_TEXT,
         'version': settings.VERSION,
         'packages': settings.PACKAGES,
         'docstore_hosts': settings.DOCSTORE_HOSTS[0]['host'],

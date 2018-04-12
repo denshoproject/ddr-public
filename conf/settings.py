@@ -33,19 +33,6 @@ if REPO_MODELS_PATH not in sys.path:
 
 CMDLN_INSTALL_PATH = config.get('cmdln','install_path')
 
-# Latest commits for ddr-cmdln and ddr-local.
-# Include here in settings so only has to be retrieved once,
-# and so commits are visible in error pages and in page footers.
-from DDR import dvcs
-COMMITS_DDRDEFS = dvcs.latest_commit(REPO_MODELS_PATH)
-COMMITS_DDRCMDLN = dvcs.latest_commit(CMDLN_INSTALL_PATH)
-COMMITS_DDRPUBLIC = dvcs.latest_commit(os.path.dirname(__file__))
-COMMITS_TEXT = '\n'.join([
-    'def: %s' % COMMITS_DDRDEFS,
-    'cmd: %s' % COMMITS_DDRCMDLN,
-    'pub: %s' % COMMITS_DDRPUBLIC,
-])
-
 SECRET_KEY = config.get('security', 'secret_key')
 
 LANGUAGE_CODE='en-us'
