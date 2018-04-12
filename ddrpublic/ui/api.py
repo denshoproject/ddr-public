@@ -19,7 +19,6 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from ui import docstore
-from ui.identifier import Identifier, CHILDREN_ALL
 from ui.urls import API_BASE
 from ui.views import filter_if_branded
 from ui import encyc
