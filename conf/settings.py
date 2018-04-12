@@ -21,11 +21,10 @@ CONFIG_FILES = [
     '/etc/ddr/ddrpublic-local.cfg'
 ]
 
-from DDR.config import NoConfigError
 config = ConfigParser.ConfigParser()
 configs_read = config.read(CONFIG_FILES)
 if not configs_read:
-    raise NoConfigError('No config file!')
+    raise Exception('No config file!')
 
 REPO_MODELS_PATH = config.get('cmdln','repo_models_path')
 if REPO_MODELS_PATH not in sys.path:
