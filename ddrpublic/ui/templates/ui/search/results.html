@@ -6,12 +6,12 @@
 
 
 {% block breadcrumbs %}{{ block.super }}
-{% if object.identifier %}
+{% if object %}
 
-{% breadcrumbs object.identifier.breadcrumbs True %}
+{% breadcrumbs object.breadcrumbs True %}
 <li>Search Results</li>
 
-{% else %}{# object.identifier #}
+{% else %}{# object #}
 
 <li>
   <a href="{{ object.links.html }}">
