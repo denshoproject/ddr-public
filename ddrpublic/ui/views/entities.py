@@ -10,7 +10,6 @@ from django.template import RequestContext
 
 from ui import api
 from ui import archivedotorg
-from ui.identifier import Identifier
 from ui.models import DEFAULT_SIZE
 from ui.views import filter_if_branded
 
@@ -40,9 +39,9 @@ def detail(request, oid):
             segments = api.Entity.children(oid, request, limit=1)
             if segments['objects']:
                 # make sure this is actually a segment before redirecting
-                si = Identifier(id=segments['objects'][0]['id'])
-                if si.model == 'segment':
-                    return HttpResponseRedirect(reverse('ui-interview', args=[si.id]))
+                s = api._object(request, segments['objects'][0]['id'])
+                if s['model'] == 'segment':
+                    return HttpResponseRedirect(reverse('ui-interview', args=[s['oid']]))
     
     parent = api._object(request, entity['parent_id'])
     organization = api._object(request, entity['organization_id'])

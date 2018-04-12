@@ -47,7 +47,6 @@ def force_list(terms):
 def collection(request, oid):
     #filter_if_branded(request, i)
     collection = api.Collection.get(oid, request)
-    collection['identifier'] = i
     if not collection:
         raise Http404
     return results(request, collection)
