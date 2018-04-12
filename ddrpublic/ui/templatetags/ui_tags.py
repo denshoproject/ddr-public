@@ -5,7 +5,7 @@ import re
 from django import template
 from django.conf import settings
 
-from ui.identifier import MODEL_CLASSES
+from ui.models import MODEL_CLASSES
 
 register = template.Library()
 
