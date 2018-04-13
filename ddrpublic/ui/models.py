@@ -314,11 +314,9 @@ def massage_query_results( results, thispage, page_size ):
         if not o.get('placeholder',False):
             # assemble urls for each record type
             if o.get('id', None):
-                identifier = Identifier(o['id'])
-                o['identifier'] = identifier
                 o['url'] = reverse(
                     'ui-object-detail',
-                    args=[identifier.id]
+                    args=[o['id']]
                 )
     return objects
 
