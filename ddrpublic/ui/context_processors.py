@@ -10,7 +10,6 @@ from ui import assets_base, domain_org, choose_base_template
 from ui import dvcs
 from ui.api import aliases_indices
 from ui.forms import SearchForm
-from ui.models import Organization
 
 # Latest commits so visible in error pages and in page footers.
 COMMITS_DDRPUBLIC = dvcs.latest_commit(os.path.dirname(__file__))
@@ -47,7 +46,8 @@ def sitewide(request):
         from_oldsite = True
     repo,org = domain_org(request)
     if repo and org:
-        partner = Organization.get(repo, org)
+        #partner = Organization.get(repo, org)
+        pass
     else:
         partner = None
     base_template = request.session.get('base_template', choose_base_template(org))
