@@ -972,9 +972,7 @@ class Narrator(object):
     
     @staticmethod
     def get(oid, request):
-        document = docstore.Docstore().get(
-            model='narrator', document_id=oid
-        )
+        document = es.get(index=settings.DOCSTORE_INDEX, doc_type='narrator', id=oid)
         if not document:
             raise NotFound()
         data = format_narrator(document, request)
@@ -1030,33 +1028,36 @@ class Narrator(object):
     def interviews(narrator_id, request, limit=DEFAULT_LIMIT, offset=0):
         """Interview (Entity) objects for specified narrator.
         """
-        results = docstore_search(
+        SORT_FIELDS = []
+        q = docstore.search_query(
             must=[
-                {"term": {"creators.id": narrator_id}},
+                # TODO narrator->interview link using creators.id
+                #{"term": {"creators.id": narrator_id}},
+                {"term": {"narrator_id": narrator_id}},
                 {"term": {"format": "vh"}},
-            ],
-            models=[
-                'entity',
-            ],
-            fields=[
-                'id',
-                'title',
-                'alternate_id',
-                'signature_id',
-                'creation',
-                'location',
-                'extent',
-            ],
-            #limit=limit, offset=offset,
-            request=request
+            ]
         )
-        # add segment count per interview
-        for d in results['objects']:
-            r = Entity.children(
-                d['id'], request=request,
-                just_count=1
-            )
-            d['num_segments'] = r['count']
+        results = format_list_objects(
+            paginate_results(
+                docstore.Docstore().search(
+                    doctypes=['entity', 'segment'],
+                    query=q,
+                    sort=SORT_FIELDS,
+                    fields=SEARCH_RETURN_FIELDS,
+                    from_=offset,
+                    size=limit,
+                ),
+                offset, limit, request
+            ),
+            request
+        )
+        ## add segment count per interview
+        #for d in results['objects']:
+        #    r = Entity.children(
+        #        d['id'], request=request,
+        #        just_count=1
+        #    )
+        #    d['num_segments'] = r['count']
         return results
 
 
@@ -1607,7 +1608,7 @@ def file(request, oid, format=None):
     return _detail(request, File.get(oid, request))
 
 @api_view(['GET'])
-def narrator_index(request, format=None):
+def narrators(request, format=None):
     offset = int(request.GET.get('offset', 0))
     data = Narrator.narrators(request, offset=offset)
     return _list(request, data)
@@ -1616,6 +1617,12 @@ def narrator_index(request, format=None):
 def narrator(request, oid, format=None):
     data = Narrator.get(oid, request)
     return _detail(request, data)
+
+@api_view(['GET'])
+def narrator_interviews(request, oid, format=None):
+    offset = int(request.GET.get('offset', 0))
+    data = Narrator.interviews(oid, request, limit=1000)
+    return _list(request, data)
 
 @api_view(['GET'])
 def facet_index(request, format=None):

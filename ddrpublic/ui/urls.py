@@ -15,8 +15,9 @@ urlpatterns = patterns(
     url(r'^api/0.2/search/help/', TemplateView.as_view(template_name="ui/search/help.html"), name='ui-about'),
     url(r'^api/0.2/search/$', 'ui.api.search', name='ui-api-search'),
     
+    url(r'^api/0.2/narrator/(?P<oid>[\w]+)/interviews/$', 'ui.api.narrator_interviews', name='ui-api-narrator-interviews'),
     url(r'^api/0.2/narrator/(?P<oid>[\w]+)/$', 'ui.api.narrator', name='ui-api-narrator'),
-    url(r'^api/0.2/narrator/$', 'ui.api.narrator_index', name='ui-api-narrators'),
+    url(r'^api/0.2/narrator/$', 'ui.api.narrators', name='ui-api-narrators'),
     
     url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/children/$', 'ui.api.facetterms', name='ui-api-facetterms'),
     url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/objects/$', 'ui.api.term_objects', name='ui-api-term-objects'),
