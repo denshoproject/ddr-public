@@ -36,6 +36,31 @@ class Docstore():
             ES_Class = ELASTICSEARCH_CLASSES_BY_MODEL[model]
             return ES_Class.get(document_id, using=self.es, index=self.indexname)
         return None
+
+    def count(self, doctypes=[], query={}):
+        """Executes a query and returns number of hits.
+        
+        The "query" arg must be a dict that conforms to the Elasticsearch query DSL.
+        See docstore.search_query for more info.
+        
+        @param doctypes: list Type of object ('collection', 'entity', 'file')
+        @param query: dict The search definition using Elasticsearch Query DSL
+        @returns raw ElasticSearch query output
+        """
+        logger.debug('count(index=%s, doctypes=%s, query=%s' % (
+            self.indexname, doctypes, query
+        ))
+        if not query:
+            raise Exception("Can't do an empty search. Give me something to work with here.")
+        
+        doctypes = ','.join(doctypes)
+        logger.debug(json.dumps(query))
+        
+        return self.es.count(
+            index=self.indexname,
+            doc_type=doctypes,
+            body=query,
+        )
     
     def search(self, doctypes=[], query={}, sort=[], fields=[], from_=0, size=MAX_SIZE):
         """Executes a query, get a list of zero or more hits.
