@@ -346,6 +346,30 @@ def children(request, model, parent_id, sort_fields, limit=DEFAULT_LIMIT, offset
         request
     )
 
+def count_children(model, parent_id):
+    """Return count of object's children
+    
+    @param model: str
+    @param parent_id: str
+    @returns: dict
+    """
+    if not isinstance(model, basestring):
+        models = model
+    elif isinstance(model, list):
+        models = ','.join(model)
+    else:
+        raise Exception('model must be a string or a list')
+    q = docstore.search_query(
+        must=[
+            {"term": {"parent_id": parent_id}},
+        ],
+    )
+    r = docstore.Docstore().count(
+        doctypes=model,
+        query=q,
+    )
+    return r['count']
+
 def paginate_results(results, offset, limit, request=None):
     """Makes Elasticsearch results nicer to work with (doesn't actually paginate)
     
@@ -606,7 +630,7 @@ def format_narrator(document, request, listitem=False):
         d['links']['json'] = reverse('ui-api-narrator', args=[oid], request=request)
         d['links']['img'] = narrator_img_url(document['_source'].pop('image_url'))
         d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
-        d['links']['documents'] = ''
+        d['links']['interviews'] = reverse('ui-api-narrator-interviews', args=[oid], request=request)
         # title, description
         if document['_source'].get('title'):
             d['title'] = document['_source'].pop('title')
@@ -968,6 +992,8 @@ class File(object):
         }
 
 
+INTERVIEW_LIST_FIELDS = SEARCH_RETURN_FIELDS + ['creation', 'location']
+
 class Narrator(object):
     
     @staticmethod
@@ -1027,6 +1053,8 @@ class Narrator(object):
     @staticmethod
     def interviews(narrator_id, request, limit=DEFAULT_LIMIT, offset=0):
         """Interview (Entity) objects for specified narrator.
+        
+        TODO cache this - counts segments for each entity
         """
         SORT_FIELDS = []
         q = docstore.search_query(
@@ -1035,15 +1063,16 @@ class Narrator(object):
                 #{"term": {"creators.id": narrator_id}},
                 {"term": {"narrator_id": narrator_id}},
                 {"term": {"format": "vh"}},
+                {"term": {"model": "entity"}},
             ]
         )
         results = format_list_objects(
             paginate_results(
                 docstore.Docstore().search(
-                    doctypes=['entity', 'segment'],
+                    doctypes=['entity'],
                     query=q,
                     sort=SORT_FIELDS,
-                    fields=SEARCH_RETURN_FIELDS,
+                    fields=INTERVIEW_LIST_FIELDS,
                     from_=offset,
                     size=limit,
                 ),
@@ -1051,13 +1080,9 @@ class Narrator(object):
             ),
             request
         )
-        ## add segment count per interview
-        #for d in results['objects']:
-        #    r = Entity.children(
-        #        d['id'], request=request,
-        #        just_count=1
-        #    )
-        #    d['num_segments'] = r['count']
+        # add segment count per interview
+        for d in results['objects']:
+            d['num_segments'] = count_children(CHILDREN[d['model']], d['id'])
         return results
 
 
