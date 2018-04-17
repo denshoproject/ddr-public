@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.cache import cache
 
 from ui import api
+from ui import docstore
 
 # TODO REPLACE THESE HARDCODED VALUES!!!
 
@@ -186,7 +187,7 @@ class SearchForm(forms.Form):
         @params aggregations: dict Aggregations section of raw ES results
         @returns: nothing, modifies form.choices in-place
         """
-        aggs = api.aggs_dict(aggregations)
+        aggs = docstore.aggs_dict(aggregations)
         for fieldname,choice_data in aggs.iteritems():
             form_fieldname = 'filter_%s' % fieldname
             if self.fields.get(form_fieldname):

@@ -8,7 +8,7 @@ from django.core.cache import cache
 
 from ui import assets_base, domain_org, choose_base_template
 from ui import dvcs
-from ui.api import aliases_indices
+from ui.docstore import aliases_indices
 from ui.forms import SearchForm
 
 # Latest commits so visible in error pages and in page footers.
