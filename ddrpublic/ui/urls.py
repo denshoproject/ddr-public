@@ -20,8 +20,8 @@ urlpatterns = patterns(
     url(r'^api/0.2/narrator/$', 'ui.api.narrators', name='ui-api-narrators'),
     
     url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/children/$', 'ui.api.facetterms', name='ui-api-facetterms'),
-    url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/objects/$', 'ui.api.term_objects', name='ui-api-term-objects'),
-    url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/$', 'ui.api.term', name='ui-api-term'),
+    url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/(?P<term_id>[\w]+)/objects/$', 'ui.api.term_objects', name='ui-api-term-objects'),
+    url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/(?P<term_id>[\w]+)/$', 'ui.api.facetterm', name='ui-api-term'),
     url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/$', 'ui.api.facet', name='ui-api-facet'),
     url(r'^api/0.2/facet/$', 'ui.api.facet_index', name='ui-api-facets'),
     
