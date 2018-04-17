@@ -108,8 +108,8 @@ def topics_flattened():
                 oid, request,
                 sort=[('sort','asc')],
                 limit=10000, raw=True
-                )
-            )
+            )['objects']
+        )
         choices = [
             (term['id'], term['path'])
             for term in terms
@@ -130,7 +130,7 @@ def facilities():
             oid, request,
             sort=[('title','asc')],
             limit=10000, raw=True
-        )
+        )['objects']
         # for some reason ES does not sort
         terms = sorted(terms, key=lambda term: term['title'])
         cached = [

@@ -1012,9 +1012,7 @@ class Facet(object):
     
     @staticmethod
     def get(oid, request):
-        document = docstore.Docstore().get(
-            model='facet', document_id=oid
-        )
+        document = es.get(index=settings.DOCSTORE_INDEX, doc_type='facet', id=oid)
         if not document:
             raise NotFound()
         data = format_facet(document, request)
@@ -1057,15 +1055,15 @@ class Facet(object):
     
     @staticmethod
     def children(oid, request, sort=[], limit=DEFAULT_LIMIT, offset=0, raw=False):
-        LIST_FIELDS = [
-            'id',
-            'sort',
-            'title',
-            'facet',
-            'ancestors',
-            'path',
-            'type',
-        ]
+        #LIST_FIELDS = [
+        #    'id',
+        #    'sort',
+        #    'title',
+        #    'facet',
+        #    'ancestors',
+        #    'path',
+        #    'type',
+        #]
         q = docstore.search_query(
             must=[
                 {'term': {'facet': oid}}
@@ -1075,15 +1073,10 @@ class Facet(object):
             doctypes=['facetterm'],
             query=q,
             sort=sort,
-            fields=LIST_FIELDS,
+            #fields=LIST_FIELDS,
             from_=offset,
             size=limit,
         )
-        if raw:
-            return [
-                term['_source']
-                for term in results['hits']['hits']
-            ]
         return format_list_objects(
             paginate_results(
                 results,
@@ -1490,7 +1483,7 @@ def files(request, oid, format=None):
 @api_view(['GET'])
 def facets(request, oid, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = Entity.nodes(oid, request, offset=offset)
+    data = Facet.nodes(oid, request, offset=offset)
     return _list(request, data)
 
 @api_view(['GET'])
@@ -1578,8 +1571,8 @@ def facet_index(request, format=None):
 
 @api_view(['GET'])
 def facet(request, facet_id, format=None):
-    data = Facet.get(facet_id, request)
-    return _detail(request, data)
+    data = es.get(index=settings.DOCSTORE_INDEX, doc_type='facet', id=facet_id)
+    return _detail(request, format_facet(data, request))
 
 @api_view(['GET'])
 def term(request, facet_id, term_id, format=None):
