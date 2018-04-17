@@ -21,17 +21,16 @@ from ui.identifier import Identifier, MODEL_CLASSES
 DEFAULT_SIZE = 10
 
 # TODO Hard-coded! Get this data from Elasticsearch or something
-# TODO remove references to ui.models.CLASSES
-MODEL_CLASSES = {
-    'file':         {'module': 'ui.models', 'class':'File', 'stub':0, 'templatedir':'files',},
-    'segment':      {'module': 'ui.models', 'class':'Entity', 'stub':0, 'templatedir':'entities',},
-    'entity':       {'module': 'ui.models', 'class':'Entity', 'stub':0, 'templatedir':'entities',},
-    'collection':   {'module': 'ui.models', 'class':'Collection', 'stub':0, 'templatedir':'collections',},
-    'organization': {'module': 'ui.models', 'class':'Organization', 'stub':1, 'templatedir':'',},
-    'repository':   {'module': 'ui.models', 'class':'Repository', 'stub':1, 'templatedir':'',},
-    'narrator':     {'templatedir':'narrators',},
-    'facet':        {'templatedir':'facet',},
-    'facetterm':    {'templatedir':'facetterm',},
+MODEL_PLURALS = {
+    'file':         'files',
+    'segment':      'entities',
+    'entity':       'entities',
+    'collection':   'collections',
+    'organization': 'organizations',
+    'repository':   'Repositories',
+    'narrator':     'narrators',
+    'facet':        'facet',
+    'facetterm':    'facetterm',
 }
 
 # TODO move to ddr-defs

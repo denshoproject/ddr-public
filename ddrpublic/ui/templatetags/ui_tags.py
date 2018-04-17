@@ -5,7 +5,7 @@ import re
 from django import template
 from django.conf import settings
 
-from ui.models import MODEL_CLASSES
+from ui.models import MODEL_PLURALS
 
 register = template.Library()
 
@@ -78,7 +78,7 @@ def breadcrumbs( crumbs, link_endpoint=0 ):
 def document( obj ):
     """list-view document template
     """
-    model_plural = MODEL_CLASSES[obj['model']]['templatedir']
+    model_plural = MODEL_PLURALS[obj['model']]
     template_path = 'ui/%s/list-object.html' % model_plural
     t = template.loader.get_template(template_path)
     return t.render(template.Context({'object':obj}))
@@ -86,7 +86,7 @@ def document( obj ):
 def galleryitem( obj ):
     """gallery-view item template
     """
-    model_plural = MODEL_CLASSES[obj['model']]['templatedir']
+    model_plural = MODEL_PLURALS[obj['model']]
     template_path = 'ui/%s/gallery-object.html' % model_plural
     t = template.loader.get_template(template_path)
     return t.render(template.Context({'object':obj}))
@@ -94,7 +94,7 @@ def galleryitem( obj ):
 def listitem( obj ):
     """list-view item template
     """
-    model_plural = MODEL_CLASSES[obj['model']]['templatedir']
+    model_plural = MODEL_PLURALS[obj['model']]
     template_path = 'ui/%s/list-object.html' % model_plural
     t = template.loader.get_template(template_path)
     return t.render(template.Context({'object':obj}))
