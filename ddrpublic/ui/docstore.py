@@ -161,6 +161,43 @@ def search_query(text='', must=[], should=[], mustnot=[], aggs={}):
         body['aggregations'] = aggs
     return body
 
+
+class InvalidPage(Exception):
+    pass
+class PageNotAnInteger(InvalidPage):
+    pass
+class EmptyPage(InvalidPage):
+    pass
+
+def _validate_number(number, num_pages):
+        """Validates the given 1-based page number.
+        see django.core.pagination.Paginator.validate_number
+        """
+        try:
+            number = int(number)
+        except (TypeError, ValueError):
+            raise PageNotAnInteger('That page number is not an integer')
+        if number < 1:
+            raise EmptyPage('That page number is less than 1')
+        if number > num_pages:
+            if number == 1:
+                pass
+            else:
+                raise EmptyPage('That page contains no results')
+        return number
+
+def _page_bottom_top(total, index, page_size):
+        """
+        Returns a Page object for the given 1-based page number.
+        """
+        num_pages = total / page_size
+        if total % page_size:
+            num_pages = num_pages + 1
+        number = _validate_number(index, num_pages)
+        bottom = (number - 1) * page_size
+        top = bottom + page_size
+        return bottom,top,num_pages
+
 def massage_query_results(results, thispage, page_size):
     """Takes ES query, makes facsimile of original object; pads results for paginator.
     
