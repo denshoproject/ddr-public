@@ -20,7 +20,6 @@ from ui import domain_org
 from ui import faceting
 from ui import models
 from ui import forms
-from ui import api
 
 # TODO We should have a whitelist of chars we *do* accept, not this.
 SEARCH_INPUT_BLACKLIST = ('{', '}', '[', ']')
@@ -46,20 +45,20 @@ def force_list(terms):
 
 def collection(request, oid):
     #filter_if_branded(request, i)
-    collection = api.Collection.get(oid, request)
+    collection = models.Collection.get(oid, request)
     if not collection:
         raise Http404
     return results(request, collection)
 
 def facetterm(request, facet_id, term_id):
     oid = '-'.join([facet_id, term_id])
-    term = api.Term.get(oid, request)
+    term = models.Term.get(oid, request)
     if not term:
         raise Http404
     return results(request, term)
 
 def narrator(request, oid):
-    narrator = api.Narrator.get(oid, request)
+    narrator = models.Narrator.get(oid, request)
     if not narrator:
         raise Http404
     return results(request, narrator)
@@ -72,7 +71,7 @@ def results(request, obj=None):
     
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
-    offset = api.search_offset(thispage, pagesize)
+    offset = models.search_offset(thispage, pagesize)
     
     # query dict
     MODELS = [
@@ -174,7 +173,7 @@ def results(request, obj=None):
     page = None
     if query['fulltext'] or query['must']:
         searching = True
-        results = api.docstore_search(
+        results = models.docstore_search(
             text=query['fulltext'],
             must=query['must'],
             should=[],
@@ -190,7 +189,7 @@ def results(request, obj=None):
         form.choice_aggs(aggregations)
         
         paginator = Paginator(
-            api.pad_results(
+            models.pad_results(
                 results,
                 pagesize,
                 thispage

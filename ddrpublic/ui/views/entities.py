@@ -8,9 +8,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 
-from ui import api
 from ui import archivedotorg
-from ui.models import DEFAULT_SIZE
+from ui import models
 from ui.views import filter_if_branded
 
 
@@ -18,8 +17,8 @@ from ui.views import filter_if_branded
 
 def detail(request, oid):
     try:
-        entity = api._object(request, oid)
-    except api.NotFound:
+        entity = models._object(request, oid)
+    except models.NotFound:
         raise Http404
     filter_if_branded(request, entity['organization_id'])
 
@@ -36,21 +35,21 @@ def detail(request, oid):
         if model == 'segment':
             return HttpResponseRedirect(reverse('ui-interview', args=[oid]))
         elif (model == 'entity'):
-            segments = api.Entity.children(oid, request, limit=1)
+            segments = models.Entity.children(oid, request, limit=1)
             if segments['objects']:
                 # make sure this is actually a segment before redirecting
-                s = api._object(request, segments['objects'][0]['id'])
+                s = models._object(request, segments['objects'][0]['id'])
                 if s['model'] == 'segment':
                     return HttpResponseRedirect(reverse('ui-interview', args=[s['oid']]))
     
-    parent = api._object(request, entity['parent_id'])
-    organization = api._object(request, entity['organization_id'])
+    parent = models._object(request, entity['parent_id'])
+    organization = models._object(request, entity['organization_id'])
     # signature
     signature = None
     if entity.get('signature_id'):
-        signature = api._object(request, entity['signature_id'])
+        signature = models._object(request, entity['signature_id'])
     if signature:
-        signature['access_size'] = api.file_size(signature['links']['img'])
+        signature['access_size'] = models.file_size(signature['links']['img'])
     # facet terms
     facilities = [item for item in getattr(entity, 'facility', [])]
     creators = [item for item in getattr(entity, 'creators', [])]
@@ -58,8 +57,8 @@ def detail(request, oid):
     thispage = request.GET.get('page', 1)
     pagesize = 5
     children_paginator = Paginator(
-        api.pad_results(
-            api._object_children(
+        models.pad_results(
+            models._object_children(
                 document=entity,
                 request=request,
                 limit=pagesize,
@@ -71,8 +70,8 @@ def detail(request, oid):
         pagesize
     )
     nodes_paginator = Paginator(
-        api.pad_results(
-            api.Entity.files(
+        models.pad_results(
+            models.Entity.files(
                 oid, request, limit=pagesize, offset=0,
             ),
             pagesize,
@@ -100,21 +99,21 @@ def detail(request, oid):
 
 def interview(request, oid):
     try:
-        segment = api._object(request, oid)
-    except api.NotFound:
+        segment = models._object(request, oid)
+    except models.NotFound:
         raise Http404
     filter_if_branded(request, segment['organization_id'])
     # die if not a segment
     if segment['model'] != 'segment':
         raise Http404
 
-    entity = api._object(request, segment['parent_id'])
-    parent = api._object(request, entity['parent_id'])
-    collection = api._object(request, entity['collection_id'])
-    organization = api._object(request, entity['organization_id'])
+    entity = models._object(request, segment['parent_id'])
+    parent = models._object(request, entity['parent_id'])
+    collection = models._object(request, entity['collection_id'])
+    organization = models._object(request, entity['organization_id'])
     
     # TODO only id, title, extent
-    segments = api._object_children(
+    segments = models._object_children(
         document=entity,
         request=request,
         limit=1000,
@@ -135,7 +134,7 @@ def interview(request, oid):
     # segment index for humans
     segment['this'] = segment['index'] + 1
     
-    transcripts = api.Entity.transcripts(
+    transcripts = models.Entity.transcripts(
         segment['id'], segment['parent_id'], segment['collection_id'],
         request
     )
@@ -162,17 +161,17 @@ def children( request, oid, role=None ):
     """Lists all direct children of the entity.
     """
     try:
-        entity = api._object(request, oid)
-    except api.NotFound:
+        entity = models._object(request, oid)
+    except models.NotFound:
         raise Http404
     filter_if_branded(request, entity['organization_id'])
     # children
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
-    offset = api.search_offset(thispage, pagesize)
+    offset = models.search_offset(thispage, pagesize)
     paginator = Paginator(
-        api.pad_results(
-            api._object_children(
+        models.pad_results(
+            models._object_children(
                 document=entity,
                 request=request,
                 limit=pagesize,
@@ -198,17 +197,17 @@ def nodes( request, oid, role=None ):
     """Lists all nodes of the entity.
     """
     try:
-        entity = api.Entity.get(oid, request)
-    except api.NotFound:
+        entity = models.Entity.get(oid, request)
+    except models.NotFound:
         raise Http404
     filter_if_branded(request, entity['organization_id'])
     # nodes
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
-    offset = api.search_offset(thispage, pagesize)
+    offset = models.search_offset(thispage, pagesize)
     paginator = Paginator(
-        api.pad_results(
-            api.Entity.files(
+        models.pad_results(
+            models.Entity.files(
                 oid,
                 request,
                 limit=pagesize,

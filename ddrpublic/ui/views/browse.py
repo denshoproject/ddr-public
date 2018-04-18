@@ -15,7 +15,6 @@ from ui import domain_org
 from ui import encyc
 from ui import faceting
 from ui import models
-from ui import api
 
 SHOW_THESE = ['topics', 'facility', 'location', 'format', 'genre',]
 
@@ -35,10 +34,10 @@ def index( request ):
 def narrators(request):
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
-    offset = api.search_offset(thispage, pagesize)
+    offset = models.search_offset(thispage, pagesize)
     paginator = Paginator(
-        api.pad_results(
-            api.Narrator.narrators(
+        models.pad_results(
+            models.Narrator.narrators(
                 request,
                 limit=pagesize,
                 offset=offset,
@@ -64,8 +63,8 @@ def narrator(request, oid):
     return render_to_response(
         'ui/narrators/detail.html',
         {
-            'narrator': api.Narrator.get(oid, request),
-            'interviews': api.Narrator.interviews(oid, request, limit=1000),
+            'narrator': models.Narrator.get(oid, request),
+            'interviews': models.Narrator.interviews(oid, request, limit=1000),
             'api_url': reverse('ui-api-narrator', args=[oid]),
         },
         context_instance=RequestContext(request, processors=[])
@@ -75,17 +74,17 @@ def narrator(request, oid):
 def facet(request, facet_id):
     if facet_id == 'topics':
         template_name = 'ui/facets/facet-topics.html'
-        terms = api.Facet.topics_terms(request)
+        terms = models.Facet.topics_terms(request)
         
     elif facet_id == 'facility':
         template_name = 'ui/facets/facet-facility.html'
         # for some reason ES does not sort
-        terms = api.Facet.facility_terms(request)
+        terms = models.Facet.facility_terms(request)
     
     return render_to_response(
         template_name,
         {
-            'facet': api.Facet.get(facet_id, request),
+            'facet': models.Facet.get(facet_id, request),
             'terms': terms,
             'api_url': reverse('ui-api-facetterms', args=[facet_id]),
         },
@@ -96,13 +95,13 @@ def facet(request, facet_id):
 def term( request, facet_id, term_id ):
     oid = '-'.join([facet_id, term_id])
     template_name = 'ui/facets/term-%s.html' % facet_id
-    facet = api.Facet.get(facet_id, request)
-    term = api.Term.get(oid, request)
+    facet = models.Facet.get(facet_id, request)
+    term = models.Term.get(oid, request)
     
     # terms tree (topics)
     if facet_id == 'topics':
         term['tree'] = [
-            t for t in api.Facet.topics_terms(request)
+            t for t in models.Facet.topics_terms(request)
             if (t['id'] in term['ancestors']) # ancestors of current term
             or (t['id'] == term['id'])        # current term
             or (term['id'] in t['ancestors']) # children of current term
@@ -130,11 +129,11 @@ def term( request, facet_id, term_id ):
     # term objects
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
-    offset = api.search_offset(thispage, pagesize)
+    offset = models.search_offset(thispage, pagesize)
     
     paginator = Paginator(
-        api.pad_results(
-            api.Term.objects(
+        models.pad_results(
+            models.Term.objects(
                 facet_id, term_id,
                 limit=pagesize,
                 offset=offset,

@@ -1,12 +1,35 @@
+from collections import defaultdict, OrderedDict
+import json
 import logging
 logger = logging.getLogger(__name__)
+import os
+import urlparse
+
+import requests
+from elasticsearch import Elasticsearch
 
 from django.conf import settings
+from django.core.cache import cache
 
-HOSTS = settings.DOCSTORE_HOSTS
-INDEX = settings.DOCSTORE_INDEX
+from rest_framework.exceptions import NotFound
+from rest_framework.reverse import reverse
+
+from ui import docstore
+from ui.urls import API_BASE
+
+es = Elasticsearch(settings.DOCSTORE_HOSTS)
 
 DEFAULT_SIZE = 10
+DEFAULT_LIMIT = 25
+
+CHILDREN = {
+    'repository': ['organization'],
+    'organization': ['collection'],
+    'collection': ['entity'],
+    'entity': ['entity', 'segment', 'file'],
+    'segment': ['file'],
+    'file': [],
+}
 
 # TODO Hard-coded! Get this data from Elasticsearch or something
 MODEL_PLURALS = {

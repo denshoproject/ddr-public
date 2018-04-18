@@ -5,8 +5,8 @@ from django import forms
 from django.conf import settings
 from django.core.cache import cache
 
-from ui import api
 from ui import docstore
+from ui import models
 
 # TODO REPLACE THESE HARDCODED VALUES!!!
 
@@ -104,8 +104,8 @@ def topics_flattened():
     key = 'search:filters:%s' % oid
     cached = cache.get(key)
     if not cached:
-        terms = api.Facet.make_tree(
-            api.Facet.children(
+        terms = models.Facet.make_tree(
+            models.Facet.children(
                 oid, request,
                 sort=[('sort','asc')],
                 limit=10000, raw=True
@@ -127,7 +127,7 @@ def facilities():
     key = 'search:filters:%s' % oid
     cached = cache.get(key)
     if not cached:
-        terms = api.Facet.children(
+        terms = models.Facet.children(
             oid, request,
             sort=[('title','asc')],
             limit=10000, raw=True

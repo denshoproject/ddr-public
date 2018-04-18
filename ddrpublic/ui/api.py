@@ -1,27 +1,16 @@
-from collections import defaultdict, OrderedDict
-import json
-import os
-import urlparse
-
-import requests
-
 from django.conf import settings
-from django.core.cache import cache
-from django.http import HttpResponseRedirect
 
 from elasticsearch import Elasticsearch
 es = Elasticsearch(settings.DOCSTORE_HOSTS)
 
 from rest_framework import status
 from rest_framework.decorators import api_view
-from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from ui import docstore
-from ui.urls import API_BASE
+from ui.models import Repository, Organization, Collection, Entity, File
+from ui.models import Narrator, Facet, Term
 from ui.views import filter_if_branded
-from ui import encyc
 
 DEFAULT_LIMIT = 25
 
@@ -68,7 +57,7 @@ def search(request, format=None):
     
     if query['fulltext'] or query['must'] or query['should'] or query['mustnot']:
         # do the query
-        data = docstore_search(
+        data = models.docstore_search(
             text = query['fulltext'],
             must = query['must'],
             should = query['should'],
