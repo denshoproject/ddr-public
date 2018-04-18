@@ -1,11 +1,6 @@
-from copy import deepcopy
-from datetime import datetime
 import json
 import logging
 logger = logging.getLogger(__name__)
-
-from dateutil import parser
-import requests
 
 from django.conf import settings
 from django.core.cache import cache
@@ -14,7 +9,6 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
-from django.utils.http import urlquote  as django_urlquote
 
 from ui import domain_org
 from ui import faceting

@@ -1,6 +1,5 @@
 import logging
 logger = logging.getLogger(__name__)
-import os
 import urlparse
 
 from django.conf import settings
@@ -11,9 +10,7 @@ from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 from django.views.decorators.cache import cache_page
 
-from ui import domain_org
 from ui import encyc
-from ui import faceting
 from ui import models
 
 SHOW_THESE = ['topics', 'facility', 'location', 'format', 'genre',]

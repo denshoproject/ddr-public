@@ -12,7 +12,6 @@ from django.views.decorators.cache import cache_page
 from ui import domain_org
 from ui import models
 from ui.views import filter_if_branded
-from ui.views import search
 
 # views ----------------------------------------------------------------
 

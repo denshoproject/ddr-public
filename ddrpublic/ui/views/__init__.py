@@ -9,7 +9,7 @@ from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 
-from ui import assets_base, domain_org
+from ui import assets_base
 
 
 # helpers --------------------------------------------------------------
