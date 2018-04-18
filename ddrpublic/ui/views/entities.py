@@ -40,7 +40,7 @@ def detail(request, oid):
                 # make sure this is actually a segment before redirecting
                 s = models._object(request, segments['objects'][0]['id'])
                 if s['model'] == 'segment':
-                    return HttpResponseRedirect(reverse('ui-interview', args=[s['oid']]))
+                    return HttpResponseRedirect(reverse('ui-interview', args=[s['id']]))
     
     parent = models._object(request, entity['parent_id'])
     organization = models._object(request, entity['organization_id'])
