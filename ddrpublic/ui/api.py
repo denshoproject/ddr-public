@@ -165,8 +165,13 @@ def facetterms(request, facet_id, format=None):
         offset=offset,
         raw=True
     )
-    assert False
-    return Response(data)
+    return _list(request, data)
+
+@api_view(['GET'])
+def term_objects(request, facet_id, term_id, limit=DEFAULT_LIMIT, offset=0):
+    oid = '%s-%s' % (facet_id, term_id)
+    data = Term.objects(facet_id, term_id, request, offset=offset)
+    return _list(request, data)
 
 @api_view(['GET'])
 def object_detail(request, oid):
@@ -237,22 +242,11 @@ def facet_index(request, format=None):
 
 @api_view(['GET'])
 def facet(request, facet_id, format=None):
-    data = es.get(index=settings.DOCSTORE_INDEX, doc_type='facet', id=facet_id)
-    return _detail(request, format_facet(data, request))
-
-@api_view(['GET'])
-def term(request, facet_id, term_id, format=None):
-    oid = '%s-%s' % (facet_id, term_id)
-    data = Term.get(oid, request)
+    data = Facet.get(facet_id, request)
     return _detail(request, data)
 
 @api_view(['GET'])
-def term_objects(request, facet_id, term_id, limit=DEFAULT_LIMIT, offset=0):
+def facetterm(request, facet_id, term_id, format=None):
     oid = '%s-%s' % (facet_id, term_id)
-    data = Term.objects(
-        facet_id=facet_id,
-        term_id=term_id,
-        offset=offset,
-        request=request
-    )
-    return Response(data)
+    data = Term.get(oid, request)
+    return _detail(request, data)
