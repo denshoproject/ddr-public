@@ -1086,7 +1086,7 @@ class Facet(object):
                 path = [
                     tid for tid in term.get('ancestors', [])
                 ]
-                path.append(term['id'])
+                path.append(term['term_id'])
                 add(tree_, path)
             return tree_
         
@@ -1108,7 +1108,7 @@ class Facet(object):
                 flatten(tree_[key], depth)
                 depth -= 1
         
-        terms_dict = {t['id']: t for t in terms_list}
+        terms_dict = {t['term_id']: t for t in terms_list}
         terms_tree = populate(terms_list)
         terms = []
         flatten(terms_tree)
@@ -1132,7 +1132,7 @@ class Facet(object):
                 facet_id, request,
                 sort=[('title','asc')],
                 limit=10000, raw=True
-            )
+            )['objects']
             for term in terms:
                 term['links'] = {}
                 term['links']['html'] = reverse(
