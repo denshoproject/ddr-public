@@ -1083,7 +1083,9 @@ class Facet(object):
             """
             tree_ = tree()
             for term in terms_list:
-                path = [tid for tid in term['ancestors']]
+                path = [
+                    tid for tid in term.get('ancestors', [])
+                ]
                 path.append(term['id'])
                 add(tree_, path)
             return tree_

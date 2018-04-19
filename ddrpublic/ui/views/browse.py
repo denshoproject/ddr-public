@@ -99,9 +99,9 @@ def term( request, facet_id, term_id ):
     if facet_id == 'topics':
         term['tree'] = [
             t for t in models.Facet.topics_terms(request)
-            if (t['id'] in term['ancestors']) # ancestors of current term
-            or (t['id'] == term['id'])        # current term
-            or (term['id'] in t['ancestors']) # children of current term
+            if (t['id'] in term.get('ancestors', [])) # ancestors of current term
+            or (t['id'] == term['id'])                # current term
+            or (term['id'] in t.get('ancestors', [])) # children of current term
         ]
     
     # API urls for elinks
