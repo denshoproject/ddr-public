@@ -148,7 +148,7 @@ def term( request, facet_id, term_id ):
             'term': term,
             'paginator': paginator,
             'page': paginator.page(thispage),
-            'api_url': reverse('ui-api-term', args=[facet['id'], term['id']]),
+            'api_url': reverse('ui-api-term', args=[facet['id'], term['term_id']]),
         },
         context_instance=RequestContext(request, processors=[])
     )

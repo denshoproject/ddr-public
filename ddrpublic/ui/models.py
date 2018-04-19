@@ -550,13 +550,13 @@ def format_term(document, request, listitem=False):
         model = document.pop('model')
 
     fid = document['facet']
-    # TODO use term_id field if present
-    tid = oid[len(fid)+1:]
+    tid = document.pop('term_id')
     
     d = OrderedDict()
     d['id'] = oid
     d['model'] = model
-    d['facet'] = document['facet']
+    d['facet'] = document.pop('facet')
+    d['term_id'] = tid
     # links
     d['links'] = OrderedDict()
     d['links']['json'] = reverse('ui-api-term', args=[fid,tid], request=request)
@@ -583,6 +583,9 @@ def format_term(document, request, listitem=False):
     if document.get('_title'): d['_title'] = document.pop('_title')
     if document.get('title'): d['title'] = document.pop('title')
     if document.get('description'): d['description'] = document.pop('description')
+    # cleanup
+    if document.get('links_json'): document.pop('links_json')
+    if document.get('links_html'): document.pop('links_html')
     # everything else
     HIDDEN_FIELDS = [
         'created',
@@ -1157,11 +1160,12 @@ class Facet(object):
                 facet_id, request,
                 sort=[('title','asc')],
                 limit=10000, raw=True
-            )
+            )['objects']
             for term in terms:
+                term_id = term['term_id']
                 term['links'] = {}
                 term['links']['html'] = reverse(
-                    'ui-browse-term', args=[facet_id, term['id']]
+                    'ui-browse-term', args=[facet_id, term_id]
                 )
             terms = sorted(terms, key=lambda term: term['title'])
             Term.term_aggregations('facility.id', 'facility', terms, request)
@@ -1174,9 +1178,7 @@ class Term(object):
     
     @staticmethod
     def get(oid, request):
-        document = docstore.Docstore().get(
-            model='facetterm', document_id=oid
-        )
+        document = es.get(index=settings.DOCSTORE_INDEX, doc_type='facetterm', id=oid)
         if not document:
             raise NotFound()
         # save data for breadcrumbs
@@ -1263,14 +1265,14 @@ class Term(object):
             aggs=query['aggs'],
             request=request,
         )
-        aggs = aggs_dict(results.get('aggregations'))[fieldname]
+        aggs = docstore.aggs_dict(results.get('aggregations'))[fieldname]
         # assign num docs per term
         for term in terms:
             num = aggs.get(str(term['id']), 0) # aggs keys are str(int)s
             term['doc_count'] = num            # could be used for sorting terms!
     
     @staticmethod
-    def objects(facet_id, term_id, limit=DEFAULT_LIMIT, offset=0, request=None):
+    def objects(facet_id, term_id, request=None, limit=DEFAULT_LIMIT, offset=0):
         field = '%s.id' % facet_id
         return docstore_search(
             must=[

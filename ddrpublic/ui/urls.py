@@ -42,8 +42,8 @@ urlpatterns = patterns(
     url(r'^narrators/(?P<oid>[\w]+)/$', 'ui.views.browse.narrator', name='ui-narrators-detail'),
     url(r'^narrators/$', 'ui.views.browse.narrators', name='ui-narrators-list'),
     
-    url(r'^browse/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/search/$', 'ui.views.search.facetterm', name='ui-search-facetterm'),
-    url(r'^browse/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/$', 'ui.views.browse.term', name='ui-browse-term'),
+    url(r'^browse/(?P<facet_id>[\w]+)/(?P<term_id>[\w]+)/search/$', 'ui.views.search.facetterm', name='ui-search-facetterm'),
+    url(r'^browse/(?P<facet_id>[\w]+)/(?P<term_id>[\w]+)/$', 'ui.views.browse.term', name='ui-browse-term'),
     url(r'^browse/(?P<facet_id>[\w]+)/$', 'ui.views.browse.facet', name='ui-browse-facet'),
     url(r'^browse/$', 'ui.views.browse.index', name='ui-browse-index'),
     
