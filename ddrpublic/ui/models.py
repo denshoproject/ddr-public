@@ -549,36 +549,36 @@ def format_term(document, request, listitem=False):
         oid = document.pop('id')
         model = document.pop('model')
 
-    fid = document['facet']
-    tid = document.pop('term_id')
+    facet_id = document['facet']
+    term_id = document.pop('term_id')
     
     d = OrderedDict()
     d['id'] = oid
     d['model'] = model
     d['facet'] = document.pop('facet')
-    d['term_id'] = tid
+    d['term_id'] = term_id
     # links
     d['links'] = OrderedDict()
-    d['links']['json'] = reverse('ui-api-term', args=[fid,tid], request=request)
-    d['links']['html'] = reverse('ui-browse-term', args=[fid,tid], request=request)
+    d['links']['json'] = reverse('ui-api-term', args=[facet_id,term_id], request=request)
+    d['links']['html'] = reverse('ui-browse-term', args=[facet_id,term_id], request=request)
     if document.get('parent_id'):
-        d['links']['parent'] = reverse('ui-api-term', args=[fid,document['parent_id']], request=request)
+        d['links']['parent'] = reverse('ui-api-term', args=[facet_id,document['parent_id']], request=request)
     if document.get('ancestors'):
         d['links']['ancestors'] = [
-            reverse('ui-api-term', args=[fid,tid], request=request)
-            for oid in document['ancestors']
+            reverse('ui-api-term', args=[facet_id,tid], request=request)
+            for tid in document['ancestors']
         ]
     if document.get('siblings'):
         d['links']['siblings'] = [
-            reverse('ui-api-term', args=[fid,tid], request=request)
-            for oid in document['siblings']
+            reverse('ui-api-term', args=[facet_id,tid], request=request)
+            for tid in document['siblings']
         ]
     if document.get('children'):
         d['links']['children'] = [
-            reverse('ui-api-term', args=[fid,tid], request=request)
-            for oid in document['children']
+            reverse('ui-api-term', args=[facet_id,tid], request=request)
+            for tid in document['children']
         ]
-    d['links']['objects'] = reverse('ui-api-term-objects', args=[fid,tid], request=request)
+    d['links']['objects'] = reverse('ui-api-term-objects', args=[facet_id,term_id], request=request)
     # title, description
     if document.get('_title'): d['_title'] = document.pop('_title')
     if document.get('title'): d['title'] = document.pop('title')
@@ -1134,7 +1134,7 @@ class Facet(object):
             for term in terms:
                 term['links'] = {}
                 term['links']['html'] = reverse(
-                    'ui-browse-term', args=[facet_id, term['id']]
+                    'ui-browse-term', args=[facet_id, term['term_id']]
                 )
             terms = Facet.make_tree(terms)
             Term.term_aggregations('topics.id', 'topics', terms, request)
