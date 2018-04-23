@@ -1275,21 +1275,46 @@ class Term(object):
     
     @staticmethod
     def objects(facet_id, term_id, request=None, limit=DEFAULT_LIMIT, offset=0):
-        field = '%s.id' % facet_id
-        return docstore_search(
+        """Returns list of repository objects matching the term ID.
+        
+        NOTE: only works if the nested value is "id", e.g. "topics.id"
+        
+        @param facet_id: str
+        @param term_id: str
+        @param request: Django request object.
+        @param limit: int
+        @param offset: int
+        @returns: SearchResults
+        """
+        models = CHILDREN.keys()
+        q = docstore.search_query(
             must=[
-                {'terms': {field: [term_id]}},
+                {"nested": {
+                    "path": facet_id,
+                    "query": {"term": {
+                        "%s.id" % facet_id: term_id
+                    }}
+                }}
             ],
-            models=[],
-            sort_fields=[
-                'sort',
-                'id',
-                'record_created',
-                'record_lastmod',
-            ],
-            limit=limit,
-            offset=offset,
-            request=request,
+        )
+        return format_list_objects(
+            paginate_results(
+                docstore.Docstore().search(
+                    doctypes=models,
+                    query=q,
+                    sort=[
+                        'sort',
+                        'id',
+                        'record_created',
+                        'record_lastmod',
+                    ],
+                    fields=SEARCH_RETURN_FIELDS,
+                    from_=offset,
+                    size=limit,
+                ),
+                offset, limit, request
+            ),
+            request
         )
 
 
