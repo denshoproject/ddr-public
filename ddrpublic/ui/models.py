@@ -1270,7 +1270,7 @@ class Term(object):
         aggs = docstore.aggs_dict(results.get('aggregations'))[fieldname]
         # assign num docs per term
         for term in terms:
-            num = aggs.get(str(term['id']), 0) # aggs keys are str(int)s
+            num = aggs.get(str(term['term_id']), 0) # aggs keys are str(int)s
             term['doc_count'] = num            # could be used for sorting terms!
     
     @staticmethod
