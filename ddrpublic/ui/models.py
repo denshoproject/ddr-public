@@ -6,6 +6,7 @@ import urlparse
 
 import requests
 from elasticsearch import Elasticsearch
+import elasticsearch_dsl
 
 from django.conf import settings
 from django.core.cache import cache
@@ -14,6 +15,7 @@ from rest_framework.exceptions import NotFound
 from rest_framework.reverse import reverse
 
 from ui import docstore
+from ui import search
 from ui.urls import API_BASE
 
 es = Elasticsearch(settings.DOCSTORE_HOSTS)
@@ -1139,7 +1141,11 @@ class Facet(object):
                     'ui-browse-term', args=[facet_id, term['term_id']]
                 )
             terms = Facet.make_tree(terms)
-            Term.term_aggregations('topics.id', 'topics', terms, request)
+            Term.term_aggs_nested(
+                terms,
+                doctypes=['entity','segment'],
+                fieldname='topics',
+            )
             cached = terms
             cache.set(key, cached, settings.CACHE_TIMEOUT)
         return cached
@@ -1170,7 +1176,11 @@ class Facet(object):
                     'ui-browse-term', args=[facet_id, term_id]
                 )
             terms = sorted(terms, key=lambda term: term['title'])
-            Term.term_aggregations('facility.id', 'facility', terms, request)
+            Term.term_aggs_nested(
+                terms,
+                doctypes=['entity','segment'],
+                fieldname='facility',
+            )
             cached = terms
             cache.set(key, cached, settings.CACHE_TIMEOUT)
         return cached
@@ -1272,6 +1282,62 @@ class Term(object):
         for term in terms:
             num = aggs.get(str(term['term_id']), 0) # aggs keys are str(int)s
             term['doc_count'] = num            # could be used for sorting terms!
+    
+    @staticmethod
+    def term_aggs_nested(terms, doctypes=[], fieldname=''):
+        """Add number of documents for each facet term (nested fields)
+        
+        NOTE: assumes values are in the form FIELDNAME.id
+        Example:
+            ...
+            'topics': [
+                {'id': 123, 'title': 'Topic Title'},
+            ],
+            ...
+        
+        models.gather_nested_aggregations(
+            terms,
+            doctypes=['entity','segment'],
+            fieldname='topics'
+        )
+        
+        @param doctypes: list
+        @param fieldnames: list
+        @returns: None
+        """
+        ds = docstore.Docstore()
+        s = elasticsearch_dsl.Search(using=ds.es, index=ds.indexname)
+        s = s.query("match_all")
+        for dt in doctypes:
+            s = s.doc_type(dt)
+        # aggregations buckets for each nested field
+        #s.aggs.bucket(
+        #    'topics', 'nested', path='topics'
+        #).bucket(
+        #    'topic_ids', 'terms', field='topics.id', size=1000
+        #)
+        s.aggs.bucket(
+            fieldname, 'nested', path=fieldname
+        ).bucket(
+            '%s_ids' % fieldname,
+            'terms',
+            field='%s.id' % fieldname,
+            size=1000
+        )
+        results = search.Searcher(search=s).execute(limit=1000, offset=0)
+        # fieldname:term:id dict
+        aggs = {}
+        for fieldname,data in results.aggregations.iteritems():
+            aggs[fieldname] = {}
+            for item in data:
+                aggs[fieldname][item['key']] = item['doc_count']
+        # assign doc_count per term
+        for term in terms:
+            fid = term['facet']
+            tid = str(term['term_id'])
+            term['doc_count'] = ''
+            if aggs.get(fid) and aggs[fid].get(tid):
+                term['doc_count'] = aggs[fid].get(tid)
     
     @staticmethod
     def objects(facet_id, term_id, request=None, limit=DEFAULT_LIMIT, offset=0):
