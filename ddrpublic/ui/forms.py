@@ -31,11 +31,13 @@ class SearchForm(forms.Form):
         required=False,
     )
     filter_topics = forms.MultipleChoiceField(
-        choices=models.topics_flattened(),
+        #choices=models.topics_flattened(),
+        choices=[],
         required=False,
     )
     filter_facility = forms.MultipleChoiceField(
-        choices=models.facilities(),
+        #choices=models.facilities(),
+        choices=[],
         required=False,
     )
     filter_rights = forms.MultipleChoiceField(
