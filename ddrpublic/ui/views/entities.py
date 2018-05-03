@@ -58,11 +58,8 @@ def detail(request, oid):
     pagesize = 5
     children_paginator = Paginator(
         models.pad_results(
-            models._object_children(
-                document=entity,
-                request=request,
-                limit=pagesize,
-                offset=0,
+            models.Entity.children(
+                oid, request, limit=pagesize, offset=0,
             ),
             pagesize,
             thispage
