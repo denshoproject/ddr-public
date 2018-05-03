@@ -291,7 +291,6 @@ def _object_children(document, request, models=[], sort_fields=[], limit=DEFAULT
         limit=limit, offset=offset
     )
     for d in data['objects']:
-        d['links']['img'] = img_url(d['id'], 'logo.png', request)
         d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
     return data
 
