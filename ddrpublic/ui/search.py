@@ -13,6 +13,7 @@ from elasticsearch_dsl.query import MultiMatch, Match
 from elasticsearch_dsl.connections import connections
 from elasticsearch_dsl.result import Result
 
+from rest_framework.request import Request
 from rest_framework.reverse import reverse
 
 from django.conf import settings
@@ -217,6 +218,8 @@ class Searcher(object):
     def prepare(self, params={}):
         """assemble elasticsearch_dsl.Search object
         """
+        if isinstance(params, Request):
+            params = params.query_params.dict()
         
         # whitelist params
         bad_fields = [
@@ -484,7 +487,7 @@ class SearchResults(object):
         data['page_size'] = self.page_size
         data['this_page'] = self.this_page
 
-        params = {key:val for key,val in request.GET.items()}
+        params = {key:val for key,val in request.query_params.items()}
         if params.get('page'): params.pop('page')
         if params.get('limit'): params.pop('limit')
         if params.get('offset'): params.pop('offset')
