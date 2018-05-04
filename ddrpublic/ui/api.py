@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from django.conf import settings
 
 from elasticsearch import Elasticsearch
@@ -10,6 +12,8 @@ from rest_framework.reverse import reverse
 
 from ui.models import Repository, Organization, Collection, Entity, File
 from ui.models import Narrator, Facet, Term
+from ui.models import format_object_detail2
+from ui.search import es_offset, Searcher
 from ui.views import filter_if_branded
 
 DEFAULT_LIMIT = 25
@@ -40,46 +44,38 @@ def index(request, format=None):
     return Response(data)
 
 
-@api_view(['GET', 'POST'])
+@api_view(['GET'])
 def search(request, format=None):
     """
     <a href="/api/0.2/search/help/">Search API help</a>
     """
-    query = OrderedDict()
-    query['fulltext'] = request.data.get('fulltext')
-    query['must'] = request.data.get('must', [])
-    query['should'] = request.data.get('should', [])
-    query['mustnot'] = request.data.get('mustnot', [])
-    query['models'] = request.data.get('models', [])
-    query['sort'] = request.data.get('sort', [])
-    query['offset'] = request.data.get('offset', 0)
-    query['limit'] = request.data.get('limit', DEFAULT_LIMIT)
-    
-    if query['fulltext'] or query['must'] or query['should'] or query['mustnot']:
-        # do the query
-        data = models.docstore_search(
-            text = query['fulltext'],
-            must = query['must'],
-            should = query['should'],
-            mustnot = query['mustnot'],
-            models = query['models'],
-            sort_fields = query['sort'],
-            offset = query['offset'],
-            limit = query['limit'],
-            request = request,
+    if request.GET.get('offset'):
+        # limit and offset args take precedence over page
+        limit = request.GET.get(
+            'limit',
+            int(request.GET.get('limit', settings.RESULTS_PER_PAGE))
         )
-        # remove match _all from must, keeping fulltext arg
-        for item in query['must']:
-            if isinstance(item, dict) \
-            and item.get('match') \
-            and item['match'].get('_all') \
-            and (item['match']['_all'] == query.get('fulltext')):
-                query['must'].remove(item)
-        # include query in response
-        data['query'] = query
-    
-        return Response(data)
-    return Response({})
+        offset = request.GET.get(
+            'offset',
+            int(request.GET.get('offset', 0))
+        )
+    elif request.GET.get('page'):
+        limit = settings.RESULTS_PER_PAGE
+        thispage = int(params.pop('page')[-1])
+        offset = es_offset(limit, thispage)
+    else:
+        limit = settings.RESULTS_PER_PAGE
+        offset = 0
+
+    searcher = Searcher(
+        #mappings=identifier.ELASTICSEARCH_CLASSES_BY_MODEL,
+        #fields=identifier.ELASTICSEARCH_LIST_FIELDS,
+    )
+    searcher.prepare(request)
+    results = searcher.execute(limit, offset)
+    return Response(
+        results.ordered_dict(request, list_function=format_object_detail2)
+    )
 
 
 @api_view(['GET'])
