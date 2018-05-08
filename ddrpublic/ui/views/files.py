@@ -8,7 +8,7 @@ from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 
 from ui import models
-from ui.views import filter_if_branded
+from ui.misc import filter_if_branded
 
 
 # views ----------------------------------------------------------------

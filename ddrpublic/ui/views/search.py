@@ -10,10 +10,10 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 
-from ui import domain_org
 from ui import faceting
-from ui import models
 from ui import forms
+from ui.misc import domain_org
+from ui import models
 
 # TODO We should have a whitelist of chars we *do* accept, not this.
 SEARCH_INPUT_BLACKLIST = ('{', '}', '[', ']')

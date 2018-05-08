@@ -10,11 +10,11 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
+from ui.misc import filter_if_branded
 from ui.models import Repository, Organization, Collection, Entity, File
 from ui.models import Narrator, Facet, Term
 from ui.models import format_object_detail2
 from ui.search import es_offset, Searcher
-from ui.views import filter_if_branded
 
 DEFAULT_LIMIT = 25
 
