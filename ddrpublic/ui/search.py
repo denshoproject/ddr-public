@@ -13,11 +13,12 @@ from elasticsearch_dsl.query import MultiMatch, Match
 from elasticsearch_dsl.connections import connections
 from elasticsearch_dsl.result import Result
 
-from rest_framework.request import Request
+from rest_framework.request import Request as RestRequest
 from rest_framework.reverse import reverse
 
 from django.conf import settings
 from django.core.paginator import Paginator
+from django.http.request import HttpRequest
 
 #from DDR import vocab
 from ui import docstore
@@ -218,7 +219,9 @@ class Searcher(object):
     def prepare(self, params={}):
         """assemble elasticsearch_dsl.Search object
         """
-        if isinstance(params, Request):
+        if isinstance(params, HttpRequest):
+            params = params.GET.copy()
+        elif isinstance(params, RestRequest):
             params = params.query_params.dict()
         
         # whitelist params
@@ -487,7 +490,10 @@ class SearchResults(object):
         data['page_size'] = self.page_size
         data['this_page'] = self.this_page
 
-        params = {key:val for key,val in request.query_params.items()}
+        if isinstance(request, HttpRequest):
+            params = request.GET.copy()
+        elif isinstance(request, RestRequest):
+            params = request.query_params.dict()
         if params.get('page'): params.pop('page')
         if params.get('limit'): params.pop('limit')
         if params.get('offset'): params.pop('offset')
