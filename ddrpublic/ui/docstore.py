@@ -19,6 +19,12 @@ class Docstore():
             self.es = connection
         else:
             self.es = Elasticsearch(hosts)
+    
+    def health(self):
+        return self.es.cluster.health()
+    
+    def index_exists(self, index):
+        return self.es.indices.exists(index=index)
      
     def exists(self, model, document_id):
         """
