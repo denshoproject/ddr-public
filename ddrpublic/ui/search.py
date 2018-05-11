@@ -269,19 +269,23 @@ class Searcher(object):
         for key,val in params.items():
             
             if key in SEARCH_NESTED_FIELDS:
+                # Instead of nested search on topics.id or facility.id
+                # search on denormalized topics_id or facility_id fields.
+                fieldname = '%s_id' % key
+                s = s.filter('term', **{fieldname: val})
     
-                # search for *ALL* the topics (AND)
-                for term_id in val:
-                    s = s.filter(
-                        Q('bool',
-                          must=[
-                              Q('nested',
-                                path=key,
-                                query=Q('term', **{'%s.id' % key: term_id})
-                              )
-                          ]
-                        )
-                    )
+                ## search for *ALL* the topics (AND)
+                #for term_id in val:
+                #    s = s.filter(
+                #        Q('bool',
+                #          must=[
+                #              Q('nested',
+                #                path=key,
+                #                query=Q('term', **{'%s.id' % key: term_id})
+                #              )
+                #          ]
+                #        )
+                #    )
                 
                 ## search for *ANY* of the topics (OR)
                 #s = s.query(
