@@ -399,7 +399,7 @@ class SearchResults(object):
                     
                     # simple aggregations
                     else:
-                        buckets = results.aggregations[field].buckets
+                        self.aggregations[field] = results.aggregations[field].buckets
 
                     #if VOCAB_TOPICS_IDS_TITLES.get(field):
                     #    self.aggregations[field] = []
