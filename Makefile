@@ -14,15 +14,8 @@ GIT_SOURCE_URL=https://github.com/densho/ddr-public
 # - templates/static/nginx.conf.j2
 PACKAGE_SERVER=ddr.densho.org/static/ddrpublic
 
-SRC_REPO_CMDLN=https://github.com/densho/ddr-cmdln.git
-SRC_REPO_DEFS=https://github.com/densho/ddr-defs.git
-SRC_REPO_MANUAL=https://github.com/densho/ddr-manual.git
-
 INSTALL_BASE=/opt
 INSTALL_PUBLIC=$(INSTALL_BASE)/ddr-public
-INSTALL_CMDLN=$(INSTALL_PUBLIC)/ddr-cmdln
-INSTALL_DEFS=$(INSTALL_PUBLIC)/ddr-defs
-INSTALL_MANUAL=$(INSTALL_BASE)/ddr-manual
 REQUIREMENTS=$(INSTALLDIR)/requirements.txt
 PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
 
@@ -76,8 +69,8 @@ help:
 	@echo "Subcommands:"
 	@echo "    install-prep    - Various preperatory tasks"
 	@echo "    install-daemons - Installs Nginx, Redis, Elasticsearch"
-	@echo "    get-app         - Runs git-clone or git-pull on ddr-cmdln and ddr-public"
-	@echo "    install-app     - Just installer tasks for ddr-cmdln and ddr-public"
+	@echo "    get-app         - Runs git-clone or git-pull on ddr-public"
+	@echo "    install-app     - Just installer tasks for ddr-public"
 	@echo "    install-static  - Downloads static media (Bootstrap, jquery, etc)"
 	@echo ""
 	@echo "get-ddr-defs - Installs ddr-defs in $(INSTALL_DEFS)."
@@ -129,7 +122,7 @@ help-all:
 	@echo "install - Do a fresh install"
 	@echo "install-prep    - git-config, add-user, apt-update, install-misc-tools"
 	@echo "install-daemons - install-nginx install-redis install-elasticsearch"
-	@echo "install-ddr     - install-ddr-cmdln install-ddr-public"
+	@echo "install-ddr     - install-ddr-public"
 	@echo "install-static  - "
 	@echo "update  - Do an update"
 	@echo "restart - Restart servers"
@@ -140,7 +133,7 @@ help-all:
 	@echo "clean - "
 
 
-get: get-ddr-cmdln get-ddr-public
+get: get-ddr-public
 
 install: install-prep get-app install-app install-daemons install-static install-configs
 
@@ -218,50 +211,13 @@ install-setuptools: install-virtualenv
 	pip install -U setuptools
 
 
-get-app: get-ddr-cmdln get-ddr-public get-ddr-manual
+get-app: get-ddr-public
 
-install-app: install-virtualenv install-setuptools install-ddr-cmdln install-ddr-public install-ddr-manual install-configs install-daemon-configs
+install-app: install-virtualenv install-setuptools install-ddr-public install-configs install-daemon-configs
 
-uninstall-app: uninstall-ddr-cmdln uninstall-ddr-public uninstall-ddr-manual uninstall-configs uninstall-daemon-configs
+uninstall-app: uninstall-ddr-public uninstall-configs uninstall-daemon-configs
 
-clean-app: clean-ddr-cmdln clean-ddr-public clean-ddr-manual
-
-
-get-ddr-cmdln:
-	@echo ""
-	@echo "get-ddr-cmdln ----------------------------------------------------------"
-	if test -d $(INSTALL_CMDLN); \
-	then cd $(INSTALL_CMDLN) && git pull; \
-	else cd $(INSTALL_PUBLIC) && git clone $(SRC_REPO_CMDLN); \
-	fi
-
-setup-ddr-cmdln:
-	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_CMDLN)/ddr && python setup.py install
-
-install-ddr-cmdln: clean-ddr-cmdln
-	@echo ""
-	@echo "install-ddr-cmdln ------------------------------------------------------"
-	apt-get --assume-yes install git-core git-annex libxml2-dev libxslt1-dev libz-dev pmount udisks
-	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_CMDLN)/ddr && python setup.py install
-	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_CMDLN)/ddr && pip install -U -r $(INSTALL_CMDLN)/ddr/requirements/production.txt
-	-mkdir $(LOG_BASE)
-	chown -R ddr.root $(LOG_BASE)
-	chmod -R 755 $(LOG_BASE)
-	-mkdir -p $(MEDIA_ROOT)
-	chown -R ddr.root $(MEDIA_ROOT)
-	chmod -R 755 $(MEDIA_ROOT)
-
-uninstall-ddr-cmdln:
-	@echo ""
-	@echo "uninstall-ddr-cmdln ----------------------------------------------------"
-	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_CMDLN)/ddr && pip uninstall -y -r $(INSTALL_CMDLN)/ddr/requirements/production.txt
-
-clean-ddr-cmdln:
-	-rm -Rf $(INSTALL_CMDLN)/ddr/build
+clean-app: clean-ddr-public
 
 
 get-ddr-public:
@@ -457,34 +413,7 @@ status:
 
 git-status:
 	@echo "------------------------------------------------------------------------"
-	cd $(INSTALL_CMDLN) && git status
-	@echo "------------------------------------------------------------------------"
 	cd $(INSTALL_PUBLIC) && git status
-
-
-get-ddr-manual:
-	@echo ""
-	@echo "get-ddr-manual ---------------------------------------------------------"
-	if test -d $(INSTALL_MANUAL); \
-	then cd $(INSTALL_MANUAL) && git pull; \
-	else cd $(INSTALL_BASE) && git clone $(SRC_REPO_MANUAL); \
-	fi
-
-install-ddr-manual:
-	@echo ""
-	@echo "install-ddr-manual -----------------------------------------------------"
-	source $(VIRTUALENV)/bin/activate; \
-	pip install -U sphinx
-	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_MANUAL) && make html
-	rm -Rf $(MEDIA_ROOT)/manual
-	mv $(INSTALL_MANUAL)/build/html $(MEDIA_ROOT)/manual
-
-uninstall-ddr-manual:
-	pip uninstall -y sphinx
-
-clean-ddr-manual:
-	-rm -Rf $(INSTALL_MANUAL)/build
 
 
 # http://fpm.readthedocs.io/en/latest/
@@ -520,8 +449,6 @@ deb:
 	bin=$(FPM_BASE)   \
 	conf=$(FPM_BASE)   \
 	COPYRIGHT=$(FPM_BASE)   \
-	ddr-cmdln=$(FPM_BASE)   \
-	ddr-defs=$(FPM_BASE)   \
 	ddrpublic=$(FPM_BASE)   \
 	.git=$(FPM_BASE)   \
 	.gitignore=$(FPM_BASE)   \
