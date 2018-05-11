@@ -48,8 +48,8 @@ urlpatterns = patterns(
     url(r'^browse/$', 'ui.views.browse.index', name='ui-browse-index'),
     
     url(r'^search/(?P<field>[\w]+):(?P<term>[\w ,]+)/$', 'ui.views.search.term_query', name='ui-search-term-query'),
-    url(r'^search/results/$', 'ui.views.search.results', name='ui-search-results'),
-    url(r'^search/$', 'ui.views.search.results', name='ui-search-index'),
+    url(r'^search/results/$', 'ui.views.searching.search_ui', name='ui-search-results'),
+    url(r'^search/$', 'ui.views.searching.search_ui', name='ui-search-index'),
     
     url(r'^cite/(?P<model>[\w]+)/(?P<object_id>[\w\d-]+)/$', 'ui.views.cite', name='ui-cite'),
     
