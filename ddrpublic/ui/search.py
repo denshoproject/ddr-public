@@ -300,7 +300,8 @@ class Searcher(object):
                 #)
     
             elif key in SEARCH_PARAM_WHITELIST:
-                s = s.filter('terms', **{key: val})
+                s = s.filter('term', **{key: val})
+                # 'term' search is for single choice, not multiple choice fields(?)
         
         # aggregations
         for fieldname,field in SEARCH_AGG_FIELDS.items():
