@@ -86,7 +86,10 @@ def document( obj ):
 def galleryitem( obj ):
     """gallery-view item template
     """
-    model_plural = MODEL_PLURALS[obj['model']]
+    try:
+        model_plural = MODEL_PLURALS[obj['model']]
+    except:
+        return """<div class="media " style="border:2px dashed red;">%s</div>""" % str(obj)
     template_path = 'ui/%s/gallery-object.html' % model_plural
     t = template.loader.get_template(template_path)
     return t.render(template.Context({'object':obj}))
@@ -94,7 +97,10 @@ def galleryitem( obj ):
 def listitem( obj ):
     """list-view item template
     """
-    model_plural = MODEL_PLURALS[obj['model']]
+    try:
+        model_plural = MODEL_PLURALS[obj['model']]
+    except:
+        return """<div class="media " style="border:2px dashed red;">%s</div>""" % str(obj)
     template_path = 'ui/%s/list-object.html' % model_plural
     t = template.loader.get_template(template_path)
     return t.render(template.Context({'object':obj}))
