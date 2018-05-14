@@ -172,7 +172,7 @@ def children( request, oid, role=None ):
                 document=entity,
                 request=request,
                 limit=pagesize,
-                offset=0,
+                offset=offset,
             ),
             pagesize,
             thispage

@@ -101,7 +101,7 @@ def children(request, oid):
                 document=collection,
                 request=request,
                 limit=pagesize,
-                offset=0,
+                offset=offset,
             ),
             pagesize,
             thispage
