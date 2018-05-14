@@ -112,6 +112,7 @@ def interview(request, oid):
     # TODO only id, title, extent
     segments = models._object_children(
         document=entity,
+        models=['entity','segment'],
         request=request,
         limit=1000,
         offset=0,
