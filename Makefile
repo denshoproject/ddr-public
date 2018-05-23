@@ -1,13 +1,25 @@
 PROJECT=ddr
 APP=ddrpublic
 USER=ddr
-
 SHELL = /bin/bash
-DEBIAN_CODENAME := $(shell lsb_release -sc)
-DEBIAN_RELEASE := $(shell lsb_release -sr)
-VERSION := $(shell cat VERSION)
 
+APP_VERSION := $(shell cat VERSION)
 GIT_SOURCE_URL=https://github.com/densho/ddr-public
+
+# Release name e.g. jessie
+DEBIAN_CODENAME := $(shell lsb_release -sc)
+# Release numbers e.g. 8.10
+DEBIAN_RELEASE := $(shell lsb_release -sr)
+# Sortable major version tag e.g. deb8
+DEBIAN_RELEASE_TAG = deb$(shell lsb_release -sr | cut -c1)
+
+# current branch name minus dashes or underscores
+PACKAGE_BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr -d _ | tr -d -)
+# current commit hash
+PACKAGE_COMMIT := $(shell git log -1 --pretty="%h")
+# current commit date minus dashes
+PACKAGE_TIMESTAMP := $(shell git log -1 --pretty="%ad" --date=short | tr -d -)
+
 # Media assets and Elasticsearch will be downloaded from this location.
 # See https://github.com/densho/ansible-colo.git for more info:
 # - templates/proxy/nginx.conf.j2
@@ -29,8 +41,6 @@ CONF_LOCAL=$(CONF_BASE)/ddrpublic-local.cfg
 SQLITE_BASE=/var/lib/ddr
 LOG_BASE=/var/log/ddr
 
-ELASTICSEARCH=elasticsearch-2.4.4.deb
-
 MEDIA_BASE=/var/www/ddrpublic
 MEDIA_ROOT=$(MEDIA_BASE)/media
 STATIC_ROOT=$(MEDIA_BASE)/static
@@ -43,18 +53,26 @@ ASSETS_VERSION=20170206
 ASSETS_TGZ=ddr-public-assets-$(ASSETS_VERSION).tar.gz
 ASSETS_INSTALL_DIR=$(MEDIA_BASE)/assets/$(ASSETS_VERSION)
 
+ELASTICSEARCH=elasticsearch-2.4.4.deb
+
 SUPERVISOR_GUNICORN_CONF=/etc/supervisor/conf.d/ddrpublic.conf
 NGINX_CONF=/etc/nginx/sites-available/ddrpublic.conf
 NGINX_CONF_LINK=/etc/nginx/sites-enabled/ddrpublic.conf
 
-FPM_BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr -d _ | tr -d -)
-FPM_ARCH=amd64
-FPM_NAME=$(APP)-$(FPM_BRANCH)
-FPM_FILE=$(FPM_NAME)_$(VERSION)_$(FPM_ARCH).deb
-FPM_VENDOR=Densho.org
-FPM_MAINTAINER=<geoffrey.jost@densho.org>
-FPM_DESCRIPTION=Densho Digital Repository site
-FPM_BASE=opt/ddr-public
+DEB_BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr -d _ | tr -d -)
+DEB_ARCH=amd64
+DEB_NAME_JESSIE=$(APP)-$(DEB_BRANCH)
+DEB_NAME_STRETCH=$(APP)-$(DEB_BRANCH)
+# Application version, separator (~), Debian release tag e.g. deb8
+# Release tag used because sortable and follows Debian project usage.
+DEB_VERSION_JESSIE=$(APP_VERSION)~deb8
+DEB_VERSION_STRETCH=$(APP_VERSION)~deb9
+DEB_FILE_JESSIE=$(DEB_NAME_JESSIE)_$(DEB_VERSION_JESSIE)_$(DEB_ARCH).deb
+DEB_FILE_STRETCH=$(DEB_NAME_STRETCH)_$(DEB_VERSION_STRETCH)_$(DEB_ARCH).deb
+DEB_VENDOR=Densho.org
+DEB_MAINTAINER=<geoffrey.jost@densho.org>
+DEB_DESCRIPTION=Densho Digital Repository site
+DEB_BASE=opt/ddr-public
 
 
 .PHONY: help
@@ -68,12 +86,11 @@ help:
 	@echo "          Installation instructions: make howto-install"
 	@echo "Subcommands:"
 	@echo "    install-prep    - Various preperatory tasks"
-	@echo "    install-daemons - Installs Nginx, Redis, Elasticsearch"
+	@echo "    install-daemons - Installs Nginx, Redis"
+	@echo "    install-elasticsearch"
 	@echo "    get-app         - Runs git-clone or git-pull on ddr-public"
 	@echo "    install-app     - Just installer tasks for ddr-public"
 	@echo "    install-static  - Downloads static media (Bootstrap, jquery, etc)"
-	@echo ""
-	@echo "get-ddr-defs - Installs ddr-defs in $(INSTALL_DEFS)."
 	@echo ""
 	@echo ""
 	@echo "syncdb  - Initialize or update Django app's database tables."
@@ -197,6 +214,7 @@ install-elasticsearch:
 	chown -R elasticsearch.elasticsearch /var/backups/elasticsearch
 	chmod -R 755 /var/backups/elasticsearch
 
+
 install-virtualenv:
 	@echo ""
 	@echo "install-virtualenv -----------------------------------------------------"
@@ -250,15 +268,6 @@ clean-ddr-public:
 	-rm -Rf $(INSTALL_PUBLIC)/ddrpublic/src
 
 
-get-ddr-defs:
-	@echo ""
-	@echo "get-ddr-defs -----------------------------------------------------------"
-	if test -d $(INSTALL_DEFS); \
-	then cd $(INSTALL_DEFS) && git pull; \
-	else cd $(INSTALL_PUBLIC) && git clone $(SRC_REPO_DEFS) $(INSTALL_DEFS); \
-	fi
-
-
 syncdb:
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_PUBLIC)/ddrpublic && python manage.py syncdb --noinput
@@ -266,9 +275,6 @@ syncdb:
 	chmod -R 750 $(SQLITE_BASE)
 	chown -R ddr.root $(LOG_BASE)
 	chmod -R 755 $(LOG_BASE)
-
-branch:
-	cd $(INSTALL_PUBLIC)/ddrpublic; python ./bin/git-checkout-branch.py $(BRANCH)
 
 
 install-static: get-ddrpublic-assets install-ddrpublic-assets install-restframework
@@ -360,7 +366,7 @@ reload-supervisor:
 reload-app: reload-supervisor
 
 
-stop: stop-elasticsearch stop-redis stop-nginx stop-supervisor
+stop: stop-redis stop-nginx stop-supervisor
 
 stop-elasticsearch:
 	/etc/init.d/elasticsearch stop
@@ -419,22 +425,25 @@ git-status:
 # http://fpm.readthedocs.io/en/latest/
 # https://stackoverflow.com/questions/32094205/set-a-custom-install-directory-when-making-a-deb-package-with-fpm
 # https://brejoc.com/tag/fpm/
-deb:
+deb: deb-jessie deb-stretch
+
+# deb-jessie and deb-stretch are identical
+deb-jessie:
 	@echo ""
-	@echo "FPM packaging ----------------------------------------------------------"
-	-rm -Rf $(FPM_FILE)
+	@echo "DEB packaging (jessie) -------------------------------------------------"
+	-rm -Rf $(DEB_FILE_JESSIE)
 	virtualenv --relocatable $(VIRTUALENV)  # Make venv relocatable
 	fpm   \
 	--verbose   \
 	--input-type dir   \
 	--output-type deb   \
-	--name $(FPM_NAME)   \
-	--version $(VERSION)   \
-	--package $(FPM_FILE)   \
+	--name $(DEB_NAME_JESSIE)   \
+	--version $(DEB_VERSION_JESSIE)   \
+	--package $(DEB_FILE_JESSIE)   \
 	--url "$(GIT_SOURCE_URL)"   \
-	--vendor "$(FPM_VENDOR)"   \
-	--maintainer "$(FPM_MAINTAINER)"   \
-	--description "$(FPM_DESCRIPTION)"   \
+	--vendor "$(DEB_VENDOR)"   \
+	--maintainer "$(DEB_MAINTAINER)"   \
+	--description "$(DEB_DESCRIPTION)"   \
 	--depends "imagemagick"  \
 	--depends "libxml2-dev"  \
 	--depends "libxslt1-dev"  \
@@ -446,15 +455,56 @@ deb:
 	--after-install "bin/fpm-mkdir-log.sh"   \
 	--chdir $(INSTALL_PUBLIC)   \
 	conf/ddrpublic.cfg=etc/ddr/ddrpublic.cfg   \
-	bin=$(FPM_BASE)   \
-	conf=$(FPM_BASE)   \
-	COPYRIGHT=$(FPM_BASE)   \
-	ddrpublic=$(FPM_BASE)   \
-	.git=$(FPM_BASE)   \
-	.gitignore=$(FPM_BASE)   \
-	INSTALL=$(FPM_BASE)   \
-	LICENSE=$(FPM_BASE)   \
-	Makefile=$(FPM_BASE)   \
-	README.rst=$(FPM_BASE)   \
-	venv=$(FPM_BASE)   \
-	VERSION=$(FPM_BASE)
+	bin=$(DEB_BASE)   \
+	conf=$(DEB_BASE)   \
+	COPYRIGHT=$(DEB_BASE)   \
+	ddrpublic=$(DEB_BASE)   \
+	.git=$(DEB_BASE)   \
+	.gitignore=$(DEB_BASE)   \
+	INSTALL=$(DEB_BASE)   \
+	LICENSE=$(DEB_BASE)   \
+	Makefile=$(DEB_BASE)   \
+	README.rst=$(DEB_BASE)   \
+	venv=$(DEB_BASE)   \
+	VERSION=$(DEB_BASE)
+
+# deb-jessie and deb-stretch are identical
+deb-stretch:
+	@echo ""
+	@echo "DEB packaging (stretch) ------------------------------------------------"
+	-rm -Rf $(DEB_FILE_STRETCH)
+	virtualenv --relocatable $(VIRTUALENV)  # Make venv relocatable
+	fpm   \
+	--verbose   \
+	--input-type dir   \
+	--output-type deb   \
+	--name $(DEB_NAME_STRETCH)   \
+	--version $(DEB_VERSION_STRETCH)   \
+	--package $(DEB_FILE_STRETCH)   \
+	--url "$(GIT_SOURCE_URL)"   \
+	--vendor "$(DEB_VENDOR)"   \
+	--maintainer "$(DEB_MAINTAINER)"   \
+	--description "$(DEB_DESCRIPTION)"   \
+	--depends "imagemagick"  \
+	--depends "libxml2-dev"  \
+	--depends "libxslt1-dev"  \
+	--depends "libz-dev"  \
+	--depends "nginx"   \
+	--depends "redis-server"   \
+	--depends "sqlite3"  \
+	--depends "supervisor"   \
+	--after-install "bin/fpm-mkdir-log.sh"   \
+	--chdir $(INSTALL_PUBLIC)   \
+	conf/ddrpublic.cfg=etc/ddr/ddrpublic.cfg   \
+	bin=$(DEB_BASE)   \
+	conf=$(DEB_BASE)   \
+	COPYRIGHT=$(DEB_BASE)   \
+	ddrpublic=$(DEB_BASE)   \
+	.git=$(DEB_BASE)   \
+	.gitignore=$(DEB_BASE)   \
+	INSTALL=$(DEB_BASE)   \
+	LICENSE=$(DEB_BASE)   \
+	Makefile=$(DEB_BASE)   \
+	README.rst=$(DEB_BASE)   \
+	venv=$(DEB_BASE)   \
+	VERSION=$(DEB_BASE)
