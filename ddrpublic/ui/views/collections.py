@@ -9,12 +9,8 @@ from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 from django.views.decorators.cache import cache_page
 
-from ui import api
-from ui import domain_org
-from ui.identifier import Identifier
-from ui.models import DEFAULT_SIZE
-from ui.views import filter_if_branded
-from ui.views import search
+from ui import models
+from ui.misc import domain_org, filter_if_branded
 
 # views ----------------------------------------------------------------
 
@@ -25,19 +21,18 @@ def list( request ):
     repo,org = domain_org(request)
     if repo and org:
         # partner site
-        idparts = {'model':'organization', 'repo':repo, 'org':org}
-        identifier = Identifier(parts=idparts)
-        organization = api.Organization.get(identifier.id)
-        collections = api.Organization.children(
+        organization_id = '%s-%s' % (repo,org) # TODO relies on knowledge of ID structure!
+        organization = models.Organization.get(organization_id)
+        collections = models.Organization.children(
             org['id'], request,
             limit=settings.ELASTICSEARCH_MAX_SIZE,
         )
         organizations.append( (org, collections['objects']) )
     else:
         # default site
-        orgs = api.Repository.children(repo, request)
+        orgs = models.Repository.children(repo, request)
         for org in orgs['objects']:
-            collections = api.Organization.children(
+            collections = models.Organization.children(
                 org['id'], request,
                 limit=settings.ELASTICSEARCH_MAX_SIZE,
             )
@@ -52,21 +47,23 @@ def list( request ):
 
 @cache_page(settings.CACHE_TIMEOUT)
 def detail(request, oid):
-    i = Identifier(id=oid)
-    filter_if_branded(request, i)
     try:
-        collection = api.Collection.get(i.id, request)
-    except api.NotFound:
+        collection = models._object(request, oid)
+    except models.NotFound:
         raise Http404
-    collection['identifier'] = i
-    organization = api.Organization.get(i.parent_id(stubs=1), request)
+    filter_if_branded(request, collection['organization_id'])
+    # TODO fix this
+    try:
+        organization = models._object(request, collection['organization_id'])
+    except:
+        organization = None
     thispage = 1
     pagesize = 10
     paginator = Paginator(
-        api.pad_results(
-            api.Collection.children(
-                i.id,
-                request,
+        models.pad_results(
+            models._object_children(
+                document=collection,
+                request=request,
                 limit=pagesize,
                 offset=0,
             ),
@@ -78,9 +75,6 @@ def detail(request, oid):
     return render_to_response(
         'ui/collections/detail.html',
         {
-            'repo': i.parts['repo'],
-            'org': i.parts['org'],
-            'cid': i.parts['cid'],
             'object': collection,
             'organization': organization,
             'paginator': paginator,
@@ -93,21 +87,19 @@ def detail(request, oid):
 def children(request, oid):
     """Lists all direct children of the collection.
     """
-    i = Identifier(id=oid)
-    filter_if_branded(request, i)
     try:
-        collection = api.Collection.get(i.id, request)
-    except api.NotFound:
+        collection = models._object(request, oid)
+    except models.NotFound:
         raise Http404
-    collection['identifier'] = i
+    filter_if_branded(request, collection['organization_id'])
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
-    offset = api.search_offset(thispage, pagesize)
+    offset = models.search_offset(thispage, pagesize)
     paginator = Paginator(
-        api.pad_results(
-            api.Collection.children(
-                i.id,
-                request,
+        models.pad_results(
+            models._object_children(
+                document=collection,
+                request=request,
                 limit=pagesize,
                 offset=offset,
             ),
@@ -119,9 +111,6 @@ def children(request, oid):
     return render_to_response(
         'ui/collections/children.html',
         {
-            'repo': i.parts['repo'],
-            'org': i.parts['org'],
-            'cid': i.parts['cid'],
             'object': collection,
             'paginator': paginator,
             'page': paginator.page(thispage),

@@ -1,7 +1,6 @@
 # TODO could much of this code be replaced by DDR.vocab?
 
 from collections import defaultdict
-import json
 import re
 import urllib
 
@@ -9,7 +8,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
 
-from DDR import docstore
+from ui import docstore
 
 FACETS_LIST_CACHE_KEY = 'facets:list'
 FACETS_FACET_CACHE_KEY = 'facets:{name}'

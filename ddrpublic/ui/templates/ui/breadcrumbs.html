@@ -2,7 +2,7 @@
 {% for crumb in breadcrumbs %}
   <li>
   {% if crumb.url %}
-    <a href="{{ crumb.url }}">{{ crumb.label }}</a>
+    <a href="{{ crumb.url }}">{% if crumb.model == "collection" %}{{ crumb.id }}{% else %}{{ crumb.label }}{% endif %}</a>
   {% else %}
     {{ crumb.label }}
   {% endif %}

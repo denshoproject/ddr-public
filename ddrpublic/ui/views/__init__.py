@@ -9,16 +9,8 @@ from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 
-from ui import assets_base, domain_org
+from ui.misc import assets_base, filter_if_branded
 
-
-# helpers --------------------------------------------------------------
-
-def filter_if_branded(request, oidentifier):
-    pass
-    #partner_repo,partner_org = domain_org(request)
-    #if partner_repo and partner_org and (org != partner_org):
-    #    raise Http404
 
 # views ----------------------------------------------------------------
 

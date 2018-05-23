@@ -20,7 +20,7 @@
 {% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
-{% breadcrumbs object.identifier.breadcrumbs True %}
+{% breadcrumbs object.breadcrumbs True %}
 <li>Files</li>
 {% endblock breadcrumbs %}
 
@@ -30,7 +30,7 @@
 <h2>{{ object.title }} <small>{{ object.id }}</small></h2>
 
   <p>
-     <a class="btn btn-primary btn-sm" href="{% url "ui-object-detail" object.identifier.id %}"><i class="fa fa-arrow-circle-left"></i> Back to object detail</a>       
+     <a class="btn btn-primary btn-sm" href="{% url "ui-object-detail" object.id %}"><i class="fa fa-arrow-circle-left"></i> Back to object detail</a>       
   </p>
 
   <div class="row">
@@ -106,7 +106,7 @@
 {% endif %}{# if page.object_list #}
 
   <p>
-     <a class="btn btn-primary btn-sm" href="{% url "ui-object-detail" object.identifier.id %}"><i class="fa fa-arrow-circle-left"></i> Back to object detail</a>
+     <a class="btn btn-primary btn-sm" href="{% url "ui-object-detail" object.id %}"><i class="fa fa-arrow-circle-left"></i> Back to object detail</a>
   </p>
 
     </div><!-- .col-sm-12 col-md-12 -->

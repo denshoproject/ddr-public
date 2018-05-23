@@ -7,32 +7,23 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
 
-from ui import api
-from ui.identifier import Identifier
-from ui.views import filter_if_branded
+from ui import models
+from ui.misc import filter_if_branded
 
 
 # views ----------------------------------------------------------------
 
 def detail(request, oid):
-    i = Identifier(id=oid)
-    filter_if_branded(request, i)
     try:
-        ffile = api.File.get(i.id, request)
-    except api.NotFound:
+        ffile = models._object(request, oid)
+    except models.NotFound:
         raise Http404
-    ffile['identifier'] = i
-    parent = api.Entity.get(i.parent_id(), request)
-    organization = api.Organization.get(i.organization().id, request)
+    filter_if_branded(request, ffile['organization_id'])
+    parent = models._object(request, ffile['parent_id'])
+    organization = models._object(request, ffile['organization_id'])
     return render_to_response(
         'ui/files/detail.html',
         {
-            'repo': i.parts['repo'],
-            'org': i.parts['org'],
-            'cid': i.parts['cid'],
-            'eid': i.parts['eid'],
-            'role': i.parts['role'],
-            'sha1': i.parts['sha1'],
             'object': ffile,
             'parent': parent,
             'organization': organization,

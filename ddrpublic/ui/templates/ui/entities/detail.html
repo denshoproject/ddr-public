@@ -18,7 +18,7 @@
 {% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
-{% breadcrumbs object.identifier.breadcrumbs %}
+{% breadcrumbs object.breadcrumbs %}
 {% endblock breadcrumbs %}
 
 {% block content %}
@@ -131,9 +131,12 @@
                             <!-- entity.topic_terms -->
                             <h3 class="page-header">TOPICS</h3>
                             <ul class="list-unstyled">
-                                {% for item in object.topics %}
-                                <li><a href="{{ item.html }}">{{ item.term }}</a></li>
-                                {% endfor %}
+                              {% for item in object.topics %}
+                              <li>
+                                <a href="{% url "ui-browse-term" "topics" item.id %}">
+                                  {{ item.term }}</a>
+                              </li>
+                              {% endfor %}
                             </ul>
                         </div>
                         <div class="col-md-7 col-sm-7">
@@ -141,8 +144,10 @@
                             <h3 class="page-header">FACILITY</h3>
                             <ul class="list-unstyled">
                               {% for item in object.facility %}
-                                <li><a href="{{ item.html }}">{{ item.term }}</a></li>
-                                {% endfor %}
+                              <li>
+                                <a href="{% url "ui-browse-term" "facility" item.id %}">{{ item.term }}</a>
+                              </li>
+                              {% endfor %}
                             </ul>
                         </div>
                     </div>
@@ -194,7 +199,7 @@
     <div class="row">
         <div class="col-sm-12 col-md-12">
           <h3>
-            <a href="{% url "ui-object-children" object.identifier.id %}">
+            <a href="{% url "ui-object-children" object.id %}">
               {{ children_paginator.count }} Objects
             </a>
           </h3>
@@ -206,7 +211,7 @@
           {% if children_paginator.count > 10 %}
           <br />
           <p>
-            <a class="btn btn-primary btn-md" href="{% url "ui-object-children" object.identifier.id %}">See all objects <i class="fa fa-arrow-circle-right"></i></a>
+            <a class="btn btn-primary btn-md" href="{% url "ui-object-children" object.id %}">See all objects <i class="fa fa-arrow-circle-right"></i></a>
           </p>
           {% endif %}
         </div><!-- end list col -->
@@ -217,7 +222,7 @@
     <div class="row">
         <div class="col-sm-12 col-md-12">
           <h3>
-            <a href="{% url "ui-object-nodes" object.identifier.id %}">
+            <a href="{% url "ui-object-nodes" object.id %}">
               {{ nodes_paginator.count }} Files
             </a>
           </h3>
@@ -229,7 +234,7 @@
           {% if nodes_paginator.count > 10 %}
           <br />
           <p>
-            <a class="btn btn-primary btn-md" href="{% url "ui-object-nodes" object.identifier.id %}">See all files <i class="fa fa-arrow-circle-right"></i></a>
+            <a class="btn btn-primary btn-md" href="{% url "ui-object-nodes" object.id %}">See all files <i class="fa fa-arrow-circle-right"></i></a>
           </p>
           {% endif %}
         </div><!-- end list col -->

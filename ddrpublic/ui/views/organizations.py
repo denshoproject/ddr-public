@@ -7,8 +7,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import Http404, get_object_or_404, redirect, render_to_response
 from django.template import RequestContext
 
-from ui.identifier import Identifier
-from ui.models import Repository, Organization, Collection, Entity, File
+from ui import models
 
 
 # views ----------------------------------------------------------------
@@ -23,14 +22,14 @@ def list(request, oid):
     )
 
 def detail(request, oid):
-    i = Identifier(id=oid)
-    organization = Organization.get(i)
-    collections = organization.children()
+    organization = models.Organization.get(organization_id)
+    collections = models.Organization.children(
+        org['id'], request,
+        limit=settings.ELASTICSEARCH_MAX_SIZE,
+    )
     return render_to_response(
         'ui/organizations/detail.html',
         {
-            'repo': i.parts['repo'],
-            'org': i.parts['org'],
             'organization': organization,
             'object': organization,
             'collections': collections,

@@ -1,11 +1,6 @@
-from copy import deepcopy
-from datetime import datetime
 import json
 import logging
 logger = logging.getLogger(__name__)
-
-from dateutil import parser
-import requests
 
 from django.conf import settings
 from django.core.cache import cache
@@ -14,15 +9,11 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import Http404, get_object_or_404, render_to_response
 from django.template import RequestContext
-from django.utils.http import urlquote  as django_urlquote
 
-from DDR import docstore
-from ui.identifier import Identifier, MODEL_CLASSES
-from ui import domain_org
 from ui import faceting
-from ui import models
 from ui import forms
-from ui import api
+from ui.misc import domain_org
+from ui import models
 
 # TODO We should have a whitelist of chars we *do* accept, not this.
 SEARCH_INPUT_BLACKLIST = ('{', '}', '[', ']')
@@ -47,23 +38,21 @@ def force_list(terms):
 # views ----------------------------------------------------------------
 
 def collection(request, oid):
-    i = Identifier(id=oid)
     #filter_if_branded(request, i)
-    collection = api.Collection.get(i.id, request)
-    collection['identifier'] = i
+    collection = models.Collection.get(oid, request)
     if not collection:
         raise Http404
     return results(request, collection)
 
 def facetterm(request, facet_id, term_id):
     oid = '-'.join([facet_id, term_id])
-    term = api.Term.get(oid, request)
+    term = models.Term.get(oid, request)
     if not term:
         raise Http404
     return results(request, term)
 
 def narrator(request, oid):
-    narrator = api.Narrator.get(oid, request)
+    narrator = models.Narrator.get(oid, request)
     if not narrator:
         raise Http404
     return results(request, narrator)
@@ -76,7 +65,7 @@ def results(request, obj=None):
     
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
-    offset = api.search_offset(thispage, pagesize)
+    offset = models.search_offset(thispage, pagesize)
     
     # query dict
     MODELS = [
@@ -178,7 +167,7 @@ def results(request, obj=None):
     page = None
     if query['fulltext'] or query['must']:
         searching = True
-        results = api.docstore_search(
+        results = models.docstore_search(
             text=query['fulltext'],
             must=query['must'],
             should=[],
@@ -194,7 +183,7 @@ def results(request, obj=None):
         form.choice_aggs(aggregations)
         
         paginator = Paginator(
-            api.pad_results(
+            models.pad_results(
                 results,
                 pagesize,
                 thispage

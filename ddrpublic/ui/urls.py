@@ -15,12 +15,13 @@ urlpatterns = patterns(
     url(r'^api/0.2/search/help/', TemplateView.as_view(template_name="ui/search/help.html"), name='ui-about'),
     url(r'^api/0.2/search/$', 'ui.api.search', name='ui-api-search'),
     
+    url(r'^api/0.2/narrator/(?P<oid>[\w]+)/interviews/$', 'ui.api.narrator_interviews', name='ui-api-narrator-interviews'),
     url(r'^api/0.2/narrator/(?P<oid>[\w]+)/$', 'ui.api.narrator', name='ui-api-narrator'),
-    url(r'^api/0.2/narrator/$', 'ui.api.narrator_index', name='ui-api-narrators'),
+    url(r'^api/0.2/narrator/$', 'ui.api.narrators', name='ui-api-narrators'),
     
     url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/children/$', 'ui.api.facetterms', name='ui-api-facetterms'),
-    url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/objects/$', 'ui.api.term_objects', name='ui-api-term-objects'),
-    url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/$', 'ui.api.term', name='ui-api-term'),
+    url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/(?P<term_id>[\w]+)/objects/$', 'ui.api.term_objects', name='ui-api-term-objects'),
+    url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/(?P<term_id>[\w]+)/$', 'ui.api.facetterm', name='ui-api-term'),
     url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/$', 'ui.api.facet', name='ui-api-facet'),
     url(r'^api/0.2/facet/$', 'ui.api.facet_index', name='ui-api-facets'),
     
@@ -41,14 +42,14 @@ urlpatterns = patterns(
     url(r'^narrators/(?P<oid>[\w]+)/$', 'ui.views.browse.narrator', name='ui-narrators-detail'),
     url(r'^narrators/$', 'ui.views.browse.narrators', name='ui-narrators-list'),
     
-    url(r'^browse/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/search/$', 'ui.views.search.facetterm', name='ui-search-facetterm'),
-    url(r'^browse/(?P<facet_id>[\w]+)/(?P<term_id>[\d]+)/$', 'ui.views.browse.term', name='ui-browse-term'),
+    url(r'^browse/(?P<facet_id>[\w]+)/(?P<term_id>[\w]+)/search/$', 'ui.views.search.facetterm', name='ui-search-facetterm'),
+    url(r'^browse/(?P<facet_id>[\w]+)/(?P<term_id>[\w]+)/$', 'ui.views.browse.term', name='ui-browse-term'),
     url(r'^browse/(?P<facet_id>[\w]+)/$', 'ui.views.browse.facet', name='ui-browse-facet'),
     url(r'^browse/$', 'ui.views.browse.index', name='ui-browse-index'),
     
     url(r'^search/(?P<field>[\w]+):(?P<term>[\w ,]+)/$', 'ui.views.search.term_query', name='ui-search-term-query'),
-    url(r'^search/results/$', 'ui.views.search.results', name='ui-search-results'),
-    url(r'^search/$', 'ui.views.search.results', name='ui-search-index'),
+    url(r'^search/results/$', 'ui.views.searching.search_ui', name='ui-search-results'),
+    url(r'^search/$', 'ui.views.searching.search_ui', name='ui-search-index'),
     
     url(r'^cite/(?P<model>[\w]+)/(?P<object_id>[\w\d-]+)/$', 'ui.views.cite', name='ui-cite'),
     

@@ -2,7 +2,6 @@
 Links between ddrpublic and encyc-front
 """
 import json
-import urllib
 import urlparse
 
 import requests
