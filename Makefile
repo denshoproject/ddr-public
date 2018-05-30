@@ -26,8 +26,11 @@ PACKAGE_TIMESTAMP := $(shell git log -1 --pretty="%ad" --date=short | tr -d -)
 # - templates/static/nginx.conf.j2
 PACKAGE_SERVER=ddr.densho.org/static/ddrpublic
 
+SRC_REPO_NAMESDB=https://github.com/densho/namesdb.git
+
 INSTALL_BASE=/opt
 INSTALL_PUBLIC=$(INSTALL_BASE)/ddr-public
+INSTALL_NAMESDB=$(INSTALL_PUBLIC)/namesdb
 REQUIREMENTS=$(INSTALLDIR)/requirements.txt
 PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
 
@@ -229,13 +232,48 @@ install-setuptools: install-virtualenv
 	pip install -U setuptools
 
 
-get-app: get-ddr-public
+get-app: get-namesdb get-ddr-public
 
-install-app: install-virtualenv install-setuptools install-ddr-public install-configs install-daemon-configs
+install-app: install-virtualenv install-setuptools install-namesdb install-ddr-public install-configs install-daemon-configs
 
-uninstall-app: uninstall-ddr-public uninstall-configs uninstall-daemon-configs
+uninstall-app: uninstall-namesdb uninstall-ddr-public uninstall-configs uninstall-daemon-configs
 
 clean-app: clean-ddr-public
+
+
+get-namesdb:
+	@echo ""
+	@echo "get-namesdb -----------------------------------------------------------"
+	git status | grep "On branch"
+	if test -d $(INSTALL_NAMESDB); \
+	then cd $(INSTALL_NAMESDB) && git pull; \
+	else cd $(INSTALL_PUBLIC) && git clone $(SRC_REPO_NAMESDB); \
+	fi
+
+setup-namesdb:
+	git status | grep "On branch"
+	source $(VIRTUALENV)/bin/activate; \
+	cd $(INSTALL_NAMESDB) && python setup.py install
+
+install-namesdb: install-virtualenv
+	@echo ""
+	@echo "install-namesdb --------------------------------------------------------"
+	git status | grep "On branch"
+	source $(VIRTUALENV)/bin/activate; \
+	cd $(INSTALL_NAMESDB) && python setup.py install
+	source $(VIRTUALENV)/bin/activate; \
+	cd $(INSTALL_NAMESDB) && pip install -U -r $(INSTALL_NAMESDB)/requirements.txt
+
+uninstall-namesdb: install-virtualenv
+	@echo ""
+	@echo "uninstall-namesdb ------------------------------------------------------"
+	source $(VIRTUALENV)/bin/activate; \
+	cd $(INSTALL_NAMESDB) && pip uninstall -y -r $(INSTALL_NAMESDB)/requirements.txt
+
+clean-namesdb:
+	-rm -Rf $(INSTALL_NAMESDB)/build
+	-rm -Rf $(INSTALL_NAMESDB)/namesdb.egg-info
+	-rm -Rf $(INSTALL_NAMESDB)/dist
 
 
 get-ddr-public:
@@ -464,6 +502,7 @@ deb-jessie:
 	INSTALL=$(DEB_BASE)   \
 	LICENSE=$(DEB_BASE)   \
 	Makefile=$(DEB_BASE)   \
+	namesdb=$(DEB_BASE)   \
 	README.rst=$(DEB_BASE)   \
 	venv=$(DEB_BASE)   \
 	VERSION=$(DEB_BASE)
@@ -505,6 +544,7 @@ deb-stretch:
 	INSTALL=$(DEB_BASE)   \
 	LICENSE=$(DEB_BASE)   \
 	Makefile=$(DEB_BASE)   \
+	namesdb=$(DEB_BASE)   \
 	README.rst=$(DEB_BASE)   \
 	venv=$(DEB_BASE)   \
 	VERSION=$(DEB_BASE)

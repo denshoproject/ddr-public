@@ -3,10 +3,6 @@
 # Non-Python dependencies
 # sudo apt-get install python2.7, supervisor, imagemagick
 
-#-e git+git@github.com:densho/ddr-cmdln.git#egg=DDR
-#-e git+git@github.com:densho/ddr-local.git#egg=ddrlocal
--e git+git@github.com:densho/namesdb.git#egg=namesdb
-
                                    # LICENSE  Python3
 beautifulsoup4==4.3.2              # MIT      y
 Django==1.8                        # MIT      y
