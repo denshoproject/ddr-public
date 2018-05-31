@@ -4,7 +4,7 @@
 # sudo apt-get install python2.7, supervisor, imagemagick
 
                                    # LICENSE  Python3
-beautifulsoup4==4.3.2              # MIT      y
+beautifulsoup4==4.6.0              # MIT      y
 Django==1.8                        # MIT      y
 django-bootstrap-pagination==1.5.1 # MIT      ???
 django-cors-headers==2.1.0         # MIT      y
@@ -13,14 +13,12 @@ django-redis-sessions==0.4.0       # BSD      y
 elasticsearch>=2.4.0,<3.0.0        # Apache   y       NOTE: match namesdb version
 elasticsearch-dsl>=2.0.0,<3.0.0    #                  NOTE: match namesdb version
 envoy==0.0.3                       # MIT      ???
-GitPython                          # BSD      y
-gunicorn==19.3.0                   # MIT      y
-Markdown==2.6.7                    # BSD      y
-python-dateutil==2.2               # BSD      y
-redis==2.10.3                      # MIT      y
-requests==2.6.0                    # Apache2  y
+GitPython==2.1.10                  # BSD      y
+gunicorn==19.8.1                   # MIT      y
+redis==2.10.6                      # MIT      y
+requests==2.18.4                   # Apache2  y
 djangorestframework==3.1.1         # BSD      y
-sorl-thumbnail==12.2               # BSD      y
-unicodecsv==0.9.4
+sorl-thumbnail==12.4.1             # BSD      y
+unicodecsv==0.14.1                 #                  NOTE: match namesdb version
 
-bpython==0.16
+bpython==0.17.1
