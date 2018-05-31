@@ -4,7 +4,6 @@ logger = logging.getLogger(__name__)
 
 from django import forms
 from django.conf import settings
-from django.utils.datastructures import SortedDict
 
 from namesdb.definitions import FIELD_DEFINITIONS
 from names import models
@@ -87,7 +86,7 @@ class FlexiSearchForm(forms.Form):
                 widget=forms.CheckboxSelectMultiple
             )
             fields.append((field_name, fobject))
-        self.fields = SortedDict(fields)
+        self.fields = OrderedDict(fields)
     
     def update_doc_counts(self, response):
         update_doc_counts(self, response)
