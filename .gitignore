@@ -1,6 +1,7 @@
 *~
 *.pyc
 *.db
+*.deb
 *.svg
 build/
 ddr-cmdln/
