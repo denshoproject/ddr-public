@@ -31,7 +31,7 @@ SRC_REPO_NAMESDB=https://github.com/densho/namesdb.git
 INSTALL_BASE=/opt
 INSTALL_PUBLIC=$(INSTALL_BASE)/ddr-public
 INSTALL_NAMESDB=$(INSTALL_PUBLIC)/namesdb
-REQUIREMENTS=$(INSTALLDIR)/requirements.txt
+REQUIREMENTS=$(INSTALL_PUBLIC)/requirements.txt
 PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
 
 VIRTUALENV=$(INSTALL_PUBLIC)/venv/ddrpublic
@@ -286,7 +286,7 @@ install-ddr-public: clean-ddr-public
 	@echo "install-ddr-public -----------------------------------------------------"
 	apt-get --assume-yes install imagemagick sqlite3 supervisor
 	source $(VIRTUALENV)/bin/activate; \
-	pip install -U -r $(INSTALL_PUBLIC)/ddrpublic/requirements/production.txt
+	pip install -U -r $(INSTALL_PUBLIC)/requirements.txt
 # logs dir
 	-mkdir $(LOG_BASE)
 	chown -R ddr.root $(LOG_BASE)
@@ -300,7 +300,7 @@ uninstall-ddr-public:
 	@echo ""
 	@echo "uninstall-ddr-public ---------------------------------------------------"
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_PUBLIC)/ddrpublic && pip uninstall -y -r $(INSTALL_PUBLIC)/ddrpublic/requirements/production.txt
+	cd $(INSTALL_PUBLIC)/ddrpublic && pip uninstall -y -r $(INSTALL_PUBLIC)/requirements.txt
 
 clean-ddr-public:
 	-rm -Rf $(INSTALL_PUBLIC)/ddrpublic/src
