@@ -12,8 +12,6 @@ from namesdb import definitions
 from names.forms import SearchForm, FlexiSearchForm
 from names import models
 
-HOSTS = settings.NAMESDB_DOCSTORE_HOSTS
-INDEX = models.set_hosts_index(HOSTS, settings.NAMESDB_DOCSTORE_INDEX)
 PAGE_SIZE = 20
 CONTEXT = 3
 DEFAULT_FILTERS = [
@@ -49,13 +47,18 @@ def index(request, template_name='names/index.html'):
     m_camp_selected = None
     paginator = None
     if kwargs_values:
-        form = SearchForm(local_GET, hosts=HOSTS, index=INDEX)
+        form = SearchForm(
+            local_GET,
+            hosts=settings.NAMESDB_DOCSTORE_HOSTS,
+            index=settings.NAMESDB_DOCSTORE_INDEX
+        )
         if form.is_valid():
             filters = form.cleaned_data
             query = filters.pop('query')
             start,end = models.Paginator.start_end(thispage, pagesize)
             search = models.search(
-                HOSTS, INDEX,
+                settings.NAMESDB_DOCSTORE_HOSTS,
+                settings.NAMESDB_DOCSTORE_INDEX,
                 query=query,
                 filters=filters,
                 start=start,
@@ -69,7 +72,10 @@ def index(request, template_name='names/index.html'):
                 response, thispage, pagesize, CONTEXT, request.META['QUERY_STRING']
             )
     else:
-        form = SearchForm(hosts=HOSTS, index=INDEX)
+        form = SearchForm(
+            hosts=settings.NAMESDB_DOCSTORE_HOSTS,
+            index=settings.NAMESDB_DOCSTORE_INDEX
+        )
     m_camp_choices = form.fields['m_camp'].choices
     return render_to_response(
         template_name,
@@ -178,20 +184,31 @@ def search(request, template_name='names/search.html'):
 
     search = None
     if 'query' in request.GET:
-        form = FlexiSearchForm(request.GET, hosts=HOSTS, index=INDEX, filters=filters)
+        form = FlexiSearchForm(
+            request.GET,
+            hosts=settings.NAMESDB_DOCSTORE_HOSTS,
+            index=settings.NAMESDB_DOCSTORE_INDEX,
+            filters=filters
+        )
         if form.is_valid():
             filters = form.cleaned_data
             query = filters.pop('query')
             search = models.search(
-                HOSTS, INDEX,
+                settings.NAMESDB_DOCSTORE_HOSTS,
+                settings.NAMESDB_DOCSTORE_INDEX,
                 query=query,
                 filters=filters,
             )
     else:
-        form = FlexiSearchForm(hosts=HOSTS, index=INDEX, filters=filters)
+        form = FlexiSearchForm(
+            hosts=settings.NAMESDB_DOCSTORE_HOSTS,
+            index=settings.NAMESDB_DOCSTORE_INDEX,
+            filters=filters
+        )
     if not search:
         search = models.search(
-            HOSTS, INDEX,
+            settings.NAMESDB_DOCSTORE_HOSTS,
+            settings.NAMESDB_DOCSTORE_INDEX,
             query=query,
             filters=filters,
         )
@@ -216,11 +233,20 @@ def search(request, template_name='names/search.html'):
 
 @require_http_methods(['GET',])
 def detail(request, id, template_name='names/detail.html'):
-    # TODO INDEX._name is vulnerable to upstream changes!
-    record = models.Rcrd.get(index=INDEX._name, id=id)
+    record = models.Rcrd.get(
+        using=models.ES, index=settings.NAMESDB_DOCSTORE_INDEX, id=id
+    )
     record.fields = record.fields_enriched(label=True, description=True).values()
-    record.other_datasets = models.other_datasets(HOSTS, INDEX, record)
-    record.family_members = models.same_familyno(HOSTS, INDEX, record)
+    record.other_datasets = models.other_datasets(
+        settings.NAMESDB_DOCSTORE_HOSTS,
+        settings.NAMESDB_DOCSTORE_INDEX,
+        record
+    )
+    record.family_members = models.same_familyno(
+        settings.NAMESDB_DOCSTORE_HOSTS,
+        settings.NAMESDB_DOCSTORE_INDEX,
+        record
+    )
     return render_to_response(
         template_name,
         {
