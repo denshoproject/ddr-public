@@ -5,7 +5,7 @@
 
                                    # LICENSE  Python3
 beautifulsoup4==4.6.0              # MIT      y
-django>=1.10,<1.11                 # MIT      y
+django>=1.11,<2.0                  # MIT      y
 django-bootstrap-pagination==1.6.4 # MIT      ???
 django-cors-headers==2.2.0         # MIT      y
 django-redis==4.9.0                # BSD      y
