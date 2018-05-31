@@ -10,8 +10,8 @@ django-bootstrap-pagination==1.5.1 # MIT      ???
 django-cors-headers==2.1.0         # MIT      y
 django-redis==3.8.3                # BSD      y
 django-redis-sessions==0.4.0       # BSD      y
-elasticsearch==1.4.0               # Apache   y
-elasticsearch-dsl==0.0.9
+elasticsearch>=2.4.0,<3.0.0        # Apache   y       NOTE: match namesdb version
+elasticsearch-dsl>=2.0.0,<3.0.0    #                  NOTE: match namesdb version
 envoy==0.0.3                       # MIT      ???
 GitPython                          # BSD      y
 gunicorn==19.3.0                   # MIT      y
