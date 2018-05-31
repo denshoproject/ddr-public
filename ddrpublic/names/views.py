@@ -3,9 +3,7 @@ from urllib2 import urlparse
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.shortcuts import get_object_or_404, redirect, render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
 from namesdb import definitions
@@ -77,18 +75,14 @@ def index(request, template_name='names/index.html'):
             index=settings.NAMESDB_DOCSTORE_INDEX
         )
     m_camp_choices = form.fields['m_camp'].choices
-    return render_to_response(
-        template_name,
-        {
-            'kwargs': kwargs,
-            'form': form,
-            'm_camp_choices': m_camp_choices,
-            'm_camp_selected': m_camp_selected,
-            'body': json.dumps(body, indent=4, separators=(',', ': '), sort_keys=True),
-            'paginator': paginator,
-        },
-        context_instance=RequestContext(request)
-    )
+    return render(request, template_name, {
+        'kwargs': kwargs,
+        'form': form,
+        'm_camp_choices': m_camp_choices,
+        'm_camp_selected': m_camp_selected,
+        'body': json.dumps(body, indent=4, separators=(',', ': '), sort_keys=True),
+        'paginator': paginator,
+    })
 
 
 # Old index view.  Still contains code from when the index search
@@ -219,16 +213,12 @@ def search(request, template_name='names/search.html'):
     paginator = models.Paginator(
         response, thispage, pagesize, CONTEXT, request.META['QUERY_STRING']
     )
-    return render_to_response(
-        template_name,
-        {
-            'kwargs': kwargs,
-            'form': form,
-            'body': json.dumps(body, indent=4, separators=(',', ': '), sort_keys=True),
-            'paginator': paginator,
-        },
-        context_instance=RequestContext(request)
-    )
+    return render(request, template_name, {
+        'kwargs': kwargs,
+        'form': form,
+        'body': json.dumps(body, indent=4, separators=(',', ': '), sort_keys=True),
+        'paginator': paginator,
+    })
 
 
 @require_http_methods(['GET',])
@@ -247,10 +237,6 @@ def detail(request, id, template_name='names/detail.html'):
         settings.NAMESDB_DOCSTORE_INDEX,
         record
     )
-    return render_to_response(
-        template_name,
-        {
-            'record': record,
-        },
-        context_instance=RequestContext(request)
-    )
+    return render(request, template_name, {
+        'record': record,
+    })

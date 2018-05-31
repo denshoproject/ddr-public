@@ -8,8 +8,6 @@ from django.shortcuts import Http404, get_object_or_404, redirect, render_to_res
 from django.template import RequestContext
 
 
-# views ----------------------------------------------------------------
-
 def detail( request, oid ):
     #repository = Repository.get(oid)
     #organizations = repository.children()

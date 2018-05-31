@@ -3,23 +3,16 @@ logger = logging.getLogger(__name__)
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import Http404, get_object_or_404, redirect, render_to_response
-from django.template import RequestContext
+from django.http import HttpResponseRedirect
+from django.shortcuts import Http404, redirect, render
 
-from ui import models
+from .. import models
 
-
-# views ----------------------------------------------------------------
 
 def list(request, oid):
-    return render_to_response(
-        'ui/organizations/list.html',
-        {
-            'repo': repo,
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
+    return render(request, 'ui/organizations/list.html', {
+        'repo': repo,
+    })
 
 def detail(request, oid):
     organization = models.Organization.get(organization_id)
@@ -27,12 +20,8 @@ def detail(request, oid):
         org['id'], request,
         limit=settings.ELASTICSEARCH_MAX_SIZE,
     )
-    return render_to_response(
-        'ui/organizations/detail.html',
-        {
-            'organization': organization,
-            'object': organization,
-            'collections': collections,
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
+    return render(request, 'ui/organizations/detail.html', {
+        'organization': organization,
+        'object': organization,
+        'collections': collections,
+    })

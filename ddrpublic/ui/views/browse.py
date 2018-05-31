@@ -5,27 +5,18 @@ import urlparse
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import Http404, get_object_or_404, render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 from django.views.decorators.cache import cache_page
 
-from ui import encyc
-from ui import models
+from .. import encyc
+from .. import models
 
 SHOW_THESE = ['topics', 'facility', 'location', 'format', 'genre',]
 
 
-# views ----------------------------------------------------------------
-
 @cache_page(settings.CACHE_TIMEOUT)
 def index( request ):
-    return render_to_response(
-        'ui/browse/index.html',
-        {
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
+    return render(request, 'ui/browse/index.html', {})
 
 @cache_page(settings.CACHE_TIMEOUT)
 def narrators(request):
@@ -44,28 +35,20 @@ def narrators(request):
         ),
         pagesize
     )
-    return render_to_response(
-        'ui/narrators/list.html',
-        {
-            'paginator': paginator,
-            'page': paginator.page(thispage),
-            'thispage': thispage,
-            'api_url': reverse('ui-api-narrators'),
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
+    return render(request, 'ui/narrators/list.html', {
+        'paginator': paginator,
+        'page': paginator.page(thispage),
+        'thispage': thispage,
+        'api_url': reverse('ui-api-narrators'),
+    })
 
 @cache_page(settings.CACHE_TIMEOUT)
 def narrator(request, oid):
-    return render_to_response(
-        'ui/narrators/detail.html',
-        {
-            'narrator': models.Narrator.get(oid, request),
-            'interviews': models.Narrator.interviews(oid, request, limit=1000),
-            'api_url': reverse('ui-api-narrator', args=[oid]),
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
+    return render(request, 'ui/narrators/detail.html', {
+        'narrator': models.Narrator.get(oid, request),
+        'interviews': models.Narrator.interviews(oid, request, limit=1000),
+        'api_url': reverse('ui-api-narrator', args=[oid]),
+    })
 
 @cache_page(settings.CACHE_TIMEOUT)
 def facet(request, facet_id):
@@ -78,15 +61,11 @@ def facet(request, facet_id):
         # for some reason ES does not sort
         terms = models.Facet.facility_terms(request)
     
-    return render_to_response(
-        template_name,
-        {
-            'facet': models.Facet.get(facet_id, request),
-            'terms': terms,
-            'api_url': reverse('ui-api-facetterms', args=[facet_id]),
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
+    return render(request, template_name, {
+        'facet': models.Facet.get(facet_id, request),
+        'terms': terms,
+        'api_url': reverse('ui-api-facetterms', args=[facet_id]),
+    })
 
 @cache_page(settings.CACHE_TIMEOUT)
 def term( request, facet_id, term_id ):
@@ -141,14 +120,10 @@ def term( request, facet_id, term_id ):
         ),
         pagesize
     )
-    return render_to_response(
-        template_name,
-        {
-            'facet': facet,
-            'term': term,
-            'paginator': paginator,
-            'page': paginator.page(thispage),
-            'api_url': reverse('ui-api-term', args=[facet['id'], term['term_id']]),
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
+    return render(request, template_name, {
+        'facet': facet,
+        'term': term,
+        'paginator': paginator,
+        'page': paginator.page(thispage),
+        'api_url': reverse('ui-api-term', args=[facet['id'], term['term_id']]),
+    })

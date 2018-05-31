@@ -61,11 +61,11 @@ def homeslideitem( target_url, img_src ):
     """
     img_url = os.path.join(settings.MEDIA_URL_LOCAL, img_src)
     t = template.loader.get_template('ui/homeslideitem.html')
-    return t.render(template.Context({
+    return t.render({
         'target_url': target_url,
         'img_url': img_url,
         'MEDIA_URL': settings.MEDIA_URL,
-    }))
+    })
 	
 def breadcrumbs( crumbs, link_endpoint=0 ):
     """breadcrumbs up to and including collection
@@ -73,7 +73,7 @@ def breadcrumbs( crumbs, link_endpoint=0 ):
     if not link_endpoint:
         crumbs[-1]['url'] = ''
     t = template.loader.get_template('ui/breadcrumbs.html')
-    return t.render(template.Context({'breadcrumbs':crumbs}))
+    return t.render({'breadcrumbs':crumbs})
 
 def document( obj ):
     """list-view document template
@@ -84,7 +84,7 @@ def document( obj ):
         return """<div class="media " style="border:2px dashed red;">%s</div>""" % str(obj)
     template_path = 'ui/%s/list-object.html' % model_plural
     t = template.loader.get_template(template_path)
-    return t.render(template.Context({'object':obj}))
+    return t.render({'object':obj})
 
 def galleryitem( obj ):
     """gallery-view item template
@@ -95,7 +95,7 @@ def galleryitem( obj ):
         return """<div class="media " style="border:2px dashed red;">%s</div>""" % str(obj)
     template_path = 'ui/%s/gallery-object.html' % model_plural
     t = template.loader.get_template(template_path)
-    return t.render(template.Context({'object':obj}))
+    return t.render({'object':obj})
 
 def listitem( obj ):
     """list-view item template
@@ -106,27 +106,25 @@ def listitem( obj ):
         return """<div class="media " style="border:2px dashed red;">%s</div>""" % str(obj)
     template_path = 'ui/%s/list-object.html' % model_plural
     t = template.loader.get_template(template_path)
-    return t.render(template.Context({'object':obj}))
+    return t.render({'object':obj})
 
 def addthis():
     """AddThis button
     """
     t = template.loader.get_template('ui/addthis.html')
-    return t.render(template.Context({}))
+    return t.render({})
 
 def cite( url ):
     """Citation tag
     """
     t = template.loader.get_template('ui/cite-tag.html')
-    c = template.Context({'url':url})
-    return t.render(c)
+    return t.render({'url':url})
 	
 def rightspanel( code ):
     """Item rights notice
     """
     t = template.loader.get_template('ui/rightspanel-tag.html')
-    c = template.Context({'code':code})
-    return t.render(c)
+    return t.render({'code':code})
 
 def rightsbadge( code ):
     """Item rights badge
@@ -136,8 +134,7 @@ def rightsbadge( code ):
     else:
         template_name = 'ui/license.html'
     t = template.loader.get_template(template_name)
-    c = template.Context({'code':code})
-    return t.render(c)
+    return t.render({'code':code})
 
 register.simple_tag(homeslideitem)
 register.simple_tag(breadcrumbs)

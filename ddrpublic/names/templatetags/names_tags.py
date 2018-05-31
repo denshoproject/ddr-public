@@ -6,11 +6,11 @@ register = template.Library()
 	
 def record( record ):
     t = template.loader.get_template('names/list-object.html')
-    return t.render(template.Context({'record':record}))
+    return t.render({'record':record})
 	
 def names_paginate( paginator ):
     t = template.loader.get_template('names/names-paginate.html')
-    return t.render(template.Context({'paginator':paginator}))
+    return t.render({'paginator':paginator})
 
 register.simple_tag(record)
 register.simple_tag(names_paginate)
