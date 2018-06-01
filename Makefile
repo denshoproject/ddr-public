@@ -505,6 +505,7 @@ deb-jessie:
 	namesdb=$(DEB_BASE)   \
 	README.rst=$(DEB_BASE)   \
 	venv=$(DEB_BASE)   \
+	venv/ddrpublic/lib/python2.7/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
 	VERSION=$(DEB_BASE)
 
 # deb-jessie and deb-stretch are identical
@@ -547,4 +548,5 @@ deb-stretch:
 	namesdb=$(DEB_BASE)   \
 	README.rst=$(DEB_BASE)   \
 	venv=$(DEB_BASE)   \
+	venv/ddrpublic/lib/python2.7/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
 	VERSION=$(DEB_BASE)
