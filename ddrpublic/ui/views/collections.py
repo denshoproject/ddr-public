@@ -4,21 +4,18 @@ logger = logging.getLogger(__name__)
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import Http404, get_object_or_404, render_to_response
-from django.template import RequestContext
+from django.shortcuts import Http404, render
 from django.views.decorators.cache import cache_page
 
-from ui import models
-from ui.misc import domain_org, filter_if_branded
+from .. import models
+from .. import misc
 
-# views ----------------------------------------------------------------
 
 @cache_page(settings.CACHE_TIMEOUT)
 def list( request ):
     # TODO cache or restrict fields (truncate desc BEFORE caching)
     organizations = []
-    repo,org = domain_org(request)
+    repo,org = misc.domain_org(request)
     if repo and org:
         # partner site
         organization_id = '%s-%s' % (repo,org) # TODO relies on knowledge of ID structure!
@@ -37,13 +34,9 @@ def list( request ):
                 limit=settings.ELASTICSEARCH_MAX_SIZE,
             )
             organizations.append( (org, collections['objects']) )
-    return render_to_response(
-        'ui/collections.html',
-        {
-            'organizations': organizations,
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
+    return render(request, 'ui/collections.html', {
+        'organizations': organizations,
+    })
 
 @cache_page(settings.CACHE_TIMEOUT)
 def detail(request, oid):
@@ -51,7 +44,7 @@ def detail(request, oid):
         collection = models._object(request, oid)
     except models.NotFound:
         raise Http404
-    filter_if_branded(request, collection['organization_id'])
+    misc.filter_if_branded(request, collection['organization_id'])
     # TODO fix this
     try:
         organization = models._object(request, collection['organization_id'])
@@ -72,17 +65,13 @@ def detail(request, oid):
         ),
         pagesize
     )
-    return render_to_response(
-        'ui/collections/detail.html',
-        {
-            'object': collection,
-            'organization': organization,
-            'paginator': paginator,
-            'page': paginator.page(thispage),
-            'api_url': reverse('ui-api-object', args=[oid]),
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
+    return render(request, 'ui/collections/detail.html', {
+        'object': collection,
+        'organization': organization,
+        'paginator': paginator,
+        'page': paginator.page(thispage),
+        'api_url': reverse('ui-api-object', args=[oid]),
+    })
 
 def children(request, oid):
     """Lists all direct children of the collection.
@@ -91,7 +80,7 @@ def children(request, oid):
         collection = models._object(request, oid)
     except models.NotFound:
         raise Http404
-    filter_if_branded(request, collection['organization_id'])
+    misc.filter_if_branded(request, collection['organization_id'])
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
     offset = models.search_offset(thispage, pagesize)
@@ -108,16 +97,12 @@ def children(request, oid):
         ),
         pagesize
     )
-    return render_to_response(
-        'ui/collections/children.html',
-        {
-            'object': collection,
-            'paginator': paginator,
-            'page': paginator.page(thispage),
-            'api_url': reverse('ui-api-object-children', args=[oid]),
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
+    return render(request, 'ui/collections/children.html', {
+        'object': collection,
+        'paginator': paginator,
+        'page': paginator.page(thispage),
+        'api_url': reverse('ui-api-object-children', args=[oid]),
+    })
 
 def nodes(request, oid):
     """Lists all nodes of the collection.

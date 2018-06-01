@@ -14,9 +14,8 @@ from django.core.cache import cache
 from rest_framework.exceptions import NotFound
 from rest_framework.reverse import reverse
 
-from ui import docstore
-from ui import search
-from ui.urls import API_BASE
+from . import docstore
+from . import search
 
 es = Elasticsearch(settings.DOCSTORE_HOSTS)
 
@@ -181,7 +180,7 @@ def local_thumb_url(url, request=None):
         return ''
     # hide thumb links in the REST API unless DEBUG is on
     show_thumb_links = False
-    if request and (request.META['PATH_INFO'][:len(API_BASE)] != API_BASE):
+    if request and (request.META['PATH_INFO'][:len(settings.API_BASE)] != settings.API_BASE):
         show_thumb_links = True
     elif settings.DEBUG:
         show_thumb_links = True

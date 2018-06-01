@@ -1,8 +1,9 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 
-urlpatterns = patterns(
-    '',
-    url(r"^/search/$", 'names.views.search', name='names-search'),
-    url(r"^/(?P<id>[\w\W]+)/$", 'names.views.detail', name='names-detail'),
-    url(r"^/$", 'names.views.index', name='names-index'),
-)
+from names import views
+
+urlpatterns = [
+    url(r"^search/$", views.search, name='names-search'),
+    url(r"^(?P<id>[\w\W]+)/$", views.detail, name='names-detail'),
+    url(r"^$", views.index, name='names-index'),
+]

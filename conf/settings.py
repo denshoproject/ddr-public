@@ -39,7 +39,6 @@ TIME_ZONE='America/Los_Angeles'
 
 DEBUG = config.getboolean('debug', 'debug')
 GITPKG_DEBUG = config.getboolean('debug', 'gitpkg_debug')
-TEMPLATE_DEBUG = DEBUG
 THUMBNAIL_DEBUG = config.getboolean('debug', 'thumbnail')
 
 if GITPKG_DEBUG:
@@ -215,7 +214,7 @@ MANAGERS = ADMINS
 SITE_ID = 1
 
 INSTALLED_APPS = (
-    #'django.contrib.auth',
+    'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
@@ -232,6 +231,8 @@ INSTALLED_APPS = (
     'ui',
     'names',
 )
+
+API_BASE = '/api/0.2/'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -262,10 +263,10 @@ REDIS_DB_SORL = 3
 
 CACHES = {
     "default": {
-        "BACKEND": "redis_cache.cache.RedisCache",
+        "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": "%s:%s:%s" % (REDIS_HOST, REDIS_PORT, REDIS_DB_CACHE),
         "OPTIONS": {
-            "CLIENT_CLASS": "redis_cache.client.DefaultClient",
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     }
 }
@@ -348,10 +349,23 @@ def UI_DOWNLOAD_URL( ddrfile ):
 
 SESSION_ENGINE = 'redis_sessions.session'
 
-TEMPLATE_DIRS = (
-    os.path.join(BASE_DIR, 'names/templates'),
-    os.path.join(BASE_DIR, 'ui/templates'),
-)
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                #'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+                'names.context_processors.sitewide',
+                'ui.context_processors.sitewide',
+            ],
+        },
+    },
+]
 
 STATICFILES_DIRS = (
     #os.path.join(BASE_DIR, 'ddrpublic/static'),
@@ -379,7 +393,7 @@ LOGGING = {
     'handlers': {
         'null': {
             'level': 'DEBUG',
-            'class': 'django.utils.log.NullHandler',
+            'class': 'logging.NullHandler',
         },
         'console':{
             'level': 'DEBUG',
@@ -423,25 +437,6 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
-)
-
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
-)
-
-TEMPLATE_CONTEXT_PROCESSORS = (
-    #'django.contrib.auth.context_processors.auth',
-    'django.core.context_processors.debug',
-    'django.core.context_processors.i18n',
-    'django.core.context_processors.media',
-    'django.core.context_processors.request',
-    'django.core.context_processors.static',
-    'django.core.context_processors.tz',
-    #'django.contrib.messages.context_processors.messages',
-    'ui.context_processors.sitewide',
 )
 
 MIDDLEWARE_CLASSES = (

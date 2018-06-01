@@ -6,10 +6,7 @@ import os
 import sys
 
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Index
-from elasticsearch_dsl import Search, F, A
-from elasticsearch_dsl.query import MultiMatch
-from elasticsearch_dsl.connections import connections
+from elasticsearch_dsl import Index, Search, Q
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -17,6 +14,8 @@ from django.core.urlresolvers import reverse
 from namesdb import sourcefile
 from namesdb import definitions
 from namesdb.models import Record, DOC_TYPE
+
+ES = Elasticsearch(settings.NAMESDB_DOCSTORE_HOSTS)
 
 
 def make_hosts(text):
@@ -27,8 +26,6 @@ def make_hosts(text):
     return hosts
 
 def set_hosts_index(hosts, index):
-    logging.debug('Connecting %s' % hosts)
-    connections.create_connection(hosts=hosts)
     logging.debug('Index %s' % index)
     return Index(index)
 
@@ -135,7 +132,7 @@ def field_values(hosts, index, field):
     @param field: str Field name. 
     @returns: 
     """
-    return Record.field_values(field)
+    return Record.field_values(field, es=ES, index=index)
 
 
 def _hitvalue(hit, field):
@@ -204,21 +201,13 @@ def search(
     #filter_args = {key:val for key,val in filters.iteritems() if val}
     #if not (query or filter_args):
     #    return None,[]
-    s = Search().doc_type(Record)
+    s = Search(using=ES, index=index)
+    s = s.doc_type(Record)
     if filters:
         for field,values in filters.iteritems():
             if values:
                 # multiple terms for a field are OR-ed
-                s = s.filter(
-                    'or',
-                    [
-                        # In the Elasticsearch DSL examples, 'tags' is the field name.
-                        # ex: s.filter("term", tags="python")
-                        # Our field name is a var so we have to pass in a **dict
-                        F('term', **{field: value})
-                        for value in values
-                    ]
-                )
+                s = s.filter('terms', **{field: values})
     if query:
         s = s.query(
             query_type, query=query, fields=definitions.FIELDS_MASTER
@@ -324,7 +313,8 @@ class Paginator(object):
     
 
 def search_aggregation(hosts, index, field):
-    s = Search().doc_type(Record)
+    s = Search(using=ES, index=index)
+    s = s.doc_type(Record)
     s.aggs.bucket('choices', 'terms', field=field)
     
     response = s.execute()

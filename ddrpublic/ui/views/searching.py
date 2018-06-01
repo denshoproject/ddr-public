@@ -5,15 +5,14 @@ import urlparse
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
-from django.shortcuts import render, render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 
 from elasticsearch.exceptions import ConnectionError, ConnectionTimeout
 
-from ui import api
-from ui import forms_search as forms
-from ui import models
-from ui import search
+from .. import api
+from .. import forms_search as forms
+from .. import models
+from .. import search
 
 
 def _mkurl(request, path, query=None):
@@ -22,7 +21,10 @@ def _mkurl(request, path, query=None):
         request.META['HTTP_HOST'],
         path, None, query, None
     ))
-    
+
+
+# views ----------------------------------------------------
+
 def search_ui(request):
     api_url = '%s?%s' % (
         _mkurl(request, reverse('ui-api-search')),

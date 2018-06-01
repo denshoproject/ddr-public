@@ -3,17 +3,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 from django.conf import settings
-from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import Http404, get_object_or_404, render_to_response
-from django.template import RequestContext
+from django.shortcuts import Http404, render
 
-from ui import faceting
-from ui import forms
-from ui.misc import domain_org
-from ui import models
+from .. import faceting
+from .. import forms
+from .. import misc
+from .. import models
 
 # TODO We should have a whitelist of chars we *do* accept, not this.
 SEARCH_INPUT_BLACKLIST = ('{', '}', '[', ']')
@@ -192,25 +189,21 @@ def results(request, obj=None):
         )
         page = paginator.page(thispage)
     
-    return render_to_response(
-        'ui/search/results.html',
-        {
-            'template_extends': template_extends,
-            'hide_header_search': True,
-            'searching': searching,
-            'object': obj,
-            'filters': filters,
-            'query': query,
-            'query_json': json.dumps(query),
-            'aggregations': aggregations,
-            'search_form': form,
-            'paginator': paginator,
-            'page': page,
-            'this_url': this_url,
-            'api_url': reverse('ui-api-search'),
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
+    return render(request, 'ui/search/results.html', {
+        'template_extends': template_extends,
+        'hide_header_search': True,
+        'searching': searching,
+        'object': obj,
+        'filters': filters,
+        'query': query,
+        'query_json': json.dumps(query),
+        'aggregations': aggregations,
+        'search_form': form,
+        'paginator': paginator,
+        'page': page,
+        'this_url': this_url,
+        'api_url': reverse('ui-api-search'),
+    })
 
 def term_query( request, field, term ):
     """Results of what ElasticSearch calls a 'term query'.
@@ -235,7 +228,7 @@ def term_query( request, field, term ):
             break
     
     # filter by partner
-    repo,org = domain_org(request)
+    repo,org = misc.domain_org(request)
     if repo and org:
         filters['repo'] = repo
         filters['org'] = org
@@ -253,15 +246,11 @@ def term_query( request, field, term ):
     objects = models.instantiate_query_objects(massaged)
     paginator = Paginator(objects, settings.RESULTS_PER_PAGE)
     page = paginator.page(request.GET.get('page', 1))
-    return render_to_response(
-        'ui/search/results.html',
-        {
-            'hide_header_search': True,
-            'paginator': paginator,
-            'page': page,
-            'terms': terms_display,
-            'filters': filters,
-            'sort': sort,
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
+    return render(request, 'ui/search/results.html', {
+        'hide_header_search': True,
+        'paginator': paginator,
+        'page': page,
+        'terms': terms_display,
+        'filters': filters,
+        'sort': sort,
+    })

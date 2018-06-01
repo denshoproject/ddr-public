@@ -4,23 +4,20 @@ logger = logging.getLogger(__name__)
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import Http404, get_object_or_404, render_to_response
-from django.template import RequestContext
+from django.http import HttpResponseRedirect
+from django.shortcuts import Http404, render
 
-from ui import archivedotorg
-from ui import models
-from ui.misc import filter_if_branded
+from .. import archivedotorg
+from .. import models
+from .. import misc
 
-
-# views ----------------------------------------------------------------
 
 def detail(request, oid):
     try:
         entity = models._object(request, oid)
     except models.NotFound:
         raise Http404
-    filter_if_branded(request, entity['organization_id'])
+    misc.filter_if_branded(request, entity['organization_id'])
 
     model = entity['model']
     
@@ -76,30 +73,26 @@ def detail(request, oid):
         ),
         pagesize
     )
-    return render_to_response(
-        'ui/entities/detail.html',
-        {
-            'object': entity,
-            'facilities': facilities,
-            'creators': creators,
-            'parent': parent,
-            'organization': organization,
-            'signature': signature,
-            'children_paginator': children_paginator,
-            'children_page': children_paginator.page(thispage),
-            'nodes_paginator': nodes_paginator,
-            'nodes_page': nodes_paginator.page(thispage),
-            'api_url': reverse('ui-api-object', args=[oid]),
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
+    return render(request, 'ui/entities/detail.html', {
+        'object': entity,
+        'facilities': facilities,
+        'creators': creators,
+        'parent': parent,
+        'organization': organization,
+        'signature': signature,
+        'children_paginator': children_paginator,
+        'children_page': children_paginator.page(thispage),
+        'nodes_paginator': nodes_paginator,
+        'nodes_page': nodes_paginator.page(thispage),
+        'api_url': reverse('ui-api-object', args=[oid]),
+    })
 
 def interview(request, oid):
     try:
         segment = models._object(request, oid)
     except models.NotFound:
         raise Http404
-    filter_if_branded(request, segment['organization_id'])
+    misc.filter_if_branded(request, segment['organization_id'])
     # die if not a segment
     if segment['model'] != 'segment':
         raise Http404
@@ -138,22 +131,18 @@ def interview(request, oid):
     )
     download_meta = archivedotorg.segment_download_meta(segment['id'])
     
-    return render_to_response(
-        'ui/entities/segment.html',
-        {
-            'segment': segment,
-            'segments': segments,
-            'transcripts': transcripts,
-            'downloads': download_meta,
-            'entity': entity,
-            'parent': parent,
-            'collection': collection,
-            'organization': organization,
-            'tableft': request.GET.get('tableft', 'downloads'),
-            'api_url': reverse('ui-api-object', args=[entity['id']]),
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
+    return render(request, 'ui/entities/segment.html', {
+        'segment': segment,
+        'segments': segments,
+        'transcripts': transcripts,
+        'downloads': download_meta,
+        'entity': entity,
+        'parent': parent,
+        'collection': collection,
+        'organization': organization,
+        'tableft': request.GET.get('tableft', 'downloads'),
+        'api_url': reverse('ui-api-object', args=[entity['id']]),
+    })
     
 def children( request, oid, role=None ):
     """Lists all direct children of the entity.
@@ -162,7 +151,7 @@ def children( request, oid, role=None ):
         entity = models._object(request, oid)
     except models.NotFound:
         raise Http404
-    filter_if_branded(request, entity['organization_id'])
+    misc.filter_if_branded(request, entity['organization_id'])
     # children
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
@@ -180,16 +169,12 @@ def children( request, oid, role=None ):
         ),
         pagesize
     )
-    return render_to_response(
-        'ui/entities/children.html',
-        {
-            'object': entity,
-            'paginator': paginator,
-            'page': paginator.page(thispage),
-            'api_url': reverse('ui-api-object-children', args=[oid]),
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
+    return render(request, 'ui/entities/children.html', {
+        'object': entity,
+        'paginator': paginator,
+        'page': paginator.page(thispage),
+        'api_url': reverse('ui-api-object-children', args=[oid]),
+    })
 
 def nodes( request, oid, role=None ):
     """Lists all nodes of the entity.
@@ -198,7 +183,7 @@ def nodes( request, oid, role=None ):
         entity = models.Entity.get(oid, request)
     except models.NotFound:
         raise Http404
-    filter_if_branded(request, entity['organization_id'])
+    misc.filter_if_branded(request, entity['organization_id'])
     # nodes
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
@@ -216,13 +201,9 @@ def nodes( request, oid, role=None ):
         ),
         pagesize
     )
-    return render_to_response(
-        'ui/entities/nodes.html',
-        {
-            'object': entity,
-            'paginator': paginator,
-            'page': paginator.page(thispage),
-            'api_url': reverse('ui-api-object-nodes', args=[oid]),
-        },
-        context_instance=RequestContext(request, processors=[])
-    )
+    return render(request, 'ui/entities/nodes.html', {
+        'object': entity,
+        'paginator': paginator,
+        'page': paginator.page(thispage),
+        'api_url': reverse('ui-api-object-nodes', args=[oid]),
+    })

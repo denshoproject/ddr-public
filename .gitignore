@@ -1,11 +1,13 @@
 *~
 *.pyc
 *.db
+*.deb
 *.svg
 build/
 ddr-cmdln/
 ddr-defs/
 ddrpublic/ddrpublic/settings.py
+namesdb/
 src/
 tmp/
 venv/
