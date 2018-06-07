@@ -22,21 +22,6 @@
 {% endblock breadcrumbs %}
 
 {% block javascript %}
-<script src="https://archive.org/jw/6.8/jwplayer.js"></script>
-<script>jwplayer.key="sZbikYlI/xtW0U/3Tw1DOdjC1EahhtUCJF5KggVdqDY=";</script>
-<script>
-  jwplayer("clip").setup({
-    "playlist": [
-      {
-        title:"{{ segment.title }}",
-        image:"https://archive.org/download/{{ segment.id }}/format=Thumbnail",
-        sources:[ {file:"https://archive.org/download/{{ segment.id }}/format=h.264",type:"video/mp4"}]
-      }
-    ],
-    "width":"100%",
-    "height":384,
-  });
-</script>
 {% endblock javascript %}
 
 
@@ -51,7 +36,9 @@
     <div id="left-content" class="col-sm-7 col-md-7">
       <h2>{{ segment.title|safe }}</h2>
 
-      <div id="clip"></div>
+      <div id="clip" class="embed-responsive embed-responsive-16by9">
+          <iframe frameborder="0" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen src="https://archive.org/embed/{{ segment.id }}"></iframe>
+      </div>
 
       <div id="tabs-left" class="tabs no-margin-top" style="margin:10px 0;">
 
