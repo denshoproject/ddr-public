@@ -209,6 +209,7 @@ class Searcher(object):
     index = DOCSTORE.indexname
     fields = []
     q = OrderedDict()
+    params = {}
     query = {}
     sort_cleaned = None
     s = None
@@ -220,10 +221,14 @@ class Searcher(object):
         """assemble elasticsearch_dsl.Search object
         """
         if isinstance(params, HttpRequest):
+            self.params = params.GET.copy()
             params = params.GET.copy()
         elif isinstance(params, RestRequest):
+            self.params = params.query_params.dict()
             params = params.query_params.dict()
-        
+        elif params:
+            self.params = deepcopy(params)
+
         # whitelist params
         bad_fields = [
             key for key in params.keys()
@@ -337,6 +342,7 @@ class Searcher(object):
         start,stop = start_stop(limit, offset)
         response = self.s[start:stop].execute()
         return SearchResults(
+            params=self.params,
             query=self.s.to_dict(),
             results=response,
             limit=limit,
@@ -358,6 +364,7 @@ class SearchResults(object):
     >>> q = {"fulltext":"minidoka"}
     >>> sr = search.run_search(request_data=q, request=None)
     """
+    params = {}
     query = {}
     aggregations = None
     objects = []
@@ -378,7 +385,8 @@ class SearchResults(object):
     next_html = u''
     errors = []
 
-    def __init__(self, query={}, count=0, results=None, objects=[], limit=DEFAULT_LIMIT, offset=0):
+    def __init__(self, params={}, query={}, count=0, results=None, objects=[], limit=DEFAULT_LIMIT, offset=0):
+        self.params = deepcopy(params)
         self.query = query
         self.limit = int(limit)
         self.offset = int(offset)
@@ -499,6 +507,9 @@ class SearchResults(object):
             params = request.GET.copy()
         elif isinstance(request, RestRequest):
             params = request.query_params.dict()
+        elif hasattr(self, 'params') and self.params:
+            params = deepcopy(self.params)
+        
         if params.get('page'): params.pop('page')
         if params.get('limit'): params.pop('limit')
         if params.get('offset'): params.pop('offset')
