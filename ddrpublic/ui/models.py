@@ -490,7 +490,10 @@ def format_narrator(document, request, listitem=False):
         document = document['_source']
     else:
         oid = document.pop('id')
-        model = document.pop('model')
+        if hasattr(document, 'model'):
+            model = document.pop('model')
+        else:
+            model = 'narrator'
         
     d = OrderedDict()
     d['id'] = oid
