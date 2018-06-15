@@ -606,6 +606,9 @@ FORMATTERS = {
     'narrator': format_narrator,
     'facet': format_facet,
     'facetterm': format_term,
+    'collection': format_object_detail2,
+    'entity': format_object_detail2,
+    'file': format_object_detail2,
 }
 
 def format_list_objects(results, request, function=format_object_detail2):

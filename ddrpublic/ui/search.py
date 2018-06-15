@@ -482,19 +482,19 @@ class SearchResults(object):
             ])
         return '?%s' % query
     
-    def to_dict(self, request, list_function):
+    def to_dict(self, request, format_functions):
         """Express search results in API and Redis-friendly structure
         returns: dict
         """
-        return self._dict({}, request, list_function)
+        return self._dict({}, request, format_functions)
     
-    def ordered_dict(self, request, list_function, pad=False):
+    def ordered_dict(self, request, format_functions, pad=False):
         """Express search results in API and Redis-friendly structure
         returns: OrderedDict
         """
-        return self._dict(OrderedDict(), request, list_function, pad=pad)
+        return self._dict(OrderedDict(), request, format_functions, pad=pad)
     
-    def _dict(self, data, request, list_function, pad=False):
+    def _dict(self, data, request, format_functions, pad=False):
         data['total'] = self.total
         data['limit'] = self.limit
         data['offset'] = self.offset
@@ -536,9 +536,9 @@ class SearchResults(object):
         
         # page
         for o in self.objects:
+            format_function = format_functions[o.meta.doc_type]
             data['objects'].append(
-                # list_function = e.g. api.format_object_detail
-                list_function(
+                format_function(
                     document=o.to_dict(),
                     request=request,
                     listitem=True,

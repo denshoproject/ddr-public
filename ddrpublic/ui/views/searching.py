@@ -69,7 +69,7 @@ def search_ui(request):
             paginator = Paginator(
                 results.ordered_dict(
                     request=request,
-                    list_function=models.format_object_detail2,
+                    format_functions=models.FORMATTERS,
                     pad=True,
                 )['objects'],
                 results.page_size,
