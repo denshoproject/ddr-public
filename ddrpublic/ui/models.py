@@ -484,33 +484,37 @@ def format_object_detail2(document, request, listitem=False):
     return d
 
 def format_narrator(document, request, listitem=False):
-    if document and document.get('_source'):
-        oid = document['_source'].pop('id')
+    if document.get('_source'):
+        oid = document['_id']
+        model = document['_type']
+        document = document['_source']
+    else:
+        oid = document.pop('id')
+        model = document.pop('model')
         
-        d = OrderedDict()
-        d['id'] = oid
-        d['model'] = 'narrator'
-        # links
-        d['links'] = OrderedDict()
-        d['links']['html'] = reverse('ui-narrators-detail', args=[oid], request=request)
-        d['links']['json'] = reverse('ui-api-narrator', args=[oid], request=request)
-        d['links']['img'] = narrator_img_url(document['_source'].pop('image_url'))
-        d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
-        d['links']['interviews'] = reverse('ui-api-narrator-interviews', args=[oid], request=request)
-        # title, description
-        if document['_source'].get('title'):
-            d['title'] = document['_source'].pop('title')
-        if document['_source'].get('description'):
-            d['description'] = document['_source'].pop('description')
-        # everything else
-        HIDDEN_FIELDS = [
-            'repo','org','cid','eid','sid','role','sha1'
-        ]
-        for key in document['_source'].iterkeys():
-            if key not in HIDDEN_FIELDS:
-                d[key] = document['_source'][key]
-        return d
-    return None
+    d = OrderedDict()
+    d['id'] = oid
+    d['model'] = 'narrator'
+    # links
+    d['links'] = OrderedDict()
+    d['links']['html'] = reverse('ui-narrators-detail', args=[oid], request=request)
+    d['links']['json'] = reverse('ui-api-narrator', args=[oid], request=request)
+    d['links']['img'] = narrator_img_url(document.pop('image_url'))
+    d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
+    d['links']['interviews'] = reverse('ui-api-narrator-interviews', args=[oid], request=request)
+    # title, description
+    if document.get('title'):
+        d['title'] = document.pop('title')
+    if document.get('description'):
+        d['description'] = document.pop('description')
+    # everything else
+    HIDDEN_FIELDS = [
+        'repo','org','cid','eid','sid','role','sha1'
+    ]
+    for key in document.iterkeys():
+        if key not in HIDDEN_FIELDS:
+            d[key] = document[key]
+    return d
 
 def format_facet(document, request, listitem=False):
     if document.get('_source'):
