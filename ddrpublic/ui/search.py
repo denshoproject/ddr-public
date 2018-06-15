@@ -81,7 +81,7 @@ SEARCH_AGG_FIELDS = {
 }
 
 # TODO move to ddr-defs/repo_models/elastic.py?
-SEARCH_MODELS = ['repository','organization','collection','entity','file']
+SEARCH_MODELS = ['collection','entity','narrator']
 
 # fields searched by query e.g. query will find search terms in these fields
 # TODO move to ddr-defs/repo_models/elastic.py?
