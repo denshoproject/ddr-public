@@ -61,7 +61,7 @@ def search(request, format=None):
         )
     elif request.GET.get('page'):
         limit = settings.RESULTS_PER_PAGE
-        thispage = int(params.pop('page')[-1])
+        thispage = int(request.GET['page'])
         offset = es_offset(limit, thispage)
     else:
         limit = settings.RESULTS_PER_PAGE
