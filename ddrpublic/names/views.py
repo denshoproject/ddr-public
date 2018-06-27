@@ -6,8 +6,8 @@ from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
 from namesdb import definitions
-from names.forms import SearchForm, FlexiSearchForm
-from names import models
+from .forms import SearchForm, FlexiSearchForm
+from . import models
 
 PAGE_SIZE = 20
 CONTEXT = 3
