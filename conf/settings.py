@@ -64,7 +64,7 @@ if GITPKG_DEBUG:
             return ''
         data = {}
         for line in dpkg_raw.splitlines():
-            if line and isinstance(line, basestring) and (':' in line):
+            if line and isinstance(line, str) and (':' in line):
                 key,val = line.split(':', 1)
                 data[key.strip().lower()] = val.strip()
         pkg_paths = [

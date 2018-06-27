@@ -161,7 +161,7 @@ def img_url(bucket, filename, request=None):
     internal = 0
     if request:
         internal = request.GET.get(settings.MEDIA_URL_LOCAL_MARKER, 0)
-    if internal and isinstance(internal, basestring) and internal.isdigit():
+    if internal and isinstance(internal, str) and internal.isdigit():
         internal = int(internal)
     if bucket and filename and internal:
         return '%s%s/%s' % (settings.MEDIA_URL_LOCAL, bucket, filename)
@@ -232,7 +232,7 @@ def docstore_search(text='', must=[], should=[], mustnot=[], models=[], fields=[
     
     @returns: dict
     """
-    if not isinstance(models, basestring):
+    if not isinstance(models, str):
         models = models
     elif isinstance(models, list):
         models = ','.join(models)
@@ -307,7 +307,7 @@ def children(request, model, parent_id, sort_fields, limit=DEFAULT_LIMIT, offset
     @param just_count: boolean
     @returns: dict
     """
-    if not isinstance(model, basestring):
+    if not isinstance(model, str):
         models = model
     elif isinstance(model, list):
         models = ','.join(model)
@@ -345,7 +345,7 @@ def count_children(model, parent_id):
     @param parent_id: str
     @returns: dict
     """
-    if not isinstance(model, basestring):
+    if not isinstance(model, str):
         models = model
     elif isinstance(model, list):
         models = ','.join(model)
@@ -768,7 +768,7 @@ class Entity(object):
             if not fieldname in fields:
                 continue
             field_data = document.get(fieldname)
-            if isinstance(field_data, basestring):
+            if isinstance(field_data, str):
                 document[fieldname] = _wrap(fieldname,field_data)
             elif isinstance(field_data, list):
                 document[fieldname] = [

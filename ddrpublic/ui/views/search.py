@@ -27,7 +27,7 @@ def kosher( query ):
 def force_list(terms):
     if isinstance(terms, list):
         return terms
-    elif isinstance(terms, basestring):
+    elif isinstance(terms, str):
         return [terms]
     raise Exception('Not a list or a string')
 

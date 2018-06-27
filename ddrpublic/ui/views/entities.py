@@ -23,7 +23,7 @@ def detail(request, oid):
     
     # if this is an interview, redirect to first segment
     format_ = None
-    if entity.get('format') and isinstance(entity['format'], basestring):
+    if entity.get('format') and isinstance(entity['format'], str):
         format_ = entity['format']
     elif entity.get('format') and isinstance(entity['format'], dict):
         format_ = entity['format']['id']  # format is wrapped in Entity.get
