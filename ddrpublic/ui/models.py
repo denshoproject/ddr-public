@@ -2,7 +2,7 @@ from collections import defaultdict, OrderedDict
 import logging
 logger = logging.getLogger(__name__)
 import os
-import urlparse
+from urllib.parse import urlparse, urlunsplit
 
 import requests
 from elasticsearch import Elasticsearch
@@ -126,8 +126,8 @@ SEARCH_RETURN_FIELDS = [
     'url',
 ]
 
-MEDIA_LOCAL_SCHEME = urlparse.urlparse(settings.MEDIA_URL_LOCAL).scheme
-MEDIA_LOCAL_HOSTNAME = urlparse.urlparse(settings.MEDIA_URL_LOCAL).hostname
+MEDIA_LOCAL_SCHEME = urlparse(settings.MEDIA_URL_LOCAL).scheme
+MEDIA_LOCAL_HOSTNAME = urlparse(settings.MEDIA_URL_LOCAL).hostname
 
 
 class AttributeDict():
@@ -186,8 +186,8 @@ def local_thumb_url(url, request=None):
         show_thumb_links = True
     
     if url and settings.MEDIA_URL_LOCAL and show_thumb_links:
-        u = urlparse.urlparse(url)
-        return urlparse.urlunsplit(
+        u = urlparse(url)
+        return urlunsplit(
             (MEDIA_LOCAL_SCHEME, MEDIA_LOCAL_HOSTNAME, u.path, u.params, u.query)
         )
     return url

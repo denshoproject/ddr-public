@@ -1,5 +1,4 @@
 import json
-from urllib2 import urlparse
 
 from django.conf import settings
 from django.core.urlresolvers import reverse

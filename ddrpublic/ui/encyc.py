@@ -2,7 +2,7 @@
 Links between ddrpublic and encyc-front
 """
 import json
-import urlparse
+from urllib.parse import urlparse, urlunsplit
 
 import requests
 
@@ -37,9 +37,9 @@ def map_encycurls_titles(rawdata):
     data = {}
     for item in rawdata:
         api_url = item['url']
-        u = urlparse.urlparse(api_url)
+        u = urlparse(api_url)
         article_path = u.path.replace(API_ARTICLES_BASE, '')
-        article_url = urlparse.urlunsplit(
+        article_url = urlunsplit(
             (u.scheme, u.netloc, article_path, '', '')
         )
         data[api_url] = item['title']

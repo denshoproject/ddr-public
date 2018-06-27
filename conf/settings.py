@@ -1,6 +1,6 @@
 # Django settings for ddrpublic.
 
-import ConfigParser
+import configparser
 import logging
 import os
 import subprocess
@@ -21,7 +21,7 @@ CONFIG_FILES = [
     '/etc/ddr/ddrpublic-local.cfg'
 ]
 
-config = ConfigParser.ConfigParser()
+config = configparser.ConfigParser()
 configs_read = config.read(CONFIG_FILES)
 if not configs_read:
     raise Exception('No config file!')
