@@ -31,8 +31,8 @@ def update_doc_counts(form, response):
         aggregations = response.aggregations.to_dict()
     else:
         aggregations = {}
-    agg_fieldnames = [key for key in aggregations.iterkeys()]
-    form_fieldnames = [key for key in form.fields.iterkeys()]
+    agg_fieldnames = [key for key in aggregations.keys()]
+    form_fieldnames = [key for key in form.fields.keys()]
     for fieldname in form_fieldnames:
         if fieldname in agg_fieldnames:
             field_aggs_dict = {

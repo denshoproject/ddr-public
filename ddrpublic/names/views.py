@@ -25,8 +25,8 @@ NON_FILTER_FIELDS = [
 def index(request, template_name='names/index.html'):
     """Simplified index page with just query and camp fields.
     """
-    kwargs = [(key,val) for key,val in request.GET.iteritems()]
-    kwargs_values = [val for val in request.GET.itervalues() if val]
+    kwargs = [(key,val) for key,val in request.GET.items()]
+    kwargs_values = [val for val in request.GET.values() if val]
     thispage = int(request.GET.get('page', 1))
     pagesize = int(request.GET.get('pagesize', PAGE_SIZE))
     
@@ -91,7 +91,7 @@ def index(request, template_name='names/index.html'):
 #def index(request, template_name='names/index.html'):
 #    thispage = int(request.GET.get('page', 1))
 #    pagesize = int(request.GET.get('pagesize', PAGE_SIZE))
-#    kwargs = [(key,val) for key,val in request.GET.iteritems()]
+#    kwargs = [(key,val) for key,val in request.GET.items()]
 #    
 #    # All the filter fields are MultipleChoiceFields, which does not
 #    # support an "empty_label" choice.  Unfortunately, the UI design
@@ -164,13 +164,13 @@ def search(request, template_name='names/search.html'):
     """
     thispage = int(request.GET.get('page', 1))
     pagesize = int(request.GET.get('pagesize', PAGE_SIZE))
-    kwargs = [(key,val) for key,val in request.GET.iteritems()]
+    kwargs = [(key,val) for key,val in request.GET.items()]
     
     # for use in form
-    defined_fields = [key for key in definitions.FIELD_DEFINITIONS.iterkeys()]
+    defined_fields = [key for key in definitions.FIELD_DEFINITIONS.keys()]
     filters = {
         key:val
-        for key,val in request.GET.iteritems()
+        for key,val in request.GET.items()
         if key in defined_fields
     }
     query = request.GET.get('query', '')

@@ -55,7 +55,7 @@ class SearchForm(forms.Form):
         @returns: nothing, modifies form.choices in-place
         """
         aggs = docstore.aggs_dict(aggregations)
-        for fieldname,choice_data in aggs.iteritems():
+        for fieldname,choice_data in aggs.items():
             form_fieldname = 'filter_%s' % fieldname
             if self.fields.get(form_fieldname):
                 

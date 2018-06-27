@@ -126,7 +126,7 @@ def aggs_dict(aggregations):
             bucket['key']: bucket['doc_count']
             for bucket in data['buckets']
         }
-        for fieldname,data in aggregations.iteritems()
+        for fieldname,data in aggregations.items()
     }
 
 def aliases_indices():

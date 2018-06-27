@@ -478,7 +478,7 @@ def format_object_detail2(document, request, listitem=False):
         'repo','org','cid','eid','sid','sha1'
          # don't hide role, used in file list-object
     ]
-    for key in document.iterkeys():
+    for key in document.keys():
         if key not in HIDDEN_FIELDS:
             d[key] = document[key]
     return d
@@ -506,7 +506,7 @@ def format_narrator(document, request, listitem=False):
         HIDDEN_FIELDS = [
             'repo','org','cid','eid','sid','role','sha1'
         ]
-        for key in document['_source'].iterkeys():
+        for key in document['_source'].keys():
             if key not in HIDDEN_FIELDS:
                 d[key] = document['_source'][key]
         return d
@@ -597,7 +597,7 @@ def format_term(document, request, listitem=False):
         #'siblings',
         #'children',
     ]
-    for key in document.iterkeys():
+    for key in document.keys():
         if key not in HIDDEN_FIELDS:
             d[key] = document[key]
     return d
@@ -1327,7 +1327,7 @@ class Term(object):
         results = search.Searcher(search=s).execute(limit=1000, offset=0)
         # fieldname:term:id dict
         aggs = {}
-        for fieldname,data in results.aggregations.iteritems():
+        for fieldname,data in results.aggregations.items():
             aggs[fieldname] = {}
             for item in data:
                 aggs[fieldname][item['key']] = item['doc_count']
