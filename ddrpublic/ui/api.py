@@ -10,11 +10,11 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from misc import filter_if_branded
-from models import Repository, Organization, Collection, Entity, File
-from models import Narrator, Facet, Term
-from models import format_object_detail2
-from search import es_offset, Searcher
+from .misc import filter_if_branded
+from .models import Repository, Organization, Collection, Entity, File
+from .models import Narrator, Facet, Term
+from .models import format_object_detail2
+from .search import es_offset, Searcher
 
 DEFAULT_LIMIT = 25
 
@@ -188,7 +188,7 @@ def _detail(request, data):
     """Common function for detail views.
     """
     if not data:
-	return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_404_NOT_FOUND)
     return Response(data)
 
 @api_view(['GET'])

@@ -4,8 +4,8 @@ from django.views.generic import TemplateView
 from rest_framework.urlpatterns import format_suffix_patterns
 
 from . import api
-from views import browse, search, searching, collections, entities, objects, index
-from views import cite, choose_tab, redirect, index
+from .views import browse, search, searching, collections, entities, objects, index
+from .views import cite, choose_tab, redirect, index
 
 API_BASE = '/api/0.2/'
 

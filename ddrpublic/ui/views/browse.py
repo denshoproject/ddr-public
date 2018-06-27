@@ -1,6 +1,6 @@
 import logging
 logger = logging.getLogger(__name__)
-import urlparse
+from urllib.parse import urlparse
 
 from django.conf import settings
 from django.core.paginator import Paginator
@@ -86,7 +86,7 @@ def term( request, facet_id, term_id ):
     # API urls for elinks
     for item in term.get('elinks', []):
         try:
-            url = urlparse.urlparse(item['url'])
+            url = urlparse(item['url'])
             item['api_url'] = item['url'].replace(
                 url.path,
                 '/api/0.1%s' % url.path

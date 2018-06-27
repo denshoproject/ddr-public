@@ -198,13 +198,13 @@ def search(
     @returns: elasticsearch_dsl.Search
     """
     ## remove empty filter args
-    #filter_args = {key:val for key,val in filters.iteritems() if val}
+    #filter_args = {key:val for key,val in filters.items() if val}
     #if not (query or filter_args):
     #    return None,[]
     s = Search(using=ES, index=index)
     s = s.doc_type(Record)
     if filters:
-        for field,values in filters.iteritems():
+        for field,values in filters.items():
             if values:
                 # multiple terms for a field are OR-ed
                 s = s.filter('terms', **{field: values})
@@ -214,7 +214,7 @@ def search(
         )
     # aggregations
     if filters:
-        for field in filters.iterkeys():
+        for field in filters.keys():
             s.aggs.bucket(field, 'terms', field=field, size=1000)
     s = s.fields(definitions.FIELDS_MASTER)
     s = s.sort(sort)

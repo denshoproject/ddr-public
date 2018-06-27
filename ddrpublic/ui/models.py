@@ -2,7 +2,7 @@ from collections import defaultdict, OrderedDict
 import logging
 logger = logging.getLogger(__name__)
 import os
-import urlparse
+from urllib.parse import urlparse, urlunsplit
 
 import requests
 from elasticsearch import Elasticsearch
@@ -126,8 +126,8 @@ SEARCH_RETURN_FIELDS = [
     'url',
 ]
 
-MEDIA_LOCAL_SCHEME = urlparse.urlparse(settings.MEDIA_URL_LOCAL).scheme
-MEDIA_LOCAL_HOSTNAME = urlparse.urlparse(settings.MEDIA_URL_LOCAL).hostname
+MEDIA_LOCAL_SCHEME = urlparse(settings.MEDIA_URL_LOCAL).scheme
+MEDIA_LOCAL_HOSTNAME = urlparse(settings.MEDIA_URL_LOCAL).hostname
 
 
 class AttributeDict():
@@ -161,7 +161,7 @@ def img_url(bucket, filename, request=None):
     internal = 0
     if request:
         internal = request.GET.get(settings.MEDIA_URL_LOCAL_MARKER, 0)
-    if internal and isinstance(internal, basestring) and internal.isdigit():
+    if internal and isinstance(internal, str) and internal.isdigit():
         internal = int(internal)
     if bucket and filename and internal:
         return '%s%s/%s' % (settings.MEDIA_URL_LOCAL, bucket, filename)
@@ -186,8 +186,8 @@ def local_thumb_url(url, request=None):
         show_thumb_links = True
     
     if url and settings.MEDIA_URL_LOCAL and show_thumb_links:
-        u = urlparse.urlparse(url)
-        return urlparse.urlunsplit(
+        u = urlparse(url)
+        return urlunsplit(
             (MEDIA_LOCAL_SCHEME, MEDIA_LOCAL_HOSTNAME, u.path, u.params, u.query)
         )
     return url
@@ -232,7 +232,7 @@ def docstore_search(text='', must=[], should=[], mustnot=[], models=[], fields=[
     
     @returns: dict
     """
-    if not isinstance(models, basestring):
+    if not isinstance(models, str):
         models = models
     elif isinstance(models, list):
         models = ','.join(models)
@@ -307,7 +307,7 @@ def children(request, model, parent_id, sort_fields, limit=DEFAULT_LIMIT, offset
     @param just_count: boolean
     @returns: dict
     """
-    if not isinstance(model, basestring):
+    if not isinstance(model, str):
         models = model
     elif isinstance(model, list):
         models = ','.join(model)
@@ -345,7 +345,7 @@ def count_children(model, parent_id):
     @param parent_id: str
     @returns: dict
     """
-    if not isinstance(model, basestring):
+    if not isinstance(model, str):
         models = model
     elif isinstance(model, list):
         models = ','.join(model)
@@ -478,7 +478,7 @@ def format_object_detail2(document, request, listitem=False):
         'repo','org','cid','eid','sid','sha1'
          # don't hide role, used in file list-object
     ]
-    for key in document.iterkeys():
+    for key in document.keys():
         if key not in HIDDEN_FIELDS:
             d[key] = document[key]
     return d
@@ -506,7 +506,7 @@ def format_narrator(document, request, listitem=False):
         HIDDEN_FIELDS = [
             'repo','org','cid','eid','sid','role','sha1'
         ]
-        for key in document['_source'].iterkeys():
+        for key in document['_source'].keys():
             if key not in HIDDEN_FIELDS:
                 d[key] = document['_source'][key]
         return d
@@ -597,7 +597,7 @@ def format_term(document, request, listitem=False):
         #'siblings',
         #'children',
     ]
-    for key in document.iterkeys():
+    for key in document.keys():
         if key not in HIDDEN_FIELDS:
             d[key] = document[key]
     return d
@@ -768,7 +768,7 @@ class Entity(object):
             if not fieldname in fields:
                 continue
             field_data = document.get(fieldname)
-            if isinstance(field_data, basestring):
+            if isinstance(field_data, str):
                 document[fieldname] = _wrap(fieldname,field_data)
             elif isinstance(field_data, list):
                 document[fieldname] = [
@@ -1327,7 +1327,7 @@ class Term(object):
         results = search.Searcher(search=s).execute(limit=1000, offset=0)
         # fieldname:term:id dict
         aggs = {}
-        for fieldname,data in results.aggregations.iteritems():
+        for fieldname,data in results.aggregations.items():
             aggs[fieldname] = {}
             for item in data:
                 aggs[fieldname][item['key']] = item['doc_count']
