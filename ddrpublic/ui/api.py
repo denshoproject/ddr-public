@@ -188,7 +188,7 @@ def _detail(request, data):
     """Common function for detail views.
     """
     if not data:
-	return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_404_NOT_FOUND)
     return Response(data)
 
 @api_view(['GET'])
