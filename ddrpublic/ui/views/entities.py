@@ -50,6 +50,9 @@ def detail(request, oid):
     # facet terms
     facilities = [item for item in getattr(entity, 'facility', [])]
     creators = [item for item in getattr(entity, 'creators', [])]
+    # topics: only last item in 'path'
+    for item in entity.get('topics', []):
+        item['term_node'] = item['term'].split(':')[-1].strip()
     # children/nodes
     thispage = request.GET.get('page', 1)
     pagesize = 5
@@ -110,6 +113,9 @@ def interview(request, oid):
         limit=1000,
         offset=0,
     )
+    # topics: only last item in 'path'
+    for item in segment.get('topics', []):
+        item['term_node'] = item['term'].split(':')[-1].strip()
     # get next,prev segments
     segment['index'] = 0
     num_segments = len(segments['objects'])

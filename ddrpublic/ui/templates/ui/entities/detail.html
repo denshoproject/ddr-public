@@ -134,7 +134,7 @@
                               {% for item in object.topics %}
                               <li>
                                 <a href="{% url "ui-browse-term" "topics" item.id %}">
-                                  {{ item.term }}</a>
+                                  {{ item.term_node }}</a>
                               </li>
                               {% endfor %}
                             </ul>
