@@ -21,6 +21,15 @@
 {% breadcrumbs object.breadcrumbs %}
 {% endblock breadcrumbs %}
 
+{% block pagecss %}
+<link href="https://vjs.zencdn.net/7.0.5/video-js.css" rel="stylesheet">
+{% endblock %}
+
+{% block javascript %}
+<script src="https://vjs.zencdn.net/7.0.5/video.js"></script>
+{% endblock javascript %}
+
+
 {% block content %}
 
 <section id="shop" class="container">
@@ -31,12 +40,15 @@
 <div style="border:2px dashed red;">{{ templatekey }} {{ template }}</div>
             <h2>{{ object.title|safe }}</h2>
 
-{% if object.links.img %}
-  {% thumbnail object.links.thumb "480x480" as img %}
-        <a href="{{ object.links.img }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
-          <img src="{{ img.url }}" class="img-responsive">
-        </a><br />
-  {% endthumbnail %}
+<!-- begin VideoJS player -->
+<video id="clip" class="embed-responsive embed-responsive-16by9 video-js vjs-big-play-centered vjs-fluid" controls preload="auto" width="560" height="384" poster="" data-setup="{}">
+  <source src="https://archive.org/download/ddr-densho-1000-400-2/ddr-densho-1000-400-2-mezzanine-6877a9b0c9.mp4" type="video/mp4">
+    <p class="vjs-no-js">
+      To view this video please enable JavaScript, and consider upgrading to a web browser that
+      <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+    </p>
+</video>
+<!-- end VideoJS player-->
 
   {% if signature %}
             <p>
@@ -55,7 +67,6 @@
 
 {% rightspanel object.rights %}
 
-{% endif %}{# object.links.img #}
         </div>
         <!-- right meta -->
         <div class="col-sm-5 col-md-5">
