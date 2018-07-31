@@ -33,10 +33,9 @@ def detail(request, oid):
     # if this is an interview, redirect to first segment
     format_ = None
     if entity.get('format') and isinstance(entity['format'], basestring):
-        format_ = entity['format']
+        format_ = entity['format']  # format is wrapped in Entity.get
     elif entity.get('format') and isinstance(entity['format'], dict):
         format_ = entity['format']['id']  # format is wrapped in Entity.get
-    format_ = entity['format']  # format is wrapped in Entity.get
     if format_ == 'vh':
         if model == 'segment':
             return HttpResponseRedirect(reverse('ui-interview', args=[oid]))
