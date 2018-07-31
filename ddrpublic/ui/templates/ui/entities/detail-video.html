@@ -37,9 +37,12 @@
     <div class="row">
         <!-- left content -->
         <div class="col-sm-7 col-md-7">
-<div style="border:2px dashed red;">{{ templatekey }} {{ template }}</div>
             <h2>{{ object.title|safe }}</h2>
 
+<!--
+templatekey: {{ templatekey }}
+template:    {{ template }}
+-->
 <!-- begin VideoJS player -->
 <video id="clip" class="embed-responsive embed-responsive-16by9 video-js vjs-big-play-centered vjs-fluid" controls preload="auto" width="560" height="384" poster="" data-setup="{}">
   <source src="https://archive.org/download/ddr-densho-1000-400-2/ddr-densho-1000-400-2-mezzanine-6877a9b0c9.mp4" type="video/mp4">

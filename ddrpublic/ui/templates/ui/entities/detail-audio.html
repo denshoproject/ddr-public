@@ -73,9 +73,12 @@
     <div class="row">
         <!-- left content -->
         <div class="col-sm-7 col-md-7">
-<div style="border:2px dashed red;">{{ templatekey }} {{ template }}</div>
             <h2>{{ object.title|safe }}</h2>
 
+<!--
+templatekey: {{ templatekey }}
+template:    {{ template }}
+-->
 <!-- begin audioplayer -->
 <div id="aplayer-container" style="margin-bottom:15px;">
   <div id="waveform" style="background-color: #eee;">
