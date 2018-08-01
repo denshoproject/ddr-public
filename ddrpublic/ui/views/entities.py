@@ -10,6 +10,7 @@ from django.shortcuts import Http404, render
 from .. import archivedotorg
 from .. import models
 from .. import misc
+from ..forms_search import FORMS_CHOICE_LABELS
 
 
 def detail(request, oid):
@@ -50,6 +51,12 @@ def detail(request, oid):
     # facet terms
     facilities = [item for item in getattr(entity, 'facility', [])]
     creators = [item for item in getattr(entity, 'creators', [])]
+    # topics: only last item in 'path'
+    for item in entity.get('topics', []):
+        item['term_node'] = item['term'].split(':')[-1].strip()
+    # facility,format,genre
+    entity['format'] = labelify_vocab_term('format', entity.get('format'))
+    entity['genre'] = labelify_vocab_term('genre', entity.get('genre'))
     # children/nodes
     thispage = request.GET.get('page', 1)
     pagesize = 5
@@ -207,3 +214,13 @@ def nodes( request, oid, role=None ):
         'page': paginator.page(thispage),
         'api_url': reverse('ui-api-object-nodes', args=[oid]),
     })
+
+
+# helpers
+
+def labelify_vocab_term(fname,fdata):
+    return {
+        'id': fdata,
+        'query': '?filter_%s=%s' % (fname,fdata),
+        'label': FORMS_CHOICE_LABELS.get(fname,{}).get(fdata,''),
+    }
