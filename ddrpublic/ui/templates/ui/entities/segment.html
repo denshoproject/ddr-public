@@ -74,15 +74,15 @@ template:    {{ template }}
               Download full transcript
             </a>
             <br />
-            <a href="{{ downloads.mp4.url }}" class="btn btn-default btn-xs">
+            <a href="{{ filemeta.mp4.url }}" class="btn btn-default btn-xs">
               <i class="fa fa-download"></i>
               Download MP4
-              ({{ downloads.mp4.size|filesizeformat }})
+              ({{ filemeta.mp4.size|filesizeformat }})
             </a>
-            <a href="{{ downloads.mpg.url }}" class="btn btn-default btn-xs">
+            <a href="{{ filemeta.mpg.url }}" class="btn btn-default btn-xs">
               <i class="fa fa-download"></i>
               Download full-size MPEG2
-              ({{ downloads.mpg.size|filesizeformat }})
+              ({{ filemeta.mpg.size|filesizeformat }})
             </a>
 
           </div><!-- #dls_tab .tab-pane -->

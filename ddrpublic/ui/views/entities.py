@@ -148,7 +148,7 @@ def interview(request, oid):
         segment['id'], segment['parent_id'], segment['collection_id'],
         request
     )
-    download_meta = archivedotorg.segment_download_meta(segment['id'])
+    ia_file_meta = archivedotorg.download_segment_meta(segment['id'])
     
     template = AV_TEMPLATES.get(entity.get('template'), SEGMENT_TEMPLATE_DEFAULT)
     
@@ -158,7 +158,7 @@ def interview(request, oid):
         'segment': segment,
         'segments': segments,
         'transcripts': transcripts,
-        'downloads': download_meta,
+        'filemeta': ia_file_meta,
         'entity': entity,
         'parent': parent,
         'collection': collection,

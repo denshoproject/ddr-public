@@ -17,7 +17,7 @@ SEGMENT_XML_URL = '{base}/{segmentid}/{segmentid}_files.xml'
 FILE_DOWNLOAD_URL = '{base}/{segmentid}/{fileid}'
 
 
-def segment_download_meta(sid):
+def download_segment_meta(sid):
     """Get segment file metadata from Archive.org
     """
     key = IA_SEGMENT_CACHE_KEY % sid
