@@ -13,6 +13,15 @@ from .. import misc
 from ..forms_search import FORMS_CHOICE_LABELS
 
 
+ENTITY_TEMPLATE_DEFAULT = 'ui/entities/detail.html'
+SEGMENT_TEMPLATE_DEFAULT = 'ui/entities/segment.html'
+AV_TEMPLATES = {
+    'av:audio': 'ui/entities/detail-audio.html',  # drv-entityDetail-audioplayer.html
+    'av:video': 'ui/entities/detail-video.html',  # drv-entityDetail-videoplayer.html
+    'vh:audio': 'ui/entities/segment-audio.html', # drv-segmentDetail-audioplayer.html
+    'vh:video': 'ui/entities/segment-video.html', # drv-segmentDetail-videoplayer.html
+}
+
 def detail(request, oid):
     try:
         entity = models._object(request, oid)
@@ -25,10 +34,9 @@ def detail(request, oid):
     # if this is an interview, redirect to first segment
     format_ = None
     if entity.get('format') and isinstance(entity['format'], basestring):
-        format_ = entity['format']
+        format_ = entity['format']  # format is wrapped in Entity.get
     elif entity.get('format') and isinstance(entity['format'], dict):
         format_ = entity['format']['id']  # format is wrapped in Entity.get
-    format_ = entity['format']  # format is wrapped in Entity.get
     if format_ == 'vh':
         if model == 'segment':
             return HttpResponseRedirect(reverse('ui-interview', args=[oid]))
@@ -80,7 +88,12 @@ def detail(request, oid):
         ),
         pagesize
     )
-    return render(request, 'ui/entities/detail.html', {
+    
+    template = AV_TEMPLATES.get(entity.get('template'), ENTITY_TEMPLATE_DEFAULT)
+    
+    return render(request, template, {
+        'templatekey': entity.get('template'),
+        'template': template,
         'object': entity,
         'facilities': facilities,
         'creators': creators,
@@ -139,13 +152,17 @@ def interview(request, oid):
         segment['id'], segment['parent_id'], segment['collection_id'],
         request
     )
-    download_meta = archivedotorg.segment_download_meta(segment['id'])
+    ia_file_meta = archivedotorg.download_segment_meta(segment['id'])
     
-    return render(request, 'ui/entities/segment.html', {
+    template = AV_TEMPLATES.get(entity.get('template'), SEGMENT_TEMPLATE_DEFAULT)
+    
+    return render(request, template, {
+        'templatekey': entity.get('template'),
+        'template': template,
         'segment': segment,
         'segments': segments,
         'transcripts': transcripts,
-        'downloads': download_meta,
+        'filemeta': ia_file_meta,
         'entity': entity,
         'parent': parent,
         'collection': collection,

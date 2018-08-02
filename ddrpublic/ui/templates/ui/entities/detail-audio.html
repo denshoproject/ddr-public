@@ -21,6 +21,51 @@
 {% breadcrumbs object.breadcrumbs %}
 {% endblock breadcrumbs %}
 
+{% block pagecss %}
+{% endblock %}
+
+{% block javascript %}
+<!-- wavesufer.js player,timeline -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/2.0.5/wavesurfer.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/1.2.3/plugin/wavesurfer.timeline.min.js"></script>
+<script>
+  var ctx = document.createElement('canvas').getContext('2d');
+  var linGrad = ctx.createLinearGradient(0, 64, 0, 200);
+  linGrad.addColorStop(0.5, 'rgba(255, 255, 255, 1.000)');
+  linGrad.addColorStop(0.5, 'rgba(183, 183, 183, 1.000)');
+  
+  var wavesurfer = WaveSurfer.create({
+    container: '#waveform',
+    // The color can be either a simple CSS color or a Canvas gradient
+    //waveColor: linGrad,
+    waveColor: '#F07057',
+    //progressColor: 'hsla(200, 100%, 30%, 0.5)',
+    progressColor: '#F07057',
+    //cursorColor: '#fff',
+    cursorColor: '#F07057',
+    scrollParent: 'true',
+    normalize: 'true',
+    backend: 'MediaElement',
+    barHeight: 100,
+    barWidth: 1
+  });
+  
+  wavesurfer.on('loading', function (percents) {
+    document.getElementById('progress').value = percents;
+  });
+   wavesurfer.on('ready', function (percents) {
+    document.getElementById('progress').style.display = 'none';
+    var timeline = Object.create(WaveSurfer.Timeline);
+    timeline.init({
+      wavesurfer: wavesurfer,
+      container: '#waveform-timeline'
+    })
+  });
+  wavesurfer.load('https://archive.org/download/ddr-densho-1002-8-1/ddr-densho-1002-8-1-mezzanine-c12eccb33d.mp3');
+</script>
+{% endblock javascript %}
+
+
 {% block content %}
 
 <section id="shop" class="container">
@@ -34,12 +79,30 @@
 templatekey: {{ templatekey }}
 template:    {{ template }}
 -->
-{% if object.links.img %}
-  {% thumbnail object.links.thumb "480x480" as img %}
-        <a href="{{ object.links.img }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
-          <img src="{{ img.url }}" class="img-responsive">
-        </a><br />
-  {% endthumbnail %}
+<!-- begin audioplayer -->
+<div id="aplayer-container" style="margin-bottom:15px;">
+  <div id="waveform" style="background-color: #eee;">
+    <progress id="progress" class="progress progress-striped" value="0" max="100"></progress>
+  </div>
+  <div id="waveform-timeline"></div>
+  <div class="controls">
+    <button class="btn btn-primary btn-xs" onclick="wavesurfer.skipBackward()">
+      <i class="fa fa-step-backward"></i> Backward
+    </button>
+    <button class="btn btn-primary btn-xs" onclick="wavesurfer.playPause()">
+      <i class="fa fa-play"></i> Play
+      /
+      <i class="fa fa-pause"></i> Pause
+    </button>
+    <button class="btn btn-primary btn-xs" onclick="wavesurfer.skipForward()">
+      <i class="fa fa-step-forward"></i> Forward
+    </button>
+    <button class="btn btn-primary btn-xs" onclick="wavesurfer.toggleMute()">
+      <i class="fa fa-volume-off"></i> Toggle Mute
+    </button>
+  </div>
+</div>
+<!-- end audioplayer -->
 
   {% if signature %}
             <p>
@@ -58,7 +121,6 @@ template:    {{ template }}
 
 {% rightspanel object.rights %}
 
-{% endif %}{# object.links.img #}
         </div>
         <!-- right meta -->
         <div class="col-sm-5 col-md-5">
