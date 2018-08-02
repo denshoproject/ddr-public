@@ -96,7 +96,7 @@ help:
 	@echo "    install-static  - Downloads static media (Bootstrap, jquery, etc)"
 	@echo ""
 	@echo ""
-	@echo "syncdb  - Initialize or update Django app's database tables."
+	@echo "migrate - Initialize or update Django app's database tables."
 	@echo ""
 	@echo "branch BRANCH=[branch] - Switches ddr-public and supporting repos to [branch]."
 	@echo ""
@@ -135,7 +135,7 @@ howto-install:
 	@echo "- [make install]"
 	@echo "- Place copy of 'ddr' repo in $(DDR_REPO_BASE)/ddr."
 	@echo "- make get-defs"
-	@echo "- make syncdb"
+	@echo "- make migrate"
 	@echo "- make restart"
 
 help-all:
@@ -306,9 +306,9 @@ clean-ddr-public:
 	-rm -Rf $(INSTALL_PUBLIC)/ddrpublic/src
 
 
-syncdb:
+migrate:
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_PUBLIC)/ddrpublic && python manage.py syncdb --noinput
+	cd $(INSTALL_PUBLIC)/ddrpublic && python manage.py migrate --noinput
 	chown -R ddr.root $(SQLITE_BASE)
 	chmod -R 750 $(SQLITE_BASE)
 	chown -R ddr.root $(LOG_BASE)
