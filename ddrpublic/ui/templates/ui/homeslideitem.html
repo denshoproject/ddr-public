@@ -1,5 +1,6 @@
 {% load thumbnail ui_tags %}
-{% thumbnail img_url "480x323" crop="0px 0px" as img %}
+{% thumbnail thumb_url "480x323" crop="0px 0px" as img %}
+<!-- img_src: {{ img_src }} -->
 <li class="isotope-item"><!-- slide item -->
   <div class="item-box">
     <figure>
@@ -10,8 +11,7 @@
           <strong>VIEW</strong> OBJECT
         </span>
       </a>
-      <!-- src: {{ img_url }} -->
-      <img src="{{ MEDIA_URL }}{{ img }}" class="img-responsive" width="260" height="260" alt="">
+      <img src="{{ img.url }}" class="img-responsive" width="260" height="260" alt="">
     </figure>
   </div>
 </li>

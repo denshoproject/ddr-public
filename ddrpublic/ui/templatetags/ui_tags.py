@@ -59,11 +59,12 @@ def homeslideitem( target_url, img_src ):
     @param target_url: str Target URL path, no domain.
     @param img_src: str Source img path, MEDIA_URL_LOCAL will be prepended.
     """
-    img_url = os.path.join(settings.MEDIA_URL_LOCAL, img_src)
+    thumb_url = os.path.join(settings.MEDIA_URL_LOCAL, img_src)
     t = template.loader.get_template('ui/homeslideitem.html')
     return t.render({
         'target_url': target_url,
-        'img_url': img_url,
+        'img_src': img_src,
+        'thumb_url': thumb_url,
         'MEDIA_URL': settings.MEDIA_URL,
     })
 	
