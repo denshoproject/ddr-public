@@ -61,7 +61,7 @@ def search(request, format=None):
         )
     elif request.GET.get('page'):
         limit = settings.RESULTS_PER_PAGE
-        thispage = int(params.pop('page')[-1])
+        thispage = int(request.GET['page'])
         offset = es_offset(limit, thispage)
     else:
         limit = settings.RESULTS_PER_PAGE
@@ -74,7 +74,7 @@ def search(request, format=None):
     searcher.prepare(request)
     results = searcher.execute(limit, offset)
     return Response(
-        results.ordered_dict(request, list_function=format_object_detail2)
+        results.ordered_dict(request, format_functions=FORMATTERS)
     )
 
 
