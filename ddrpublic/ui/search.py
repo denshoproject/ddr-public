@@ -341,6 +341,8 @@ class Searcher(object):
             raise Exception('Searcher has no ES Search object.')
         start,stop = start_stop(limit, offset)
         response = self.s[start:stop].execute()
+        for n,hit in enumerate(response.hits):
+            hit.index = '%s %s/%s' % (n, int(offset)+n, response.hits.total)
         return SearchResults(
             params=self.params,
             query=self.s.to_dict(),
@@ -502,6 +504,7 @@ class SearchResults(object):
         data['next_offset'] = self.next_offset
         data['page_size'] = self.page_size
         data['this_page'] = self.this_page
+        data['num_this_page'] = len(self.objects)
 
         if isinstance(request, HttpRequest):
             params = request.GET.copy()
