@@ -174,7 +174,7 @@ def start_stop(limit, offset):
     20,29
     """
     start = int(offset)
-    stop = (start + int(limit)) - 1
+    stop = (start + int(limit))
     return start,stop
     
 def django_page(limit, offset):
