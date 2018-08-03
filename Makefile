@@ -175,7 +175,7 @@ apt-upgrade:
 	apt-get --assume-yes upgrade
 
 install-core:
-	apt-get --assume-yes install bzip2 curl gdebi-core git-core logrotate ntp p7zip-full wget
+	apt-get --assume-yes install bzip2 curl gdebi-core git-core logrotate ntp p7zip-full wget python3
 
 git-config:
 	git config --global alias.st status
@@ -222,14 +222,14 @@ install-virtualenv:
 	@echo ""
 	@echo "install-virtualenv -----------------------------------------------------"
 	apt-get --assume-yes install python-pip python-virtualenv
-	test -d $(VIRTUALENV) || virtualenv --distribute --setuptools $(VIRTUALENV)
+	test -d $(VIRTUALENV) || virtualenv --python=python3 --distribute --setuptools $(VIRTUALENV)
 
 install-setuptools: install-virtualenv
 	@echo ""
 	@echo "install-setuptools -----------------------------------------------------"
 	apt-get --assume-yes install python-dev
 	source $(VIRTUALENV)/bin/activate; \
-	pip install -U setuptools
+	pip3 install -U setuptools
 
 
 get-app: get-namesdb get-ddr-public
@@ -262,13 +262,13 @@ install-namesdb: install-virtualenv
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_NAMESDB) && python setup.py install
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_NAMESDB) && pip install -U -r $(INSTALL_NAMESDB)/requirements.txt
+	cd $(INSTALL_NAMESDB) && pip3 install -U -r $(INSTALL_NAMESDB)/requirements.txt
 
 uninstall-namesdb: install-virtualenv
 	@echo ""
 	@echo "uninstall-namesdb ------------------------------------------------------"
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_NAMESDB) && pip uninstall -y -r $(INSTALL_NAMESDB)/requirements.txt
+	cd $(INSTALL_NAMESDB) && pip3 uninstall -y -r $(INSTALL_NAMESDB)/requirements.txt
 
 clean-namesdb:
 	-rm -Rf $(INSTALL_NAMESDB)/build
@@ -286,7 +286,7 @@ install-ddr-public: clean-ddr-public
 	@echo "install-ddr-public -----------------------------------------------------"
 	apt-get --assume-yes install imagemagick sqlite3 supervisor
 	source $(VIRTUALENV)/bin/activate; \
-	pip install -U -r $(INSTALL_PUBLIC)/requirements.txt
+	pip3 install -U -r $(INSTALL_PUBLIC)/requirements.txt
 # logs dir
 	-mkdir $(LOG_BASE)
 	chown -R ddr.root $(LOG_BASE)
@@ -300,7 +300,7 @@ uninstall-ddr-public:
 	@echo ""
 	@echo "uninstall-ddr-public ---------------------------------------------------"
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_PUBLIC)/ddrpublic && pip uninstall -y -r $(INSTALL_PUBLIC)/requirements.txt
+	cd $(INSTALL_PUBLIC)/ddrpublic && pip3 uninstall -y -r $(INSTALL_PUBLIC)/requirements.txt
 
 clean-ddr-public:
 	-rm -Rf $(INSTALL_PUBLIC)/ddrpublic/src
@@ -344,7 +344,7 @@ install-restframework:
 	@echo ""
 	@echo "rest-framework assets ---------------------------------------------------"
 	-mkdir -p $(MEDIA_BASE)
-	cp -R $(VIRTUALENV)/lib/python2.7/site-packages/rest_framework/static/rest_framework/ $(STATIC_ROOT)/
+	cp -R $(VIRTUALENV)/lib/python3.4/site-packages/rest_framework/static/rest_framework/ $(STATIC_ROOT)/
 
 clean-restframework:
 	-rm -Rf $(STATIC_ROOT)/rest_framework/
@@ -470,7 +470,7 @@ deb-jessie:
 	@echo ""
 	@echo "DEB packaging (jessie) -------------------------------------------------"
 	-rm -Rf $(DEB_FILE_JESSIE)
-	virtualenv --relocatable $(VIRTUALENV)  # Make venv relocatable
+	virtualenv --python=python3 --relocatable $(VIRTUALENV)  # Make venv relocatable
 	fpm   \
 	--verbose   \
 	--input-type dir   \
@@ -487,6 +487,7 @@ deb-jessie:
 	--depends "libxslt1-dev"  \
 	--depends "libz-dev"  \
 	--depends "nginx"   \
+	--depends "python3"   \
 	--depends "redis-server"   \
 	--depends "sqlite3"  \
 	--depends "supervisor"   \
@@ -505,7 +506,7 @@ deb-jessie:
 	namesdb=$(DEB_BASE)   \
 	README.rst=$(DEB_BASE)   \
 	venv=$(DEB_BASE)   \
-	venv/ddrpublic/lib/python2.7/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
+	venv/ddrpublic/lib/python3.4/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
 	VERSION=$(DEB_BASE)
 
 # deb-jessie and deb-stretch are identical
@@ -513,7 +514,7 @@ deb-stretch:
 	@echo ""
 	@echo "DEB packaging (stretch) ------------------------------------------------"
 	-rm -Rf $(DEB_FILE_STRETCH)
-	virtualenv --relocatable $(VIRTUALENV)  # Make venv relocatable
+	virtualenv --python=python3 --relocatable $(VIRTUALENV)  # Make venv relocatable
 	fpm   \
 	--verbose   \
 	--input-type dir   \
@@ -530,6 +531,7 @@ deb-stretch:
 	--depends "libxslt1-dev"  \
 	--depends "libz-dev"  \
 	--depends "nginx"   \
+	--depends "python3"   \
 	--depends "redis-server"   \
 	--depends "sqlite3"  \
 	--depends "supervisor"   \
@@ -548,5 +550,5 @@ deb-stretch:
 	namesdb=$(DEB_BASE)   \
 	README.rst=$(DEB_BASE)   \
 	venv=$(DEB_BASE)   \
-	venv/ddrpublic/lib/python2.7/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
+	venv/ddrpublic/lib/python3.4/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
 	VERSION=$(DEB_BASE)

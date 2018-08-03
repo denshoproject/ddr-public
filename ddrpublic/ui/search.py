@@ -6,7 +6,7 @@ import json
 import logging
 logger = logging.getLogger(__name__)
 import os
-import urlparse
+from urllib.parse import urlparse, urlunsplit
 
 from elasticsearch_dsl import Index, Search, A, Q, A
 from elasticsearch_dsl.query import MultiMatch, Match
@@ -473,7 +473,7 @@ class SearchResults(object):
 
     def _make_prevnext_url(self, query, request):
         if request:
-            return urlparse.urlunsplit([
+            return urlunsplit([
                 request.META['wsgi.url_scheme'],
                 request.META['HTTP_HOST'],
                 request.META['PATH_INFO'],

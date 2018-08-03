@@ -54,7 +54,7 @@ def domain_org(request):
     """
     repo,org = None,None
     domain = RequestSite(request).domain
-    for o,ds in settings.PARTNER_DOMAINS.iteritems():
+    for o,ds in settings.PARTNER_DOMAINS.items():
         repo = 'ddr'
         for d in ds:
             if domain == d:

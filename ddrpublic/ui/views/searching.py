@@ -1,6 +1,6 @@
 import logging
 logger = logging.getLogger(__name__)
-import urlparse
+from urllib.parse import urlparse, urlunparse
 
 from django.conf import settings
 from django.core.paginator import Paginator
@@ -16,7 +16,7 @@ from .. import search
 
 
 def _mkurl(request, path, query=None):
-    return urlparse.urlunparse((
+    return urlunparse((
         request.META['wsgi.url_scheme'],
         request.META['HTTP_HOST'],
         path, None, query, None
