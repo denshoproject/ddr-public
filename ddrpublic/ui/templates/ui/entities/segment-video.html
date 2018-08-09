@@ -47,7 +47,7 @@ template:    {{ template }}
 -->
 <!-- begin VideoJS player -->
 <video id="clip" class="embed-responsive embed-responsive-16by9 video-js vjs-big-play-centered vjs-fluid" controls preload="auto" width="560" height="384" poster="" data-setup="{}">
-  <source type="video/mp4" src="{{ filemeta.mp4.url }}">
+  <source type="video/mp4" src="{{ segment.ia_meta.formats.mp4.url }}">
     <p class="vjs-no-js">
       To view this video please enable JavaScript, and consider upgrading to a web browser that
       <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
@@ -85,15 +85,15 @@ template:    {{ template }}
               Download full transcript
             </a>
             <br />
-            <a href="{{ filemeta.mp4.url }}" class="btn btn-default btn-xs">
+            <a href="{{ segment.ia_meta.formats.mp4.url }}" class="btn btn-default btn-xs">
               <i class="fa fa-download"></i>
               Download MP4
-              ({{ filemeta.mp4.size|filesizeformat }})
+              ({{ segment.ia_meta.formats.mp4.size|filesizeformat }})
             </a>
-            <a href="{{ filemeta.mpg.url }}" class="btn btn-default btn-xs">
+            <a href="{{ segment.ia_meta.formats.mpg.url }}" class="btn btn-default btn-xs">
               <i class="fa fa-download"></i>
               Download full-size MPEG2
-              ({{ filemeta.mpg.size|filesizeformat }})
+              ({{ segment.ia_meta.formats.mpg.size|filesizeformat }})
             </a>
 
           </div><!-- #dls_tab .tab-pane -->

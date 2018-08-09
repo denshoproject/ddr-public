@@ -7,7 +7,6 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import Http404, render
 
-from .. import archivedotorg
 from .. import models
 from .. import misc
 from ..forms_search import FORMS_CHOICE_LABELS
@@ -152,7 +151,6 @@ def interview(request, oid):
         segment['id'], segment['parent_id'], segment['collection_id'],
         request
     )
-    ia_file_meta = archivedotorg.download_segment_meta(segment['id'])
     
     template = AV_TEMPLATES.get(entity.get('template'), SEGMENT_TEMPLATE_DEFAULT)
     
@@ -162,7 +160,6 @@ def interview(request, oid):
         'segment': segment,
         'segments': segments,
         'transcripts': transcripts,
-        'filemeta': ia_file_meta,
         'entity': entity,
         'parent': parent,
         'collection': collection,

@@ -61,7 +61,7 @@
       container: '#waveform-timeline'
     })
   });
-  wavesurfer.load('https://archive.org/download/ddr-densho-1002-8-1/ddr-densho-1002-8-1-mezzanine-c12eccb33d.mp3');
+  wavesurfer.load('{{ segment.ia_meta.formats.mp3.url }}');
 </script>
 {% endblock javascript %}
 
@@ -136,15 +136,15 @@ template:    {{ template }}
               Download full transcript
             </a>
             <br />
-            <a href="{{ filemeta.mp4.url }}" class="btn btn-default btn-xs">
+            <a href="{{ segment.ia_meta.formats.mp4.url }}" class="btn btn-default btn-xs">
               <i class="fa fa-download"></i>
               Download MP4
-              ({{ filemeta.mp4.size|filesizeformat }})
+              ({{ segment.ia_meta.formats.mp4.size|filesizeformat }})
             </a>
-            <a href="{{ filemeta.mpg.url }}" class="btn btn-default btn-xs">
+            <a href="{{ segment.ia_meta.formats.mpg.url }}" class="btn btn-default btn-xs">
               <i class="fa fa-download"></i>
               Download full-size MPEG2
-              ({{ filemeta.mpg.size|filesizeformat }})
+              ({{ segment.ia_meta.formats.mpg.size|filesizeformat }})
             </a>
 
           </div><!-- #dls_tab .tab-pane -->
