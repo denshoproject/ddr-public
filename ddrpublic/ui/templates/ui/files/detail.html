@@ -26,12 +26,13 @@
 
   <div class="row">
 
-    <div class="col-sm-7 col-md-7">
+    <div id="left-col" class="col-sm-7 col-md-7">
+      
       <h2>{{ parent.title|safe }} {% if object.label %}({{ object.label }}){% endif %}</h2>
 
-
       <!-- main display -------------------------------------------- -->
-
+      <div id="object-display">
+      
 {% if object.external_urls %}
 
   {% for link in object.external_urls %}
@@ -66,20 +67,34 @@
   {% endthumbnail %}
 {% endif %}{# mimetype #}
 
+      </div><!-- #object-display -->
+      <div id="object-download">
+      
   <!-- download/external links -->
   {% if object.links.img and not object.mimetype == "text/html" %}
-    <a href="{{ object.links.img }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download large size</a>
+  <a href="{{ object.links.img }}" class="btn btn-default btn-xs">
+    <i class="fa fa-download"></i>
+    Download large size
+  </a>
   {% endif %}
   {% if object.links.download and not object.role == 'master' %}
-    <a href="{{ object.links.download }}" class="btn btn-default btn-xs"><i class="fa fa-download"></i> Download fullsize ({{ object.size|filesizeformat }})</a>
+  <a href="{{ object.links.download }}" class="btn btn-default btn-xs">
+    <i class="fa fa-download"></i>
+    Download fullsize ({{ object.size|filesizeformat }})
+  </a>
   {% endif %}
+
+      </div><!-- #object-download -->
 
 {% endif %}{# object.external_urls #}
 
+      <div id="object-rights">
       {% rightspanel object.rights %}
-    </div>
-
-    <div class="col-sm-5 col-md-5">
+      </div><!-- #object-rights -->
+      
+    </div><!-- #left-col .col-sm-7 .col-md-7 -->
+    
+    <div id="right-col" class="col-sm-5 col-md-5">
         {% addthis %}
       <div class="desc productDescription">
 

@@ -70,11 +70,12 @@
 
 <section id="shop" class="container">
 
-    <div class="row">
         <!-- left content -->
-        <div class="col-sm-7 col-md-7">
+        <div id="left-col" class="col-sm-7 col-md-7">
+
             <h2>{{ object.title|safe }}</h2>
 
+            <div id="object-display">
 <!--
 templatekey: {{ templatekey }}
 template:    {{ template }}
@@ -103,9 +104,10 @@ template:    {{ template }}
   </div>
 </div>
 <!-- end audioplayer -->
+            </div><!-- #object-display -->
 
-  {% if signature %}
-            <p>
+            {% if signature %}
+            <div id="object-download">
               <a href="{{ signature.links.img }}" class="btn btn-default btn-xs">
                 <i class="fa fa-download"></i>
                 Download large
@@ -116,14 +118,17 @@ template:    {{ template }}
                 Download full-size
                 ({{ signature.size|filesizeformat }})
               </a>
-            </p>
-  {% endif %}
+            </div><!-- #object-download -->
+            {% endif %}
 
+            <div id="object-rights">
 {% rightspanel object.rights %}
+            </div><!-- #object-rights -->
 
-        </div>
+        </div><!-- #left-col .col-sm-7 .col-md-7 -->
+    
         <!-- right meta -->
-        <div class="col-sm-5 col-md-5">
+        <div id="right-col" class="col-sm-5 col-md-5">
 
             {% addthis %}
 
