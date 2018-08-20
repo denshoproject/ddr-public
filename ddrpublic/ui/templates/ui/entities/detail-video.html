@@ -238,7 +238,7 @@ template:    {{ template }}
         <div class="col-sm-12 col-md-12">
           <h3>
             <a href="{% url "ui-object-nodes" object.id %}">
-              {{ nodes_paginator.count }} Files
+              {{ nodes_paginator.count }} File{{ nodes_paginator.count|pluralize }}
             </a>
           </h3>
 

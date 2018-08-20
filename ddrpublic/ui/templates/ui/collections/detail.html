@@ -86,7 +86,7 @@
     <div class="row">
         <div class="col-sm-12 col-md-12">
             <h3>
-                <a href="{% url "ui-object-children" object.id %}">{{ paginator.count }} Objects</a>
+                <a href="{% url "ui-object-children" object.id %}">{{ paginator.count }} Object{{ paginator.count|pluralize }}</a>
             </h3>
 
             {% for entity in page.object_list %}
