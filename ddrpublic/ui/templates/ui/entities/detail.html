@@ -36,6 +36,7 @@
 <!--
 templatekey: {{ templatekey }}
 template:    {{ template }}
+IA metadata: {{ object.ia_meta|safe }}
 -->
 {% if object.links.img %}
   {% thumbnail object.links.thumb "480x480" as img %}

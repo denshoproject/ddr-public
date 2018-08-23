@@ -49,11 +49,10 @@
     barHeight: 100,
     barWidth: 1
   });
-  
   wavesurfer.on('loading', function (percents) {
     document.getElementById('progress').value = percents;
   });
-   wavesurfer.on('ready', function (percents) {
+  wavesurfer.on('ready', function (percents) {
     document.getElementById('progress').style.display = 'none';
     var timeline = Object.create(WaveSurfer.Timeline);
     timeline.init({
@@ -61,7 +60,7 @@
       container: '#waveform-timeline'
     })
   });
-  wavesurfer.load('https://archive.org/download/ddr-densho-1002-8-1/ddr-densho-1002-8-1-mezzanine-c12eccb33d.mp3');
+  wavesurfer.load('{{ object.ia_meta.files.mp3.url }}');
 </script>
 {% endblock javascript %}
 
@@ -79,6 +78,7 @@
 <!--
 templatekey: {{ templatekey }}
 template:    {{ template }}
+IA metadata: {{ object.ia_meta|safe }}
 -->
 <!-- begin audioplayer -->
 <div id="aplayer-container" style="margin-bottom:15px;">
