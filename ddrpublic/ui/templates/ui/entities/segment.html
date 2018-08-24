@@ -75,15 +75,15 @@ IA metadata: {{ segment.ia_meta|safe }}
               Download full transcript
             </a>
             <br />
-            <a href="{{ segment.ia_meta.formats.mp4.url }}" class="btn btn-default btn-xs">
+            <a href="{{ segment.ia_meta.files.mp4.url }}" class="btn btn-default btn-xs">
               <i class="fa fa-download"></i>
               Download MP4
-              ({{ segment.ia_meta.formats.mp4.size|filesizeformat }})
+              ({{ segment.ia_meta.files.mp4.size|filesizeformat }})
             </a>
-            <a href="{{ segment.ia_meta.formats.mpg.url }}" class="btn btn-default btn-xs">
+            <a href="{{ segment.ia_meta.files.mpg.url }}" class="btn btn-default btn-xs">
               <i class="fa fa-download"></i>
               Download full-size MPEG2
-              ({{ segment.ia_meta.formats.mpg.size|filesizeformat }})
+              ({{ segment.ia_meta.files.mpg.size|filesizeformat }})
             </a>
 
           </div><!-- #dls_tab .tab-pane -->
