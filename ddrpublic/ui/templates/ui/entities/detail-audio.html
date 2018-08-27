@@ -107,6 +107,10 @@ IA metadata: {{ object.ia_meta|safe }}
             </div><!-- #object-display -->
 
             <div id="object-download">
+              <a href="{{ transcripts.interview.links.download }}" class="btn btn-default btn-xs">
+                <i class="fa fa-download"></i>
+                Download full transcript
+              </a>
               <a href="{{ object.ia_meta.files.mp3.url }}" class="btn btn-default btn-xs">
                 <i class="fa fa-download"></i>
                 Download fullsize

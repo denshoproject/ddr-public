@@ -88,12 +88,18 @@ def detail(request, oid):
         pagesize
     )
     
+    transcripts = models.Entity.transcripts(
+        entity['id'], entity['parent_id'], entity['collection_id'],
+        request
+    )
+    
     template = AV_TEMPLATES.get(entity.get('template'), ENTITY_TEMPLATE_DEFAULT)
     
     return render(request, template, {
         'templatekey': entity.get('template'),
         'template': template,
         'object': entity,
+        'transcripts': transcripts,
         'facilities': facilities,
         'creators': creators,
         'parent': parent,

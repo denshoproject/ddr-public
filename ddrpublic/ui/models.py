@@ -106,6 +106,7 @@ SEARCH_RETURN_FIELDS = [
     'model',
     'links_html',
     'links_json',
+    'links_download',
     'links_img',
     'links_thumb',
     'title',
