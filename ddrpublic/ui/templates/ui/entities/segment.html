@@ -39,6 +39,7 @@
 <!--
 templatekey: {{ templatekey }}
 template:    {{ template }}
+IA metadata: {{ segment.ia_meta|safe }}
 -->
       <div id="clip" class="embed-responsive embed-responsive-16by9">
           <iframe frameborder="0" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen src="https://archive.org/embed/{{ segment.id }}"></iframe>
@@ -74,15 +75,15 @@ template:    {{ template }}
               Download full transcript
             </a>
             <br />
-            <a href="{{ filemeta.mp4.url }}" class="btn btn-default btn-xs">
+            <a href="{{ segment.ia_meta.files.mp4.url }}" class="btn btn-default btn-xs">
               <i class="fa fa-download"></i>
               Download MP4
-              ({{ filemeta.mp4.size|filesizeformat }})
+              ({{ segment.ia_meta.files.mp4.size|filesizeformat }})
             </a>
-            <a href="{{ filemeta.mpg.url }}" class="btn btn-default btn-xs">
+            <a href="{{ segment.ia_meta.files.mpg.url }}" class="btn btn-default btn-xs">
               <i class="fa fa-download"></i>
               Download full-size MPEG2
-              ({{ filemeta.mpg.size|filesizeformat }})
+              ({{ segment.ia_meta.files.mpg.size|filesizeformat }})
             </a>
 
           </div><!-- #dls_tab .tab-pane -->

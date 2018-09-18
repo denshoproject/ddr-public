@@ -26,13 +26,17 @@
 <section id="shop" class="container">
 
     <div class="row">
+
         <!-- left content -->
-        <div class="col-sm-7 col-md-7">
+        <div id="left-col" class="col-sm-7 col-md-7">
+
             <h2>{{ object.title|safe }}</h2>
 
+            <div id="object-display">
 <!--
 templatekey: {{ templatekey }}
 template:    {{ template }}
+IA metadata: {{ object.ia_meta|safe }}
 -->
 {% if object.links.img %}
   {% thumbnail object.links.thumb "480x480" as img %}
@@ -40,9 +44,10 @@ template:    {{ template }}
           <img src="{{ img.url }}" class="img-responsive">
         </a><br />
   {% endthumbnail %}
+            </div><!-- #object-display -->
 
-  {% if signature %}
-            <p>
+            {% if signature %}
+            <div id="object-download">
               <a href="{{ signature.links.img }}" class="btn btn-default btn-xs">
                 <i class="fa fa-download"></i>
                 Download large
@@ -53,15 +58,18 @@ template:    {{ template }}
                 Download full-size
                 ({{ signature.size|filesizeformat }})
               </a>
-            </p>
-  {% endif %}
+            </div><!-- #object-download -->
+            {% endif %}
 
+            <div id="object-rights">
 {% rightspanel object.rights %}
+            </div><!-- #object-rights -->
 
 {% endif %}{# object.links.img #}
-        </div>
+        </div><!-- #left-col .col-sm-7 .col-md-7 -->
+    
         <!-- right meta -->
-        <div class="col-sm-5 col-md-5">
+        <div id="right-col" class="col-sm-5 col-md-5">
 
             {% addthis %}
 
@@ -227,7 +235,7 @@ template:    {{ template }}
         <div class="col-sm-12 col-md-12">
           <h3>
             <a href="{% url "ui-object-nodes" object.id %}">
-              {{ nodes_paginator.count }} Files
+              {{ nodes_paginator.count }} File{{ nodes_paginator.count|pluralize }}
             </a>
           </h3>
 

@@ -35,13 +35,17 @@
 <section id="shop" class="container">
 
     <div class="row">
+
         <!-- left content -->
-        <div class="col-sm-7 col-md-7">
+        <div id="left-col" class="col-sm-7 col-md-7">
+
             <h2>{{ object.title|safe }}</h2>
 
+            <div id="object-display">
 <!--
 templatekey: {{ templatekey }}
 template:    {{ template }}
+IA metadata: {{ object.ia_meta|safe }}
 -->
 <!-- begin VideoJS player -->
 <video id="clip" class="embed-responsive embed-responsive-16by9 video-js vjs-big-play-centered vjs-fluid" controls preload="auto" width="560" height="384" poster="" data-setup="{}">
@@ -52,9 +56,16 @@ template:    {{ template }}
     </p>
 </video>
 <!-- end VideoJS player-->
+            </div><!-- #object-display -->
 
-  {% if signature %}
-            <p>
+            {% if signature %}
+            <div id="object-download">
+              {% if transcripts %}
+              <a href="{{ transcripts.interview.links.download }}" class="btn btn-default btn-xs">
+                <i class="fa fa-download"></i>
+                Download full transcript
+              </a>
+              {% endif %}
               <a href="{{ signature.links.img }}" class="btn btn-default btn-xs">
                 <i class="fa fa-download"></i>
                 Download large
@@ -65,14 +76,17 @@ template:    {{ template }}
                 Download full-size
                 ({{ signature.size|filesizeformat }})
               </a>
-            </p>
-  {% endif %}
+            </div><!-- #object-download -->
+            {% endif %}
 
+            <div id="object-rights">
 {% rightspanel object.rights %}
+            </div><!-- #object-rights -->
 
-        </div>
+        </div><!-- #left-col .col-sm-7 .col-md-7 -->
+    
         <!-- right meta -->
-        <div class="col-sm-5 col-md-5">
+        <div id="right-col" class="col-sm-5 col-md-5">
 
             {% addthis %}
 
@@ -238,7 +252,7 @@ template:    {{ template }}
         <div class="col-sm-12 col-md-12">
           <h3>
             <a href="{% url "ui-object-nodes" object.id %}">
-              {{ nodes_paginator.count }} Files
+              {{ nodes_paginator.count }} File{{ nodes_paginator.count|pluralize }}
             </a>
           </h3>
 

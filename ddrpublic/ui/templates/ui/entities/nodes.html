@@ -59,7 +59,7 @@
 
               <div id="gallery_tab" class="tab-pane {% if tab == "gallery" %}active{% endif %}">
                 <div id="item-count">
-                  {{ paginator.count }} items<br/>
+                  {{ paginator.count }} item{{ paginator.count|pluralize }}<br/>
                 </div>
 {% if paginator.num_pages > 1 %}
 {% bootstrap_paginate page range=10 show_first_last="true" %}
@@ -80,7 +80,7 @@
 
               <div id="list_tab" class="tab-pane {% if tab == "list" %}active{% endif %}">
                 <div id="item-count">
-                  {{ paginator.count }} items<br/>
+                  {{ paginator.count }} item{{ paginator.count|pluralize }}<br/>
                 </div>
 
 {% if paginator.num_pages > 1 %}

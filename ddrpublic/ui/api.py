@@ -13,7 +13,7 @@ from rest_framework.reverse import reverse
 from .misc import filter_if_branded
 from .models import Repository, Organization, Collection, Entity, File
 from .models import Narrator, Facet, Term
-from .models import format_object_detail2
+from .models import FORMATTERS
 from .search import es_offset, Searcher
 
 DEFAULT_LIMIT = 25

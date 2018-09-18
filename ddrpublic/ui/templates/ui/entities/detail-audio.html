@@ -49,11 +49,10 @@
     barHeight: 100,
     barWidth: 1
   });
-  
   wavesurfer.on('loading', function (percents) {
     document.getElementById('progress').value = percents;
   });
-   wavesurfer.on('ready', function (percents) {
+  wavesurfer.on('ready', function (percents) {
     document.getElementById('progress').style.display = 'none';
     var timeline = Object.create(WaveSurfer.Timeline);
     timeline.init({
@@ -61,7 +60,7 @@
       container: '#waveform-timeline'
     })
   });
-  wavesurfer.load('https://archive.org/download/ddr-densho-1002-8-1/ddr-densho-1002-8-1-mezzanine-c12eccb33d.mp3');
+  wavesurfer.load('{{ object.ia_meta.files.mp3.url }}');
 </script>
 {% endblock javascript %}
 
@@ -70,14 +69,16 @@
 
 <section id="shop" class="container">
 
-    <div class="row">
         <!-- left content -->
-        <div class="col-sm-7 col-md-7">
+        <div id="left-col" class="col-sm-7 col-md-7">
+
             <h2>{{ object.title|safe }}</h2>
 
+            <div id="object-display">
 <!--
 templatekey: {{ templatekey }}
 template:    {{ template }}
+IA metadata: {{ object.ia_meta|safe }}
 -->
 <!-- begin audioplayer -->
 <div id="aplayer-container" style="margin-bottom:15px;">
@@ -103,27 +104,28 @@ template:    {{ template }}
   </div>
 </div>
 <!-- end audioplayer -->
+            </div><!-- #object-display -->
 
-  {% if signature %}
-            <p>
-              <a href="{{ signature.links.img }}" class="btn btn-default btn-xs">
+            <div id="object-download">
+              <a href="{{ transcripts.interview.links.download }}" class="btn btn-default btn-xs">
                 <i class="fa fa-download"></i>
-                Download large
-                ({{ signature.access_size|filesizeformat }})
+                Download full transcript
               </a>
-              <a href="{{ signature.links.download }}" class="btn btn-default btn-xs">
+              <a href="{{ object.ia_meta.files.mp3.url }}" class="btn btn-default btn-xs">
                 <i class="fa fa-download"></i>
-                Download full-size
-                ({{ signature.size|filesizeformat }})
+                Download fullsize
+                ({{ object.ia_meta.files.mp3.size|filesizeformat }})
               </a>
-            </p>
-  {% endif %}
+            </div><!-- #object-download -->
 
+            <div id="object-rights">
 {% rightspanel object.rights %}
+            </div><!-- #object-rights -->
 
-        </div>
+        </div><!-- #left-col .col-sm-7 .col-md-7 -->
+    
         <!-- right meta -->
-        <div class="col-sm-5 col-md-5">
+        <div id="right-col" class="col-sm-5 col-md-5">
 
             {% addthis %}
 
@@ -289,7 +291,7 @@ template:    {{ template }}
         <div class="col-sm-12 col-md-12">
           <h3>
             <a href="{% url "ui-object-nodes" object.id %}">
-              {{ nodes_paginator.count }} Files
+              {{ nodes_paginator.count }} File{{ nodes_paginator.count|pluralize }}
             </a>
           </h3>
 

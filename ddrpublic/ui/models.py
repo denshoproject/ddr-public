@@ -106,6 +106,7 @@ SEARCH_RETURN_FIELDS = [
     'model',
     'links_html',
     'links_json',
+    'links_download',
     'links_img',
     'links_thumb',
     'title',
@@ -408,6 +409,7 @@ def format_object_detail2(document, request, listitem=False):
     d = OrderedDict()
     d['id'] = oid
     d['model'] = model
+    if document.get('index'): d['index'] = document.pop('index')
     
     if not listitem:
         d['collection_id'] = document.get('collection_id')
@@ -499,6 +501,7 @@ def format_narrator(document, request, listitem=False):
     d = OrderedDict()
     d['id'] = oid
     d['model'] = model
+    if document.get('index'): d['index'] = document.pop('index')
     # links
     d['links'] = OrderedDict()
     d['links']['html'] = reverse('ui-narrators-detail', args=[oid], request=request)
