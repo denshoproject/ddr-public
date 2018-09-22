@@ -505,6 +505,7 @@ deb-jessie:
 	Makefile=$(DEB_BASE)   \
 	namesdb=$(DEB_BASE)   \
 	README.rst=$(DEB_BASE)   \
+	requirements.txt=$(DEB_BASE)   \
 	venv=$(DEB_BASE)   \
 	venv/ddrpublic/lib/python3.4/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
 	VERSION=$(DEB_BASE)
@@ -549,6 +550,7 @@ deb-stretch:
 	Makefile=$(DEB_BASE)   \
 	namesdb=$(DEB_BASE)   \
 	README.rst=$(DEB_BASE)   \
+	requirements.txt=$(DEB_BASE)   \
 	venv=$(DEB_BASE)   \
 	venv/ddrpublic/lib/python3.4/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
 	VERSION=$(DEB_BASE)
