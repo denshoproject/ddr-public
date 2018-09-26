@@ -222,19 +222,12 @@ install-virtualenv:
 	@echo ""
 	@echo "install-virtualenv -----------------------------------------------------"
 	apt-get --assume-yes install python-pip python-virtualenv
-	test -d $(VIRTUALENV) || virtualenv --python=python3 --distribute --setuptools $(VIRTUALENV)
-
-install-setuptools: install-virtualenv
-	@echo ""
-	@echo "install-setuptools -----------------------------------------------------"
-	apt-get --assume-yes install python-dev
-	source $(VIRTUALENV)/bin/activate; \
-	pip3 install -U setuptools
+	test -d $(VIRTUALENV) || virtualenv --python=python3 $(VIRTUALENV)
 
 
 get-app: get-namesdb get-ddr-public
 
-install-app: install-virtualenv install-setuptools install-namesdb install-ddr-public install-configs install-daemon-configs
+install-app: install-virtualenv install-namesdb install-ddr-public install-configs install-daemon-configs
 
 uninstall-app: uninstall-namesdb uninstall-ddr-public uninstall-configs uninstall-daemon-configs
 
