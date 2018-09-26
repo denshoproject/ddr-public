@@ -30,12 +30,12 @@ SRC_REPO_NAMESDB=https://github.com/densho/namesdb.git
 
 INSTALL_BASE=/opt
 INSTALL_PUBLIC=$(INSTALL_BASE)/ddr-public
-INSTALL_NAMESDB=$(INSTALL_PUBLIC)/namesdb
-REQUIREMENTS=$(INSTALL_PUBLIC)/requirements.txt
+INSTALL_NAMESDB=./namesdb
+REQUIREMENTS=./requirements.txt
 PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
 
-VIRTUALENV=$(INSTALL_PUBLIC)/venv/ddrpublic
-SETTINGS=$(INSTALL_PUBLIC)/ddrpublic/ddrpublic/settings.py
+VIRTUALENV=./venv/ddrpublic
+SETTINGS=./ddrpublic/ddrpublic/settings.py
 
 CONF_BASE=/etc/ddr
 CONF_PRODUCTION=$(CONF_BASE)/ddrpublic.cfg
@@ -262,13 +262,13 @@ install-namesdb: install-virtualenv
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_NAMESDB) && python setup.py install
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_NAMESDB) && pip3 install -U -r $(INSTALL_NAMESDB)/requirements.txt
+	cd $(INSTALL_NAMESDB) && pip3 install -U -r requirements.txt
 
 uninstall-namesdb: install-virtualenv
 	@echo ""
 	@echo "uninstall-namesdb ------------------------------------------------------"
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_NAMESDB) && pip3 uninstall -y -r $(INSTALL_NAMESDB)/requirements.txt
+	cd $(INSTALL_NAMESDB) && pip3 uninstall -y -r requirements.txt
 
 clean-namesdb:
 	-rm -Rf $(INSTALL_NAMESDB)/build
