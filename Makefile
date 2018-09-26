@@ -6,6 +6,8 @@ SHELL = /bin/bash
 APP_VERSION := $(shell cat VERSION)
 GIT_SOURCE_URL=https://github.com/densho/ddr-public
 
+PYTHON_VERSION=python3.5
+
 # Release name e.g. jessie
 DEBIAN_CODENAME := $(shell lsb_release -sc)
 # Release numbers e.g. 8.10
@@ -30,12 +32,12 @@ SRC_REPO_NAMESDB=https://github.com/densho/namesdb.git
 
 INSTALL_BASE=/opt
 INSTALL_PUBLIC=$(INSTALL_BASE)/ddr-public
-INSTALL_NAMESDB=$(INSTALL_PUBLIC)/namesdb
-REQUIREMENTS=$(INSTALL_PUBLIC)/requirements.txt
+INSTALL_NAMESDB=./namesdb
+REQUIREMENTS=./requirements.txt
 PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
 
-VIRTUALENV=$(INSTALL_PUBLIC)/venv/ddrpublic
-SETTINGS=$(INSTALL_PUBLIC)/ddrpublic/ddrpublic/settings.py
+VIRTUALENV=./venv/ddrpublic
+SETTINGS=./ddrpublic/ddrpublic/settings.py
 
 CONF_BASE=/etc/ddr
 CONF_PRODUCTION=$(CONF_BASE)/ddrpublic.cfg
@@ -222,19 +224,12 @@ install-virtualenv:
 	@echo ""
 	@echo "install-virtualenv -----------------------------------------------------"
 	apt-get --assume-yes install python-pip python-virtualenv
-	test -d $(VIRTUALENV) || virtualenv --python=python3 --distribute --setuptools $(VIRTUALENV)
-
-install-setuptools: install-virtualenv
-	@echo ""
-	@echo "install-setuptools -----------------------------------------------------"
-	apt-get --assume-yes install python-dev
-	source $(VIRTUALENV)/bin/activate; \
-	pip3 install -U setuptools
+	test -d $(VIRTUALENV) || virtualenv --python=python3 $(VIRTUALENV)
 
 
 get-app: get-namesdb get-ddr-public
 
-install-app: install-virtualenv install-setuptools install-namesdb install-ddr-public install-configs install-daemon-configs
+install-app: install-virtualenv install-namesdb install-ddr-public install-configs install-daemon-configs
 
 uninstall-app: uninstall-namesdb uninstall-ddr-public uninstall-configs uninstall-daemon-configs
 
@@ -262,13 +257,13 @@ install-namesdb: install-virtualenv
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_NAMESDB) && python setup.py install
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_NAMESDB) && pip3 install -U -r $(INSTALL_NAMESDB)/requirements.txt
+	cd $(INSTALL_NAMESDB) && pip3 install -U -r requirements.txt
 
 uninstall-namesdb: install-virtualenv
 	@echo ""
 	@echo "uninstall-namesdb ------------------------------------------------------"
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_NAMESDB) && pip3 uninstall -y -r $(INSTALL_NAMESDB)/requirements.txt
+	cd $(INSTALL_NAMESDB) && pip3 uninstall -y -r requirements.txt
 
 clean-namesdb:
 	-rm -Rf $(INSTALL_NAMESDB)/build
@@ -344,7 +339,7 @@ install-restframework:
 	@echo ""
 	@echo "rest-framework assets ---------------------------------------------------"
 	-mkdir -p $(MEDIA_BASE)
-	cp -R $(VIRTUALENV)/lib/python3.4/site-packages/rest_framework/static/rest_framework/ $(STATIC_ROOT)/
+	cp -R $(VIRTUALENV)/lib/$(PYTHON_VERSION)/site-packages/rest_framework/static/rest_framework/ $(STATIC_ROOT)/
 
 clean-restframework:
 	-rm -Rf $(STATIC_ROOT)/rest_framework/
@@ -461,6 +456,11 @@ git-status:
 
 
 # http://fpm.readthedocs.io/en/latest/
+install-fpm:
+	@echo "install-fpm ------------------------------------------------------------"
+	apt-get install ruby ruby-dev rubygems build-essential
+	gem install --no-ri --no-rdoc fpm
+
 # https://stackoverflow.com/questions/32094205/set-a-custom-install-directory-when-making-a-deb-package-with-fpm
 # https://brejoc.com/tag/fpm/
 deb: deb-jessie deb-stretch
@@ -507,7 +507,7 @@ deb-jessie:
 	README.rst=$(DEB_BASE)   \
 	requirements.txt=$(DEB_BASE)   \
 	venv=$(DEB_BASE)   \
-	venv/ddrpublic/lib/python3.4/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
+	venv/ddrpublic/lib/$(PYTHON_VERSION)/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
 	VERSION=$(DEB_BASE)
 
 # deb-jessie and deb-stretch are identical
@@ -552,5 +552,5 @@ deb-stretch:
 	README.rst=$(DEB_BASE)   \
 	requirements.txt=$(DEB_BASE)   \
 	venv=$(DEB_BASE)   \
-	venv/ddrpublic/lib/python3.4/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
+	venv/ddrpublic/lib/$(PYTHON_VERSION)/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
 	VERSION=$(DEB_BASE)
