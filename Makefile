@@ -6,6 +6,8 @@ SHELL = /bin/bash
 APP_VERSION := $(shell cat VERSION)
 GIT_SOURCE_URL=https://github.com/densho/ddr-public
 
+PYTHON_VERSION=python3.5
+
 # Release name e.g. jessie
 DEBIAN_CODENAME := $(shell lsb_release -sc)
 # Release numbers e.g. 8.10
@@ -337,7 +339,7 @@ install-restframework:
 	@echo ""
 	@echo "rest-framework assets ---------------------------------------------------"
 	-mkdir -p $(MEDIA_BASE)
-	cp -R $(VIRTUALENV)/lib/python3.4/site-packages/rest_framework/static/rest_framework/ $(STATIC_ROOT)/
+	cp -R $(VIRTUALENV)/lib/$(PYTHON_VERSION)/site-packages/rest_framework/static/rest_framework/ $(STATIC_ROOT)/
 
 clean-restframework:
 	-rm -Rf $(STATIC_ROOT)/rest_framework/
@@ -500,7 +502,7 @@ deb-jessie:
 	README.rst=$(DEB_BASE)   \
 	requirements.txt=$(DEB_BASE)   \
 	venv=$(DEB_BASE)   \
-	venv/ddrpublic/lib/python3.4/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
+	venv/ddrpublic/lib/$(PYTHON_VERSION)/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
 	VERSION=$(DEB_BASE)
 
 # deb-jessie and deb-stretch are identical
@@ -545,5 +547,5 @@ deb-stretch:
 	README.rst=$(DEB_BASE)   \
 	requirements.txt=$(DEB_BASE)   \
 	venv=$(DEB_BASE)   \
-	venv/ddrpublic/lib/python3.4/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
+	venv/ddrpublic/lib/$(PYTHON_VERSION)/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
 	VERSION=$(DEB_BASE)
