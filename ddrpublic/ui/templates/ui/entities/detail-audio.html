@@ -258,7 +258,11 @@ IA metadata: {{ object.ia_meta|safe }}
                     <p>
                       {% rightsbadge object.rights %}
                     </p>
-
+                    {% if object.rights_statement %}
+                    <p>
+                      {{ object.rights_statement }}
+                    </p>
+                    {% endif %}
                 </div>	
             </div>
     </div>

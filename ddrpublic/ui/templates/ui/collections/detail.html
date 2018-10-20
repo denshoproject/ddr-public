@@ -60,7 +60,9 @@
                 <p>{{ object.id }}</p>
                 <h3 class="page-header">DESCRIPTION</h3>
                 <p>{{ object.description|safe }}</p>
-
+                {% if object.scopecontent %}
+                <p>{{ object.scopecontent }}</p>
+                {% endif %}
                 <!-- core meta -->
                 <div class="row">
                         <div class="col-md-5 col-sm-5">
@@ -85,6 +87,11 @@
                 <p>
                     {% rightsbadge object.rights %}
                 </p>
+                {% if object.userrestrict %}
+                <p>
+                    {{ object.userrestrict }}
+                </p>
+                {% endif %}
             </div><!-- end desc -->
         </div><!-- end right meta col -->
     </div><!-- //row-->
