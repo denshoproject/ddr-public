@@ -263,6 +263,7 @@ class Searcher(object):
                     fields=SEARCH_INCLUDE_FIELDS,
                     analyze_wildcard=False,
                     allow_leading_wildcard=False,
+                    default_operator='AND',
                 )
             )
 
