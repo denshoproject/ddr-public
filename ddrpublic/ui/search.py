@@ -267,11 +267,14 @@ class Searcher(object):
                 )
             )
 
-        # parent
+        parent = ''
         if params.get('parent'):
-            param = params.pop('parent')
-            parent = '%s*' % param[0]
-            s = s.query("wildcard", id=parent)
+            parent = params.pop('parent')
+            if isinstance(parent, list) and (len(parent) == 1):
+                parent = parent[0]
+            if parent:
+                parent = '%s*' % parent
+                s = s.query("wildcard", id=parent)
         
         # filters
         for key,val in params.items():
