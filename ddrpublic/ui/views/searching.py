@@ -1,10 +1,12 @@
 import logging
 logger = logging.getLogger(__name__)
+import re
 from urllib.parse import urlparse, urlunparse
 
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
 from elasticsearch.exceptions import ConnectionError, ConnectionTimeout
@@ -21,6 +23,38 @@ def _mkurl(request, path, query=None):
         request.META['HTTP_HOST'],
         path, None, query, None
     ))
+
+ID_PATTERNS = [
+    '^(?P<repo>[\w]+)-(?P<org>[\w]+)-(?P<cid>[\d]+)-(?P<eid>[\d]+)-(?P<role>[a-zA-Z]+)-(?P<sha1>[\w]+)$',
+    '^(?P<repo>[\w]+)-(?P<org>[\w]+)-(?P<cid>[\d]+)-(?P<eid>[\d]+)-(?P<sid>[\d]+)-(?P<role>[a-zA-Z]+)-(?P<sha1>[\w]+)$',
+    '^(?P<repo>[\w]+)-(?P<org>[\w]+)-(?P<cid>[\d]+)-(?P<eid>[\d]+)-(?P<role>[a-zA-Z]+)$',
+    '^(?P<repo>[\w]+)-(?P<org>[\w]+)-(?P<cid>[\d]+)-(?P<eid>[\d]+)-(?P<sid>[\d]+)-(?P<role>[a-zA-Z]+)$',
+    '^(?P<repo>[\w]+)-(?P<org>[\w]+)-(?P<cid>[\d]+)-(?P<eid>[\d]+)-(?P<sid>[\d]+)$',
+    '^(?P<repo>[\w]+)-(?P<org>[\w]+)-(?P<cid>[\d]+)-(?P<eid>[\d]+)$',
+    '^(?P<repo>[\w]+)-(?P<org>[\w]+)-(?P<cid>[\d]+)$',
+    #'^(?P<repo>[\w]+)-(?P<org>[\w]+)$',
+    #'^(?P<repo>[\w]+)$',
+]
+
+def is_ddr_id(text, patterns=ID_PATTERNS):
+    """True if text matches one of ID_PATTERNS
+    
+    See ddr-cmdln:DDR.identifier._is_id
+    
+    @param text: str
+    @returns: dict of idparts including model
+    """
+    try:
+        ddr_index = text.index('ddr')
+    except:
+        ddr_index = -1
+    if ddr_index == 0:
+        for pattern in patterns:
+            m = re.match(pattern, text)
+            if m:
+                idparts = {k:v for k,v in m.groupdict().items()}
+                return idparts
+    return {}
 
 
 # views ----------------------------------------------------
@@ -39,6 +73,13 @@ def search_ui(request):
     
     if request.GET.get('fulltext'):
         context['searching'] = True
+        
+        # Redirect if fulltext is a DDR ID
+        if is_ddr_id(request.GET.get('fulltext')):
+            return HttpResponseRedirect(
+                reverse('ui-object-detail', args=[
+                    request.GET.get('fulltext')
+            ]))
         
         if request.GET.get('offset'):
             # limit and offset args take precedence over page
