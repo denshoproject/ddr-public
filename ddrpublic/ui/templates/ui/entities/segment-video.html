@@ -250,16 +250,22 @@ IA metadata: {{ segment.ia_meta|safe }}
                   <h3 class="page-header">TOPICS</h3>
                   <ul class="list-unstyled">
                     {% for item in segment.topics %}
-                    <li><a href="{{ item.html }}">{{ item.term_node }}</a></li>
+                    <li>
+                      <a href="{% url "ui-browse-term" "topics" item.id %}">{{ item.term_node }}</a>
+                    </li>
                     {% endfor %}
                   </ul>
                 </div>
                 <div class="col-md-7 col-sm-7">
                   <!-- entity.facility -->
                   <h3 class="page-header">FACILITY</h3>
+                  <ul class="list-unstyled">
                     {% for item in segment.facility %}
-                    <li><a href="{{ item.html }}">{{ item.term }}</a></li>
+                    <li>
+                      <a href="{% url "ui-browse-term" "facility" item.id %}">{{ item.term }}</a>
+                    </li>
                     {% endfor %}
+                  </ul>
                 </div>
               </div>
               <div class="row">
