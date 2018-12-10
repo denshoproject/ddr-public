@@ -179,18 +179,14 @@ IA metadata: {{ object.ia_meta|safe }}
                             <!-- entity.genre -->
                             <h3 class="page-header">OBJECT GENRE</h3>
                             <p>
-                              <a href="{% url "ui-search-results" %}{{ object.genre.query }}">
-                                {{ object.genre.label }}
-                              </a>
+                              {{ object.genre.label }}
                             </p>
                         </div>
                         <div class="col-md-7 col-sm-7">
                             <!-- entity.format -->
                             <h3 class="page-header">OBJECT FORMAT</h3>
                             <p>
-                              <a href="{% url "ui-search-results" %}{{ object.format.query }}">
-                                {{ object.format.label }}
-                              </a>
+                              {{ object.format.label }}
                             </p>
                         </div>
                     </div>
