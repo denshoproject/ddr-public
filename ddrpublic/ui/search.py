@@ -446,7 +446,10 @@ class Searcher(object):
         for key in bad_fields:
             params.pop(key)
         
-        fulltext = params.pop('fulltext')
+        if params.get('fulltext'):
+            fulltext = params.pop('fulltext')
+        else:
+            fulltext = ''
         
         if params.get('models'):
             models = params.pop('models')
