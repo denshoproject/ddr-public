@@ -44,38 +44,40 @@ def index(request, format=None):
     return Response(data)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def search(request, format=None):
     """
-    <a href="/api/0.2/search/help/">Search API help</a>
+    Search API help: /api/0.2/search/help/
     """
-    if request.GET.get('offset'):
-        # limit and offset args take precedence over page
-        limit = request.GET.get(
-            'limit',
-            int(request.GET.get('limit', settings.RESULTS_PER_PAGE))
+    if request.data.get('fulltext'):
+        if request.data.get('offset'):
+            # limit and offset args take precedence over page
+            limit = request.data.get(
+                'limit',
+                int(request.data.get('limit', settings.RESULTS_PER_PAGE))
+            )
+            offset = request.data.get(
+                'offset',
+                int(request.data.get('offset', 0))
+            )
+        elif request.data.get('page'):
+            limit = settings.RESULTS_PER_PAGE
+            thispage = int(request.data['page'])
+            offset = es_offset(limit, thispage)
+        else:
+            limit = settings.RESULTS_PER_PAGE
+            offset = 0
+        
+        searcher = Searcher(
+            #mappings=identifier.ELASTICSEARCH_CLASSES_BY_MODEL,
+            #fields=identifier.ELASTICSEARCH_LIST_FIELDS,
         )
-        offset = request.GET.get(
-            'offset',
-            int(request.GET.get('offset', 0))
+        searcher.prepare(request)
+        results = searcher.execute(limit, offset)
+        return Response(
+            results.ordered_dict(request, format_functions=FORMATTERS)
         )
-    elif request.GET.get('page'):
-        limit = settings.RESULTS_PER_PAGE
-        thispage = int(request.GET['page'])
-        offset = es_offset(limit, thispage)
-    else:
-        limit = settings.RESULTS_PER_PAGE
-        offset = 0
-
-    searcher = Searcher(
-        #mappings=identifier.ELASTICSEARCH_CLASSES_BY_MODEL,
-        #fields=identifier.ELASTICSEARCH_LIST_FIELDS,
-    )
-    searcher.prepare(request)
-    results = searcher.execute(limit, offset)
-    return Response(
-        results.ordered_dict(request, format_functions=FORMATTERS)
-    )
+    return Response({})
 
 
 @api_view(['GET'])
