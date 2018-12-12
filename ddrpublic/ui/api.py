@@ -82,7 +82,7 @@ def search(request, format=None):
 
 @api_view(['GET'])
 def object_nodes(request, object_id):
-    return files(request, object_id)
+    return files(request._request, object_id)
 
 
 @api_view(['GET'])
@@ -96,11 +96,11 @@ def object_children(request, object_id):
     # TODO just get doc_type
     document = es.get(index=settings.DOCSTORE_INDEX, doc_type='_all', id=object_id)
     model = document['_type']
-    if   model == 'repository': return organizations(request, object_id)
-    elif model == 'organization': return collections(request, object_id)
-    elif model == 'collection': return entities(request, object_id)
-    elif model == 'entity': return segments(request, object_id)
-    elif model == 'segment': return files(request, object_id)
+    if   model == 'repository': return organizations(request._request, object_id)
+    elif model == 'organization': return collections(request._request, object_id)
+    elif model == 'collection': return entities(request._request, object_id)
+    elif model == 'entity': return segments(request._request, object_id)
+    elif model == 'segment': return files(request._request, object_id)
     elif model == 'file': assert False
     raise Exception("Could not match ID,model,view.")
 
@@ -178,12 +178,12 @@ def object_detail(request, object_id):
     # TODO just get doc_type
     document = es.get(index=settings.DOCSTORE_INDEX, doc_type='_all', id=object_id)
     model = document['_type']
-    if   model == 'repository': return repository(request, object_id)
-    elif model == 'organization': return organization(request, object_id)
-    elif model == 'collection': return collection(request, object_id)
-    elif model == 'entity': return entity(request, object_id)
-    elif model == 'segment': return entity(request, object_id)
-    elif model == 'file': return file(request, object_id)
+    if   model == 'repository': return repository(request._request, object_id)
+    elif model == 'organization': return organization(request._request, object_id)
+    elif model == 'collection': return collection(request._request, object_id)
+    elif model == 'entity': return entity(request._request, object_id)
+    elif model == 'segment': return entity(request._request, object_id)
+    elif model == 'file': return file(request._request, object_id)
     raise Exception("Could not match ID,model,view.")
 
 def _detail(request, data):
