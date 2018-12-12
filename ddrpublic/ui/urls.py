@@ -18,8 +18,8 @@ urlpatterns = [
     url(r'^api/0.2/search/help/', TemplateView.as_view(template_name="ui/search/help.html"), name='ui-about'),
     url(r'^api/0.2/search/$', api.search, name='ui-api-search'),
     
-    url(r'^api/0.2/narrator/(?P<oid>[\w]+)/interviews/$', api.narrator_interviews, name='ui-api-narrator-interviews'),
-    url(r'^api/0.2/narrator/(?P<oid>[\w]+)/$', api.narrator, name='ui-api-narrator'),
+    url(r'^api/0.2/narrator/(?P<object_id>[\w]+)/interviews/$', api.narrator_interviews, name='ui-api-narrator-interviews'),
+    url(r'^api/0.2/narrator/(?P<object_id>[\w]+)/$', api.narrator, name='ui-api-narrator'),
     url(r'^api/0.2/narrator/$', api.narrators, name='ui-api-narrators'),
     
     url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/children/$', api.facetterms, name='ui-api-facetterms'),
@@ -28,9 +28,9 @@ urlpatterns = [
     url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/$', api.facet, name='ui-api-facet'),
     url(r'^api/0.2/facet/$', api.facet_index, name='ui-api-facets'),
     
-    url(r'^api/0.2/(?P<oid>[\w\d-]+)/children/$', api.object_children, name='ui-api-object-children'),
-    url(r'^api/0.2/(?P<oid>[\w\d-]+)/files/$', api.object_nodes, name='ui-api-object-nodes'),
-    url(r'^api/0.2/(?P<oid>[\w\d-]+)/$', api.object_detail, name='ui-api-object'),
+    url(r'^api/0.2/(?P<object_id>[\w\d-]+)/children/$', api.object_children, name='ui-api-object-children'),
+    url(r'^api/0.2/(?P<object_id>[\w\d-]+)/files/$', api.object_nodes, name='ui-api-object-nodes'),
+    url(r'^api/0.2/(?P<object_id>[\w\d-]+)/$', api.object_detail, name='ui-api-object'),
     
     url(r'^api/0.2/$', api.index, name='ui-api-index'),
     url(r'^api/0.1/$', api.index, name='ui-api-index'),
