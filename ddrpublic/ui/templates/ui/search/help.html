@@ -1,4 +1,4 @@
-{% extends "rest_framework/api.html" %}
+{% extends BASE_TEMPLATE %}
 
 {% block title %}API Search Help{% endblock %}
 
@@ -11,14 +11,80 @@
 {% endblock %}
 
 
-{% block description %}
-<h1>
-Search Help
-</h1>
+{% block content %}
+<div class="blog">
+	<section id="overview" class="container">
+        <div class="row">
+           <div class="col-md-9">
+<h2>
+  Search Help
+</h2>
 
 <p>
-Search query JSON format.
+  There are two ways to use the search API: URL query parameters and the Elasticsearch query JSON.
 </p>
+
+<h3>
+URL params search.
+</h3>
+
+<p>
+Search API uses HTTP GET with filters as URL params.
+</p>
+
+<ul>
+  <li>
+    <b>?fulltext=YOURTEXT</b> (required): Text on which to perform a fulltext search.
+  </li>
+  <li>
+    <b>&topics=TOPICID</b>:
+    See <a href="http://ddrpublic.local/browse/topics/">The topics section</a>.
+  </li>
+  <li>
+    <b>&facility=FACILITYID</b>:
+    See <a href="http://ddrpublic.local/browse/facility/">The facilities section</a>.
+  </li>
+  <li>
+    <b>&format=FORMAT</b>:
+    See <a href="http://partner.densho.org/vocab/api/0.2/format.json">http://partner.densho.org/vocab/api/0.2/format.json</a>
+  </li>
+  <li>
+    <b>&genre=GENRE</b>:
+    See <a href="http://partner.densho.org/vocab/api/0.2/genre.json">http://partner.densho.org/vocab/api/0.2/genre.json</a>
+  </li>
+  <li>
+    <b>&rights=RIGHTS</b>:
+    See <a href="http://partner.densho.org/vocab/api/0.2/rights.json">http://partner.densho.org/vocab/api/0.2/rights.json</a>
+  </li>
+</ul>
+
+<p>
+  The <b>fulltext</b> field uses <a href="https://www.elastic.co/guide/en/elasticsearch/reference/2.4/query-dsl-query-string-query.html#query-string-syntax">Elasticsearch <i>query_string</i> syntax</a>.
+  DDR field names are searchable via this method.
+  <b>Note:</b> Wildcards at the beginning of a word (eg "*ing") are ignored.
+</p>
+
+<dl>
+  <dh>
+    Protip: The search API uses the exact same URL params as the front-facing search UI.  Do a search in the UI, then add the API prefix to do an API search.  Example:
+  </dh>
+  <dd>
+    <a href="http://ddrpublic.local/search/?fulltext=minidoka&topics=173&genre=photograph">http://ddrpublic.local/search/?fulltext=minidoka&topics=173&genre=photograph</a>
+  </dd>
+  <dd>
+    -> <a href="http://ddrpublic.local/api/0.2/search/?fulltext=minidoka&topics=173&genre=photograph">http://ddrpublic.local/api/0.2/search/?fulltext=minidoka&topics=173&genre=photograph</a>
+  </dd>
+</dl>
+
+
+<h3>
+Search query JSON format.
+</h3>
+
+<p>
+  Search queries can also be composed using a subset of the Elasticsearch query syntax and POSTed to the search API URL.
+</p>
+
 <pre>
 {
     "fulltext": "FULL TEXT SEARCH HERE",
@@ -69,12 +135,9 @@ For example, the <code>role</code> field below would be referred to as <code>cre
     },
     ...
 </pre>
-{% endblock description %}
 
-{% block request %}
-request
-{% endblock request %}
-
-{% block response %}
-response
-{% endblock response %}
+           </div>
+        </div>
+	</section>
+</div>
+{% endblock content %}
