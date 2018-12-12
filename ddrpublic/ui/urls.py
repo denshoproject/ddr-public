@@ -1,6 +1,9 @@
 from django.conf.urls import include, url
 from django.views.generic import TemplateView
 
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework import permissions
 from rest_framework.urlpatterns import format_suffix_patterns
 
 from . import api
@@ -9,9 +12,33 @@ from .views import cite, choose_tab, redirect, index
 
 API_BASE = '/api/0.2/'
 
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Densho Digital Repository API",
+      default_version='0.2',
+      description="DESCRIPTION TEXT HERE",
+      terms_of_service="http://ddr.densho.org/terms/",
+      contact=openapi.Contact(email="info@densho.org"),
+      license=openapi.License(name="TBD"),
+   ),
+   #validators=['flex', 'ssv'],
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
+
 urlpatterns = [
     url(r'^redirect/archive.densho.org$', redirect, name='ui-redirect'),
     url(r'^names', include('names.urls')),
+    
+    #path(r'^api/swagger(?P<format>\.json|\.yaml)',
+    #     schema_view.without_ui(cache_timeout=0), name='schema-json'
+    #),
+    url(r'^api/swagger/',
+        schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'
+    ),
+    url(r'^api/redoc/',
+        schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'
+    ),
     
     url(r'^api/0.2/choose-tab/$', choose_tab, name='ui-api-choose-tab'),
     
