@@ -35,7 +35,7 @@ CHILDREN = {
 
 @api_view(['GET'])
 def index(request, format=None):
-    """INDEX DOCS
+    """Swagger UI: /api/swagger/
     """
     repo = 'ddr'
     data = {

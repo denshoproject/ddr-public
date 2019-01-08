@@ -61,6 +61,7 @@ urlpatterns = [
     
     url(r'^api/0.2/$', api.index, name='ui-api-index'),
     url(r'^api/0.1/$', api.index, name='ui-api-index'),
+    url(r'^api', api.index, name='ui-api-index'),
     
     url(r'^about/', TemplateView.as_view(template_name="ui/about.html"), name='ui-about'),
     url(r'^contact/$', TemplateView.as_view(template_name='ui/about.html'), name='ui-contact'),
