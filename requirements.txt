@@ -20,6 +20,5 @@ gunicorn==19.8.1                   # MIT      y
 redis==2.10.6                      # MIT      y
 requests==2.18.4                   # Apache2  y
 sorl-thumbnail==12.4.1             # BSD      y
-unicodecsv==0.14.1                 #                  NOTE: match namesdb version
 
 bpython==0.17.1
