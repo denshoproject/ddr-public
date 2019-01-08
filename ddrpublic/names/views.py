@@ -85,6 +85,27 @@ def index(request, template_name='names/index.html'):
 
 
 @require_http_methods(['GET',])
+def detail(request, id, template_name='names/detail.html'):
+    record = models.Rcrd.get(
+        using=models.ES, index=settings.NAMESDB_DOCSTORE_INDEX, id=id
+    )
+    record.fields = record.fields_enriched(label=True, description=True).values()
+    record.other_datasets = models.other_datasets(
+        settings.NAMESDB_DOCSTORE_HOSTS,
+        settings.NAMESDB_DOCSTORE_INDEX,
+        record
+    )
+    record.family_members = models.same_familyno(
+        settings.NAMESDB_DOCSTORE_HOSTS,
+        settings.NAMESDB_DOCSTORE_INDEX,
+        record
+    )
+    return render(request, template_name, {
+        'record': record,
+    })
+
+
+@require_http_methods(['GET',])
 def search(request, template_name='names/search.html'):
     """
     specify filter field names and optional values in URL/request.GET
@@ -148,25 +169,4 @@ def search(request, template_name='names/search.html'):
         'form': form,
         'body': json.dumps(body, indent=4, separators=(',', ': '), sort_keys=True),
         'paginator': paginator,
-    })
-
-
-@require_http_methods(['GET',])
-def detail(request, id, template_name='names/detail.html'):
-    record = models.Rcrd.get(
-        using=models.ES, index=settings.NAMESDB_DOCSTORE_INDEX, id=id
-    )
-    record.fields = record.fields_enriched(label=True, description=True).values()
-    record.other_datasets = models.other_datasets(
-        settings.NAMESDB_DOCSTORE_HOSTS,
-        settings.NAMESDB_DOCSTORE_INDEX,
-        record
-    )
-    record.family_members = models.same_familyno(
-        settings.NAMESDB_DOCSTORE_HOSTS,
-        settings.NAMESDB_DOCSTORE_INDEX,
-        record
-    )
-    return render(request, template_name, {
-        'record': record,
     })
