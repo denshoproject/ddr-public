@@ -9,6 +9,9 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+from rest_framework.views import APIView
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 from .misc import filter_if_branded
 from .models import Repository, Organization, Collection, Entity, File
@@ -44,25 +47,107 @@ def index(request, format=None):
     return Response(data)
 
 
-@api_view(['GET', 'POST'])
-def search(request, format=None):
-    """
-    Search API help: /api/0.2/search/help/
-    """
-    if request.data.get('fulltext'):
-        if request.data.get('offset'):
+class Search(APIView):
+    
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter(
+            'fulltext',
+            description='Search string using Elasticsearch query_string syntax.',
+            required=True,
+            in_=openapi.IN_QUERY, type=openapi.TYPE_STRING
+        ),
+        openapi.Parameter(
+            'topics',
+            description='Topic term ID(s) from http://partner.densho.org/vocab/api/0.2/topics.json.',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_ARRAY, items={'type':'integer'}
+        ),
+        openapi.Parameter(
+            'facility',
+            description='Facility ID(s) from http://partner.densho.org/vocab/api/0.2/facility.json.',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_ARRAY, items={'type':'integer'}
+        ),
+        openapi.Parameter(
+            'format',
+            description='Format term ID(s) from http://partner.densho.org/vocab/api/0.2/format.json.',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_ARRAY, items={'type':'string'}
+        ),
+        openapi.Parameter(
+            'genre',
+            description='Genre term ID(s) from http://partner.densho.org/vocab/api/0.2/genre.json',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_ARRAY, items={'type':'string'}
+        ),
+        openapi.Parameter(
+            'rights',
+            description='Rights term ID(s) from http://partner.densho.org/vocab/api/0.2/rights.json',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_ARRAY, items={'type':'string'}
+        ),
+        openapi.Parameter(
+            'page',
+            description='Selected results page (default: 0).',
+            in_=openapi.IN_QUERY, type=openapi.TYPE_STRING
+        ),
+    ])
+    def get(self, request, format=None):
+        """Search the Repository; good for simpler searches.
+        
+        Search API help: /api/0.2/search/help/
+        """
+        if request.GET.get('fulltext'):
+            return self.grep(request)
+        return Response({})
+    
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter(
+            'body',
+            description='DESCRIPTION HERE',
+            required=True,
+            in_=openapi.IN_FORM, type=openapi.TYPE_STRING),
+    ])
+    def post(self, request, format=None):
+        """Search the Repository; good for more complicated custom searches.
+        
+        Search API help: /api/0.2/search/help/
+        
+        Sample search body JSON:
+        
+        {
+            "fulltext": "seattle",
+            "must": [
+                {"topics": "239"}
+            ]
+        }
+
+        """
+        if request.data.get('fulltext'):
+            return self.grep(request)
+        return Response({})
+    
+    def grep(self, request):
+        def reget(request, field):
+            if request.GET.get(field):
+                return request.GET[field]
+            elif request.data.get(field):
+                return request.data[field]
+            return None
+        
+        fulltext = reget(request, 'fulltext')
+        offset = reget(request, 'offset')
+        limit = reget(request, 'limit')
+        page = reget(request, 'page')
+        
+        if offset:
             # limit and offset args take precedence over page
-            limit = request.data.get(
-                'limit',
-                int(request.data.get('limit', settings.RESULTS_PER_PAGE))
-            )
-            offset = request.data.get(
-                'offset',
-                int(request.data.get('offset', 0))
-            )
-        elif request.data.get('page'):
+            if not limit:
+                limit = settings.RESULTS_PER_PAGE
+            offset = int(offset)
+        elif page:
             limit = settings.RESULTS_PER_PAGE
-            thispage = int(request.data['page'])
+            thispage = int(page)
             offset = es_offset(limit, thispage)
         else:
             limit = settings.RESULTS_PER_PAGE
@@ -77,7 +162,6 @@ def search(request, format=None):
         return Response(
             results.ordered_dict(request, format_functions=FORMATTERS)
         )
-    return Response({})
 
 
 @api_view(['GET'])

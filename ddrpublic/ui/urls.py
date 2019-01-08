@@ -43,7 +43,7 @@ urlpatterns = [
     url(r'^api/0.2/choose-tab/$', choose_tab, name='ui-api-choose-tab'),
     
     url(r'^api/0.2/search/help/', TemplateView.as_view(template_name="ui/search/help.html"), name='ui-about'),
-    url(r'^api/0.2/search/$', api.search, name='ui-api-search'),
+    url(r'^api/0.2/search/$', api.Search.as_view(), name='ui-api-search'),
     
     url(r'^api/0.2/narrator/(?P<object_id>[\w]+)/interviews/$', api.narrator_interviews, name='ui-api-narrator-interviews'),
     url(r'^api/0.2/narrator/(?P<object_id>[\w]+)/$', api.narrator, name='ui-api-narrator'),
