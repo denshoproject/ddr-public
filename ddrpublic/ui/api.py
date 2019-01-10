@@ -3,7 +3,7 @@ from collections import OrderedDict
 from django.conf import settings
 
 from elasticsearch import Elasticsearch
-es = Elasticsearch(settings.DOCSTORE_HOSTS)
+ddr_es = Elasticsearch(settings.DOCSTORE_HOSTS)
 
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -17,7 +17,7 @@ from .misc import filter_if_branded
 from .models import Repository, Organization, Collection, Entity, File
 from .models import Narrator, Facet, Term
 from .models import FORMATTERS
-from .search import es_offset, Searcher
+from . import search
 
 DEFAULT_LIMIT = 25
 
@@ -128,6 +128,8 @@ class Search(APIView):
         return Response({})
     
     def grep(self, request):
+        """DR search
+        """
         def reget(request, field):
             if request.GET.get(field):
                 return request.GET[field]
@@ -148,16 +150,25 @@ class Search(APIView):
         elif page:
             limit = settings.RESULTS_PER_PAGE
             thispage = int(page)
-            offset = es_offset(limit, thispage)
+            offset = search.es_offset(limit, thispage)
         else:
             limit = settings.RESULTS_PER_PAGE
             offset = 0
         
-        searcher = Searcher(
+        searcher = search.Searcher(
+            conn=ddr_es,
+            index=settings.DOCSTORE_INDEX,
             #mappings=identifier.ELASTICSEARCH_CLASSES_BY_MODEL,
             #fields=identifier.ELASTICSEARCH_LIST_FIELDS,
         )
-        searcher.prepare(request)
+        searcher.prepare(
+            params=request,
+            params_whitelist=search.SEARCH_PARAM_WHITELIST,
+            search_models=search.SEARCH_MODELS,
+            fields=search.SEARCH_INCLUDE_FIELDS,
+            fields_nested=search.SEARCH_NESTED_FIELDS,
+            fields_agg=search.SEARCH_AGG_FIELDS,
+        )
         results = searcher.execute(limit, offset)
         return Response(
             results.ordered_dict(request, format_functions=FORMATTERS)
@@ -178,7 +189,7 @@ def object_children(request, object_id):
     p - page (offset)
     """
     # TODO just get doc_type
-    document = es.get(index=settings.DOCSTORE_INDEX, doc_type='_all', id=object_id)
+    document = ddr_es.get(index=settings.DOCSTORE_INDEX, doc_type='_all', id=object_id)
     model = document['_type']
     if   model == 'repository': return organizations(request._request, object_id)
     elif model == 'organization': return collections(request._request, object_id)
@@ -260,7 +271,7 @@ def object_detail(request, object_id):
     """OBJECT DETAIL DOCS
     """
     # TODO just get doc_type
-    document = es.get(index=settings.DOCSTORE_INDEX, doc_type='_all', id=object_id)
+    document = ddr_es.get(index=settings.DOCSTORE_INDEX, doc_type='_all', id=object_id)
     model = document['_type']
     if   model == 'repository': return repository(request._request, object_id)
     elif model == 'organization': return organization(request._request, object_id)

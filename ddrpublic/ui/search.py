@@ -193,6 +193,20 @@ def django_page(limit, offset):
     """
     return divmod(offset, limit)[0] + 1
 
+def es_host_name(conn):
+    """Extracts host:port from Elasticsearch conn object.
+    
+    >>> es_host_name(Elasticsearch(settings.DOCSTORE_HOSTS))
+    "<Elasticsearch([{'host': '192.168.56.1', 'port': '9200'}])>"
+    
+    @param conn: elasticsearch.Elasticsearch with hosts/port
+    @returns: str e.g. "192.168.56.1:9200"
+    """
+    start = conn.__repr__().index('[') + 1
+    end = conn.__repr__().index(']')
+    text = conn.__repr__()[start:end].replace("'", '"')
+    hostdata = json.loads(text)
+    return ':'.join([hostdata['host'], hostdata['port']])
 
 def es_search():
     return Search(using=DOCSTORE.es, index=DOCSTORE.indexname)
@@ -404,7 +418,8 @@ class SearchResults(object):
 
 
 class Searcher(object):
-    """
+    """Wrapper around elasticsearch_dsl.Search
+    
     >>> s = Searcher(index)
     >>> s.prep(request_data)
     'ok'
@@ -412,7 +427,6 @@ class Searcher(object):
     'ok'
     >>> d = r.to_dict(request)
     """
-    index = DOCSTORE.indexname
     fields = []
     q = OrderedDict()
     params = {}
@@ -420,11 +434,30 @@ class Searcher(object):
     sort_cleaned = None
     s = None
     
-    def __init__(self, search=None):
+    def __init__(self, conn=DOCSTORE.es, index=DOCSTORE.indexname, search=None):
+        """
+        @param conn: elasticsearch.Elasticsearch with hosts/port
+        @param index: str Elasticsearch index name
+        """
+        self.conn = conn
+        self.index = index
         self.s = search
+    
+    def __repr__(self):
+        return u"<Searcher '%s/%s'>" % (
+            es_host_name(self.conn), self.index
+        )
 
-    def prepare(self, params={}):
-        """assemble elasticsearch_dsl.Search object
+    def prepare(self, params={}, params_whitelist=SEARCH_PARAM_WHITELIST, search_models=SEARCH_MODELS, fields=SEARCH_INCLUDE_FIELDS, fields_nested=SEARCH_NESTED_FIELDS, fields_agg=SEARCH_AGG_FIELDS):
+        """Assemble elasticsearch_dsl.Search object
+        
+        @param params:           dict or HttpRequest
+        @param params_whitelist: list Accept only these (SEARCH_PARAM_WHITELIST)
+        @param search_models:    list Limit to these ES doctypes (SEARCH_MODELS)
+        @param fields:           list Retrieve these fields (SEARCH_INCLUDE_FIELDS)
+        @param fields_nested:    list See SEARCH_NESTED_FIELDS
+        @param fields_agg:       dict See SEARCH_AGG_FIELDS
+        @returns: 
         """
 
         # gather inputs ------------------------------
@@ -441,7 +474,7 @@ class Searcher(object):
         # whitelist params
         bad_fields = [
             key for key in params.keys()
-            if key not in SEARCH_PARAM_WHITELIST + ['page']
+            if key not in params_whitelist + ['page']
         ]
         for key in bad_fields:
             params.pop(key)
@@ -454,7 +487,7 @@ class Searcher(object):
         if params.get('models'):
             models = params.pop('models')
         else:
-            models = SEARCH_MODELS
+            models = search_models
 
         parent = ''
         if params.get('parent'):
@@ -465,8 +498,8 @@ class Searcher(object):
                 parent = '%s*' % parent
         
         s = Search(
-            using=DOCSTORE.es,
-            index=DOCSTORE.indexname,
+            using=self.conn,
+            index=self.index,
             doc_type=models,
         )
         #s = s.source(include=SEARCH_LIST_FIELDS)
@@ -480,7 +513,7 @@ class Searcher(object):
             s = s.query(
                 QueryString(
                     query=fulltext,
-                    fields=SEARCH_INCLUDE_FIELDS,
+                    fields=fields,
                     analyze_wildcard=False,
                     allow_leading_wildcard=False,
                     default_operator='AND',
@@ -494,7 +527,7 @@ class Searcher(object):
         # filters
         for key,val in params.items():
             
-            if key in SEARCH_NESTED_FIELDS:
+            if key in fields_nested:
                 # Instead of nested search on topics.id or facility.id
                 # search on denormalized topics_id or facility_id fields.
                 fieldname = '%s_id' % key
@@ -525,12 +558,12 @@ class Searcher(object):
                 #    )
                 #)
     
-            elif key in SEARCH_PARAM_WHITELIST:
+            elif key in params_whitelist:
                 s = s.filter('term', **{key: val})
                 # 'term' search is for single choice, not multiple choice fields(?)
         
         # aggregations
-        for fieldname,field in SEARCH_AGG_FIELDS.items():
+        for fieldname,field in fields_agg.items():
             
             # nested aggregation (Elastic docs: https://goo.gl/xM8fPr)
             if fieldname == 'topics':

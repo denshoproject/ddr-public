@@ -95,10 +95,17 @@ def search_ui(request):
             offset = 0
         
         searcher = search.Searcher(
-            #mappings=identifier.ELASTICSEARCH_CLASSES_BY_MODEL,
-            #fields=identifier.ELASTICSEARCH_LIST_FIELDS,
+            conn=api.ddr_es,
+            index=settings.DOCSTORE_INDEX,
         )
-        searcher.prepare(request)
+        searcher.prepare(
+            params=request,
+            params_whitelist=search.SEARCH_PARAM_WHITELIST,
+            search_models=search.SEARCH_MODELS,
+            fields=search.SEARCH_INCLUDE_FIELDS,
+            fields_nested=search.SEARCH_NESTED_FIELDS,
+            fields_agg=search.SEARCH_AGG_FIELDS,
+        )
         results = searcher.execute(limit, offset)
         form = forms.SearchForm(
             data=request.GET.copy(),
