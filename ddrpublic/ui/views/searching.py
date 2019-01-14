@@ -66,6 +66,7 @@ def search_ui(request):
     )
     context = {
         'template_extends': 'ui/search/base.html',
+        'hide_header_search': True,
         'searching': False,
         'filters': True,
         'api_url': api_url,
