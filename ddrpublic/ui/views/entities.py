@@ -1,5 +1,6 @@
 import logging
 logger = logging.getLogger(__name__)
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.core.paginator import Paginator
@@ -92,7 +93,14 @@ def detail(request, oid):
         entity['id'], entity['parent_id'], entity['collection_id'],
         request
     )
-    
+
+    # urlencode location string for link (otherwise breaks search)
+    object_location = ''
+    if entity.get('location'):
+        object_location = urlencode(
+            [('fulltext', entity['location'])]
+        )
+
     template = AV_TEMPLATES.get(entity.get('template'), ENTITY_TEMPLATE_DEFAULT)
     
     return render(request, template, {
@@ -102,6 +110,7 @@ def detail(request, oid):
         'transcripts': transcripts,
         'facilities': facilities,
         'creators': creators,
+        'object_location': object_location,
         'parent': parent,
         'organization': organization,
         'signature': signature,
@@ -158,6 +167,13 @@ def interview(request, oid):
         request
     )
     
+    # urlencode location string for link (otherwise breaks search)
+    object_location = ''
+    if entity.get('location'):
+        object_location = urlencode(
+            [('fulltext', entity['location'])]
+        )
+    
     template = AV_TEMPLATES.get(entity.get('template'), SEGMENT_TEMPLATE_DEFAULT)
     
     return render(request, template, {
@@ -166,6 +182,7 @@ def interview(request, oid):
         'segment': segment,
         'segments': segments,
         'transcripts': transcripts,
+        'object_location': object_location,
         'entity': entity,
         'parent': parent,
         'collection': collection,
