@@ -77,12 +77,12 @@
               <div class="panel panel-default">
                   <div class="panel-heading">
                       <h4 class="panel-title">
-                          <a data-toggle="collapse" data-parent="#filters_accordion" href="#acordion1">
+                          <a id="searchfilters" data-toggle="collapse" data-parent="#filters_accordion" href="#acordion1">
                               <i class="fa fa-filter"></i> Filters
                           </a>
                       </h4>
                   </div>
-                  <div id="acordion1" class="collapse {% if filters %}in{% endif %}">
+                  <div id="acordion1" class="collapse {% if request.session.searchfilters == "open" %}in{% endif %}">
                       <div class="panel-body">
                           <div class="row">
                             <div class="col-sm-12 col-md-12">
@@ -141,19 +141,19 @@
         <!--  view selection tabs -->
         <div class="tabs no-margin-top" style="margin:10px 0;">
     <ul class="nav nav-tabs">
-        <li class="gallery {% if tab == "gallery" %}active{% endif %}">
+        <li class="gallery {% if request.session.liststyle == "gallery" %}active{% endif %}">
             <a href="#gallery_tab" data-toggle="tab">
                 <i class="fa fa-th"></i> Gallery view
             </a>
         </li>
-        <li class="list {% if tab == "list" %}active{% endif %}">
+        <li class="list {% if request.session.liststyle == "list" %}active{% endif %}">
             <a href="#list_tab" data-toggle="tab">
                 <i class="fa fa-list"></i> List view
             </a>
         </li>
     </ul>
     <div class="tab-content">
-        <div id="gallery_tab" class="tab-pane {% if tab == "gallery" %}active{% endif %}">
+        <div id="gallery_tab" class="tab-pane {% if request.session.liststyle == "gallery" %}active{% endif %}">
             <div id="item-count">
                 {{ paginator.count }} items<br/>
             </div>
@@ -173,7 +173,7 @@
 {% endif %}
 
         </div> <!-- end gallery_tab -->
-        <div id="list_tab" class="tab-pane {% if tab == "list" %}active{% endif %}">
+        <div id="list_tab" class="tab-pane {% if request.session.liststyle == "list" %}active{% endif %}">
               <div id="item-count">
                 {{ paginator.count }} items<br/>
               </div>

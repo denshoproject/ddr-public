@@ -23,23 +23,23 @@ def redirect(request):
 def cite( request ):
     return render(request, 'ui/cite.html', {})
 
-def choose_tab(request):
+def ui_state(request):
     """Remember which results view type between pages.
     """
-    TAB_CHOICES = [
-        'gallery',
-        'list',
-    ]
-    if request.GET.get('tab') in TAB_CHOICES:
-        request.session['tab'] = request.GET['tab']
-        return HttpResponse(
-            json.dumps({
-                'selected': request.GET['tab'],
-            }),
-            content_type="application/json"
-        )
-    else:
-        raise Http404
+    UI_STATE = {
+        'liststyle': ['gallery', 'list'],
+        'searchfilters': ['open', 'closed'],
+    }
+    for key,choices in UI_STATE.items():
+        if request.GET.get(key) in choices:
+            request.session[key] = request.GET[key]
+            return HttpResponse(
+                json.dumps({
+                    'selected': request.GET[key],
+                }),
+                content_type="application/json"
+            )
+    return Http404()
 
 def error400(request):
     return render(request, 'ui/400.html', {

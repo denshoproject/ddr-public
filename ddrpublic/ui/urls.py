@@ -8,7 +8,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 from . import api
 from .views import browse, search, searching, collections, entities, objects, index
-from .views import cite, choose_tab, redirect, index
+from .views import cite, ui_state, redirect, index
 
 API_BASE = '/api/0.2/'
 
@@ -40,7 +40,7 @@ urlpatterns = [
         schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'
     ),
     
-    url(r'^api/0.2/choose-tab/$', choose_tab, name='ui-api-choose-tab'),
+    url(r'^api/0.2/ui-state/$', ui_state, name='ui-api-state'),
     
     url(r'^api/0.2/search/help/', TemplateView.as_view(template_name="ui/search/help.html"), name='ui-about'),
     url(r'^api/0.2/search/$', api.Search.as_view(), name='ui-api-search'),
