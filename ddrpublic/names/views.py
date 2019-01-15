@@ -1,13 +1,18 @@
 import json
+from urllib.parse import urlparse, urlunparse
 
 from django.conf import settings
+from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
 from namesdb import definitions
-from .forms import SearchForm, FlexiSearchForm
+from . import forms
 from . import models
+from ui import api
+from ui import models as ui_models
+from ui import search
 
 PAGE_SIZE = 20
 CONTEXT = 3
@@ -20,6 +25,13 @@ NON_FILTER_FIELDS = [
     'query'
 ]
 
+
+def _mkurl(request, path, query=None):
+    return urlunparse((
+        request.META['wsgi.url_scheme'],
+        request.META['HTTP_HOST'],
+        path, None, query, None
+    ))
 
 @require_http_methods(['GET',])
 def index(request, template_name='names/index.html'):
@@ -44,7 +56,7 @@ def index(request, template_name='names/index.html'):
     m_camp_selected = None
     paginator = None
     if kwargs_values:
-        form = SearchForm(
+        form = forms.SearchForm(
             local_GET,
             hosts=settings.NAMESDB_DOCSTORE_HOSTS,
             index=settings.NAMESDB_DOCSTORE_INDEX
@@ -69,7 +81,7 @@ def index(request, template_name='names/index.html'):
                 response, thispage, pagesize, CONTEXT, request.META['QUERY_STRING']
             )
     else:
-        form = SearchForm(
+        form = forms.SearchForm(
             hosts=settings.NAMESDB_DOCSTORE_HOSTS,
             index=settings.NAMESDB_DOCSTORE_INDEX
         )
@@ -104,69 +116,69 @@ def detail(request, id, template_name='names/detail.html'):
         'record': record,
     })
 
-
-@require_http_methods(['GET',])
-def search(request, template_name='names/search.html'):
-    """
-    specify filter field names and optional values in URL/request.GET
-    form constructs itself with those fields
-    each field has aggregation (list of choices with counts)
-    form contains the list of fields
-    flexible: lets user construct "impossible" forms (e.g. both FAR and WRA fields)
-    """
-    thispage = int(request.GET.get('page', 1))
-    pagesize = int(request.GET.get('pagesize', PAGE_SIZE))
-    kwargs = [(key,val) for key,val in request.GET.items()]
-    
-    # for use in form
-    defined_fields = [key for key in definitions.FIELD_DEFINITIONS.keys()]
-    filters = {
-        key:val
-        for key,val in request.GET.items()
-        if key in defined_fields
-    }
-    query = request.GET.get('query', '')
-
-    search = None
-    if 'query' in request.GET:
-        form = FlexiSearchForm(
-            request.GET,
-            hosts=settings.NAMESDB_DOCSTORE_HOSTS,
-            index=settings.NAMESDB_DOCSTORE_INDEX,
-            filters=filters
-        )
-        if form.is_valid():
-            filters = form.cleaned_data
-            query = filters.pop('query')
-            search = models.search(
-                settings.NAMESDB_DOCSTORE_HOSTS,
-                settings.NAMESDB_DOCSTORE_INDEX,
-                query=query,
-                filters=filters,
-            )
-    else:
-        form = FlexiSearchForm(
-            hosts=settings.NAMESDB_DOCSTORE_HOSTS,
-            index=settings.NAMESDB_DOCSTORE_INDEX,
-            filters=filters
-        )
-    if not search:
-        search = models.search(
-            settings.NAMESDB_DOCSTORE_HOSTS,
-            settings.NAMESDB_DOCSTORE_INDEX,
-            query=query,
-            filters=filters,
-        )
-    
-    body = search.to_dict()
-    response = search.execute()
-    form.update_doc_counts(response)
-    paginator = models.Paginator(
-        response, thispage, pagesize, CONTEXT, request.META['QUERY_STRING']
+def search_ui(request):
+    api_url = '%s?%s' % (
+        _mkurl(request, reverse('ui-api-names-search')),
+        request.META['QUERY_STRING']
     )
-    return render(request, template_name, {
-        'kwargs': kwargs,
-        'form': form,
-        'body': json.dumps(body, indent=4, separators=(',', ': '), sort_keys=True),
-        'paginator': paginator,
-    })
+    context = {
+        'searching': False,
+        'filters': True,
+        'api_url': api_url,
+    }
+    
+    if request.GET.get('fulltext'):
+        context['searching'] = True
+        
+        if request.GET.get('offset'):
+            # limit and offset args take precedence over page
+            limit = request.GET.get(
+                'limit', int(request.GET.get('limit', settings.RESULTS_PER_PAGE))
+            )
+            offset = request.GET.get(
+                'offset', int(request.GET.get('offset', 0))
+            )
+        elif request.GET.get('page'):
+            limit = settings.RESULTS_PER_PAGE
+            thispage = int(request.GET['page'])
+            offset = search.es_offset(limit, thispage)
+        else:
+            limit = settings.RESULTS_PER_PAGE
+            offset = 0
+        
+        searcher = search.Searcher(
+            conn=api.names_es,
+            index=settings.NAMESDB_DOCSTORE_INDEX,
+        )
+        searcher.prepare(
+            params=request,
+            params_whitelist=search.SEARCH_PARAM_WHITELIST,
+            search_models=search.SEARCH_MODELS,
+            fields=search.SEARCH_INCLUDE_FIELDS,
+            fields_nested=search.SEARCH_NESTED_FIELDS,
+            fields_agg=search.SEARCH_AGG_FIELDS,
+        )
+        results = searcher.execute(limit, offset)
+        if results.objects:
+            paginator = Paginator(
+                results.ordered_dict(
+                    request=request,
+                    format_functions=ui_models.FORMATTERS,
+                    pad=True,
+                )['objects'],
+                results.page_size,
+            )
+            page = paginator.page(results.this_page)
+            context['results'] = results
+            context['paginator'] = paginator
+            context['page'] = page
+        
+        context['form'] = forms.NamesSearchForm(
+            data=request.GET.copy(),
+            search_results=results,
+        )
+
+    else:
+        context['form'] = forms.NamesSearchForm()
+
+    return render(request, 'names/index.html', context)
