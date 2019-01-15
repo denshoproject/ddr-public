@@ -444,8 +444,8 @@ class Searcher(object):
         self.s = search
     
     def __repr__(self):
-        return u"<Searcher '%s/%s'>" % (
-            es_host_name(self.conn), self.index
+        return u"<Searcher '%s/%s', %s>" % (
+            es_host_name(self.conn), self.index, self.params.dict()
         )
 
     def prepare(self, params={}, params_whitelist=SEARCH_PARAM_WHITELIST, search_models=SEARCH_MODELS, fields=SEARCH_INCLUDE_FIELDS, fields_nested=SEARCH_NESTED_FIELDS, fields_agg=SEARCH_AGG_FIELDS):
