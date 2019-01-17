@@ -1,5 +1,5 @@
 {% extends "ui/base.html" %}
-{% load names_tags %}
+{% load bootstrap_pagination names_tags %}
 
 
 {% block title %}Names{% endblock %}
@@ -188,10 +188,6 @@ The Names Registry is a searchable version of the WRA Form 26 register and Final
 </div>
 
 
-
-
-
-
 {% if paginator and paginator.object_list %}
 
 <!-- search results-->
@@ -207,18 +203,14 @@ The Names Registry is a searchable version of the WRA Form 26 register and Final
 </strong>
 returned
 {% endif %}
-{{ paginator.count }} records
+{{ paginator.count }} records for <strong>{{ form.fulltext.value }}</strong>.
 </p>
 
+{% if page.object_list %}
+
 {% if paginator.num_pages > 1 %}
-  <div class="row">
-    <div class="col-md-10">
-
-{% names_paginate paginator %}
-
-    </div>
-  </div>
-{% endif %}{# paginator.num_pages > 1 #}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
 
   <div id="records" class="table-responsive">
 
@@ -236,17 +228,17 @@ returned
       </thead>
       <tbody>
 
-{% for record in paginator.object_list %}
+{% for object in page.object_list %}
         <tr>
           <td>
-            <a href="{{ record.absolute_url }}">{{ record.m_lastname }}, {{ record.m_firstname }} ({{ record.m_gender }})</a>
+            <a href="{{ object.links.html }}">{{ object.m_lastname }}, {{ object.m_firstname }} ({{ object.m_gender }})</a>
           </td>
-          <td>{{ record.fields.m_camp.value }}</td>
-          <td>{{ record.fields.m_birthyear.value }}</td>
-          <td>{{ record.fields.m_originalstate.value }}</td>
-          <td>{{ record.fields.m_familyno.value }}</td>
-          <td>{{ record.fields.m_individualno.value }}</td>
-          <td>{{ record.fields.m_dataset.value }}</td>
+          <td>{{ object.m_camp }}</td>
+          <td>{{ object.m_birthyear }}</td>
+          <td>{{ object.m_originalstate }}</td>
+          <td>{{ object.m_familyno }}</td>
+          <td>{{ object.m_individualno }}</td>
+          <td>{{ object.m_dataset }}</td>
         </tr>
 {% endfor %}
 
@@ -258,14 +250,10 @@ returned
 </div><!-- #records -->
 
 {% if paginator.num_pages > 1 %}
-<div class="row">
-  <div class="col-md-10">
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
 
-{% names_paginate paginator %}
-
-  </div>
-</div>
-{% endif %}{# paginator.num_pages > 1 #}
+{% endif %}
 
 </section><!-- .container -->
 {% endblock content %}
