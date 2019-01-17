@@ -331,9 +331,15 @@ class SearchResults(object):
         self.pad_after = range(self.page_next, self.total)
     
     def __repr__(self):
-        return u"<SearchResults '%s' [%s]>" % (
-            self.query, self.total
-        )
+        try:
+            q = self.params.dict()
+        except:
+            q = dict(self.params)
+        if self.total:
+            return u"<SearchResults [%s-%s/%s] %s>" % (
+                self.offset, self.offset + self.limit, self.total, q
+            )
+        return u"<SearchResults [%s] %s>" % (self.total, q)
 
     def _make_prevnext_url(self, query, request):
         if request:
@@ -446,7 +452,7 @@ class Searcher(object):
     
     def __repr__(self):
         return u"<Searcher '%s/%s', %s>" % (
-            es_host_name(self.conn), self.index, self.params.dict()
+            es_host_name(self.conn), self.index, self.params
         )
 
     def prepare(self, params={}, params_whitelist=SEARCH_PARAM_WHITELIST, search_models=SEARCH_MODELS, fields=SEARCH_INCLUDE_FIELDS, fields_nested=SEARCH_NESTED_FIELDS, fields_agg=SEARCH_AGG_FIELDS):
