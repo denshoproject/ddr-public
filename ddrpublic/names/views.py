@@ -152,11 +152,11 @@ def search_ui(request):
         )
         searcher.prepare(
             params=request,
-            params_whitelist=search.SEARCH_PARAM_WHITELIST,
-            search_models=search.SEARCH_MODELS,
-            fields=search.SEARCH_INCLUDE_FIELDS,
-            fields_nested=search.SEARCH_NESTED_FIELDS,
-            fields_agg=search.SEARCH_AGG_FIELDS,
+            params_whitelist=['fulltext', 'm_camp'],
+            search_models=['names-record'],
+            fields=definitions.SEARCH_FIELDS,
+            fields_nested=[],
+            fields_agg={},
         )
         results = searcher.execute(limit, offset)
         if results.objects:
