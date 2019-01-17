@@ -464,15 +464,13 @@ class Searcher(object):
         # gather inputs ------------------------------
         
         if isinstance(params, HttpRequest):
-            self.params = params.GET.copy()
             params = params.GET.copy()
         elif isinstance(params, RestRequest):
-            self.params = params.query_params.dict()
             params = params.query_params.dict()
-        elif params:
-            self.params = deepcopy(params)
-
-        # whitelist params
+        # self.params is a copy of the params arg as it was passed to the method.
+        # It is used for informational purposes and is passed to SearchResults.
+        self.params = deepcopy(params)
+        # scrub fields not in whitelist
         bad_fields = [
             key for key in params.keys()
             if key not in params_whitelist + ['page']
