@@ -563,7 +563,7 @@ class Searcher(object):
                 #    )
                 #)
     
-            elif key in params_whitelist:
+            elif (key in params_whitelist) and val:
                 s = s.filter('term', **{key: val})
                 # 'term' search is for single choice, not multiple choice fields(?)
         
