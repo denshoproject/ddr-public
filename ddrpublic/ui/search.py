@@ -226,32 +226,34 @@ class SearchResults(object):
     >>> q = {"fulltext":"minidoka"}
     >>> sr = search.run_search(request_data=q, request=None)
     """
-    params = {}
-    query = {}
-    aggregations = None
-    objects = []
-    total = 0
-    limit = settings.ELASTICSEARCH_MAX_SIZE
-    offset = 0
-    start = 0
-    stop = 0
-    prev_offset = 0
-    next_offset = 0
-    prev_api = u''
-    next_api = u''
-    page_size = 0
-    this_page = 0
-    prev_page = 0
-    next_page = 0
-    prev_html = u''
-    next_html = u''
-    errors = []
 
     def __init__(self, params={}, query={}, count=0, results=None, objects=[], limit=DEFAULT_LIMIT, offset=0):
         self.params = deepcopy(params)
         self.query = query
-        self.limit = int(limit)
-        self.offset = int(offset)
+        self.aggregations = None
+        self.objects = []
+        self.total = 0
+        try:
+            self.limit = int(limit)
+        except:
+            self.limit = settings.ELASTICSEARCH_MAX_SIZE
+        try:
+            self.offset = int(offset)
+        except:
+            self.offset = 0
+        self.start = 0
+        self.stop = 0
+        self.prev_offset = 0
+        self.next_offset = 0
+        self.prev_api = u''
+        self.next_api = u''
+        self.page_size = 0
+        self.this_page = 0
+        self.prev_page = 0
+        self.next_page = 0
+        self.prev_html = u''
+        self.next_html = u''
+        self.errors = []
         
         if results:
             # objects
@@ -427,12 +429,6 @@ class Searcher(object):
     'ok'
     >>> d = r.to_dict(request)
     """
-    fields = []
-    q = OrderedDict()
-    params = {}
-    query = {}
-    sort_cleaned = None
-    s = None
     
     def __init__(self, conn=DOCSTORE.es, index=DOCSTORE.indexname, search=None):
         """
@@ -442,6 +438,11 @@ class Searcher(object):
         self.conn = conn
         self.index = index
         self.s = search
+        fields = []
+        params = {}
+        q = OrderedDict()
+        query = {}
+        sort_cleaned = None
     
     def __repr__(self):
         return u"<Searcher '%s/%s', %s>" % (
