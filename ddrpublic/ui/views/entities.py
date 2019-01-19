@@ -10,6 +10,7 @@ from django.shortcuts import Http404, render
 
 from .. import models
 from .. import misc
+from ..decorators import ui_state
 from ..forms_search import FORMS_CHOICE_LABELS
 
 
@@ -191,6 +192,7 @@ def interview(request, oid):
         'api_url': reverse('ui-api-object', args=[entity['id']]),
     })
     
+@ui_state
 def children( request, oid, role=None ):
     """Lists all direct children of the entity.
     """
@@ -223,6 +225,7 @@ def children( request, oid, role=None ):
         'api_url': reverse('ui-api-object-children', args=[oid]),
     })
 
+@ui_state
 def nodes( request, oid, role=None ):
     """Lists all nodes of the entity.
     """

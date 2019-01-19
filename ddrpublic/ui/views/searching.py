@@ -15,6 +15,7 @@ from .. import api
 from .. import forms_search as forms
 from .. import models
 from .. import search
+from ..decorators import ui_state
 
 
 def _mkurl(request, path, query=None):
@@ -59,6 +60,7 @@ def is_ddr_id(text, patterns=ID_PATTERNS):
 
 # views ----------------------------------------------------
 
+@ui_state
 def search_ui(request):
     api_url = '%s?%s' % (
         _mkurl(request, reverse('ui-api-search')),

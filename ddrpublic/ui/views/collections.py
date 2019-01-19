@@ -9,6 +9,7 @@ from django.views.decorators.cache import cache_page
 
 from .. import models
 from .. import misc
+from ..decorators import ui_state
 
 
 @cache_page(settings.CACHE_TIMEOUT)
@@ -73,6 +74,7 @@ def detail(request, oid):
         'api_url': reverse('ui-api-object', args=[oid]),
     })
 
+@ui_state
 def children(request, oid):
     """Lists all direct children of the collection.
     """
@@ -104,6 +106,7 @@ def children(request, oid):
         'api_url': reverse('ui-api-object-children', args=[oid]),
     })
 
+@ui_state
 def nodes(request, oid):
     """Lists all nodes of the collection.
     """
