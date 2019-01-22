@@ -1,25 +1,52 @@
 from django.conf.urls import include, url
 from django.views.generic import TemplateView
 
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework import permissions
 from rest_framework.urlpatterns import format_suffix_patterns
 
 from . import api
 from .views import browse, search, searching, collections, entities, objects, index
-from .views import cite, choose_tab, redirect, index
+from .views import cite, ui_state, redirect, index
 
 API_BASE = '/api/0.2/'
+
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Densho Digital Repository API",
+      default_version='0.2',
+      description="DESCRIPTION TEXT HERE",
+      terms_of_service="http://ddr.densho.org/terms/",
+      contact=openapi.Contact(email="info@densho.org"),
+      license=openapi.License(name="TBD"),
+   ),
+   #validators=['flex', 'ssv'],
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
     url(r'^redirect/archive.densho.org$', redirect, name='ui-redirect'),
     url(r'^names', include('names.urls')),
     
-    url(r'^api/0.2/choose-tab/$', choose_tab, name='ui-api-choose-tab'),
+    #path(r'^api/swagger(?P<format>\.json|\.yaml)',
+    #     schema_view.without_ui(cache_timeout=0), name='schema-json'
+    #),
+    url(r'^api/swagger/',
+        schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'
+    ),
+    url(r'^api/redoc/',
+        schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'
+    ),
+    
+    url(r'^api/0.2/ui-state/$', ui_state, name='ui-api-state'),
     
     url(r'^api/0.2/search/help/', TemplateView.as_view(template_name="ui/search/help.html"), name='ui-about'),
-    url(r'^api/0.2/search/$', api.search, name='ui-api-search'),
+    url(r'^api/0.2/search/$', api.Search.as_view(), name='ui-api-search'),
     
-    url(r'^api/0.2/narrator/(?P<oid>[\w]+)/interviews/$', api.narrator_interviews, name='ui-api-narrator-interviews'),
-    url(r'^api/0.2/narrator/(?P<oid>[\w]+)/$', api.narrator, name='ui-api-narrator'),
+    url(r'^api/0.2/narrator/(?P<object_id>[\w]+)/interviews/$', api.narrator_interviews, name='ui-api-narrator-interviews'),
+    url(r'^api/0.2/narrator/(?P<object_id>[\w]+)/$', api.narrator, name='ui-api-narrator'),
     url(r'^api/0.2/narrator/$', api.narrators, name='ui-api-narrators'),
     
     url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/children/$', api.facetterms, name='ui-api-facetterms'),
@@ -28,12 +55,13 @@ urlpatterns = [
     url(r'^api/0.2/facet/(?P<facet_id>[\w]+)/$', api.facet, name='ui-api-facet'),
     url(r'^api/0.2/facet/$', api.facet_index, name='ui-api-facets'),
     
-    url(r'^api/0.2/(?P<oid>[\w\d-]+)/children/$', api.object_children, name='ui-api-object-children'),
-    url(r'^api/0.2/(?P<oid>[\w\d-]+)/files/$', api.object_nodes, name='ui-api-object-nodes'),
-    url(r'^api/0.2/(?P<oid>[\w\d-]+)/$', api.object_detail, name='ui-api-object'),
+    url(r'^api/0.2/(?P<object_id>[\w\d-]+)/children/$', api.object_children, name='ui-api-object-children'),
+    url(r'^api/0.2/(?P<object_id>[\w\d-]+)/files/$', api.object_nodes, name='ui-api-object-nodes'),
+    url(r'^api/0.2/(?P<object_id>[\w\d-]+)/$', api.object_detail, name='ui-api-object'),
     
     url(r'^api/0.2/$', api.index, name='ui-api-index'),
     url(r'^api/0.1/$', api.index, name='ui-api-index'),
+    url(r'^api', api.index, name='ui-api-index'),
     
     url(r'^about/', TemplateView.as_view(template_name="ui/about.html"), name='ui-about'),
     url(r'^contact/$', TemplateView.as_view(template_name='ui/about.html'), name='ui-contact'),

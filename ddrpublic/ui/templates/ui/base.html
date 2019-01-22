@@ -307,15 +307,20 @@ Include all compiled plugins (below), or include individual files as needed
 {% block javascript %}{% endblock %}
 
 <script>
-  /* register tab choice in session */
+  /* Update UI state in session */
   $("ul.nav-tabs li.gallery a").click(function() {
     $.ajax({
-      url: "{% url "ui-api-choose-tab" %}?tab=gallery",
+      url: "{% url "ui-api-state" %}?liststyle=gallery",
     });
   });
   $("ul.nav-tabs li.list a").click(function() {
     $.ajax({
-      url: "{% url "ui-api-choose-tab" %}?tab=list",
+      url: "{% url "ui-api-state" %}?liststyle=list",
+    });
+  });
+  $("a#searchfilters").click(function() {
+    $.ajax({
+      url: "{% url "ui-api-state" %}?searchfilters={% if request.session.searchfilters == 'closed' %}open{% else %}closed{% endif %}",
     });
   });
 

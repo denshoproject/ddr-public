@@ -9,6 +9,9 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+from rest_framework.views import APIView
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 from .misc import filter_if_branded
 from .models import Repository, Organization, Collection, Entity, File
@@ -32,7 +35,7 @@ CHILDREN = {
 
 @api_view(['GET'])
 def index(request, format=None):
-    """INDEX DOCS
+    """Swagger UI: /api/swagger/
     """
     repo = 'ddr'
     data = {
@@ -44,47 +47,130 @@ def index(request, format=None):
     return Response(data)
 
 
-@api_view(['GET'])
-def search(request, format=None):
-    """
-    <a href="/api/0.2/search/help/">Search API help</a>
-    """
-    if request.GET.get('offset'):
-        # limit and offset args take precedence over page
-        limit = request.GET.get(
-            'limit',
-            int(request.GET.get('limit', settings.RESULTS_PER_PAGE))
+class Search(APIView):
+    
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter(
+            'fulltext',
+            description='Search string using Elasticsearch query_string syntax.',
+            required=True,
+            in_=openapi.IN_QUERY, type=openapi.TYPE_STRING
+        ),
+        openapi.Parameter(
+            'topics',
+            description='Topic term ID(s) from http://partner.densho.org/vocab/api/0.2/topics.json.',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_ARRAY, items={'type':'integer'}
+        ),
+        openapi.Parameter(
+            'facility',
+            description='Facility ID(s) from http://partner.densho.org/vocab/api/0.2/facility.json.',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_ARRAY, items={'type':'integer'}
+        ),
+        openapi.Parameter(
+            'format',
+            description='Format term ID(s) from http://partner.densho.org/vocab/api/0.2/format.json.',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_ARRAY, items={'type':'string'}
+        ),
+        openapi.Parameter(
+            'genre',
+            description='Genre term ID(s) from http://partner.densho.org/vocab/api/0.2/genre.json',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_ARRAY, items={'type':'string'}
+        ),
+        openapi.Parameter(
+            'rights',
+            description='Rights term ID(s) from http://partner.densho.org/vocab/api/0.2/rights.json',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_ARRAY, items={'type':'string'}
+        ),
+        openapi.Parameter(
+            'page',
+            description='Selected results page (default: 0).',
+            in_=openapi.IN_QUERY, type=openapi.TYPE_STRING
+        ),
+    ])
+    def get(self, request, format=None):
+        """Search the Repository; good for simpler searches.
+        
+        Search API help: /api/0.2/search/help/
+        """
+        if request.GET.get('fulltext'):
+            return self.grep(request)
+        return Response({})
+    
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter(
+            'body',
+            description='DESCRIPTION HERE',
+            required=True,
+            in_=openapi.IN_FORM, type=openapi.TYPE_STRING),
+    ])
+    def post(self, request, format=None):
+        """Search the Repository; good for more complicated custom searches.
+        
+        Search API help: /api/0.2/search/help/
+        
+        Sample search body JSON:
+        
+        {
+            "fulltext": "seattle",
+            "must": [
+                {"topics": "239"}
+            ]
+        }
+
+        """
+        if request.data.get('fulltext'):
+            return self.grep(request)
+        return Response({})
+    
+    def grep(self, request):
+        def reget(request, field):
+            if request.GET.get(field):
+                return request.GET[field]
+            elif request.data.get(field):
+                return request.data[field]
+            return None
+        
+        fulltext = reget(request, 'fulltext')
+        offset = reget(request, 'offset')
+        limit = reget(request, 'limit')
+        page = reget(request, 'page')
+        
+        if offset:
+            # limit and offset args take precedence over page
+            if not limit:
+                limit = settings.RESULTS_PER_PAGE
+            offset = int(offset)
+        elif page:
+            limit = settings.RESULTS_PER_PAGE
+            thispage = int(page)
+            offset = es_offset(limit, thispage)
+        else:
+            limit = settings.RESULTS_PER_PAGE
+            offset = 0
+        
+        searcher = Searcher(
+            #mappings=identifier.ELASTICSEARCH_CLASSES_BY_MODEL,
+            #fields=identifier.ELASTICSEARCH_LIST_FIELDS,
         )
-        offset = request.GET.get(
-            'offset',
-            int(request.GET.get('offset', 0))
+        searcher.prepare(request)
+        results = searcher.execute(limit, offset)
+        return Response(
+            results.ordered_dict(request, format_functions=FORMATTERS)
         )
-    elif request.GET.get('page'):
-        limit = settings.RESULTS_PER_PAGE
-        thispage = int(request.GET['page'])
-        offset = es_offset(limit, thispage)
-    else:
-        limit = settings.RESULTS_PER_PAGE
-        offset = 0
-
-    searcher = Searcher(
-        #mappings=identifier.ELASTICSEARCH_CLASSES_BY_MODEL,
-        #fields=identifier.ELASTICSEARCH_LIST_FIELDS,
-    )
-    searcher.prepare(request)
-    results = searcher.execute(limit, offset)
-    return Response(
-        results.ordered_dict(request, format_functions=FORMATTERS)
-    )
 
 
 @api_view(['GET'])
-def object_nodes(request, oid):
-    return files(request, oid)
+def object_nodes(request, object_id):
+    return files(request._request, object_id)
 
 
 @api_view(['GET'])
-def object_children(request, oid):
+def object_children(request, object_id):
     """OBJECT CHILDREN DOCS
     
     s - sort
@@ -92,13 +178,13 @@ def object_children(request, oid):
     p - page (offset)
     """
     # TODO just get doc_type
-    document = es.get(index=settings.DOCSTORE_INDEX, doc_type='_all', id=oid)
+    document = es.get(index=settings.DOCSTORE_INDEX, doc_type='_all', id=object_id)
     model = document['_type']
-    if   model == 'repository': return organizations(request, oid)
-    elif model == 'organization': return collections(request, oid)
-    elif model == 'collection': return entities(request, oid)
-    elif model == 'entity': return segments(request, oid)
-    elif model == 'segment': return files(request, oid)
+    if   model == 'repository': return organizations(request._request, object_id)
+    elif model == 'organization': return collections(request._request, object_id)
+    elif model == 'collection': return entities(request._request, object_id)
+    elif model == 'entity': return segments(request._request, object_id)
+    elif model == 'segment': return files(request._request, object_id)
     elif model == 'file': assert False
     raise Exception("Could not match ID,model,view.")
 
@@ -112,44 +198,44 @@ def _list(request, data):
     return Response(data)
     
 @api_view(['GET'])
-def organizations(request, oid, format=None):
+def organizations(request, object_id, format=None):
     offset = int(request.GET.get('offset', 0))
     return _list(request, Repository.children(
-        oid, request, limit=DEFAULT_LIMIT, offset=offset
+        object_id, request, limit=DEFAULT_LIMIT, offset=offset
     ))
 
 @api_view(['GET'])
-def collections(request, oid, format=None):
+def collections(request, object_id, format=None):
     offset = int(request.GET.get('offset', 0))
     return _list(request, Organization.children(
-        oid, request, limit=DEFAULT_LIMIT, offset=offset
+        object_id, request, limit=DEFAULT_LIMIT, offset=offset
     ))
 
 @api_view(['GET'])
-def entities(request, oid, format=None):
+def entities(request, object_id, format=None):
     offset = int(request.GET.get('offset', 0))
     return _list(request, Collection.children(
-        oid, request, limit=DEFAULT_LIMIT, offset=offset
+        object_id, request, limit=DEFAULT_LIMIT, offset=offset
     ))
 
 @api_view(['GET'])
-def segments(request, oid, format=None):
+def segments(request, object_id, format=None):
     offset = int(request.GET.get('offset', 0))
     return _list(request, Entity.children(
-        oid, request, limit=DEFAULT_LIMIT, offset=offset
+        object_id, request, limit=DEFAULT_LIMIT, offset=offset
     ))
 
 @api_view(['GET'])
-def files(request, oid, format=None):
+def files(request, object_id, format=None):
     offset = int(request.GET.get('offset', 0))
     return _list(request, Entity.files(
-        oid, request, limit=DEFAULT_LIMIT, offset=offset
+        object_id, request, limit=DEFAULT_LIMIT, offset=offset
     ))
 
 @api_view(['GET'])
-def facets(request, oid, format=None):
+def facets(request, object_id, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = Facet.nodes(oid, request, offset=offset)
+    data = Facet.nodes(object_id, request, offset=offset)
     return _list(request, data)
 
 @api_view(['GET'])
@@ -165,23 +251,23 @@ def facetterms(request, facet_id, format=None):
 
 @api_view(['GET'])
 def term_objects(request, facet_id, term_id, limit=DEFAULT_LIMIT, offset=0):
-    oid = '%s-%s' % (facet_id, term_id)
+    object_id = '%s-%s' % (facet_id, term_id)
     data = Term.objects(facet_id, term_id, request, offset=offset)
     return _list(request, data)
 
 @api_view(['GET'])
-def object_detail(request, oid):
+def object_detail(request, object_id):
     """OBJECT DETAIL DOCS
     """
     # TODO just get doc_type
-    document = es.get(index=settings.DOCSTORE_INDEX, doc_type='_all', id=oid)
+    document = es.get(index=settings.DOCSTORE_INDEX, doc_type='_all', id=object_id)
     model = document['_type']
-    if   model == 'repository': return repository(request, oid)
-    elif model == 'organization': return organization(request, oid)
-    elif model == 'collection': return collection(request, oid)
-    elif model == 'entity': return entity(request, oid)
-    elif model == 'segment': return entity(request, oid)
-    elif model == 'file': return file(request, oid)
+    if   model == 'repository': return repository(request._request, object_id)
+    elif model == 'organization': return organization(request._request, object_id)
+    elif model == 'collection': return collection(request._request, object_id)
+    elif model == 'entity': return entity(request._request, object_id)
+    elif model == 'segment': return entity(request._request, object_id)
+    elif model == 'file': return file(request._request, object_id)
     raise Exception("Could not match ID,model,view.")
 
 def _detail(request, data):
@@ -192,27 +278,27 @@ def _detail(request, data):
     return Response(data)
 
 @api_view(['GET'])
-def repository(request, oid, format=None):
-    return _detail(request, Repository.get(oid, request))
+def repository(request, object_id, format=None):
+    return _detail(request, Repository.get(object_id, request))
 
 @api_view(['GET'])
-def organization(request, oid, format=None):
-    return _detail(request, Organization.get(oid, request))
+def organization(request, object_id, format=None):
+    return _detail(request, Organization.get(object_id, request))
 
 @api_view(['GET'])
-def collection(request, oid, format=None):
-    filter_if_branded(request, oid)
-    return _detail(request, Collection.get(oid, request))
+def collection(request, object_id, format=None):
+    filter_if_branded(request, object_id)
+    return _detail(request, Collection.get(object_id, request))
 
 @api_view(['GET'])
-def entity(request, oid, format=None):
-    filter_if_branded(request, oid)
-    return _detail(request, Entity.get(oid, request))
+def entity(request, object_id, format=None):
+    filter_if_branded(request, object_id)
+    return _detail(request, Entity.get(object_id, request))
 
 @api_view(['GET'])
-def file(request, oid, format=None):
-    filter_if_branded(request, oid)
-    return _detail(request, File.get(oid, request))
+def file(request, object_id, format=None):
+    filter_if_branded(request, object_id)
+    return _detail(request, File.get(object_id, request))
 
 @api_view(['GET'])
 def narrators(request, format=None):
@@ -221,14 +307,14 @@ def narrators(request, format=None):
     return _list(request, data)
 
 @api_view(['GET'])
-def narrator(request, oid, format=None):
-    data = Narrator.get(oid, request)
+def narrator(request, object_id, format=None):
+    data = Narrator.get(object_id, request)
     return _detail(request, data)
 
 @api_view(['GET'])
-def narrator_interviews(request, oid, format=None):
+def narrator_interviews(request, object_id, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = Narrator.interviews(oid, request, limit=1000)
+    data = Narrator.interviews(object_id, request, limit=1000)
     return _list(request, data)
 
 @api_view(['GET'])
@@ -243,6 +329,6 @@ def facet(request, facet_id, format=None):
 
 @api_view(['GET'])
 def facetterm(request, facet_id, term_id, format=None):
-    oid = '%s-%s' % (facet_id, term_id)
+    object_id = '%s-%s' % (facet_id, term_id)
     data = Term.get(oid, request)
     return _detail(request, data)

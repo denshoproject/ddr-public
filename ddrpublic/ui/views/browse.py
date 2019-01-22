@@ -10,6 +10,7 @@ from django.views.decorators.cache import cache_page
 
 from .. import encyc
 from .. import models
+from ..decorators import ui_state
 
 SHOW_THESE = ['topics', 'facility', 'location', 'format', 'genre',]
 
@@ -18,6 +19,7 @@ SHOW_THESE = ['topics', 'facility', 'location', 'format', 'genre',]
 def index( request ):
     return render(request, 'ui/browse/index.html', {})
 
+@ui_state
 @cache_page(settings.CACHE_TIMEOUT)
 def narrators(request):
     thispage = int(request.GET.get('page', 1))
@@ -50,6 +52,7 @@ def narrator(request, oid):
         'api_url': reverse('ui-api-narrator', args=[oid]),
     })
 
+@ui_state
 @cache_page(settings.CACHE_TIMEOUT)
 def facet(request, facet_id):
     if facet_id == 'topics':

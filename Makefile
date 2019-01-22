@@ -310,9 +310,9 @@ migrate:
 	chmod -R 755 $(LOG_BASE)
 
 
-install-static: get-ddrpublic-assets install-ddrpublic-assets install-restframework
+install-static: get-ddrpublic-assets install-ddrpublic-assets install-restframework install-swagger
 
-clean-static: clean-ddrpublic-assets clean-restframework
+clean-static: clean-ddrpublic-assets clean-restframework clean-swagger
 
 get-ddrpublic-assets:
 	@echo ""
@@ -341,8 +341,17 @@ install-restframework:
 	-mkdir -p $(MEDIA_BASE)
 	cp -R $(VIRTUALENV)/lib/$(PYTHON_VERSION)/site-packages/rest_framework/static/rest_framework/ $(STATIC_ROOT)/
 
+install-swagger:
+	@echo ""
+	@echo "rest-swagger assets -----------------------------------------------------"
+	-mkdir -p $(MEDIA_BASE)
+	cp -R $(VIRTUALENV)/lib/$(PYTHON_VERSION)/site-packages/drf_yasg/static/drf-yasg/ $(STATIC_ROOT)/
+
 clean-restframework:
 	-rm -Rf $(STATIC_ROOT)/rest_framework/
+
+clean-swagger:
+	-rm -Rf $(STATIC_ROOT)/drf_yasg/
 
 
 install-configs:
@@ -553,4 +562,5 @@ deb-stretch:
 	requirements.txt=$(DEB_BASE)   \
 	venv=$(DEB_BASE)   \
 	venv/ddrpublic/lib/$(PYTHON_VERSION)/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
+	venv/ddrpublic/lib/$(PYTHON_VERSION)/site-packages/drf_yasg/static/=$(STATIC_ROOT)  \
 	VERSION=$(DEB_BASE)

@@ -222,7 +222,7 @@ IA metadata: {{ segment.ia_meta|safe }}
                   <!-- entity.location -->
                   <h3 class="page-header">LOCATION</h3>
                   <ul class="list-unstyled">
-                    <li><a href="/search/location:{{ segment.location }}/">{{ segment.location }}</a></li>
+                    <a href="{% url "ui-search-results" %}?{{ object_location }}">
                   </ul>
                 </div>
               </div>

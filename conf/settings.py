@@ -224,6 +224,7 @@ INSTALLED_APPS = (
     #
     'bootstrap_pagination',
     'corsheaders',
+    'drf_yasg',
     'rest_framework',
     'sorl.thumbnail',
     #
