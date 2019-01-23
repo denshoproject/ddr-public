@@ -156,9 +156,16 @@ def search_ui(request):
             search_models=['names-record'],
             fields=definitions.SEARCH_FIELDS,
             fields_nested=[],
-            fields_agg={},
+            fields_agg={'m_camp': 'm_camp'},
         )
         results = searcher.execute(limit, offset)
+        form = forms.SearchForm(
+            data=request.GET.copy(),
+            search_results=results,
+        )
+        context['results'] = results
+        context['form'] = form
+        
         if results.objects:
             paginator = Paginator(
                 results.ordered_dict(
@@ -169,16 +176,10 @@ def search_ui(request):
                 results.page_size,
             )
             page = paginator.page(results.this_page)
-            context['results'] = results
             context['paginator'] = paginator
             context['page'] = page
-        
-        context['form'] = forms.NamesSearchForm(
-            data=request.GET.copy(),
-            search_results=results,
-        )
 
     else:
-        context['form'] = forms.NamesSearchForm()
+        context['form'] = forms.SearchForm()
 
     return render(request, 'names/index.html', context)

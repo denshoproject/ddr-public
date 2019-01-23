@@ -54,6 +54,11 @@ SEARCH_PARAM_WHITELIST = [
     'rights',
 ]
 
+NAMESDB_SEARCH_PARAM_WHITELIST = [
+    'fulltext',
+    'm_camp',
+]
+
 # fields where the relevant value is nested e.g. topics.id
 # TODO move to ddr-defs/repo_models/elastic.py?
 SEARCH_NESTED_FIELDS = [
@@ -82,6 +87,8 @@ SEARCH_AGG_FIELDS = {
 
 # TODO move to ddr-defs/repo_models/elastic.py?
 SEARCH_MODELS = ['collection','entity','narrator']
+
+NAMESDB_SEARCH_MODELS = ['names-record']
 
 # fields searched by query e.g. query will find search terms in these fields
 # TODO move to ddr-defs/repo_models/elastic.py?
@@ -122,6 +129,10 @@ SEARCH_FORM_LABELS = {
     'persons': 'Persons',
     'rights': 'Rights',
     'topics': 'Topics',
+}
+
+NAMESDB_SEARCH_FORM_LABELS = {
+    'm_camp': 'Camp',
 }
 
 ## TODO should this live in models?

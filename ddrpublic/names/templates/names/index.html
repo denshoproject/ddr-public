@@ -160,19 +160,12 @@ The Names Registry is a searchable version of the WRA Form 26 register and Final
 	  <div class="form-group">
         <div class="col-md-7" style="padding-right:0px;">
 
-<input class="form-control" id="id_fulltext" name="fulltext" type="text" value="{% if form.fulltext.value %}{{ form.fulltext.value }}{% endif %}" placeholder="Search the Registry..." />
+{{ form.fulltext }}
 
         </div>
         <div class="col-md-3" style="padding-left:0px;padding-right:0px;">
 
-<select id="id_m_camp" name="m_camp" class="form-control pointer">
-  <option value="">All camps</option>
-{% for choice in m_camp_choices %}
-  <option value="{{ choice.0 }}" {% if choice.0 in m_camp_selected %}selected="selected"{% endif %}>
-    {{ choice.1 }}
-  </option>
-{% endfor %}
-</select>
+{{ form.m_camp }}
 
         </div>
         <div class="col-md-2" style="padding-left:0px;padding-right:0px;">
