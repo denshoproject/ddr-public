@@ -58,7 +58,7 @@ ASSETS_VERSION=20170206
 ASSETS_TGZ=ddr-public-assets-$(ASSETS_VERSION).tar.gz
 ASSETS_INSTALL_DIR=$(MEDIA_BASE)/assets/$(ASSETS_VERSION)
 
-ELASTICSEARCH=elasticsearch-2.4.4.deb
+ELASTICSEARCH=elasticsearch-2.4.6.deb
 
 SUPERVISOR_GUNICORN_CONF=/etc/supervisor/conf.d/ddrpublic.conf
 NGINX_CONF=/etc/nginx/sites-available/ddrpublic.conf
