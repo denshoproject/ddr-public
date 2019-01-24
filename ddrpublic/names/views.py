@@ -116,6 +116,25 @@ def detail(request, id, template_name='names/detail.html'):
         'record': record,
     })
 
+CAMP_LABELS = {key: val for key,val in forms.FORMS_CHOICES['m_camp-choices']}
+STATES = {
+    'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas',
+    'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut',
+    'DE': 'Delaware', 'DC': 'District of Columbia', 'FL': 'Florida',
+    'GA': 'Georgia', 'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois',
+    'IN': 'Indiana', 'IA': 'Iowa', 'KS': 'Kansas', 'KY': 'Kentucky',
+    'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland', 'MA': 'Massachusetts',
+    'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri',
+    'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire',
+    'NJ': 'New Jersey', 'NM': 'New Mexico', 'NY': 'New York',
+    'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio',
+    'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island',
+    'SC': 'South Carolina', 'SD': 'South Dakota', 'TN': 'Tennessee',
+    'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont', 'VA': 'Virginia',
+    'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin',
+    'WY': 'Wyoming',
+}
+
 def search_ui(request):
     api_url = '%s?%s' % (
         _mkurl(request, reverse('ui-api-names-search')),
@@ -159,6 +178,19 @@ def search_ui(request):
             fields_agg={'m_camp': 'm_camp'},
         )
         results = searcher.execute(limit, offset)
+        # camp names instead of keywords
+        for o in results.objects:
+            o['m_camp'] = CAMP_LABELS.get(
+                o['m_camp'],
+                o['m_camp']
+            )
+        # US state names
+        for o in results.objects:
+            o['m_originalstate'] = STATES.get(
+                o['m_originalstate'],
+                o['m_originalstate']
+            )
+        
         form = forms.SearchForm(
             data=request.GET.copy(),
             search_results=results,
