@@ -174,8 +174,8 @@ def interview(request, oid):
         object_location = urlencode(
             [('fulltext', entity['location'])]
         )
-    
-    template = AV_TEMPLATES.get(entity.get('template'), SEGMENT_TEMPLATE_DEFAULT)
+
+    template = AV_TEMPLATES.get(segment.get('template'), SEGMENT_TEMPLATE_DEFAULT)
     
     return render(request, template, {
         'templatekey': entity.get('template'),
