@@ -135,7 +135,7 @@
 
 </div><!-- .querymeta -->
 
-{% if page.object_list %}
+{% if searching and page.object_list %}
 <div class="row"> <!-- results content -->
     <div class="col-sm-12 col-md-12">
         <!--  view selection tabs -->
@@ -195,10 +195,27 @@
 </div> <!-- end tabs -->
     </div>
 </div> <!-- .row results content -->
-{% endif %}
-    </td>
-  </tr>
-</table>
+
+{% elif searching %}{# page.object_list #}
+      
+<div class="row">
+  <div class="col-sm-12 col-md-12">
+    
+    <p>
+      Nothing here!
+    </p>
+    <p>
+      Try broadening your search by taking your search terms out of quotation marks (“ “) or using the OR Boolean operators. 
+    </p>
+    <p>
+      Need additional help?
+      Please see our <a href="{% url "ui-search-help" %}">Search Tips!</a>
+    </p>
+    
+  </div><!-- .col-sm-12 col-md-12 -->
+</div><!-- .row -->
+
+{% endif %}{# page.object_list #}
 
     </div><!-- .col-sm-12 col-md-12 -->
   </div><!-- .row -->
