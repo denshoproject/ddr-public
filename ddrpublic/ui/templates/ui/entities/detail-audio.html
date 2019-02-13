@@ -282,29 +282,6 @@ IA metadata: {{ object.ia_meta|safe }}
     </div><!-- .row -->
 {% endif %}{# children_page.object_list #}
 
-{% if nodes_page.object_list %}
-    <div class="row">
-        <div class="col-sm-12 col-md-12">
-          <h3>
-            <a href="{% url "ui-object-nodes" object.id %}">
-              {{ nodes_paginator.count }} File{{ nodes_paginator.count|pluralize }}
-            </a>
-          </h3>
-
-          {% for file in nodes_page.object_list %}
-          {% listitem file %}
-          {% endfor %}
-
-          {% if nodes_paginator.count > 10 %}
-          <br />
-          <p>
-            <a class="btn btn-primary btn-md" href="{% url "ui-object-nodes" object.id %}">See all files <i class="fa fa-arrow-circle-right"></i></a>
-          </p>
-          {% endif %}
-        </div><!-- end list col -->
-    </div><!-- .row -->
-{% endif %}{# nodes_page.object_list #}
-
     <div class="row">
         <div class="col-sm-12 col-md-12 text-muted text-right">
             <small><a class="api" href="{{ api_url }}">API</a></small>
