@@ -42,7 +42,7 @@ urlpatterns = [
     
     url(r'^api/0.2/ui-state/$', ui_state, name='ui-api-state'),
     
-    url(r'^api/0.2/search/help/', TemplateView.as_view(template_name="ui/search/help.html"), name='ui-about'),
+    url(r'^api/0.2/search/help/', TemplateView.as_view(template_name="ui/search/help-api.html"), name='api-search-help'),
     url(r'^api/0.2/search/$', api.Search.as_view(), name='ui-api-search'),
     
     url(r'^api/0.2/names/(?P<object_id>[0-9a-zA-Z_:-]+)', api.name, name='ui-api-names-name'),
@@ -83,6 +83,7 @@ urlpatterns = [
     
     url(r'^search/(?P<field>[\w]+):(?P<term>[\w ,]+)/$', search.term_query, name='ui-search-term-query'),
     url(r'^search/results/$', searching.search_ui, name='ui-search-results'),
+    url(r'^search/help/$', TemplateView.as_view(template_name='ui/search/help-ui.html'), name='ui-search-help'),
     url(r'^search/$', searching.search_ui, name='ui-search-index'),
     
     url(r'^cite/(?P<model>[\w]+)/(?P<object_id>[\w\d-]+)/$', cite, name='ui-cite'),

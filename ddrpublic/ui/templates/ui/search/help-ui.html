@@ -1,0 +1,28 @@
+{% extends BASE_TEMPLATE %}
+
+{% block title %}API Search Help{% endblock %}
+
+{% block breadcrumbs %}{{ block.super }}
+  <li><a href="{% url "ui-search-index" %}">Search</a></li>
+  <li>Help</li>
+{% endblock %}
+
+
+{% block content %}
+<div class="blog">
+	<section id="overview" class="container">
+        <div class="row">
+           <div class="col-md-9">
+<h2>
+  Search Help
+</h2>
+
+<p>
+  SEARCH HELP GOES HERE
+</p>
+
+           </div>
+        </div>
+	</section>
+</div>
+{% endblock content %}
