@@ -154,7 +154,9 @@ IA metadata: {{ object.ia_meta|safe }}
                     <!-- entity.description -->
                     <h3 class="page-header">DESCRIPTION</h3>
                     {{ object.description|safe|linebreaks }}
-
+                    <p>
+                    {{ object.extent }}
+                    </p>
                     <!-- core meta -->
                     <div class="row">
                         <div class="col-md-5 col-sm-5">
