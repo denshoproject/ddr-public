@@ -16,6 +16,7 @@ from rest_framework.reverse import reverse
 
 from . import docstore
 from . import search
+from namesdb import definitions
 
 es = Elasticsearch(settings.DOCSTORE_HOSTS)
 
@@ -615,6 +616,35 @@ def format_term(document, request, listitem=False):
             d[key] = document[key]
     return d
 
+def format_name_record(document, request, listitem=False):
+    if document.get('_source'):
+        document = document['_source']
+
+    oid = ':'.join([
+        document['m_dataset'], document['m_pseudoid']
+    ])
+    
+    d = OrderedDict()
+    d['id'] = oid
+    # links
+    d['links'] = OrderedDict()
+    d['links']['html'] = reverse(
+        'names-detail', args=[oid], request=request
+    )
+    d['links']['json'] = reverse(
+        'ui-api-names-name', args=[oid], request=request
+    )
+    # everything else
+    if listitem:
+        for key in definitions.SEARCH_FIELDS:
+            if document.get(key):
+                d[key] = document[key]
+    else:
+        for key in definitions.FIELD_DEFINITIONS_NAMES:
+            if document.get(key):
+                d[key] = document[key]
+    return d
+
 FORMATTERS = {
     'narrator': format_narrator,
     'facet': format_facet,
@@ -622,6 +652,7 @@ FORMATTERS = {
     'collection': format_object_detail2,
     'entity': format_object_detail2,
     'file': format_object_detail2,
+    'names-record': format_name_record,
 }
 
 def format_list_objects(results, request, function=format_object_detail2):
@@ -1531,3 +1562,18 @@ def facilities():
         cache.set(key, cached, 15) # settings.ELASTICSEARCH_QUERY_TIMEOUT)
     return cached
 
+
+class NameRecord(object):
+    
+    @staticmethod
+    def get(oid, request):
+        document = es.get(
+            index=settings.NAMESDB_DOCSTORE_INDEX, doc_type='names-record', id=oid
+        )
+        if not document:
+            raise NotFound()
+        data = format_name_record(document, request)
+        HIDDEN_FIELDS = []
+        for field in HIDDEN_FIELDS:
+            pop_field(data, field)
+        return data

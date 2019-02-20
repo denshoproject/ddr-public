@@ -1,13 +1,18 @@
 import json
+from urllib.parse import urlparse, urlunparse
 
 from django.conf import settings
+from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
 from namesdb import definitions
-from .forms import SearchForm, FlexiSearchForm
+from . import forms
 from . import models
+from ui import api
+from ui import models as ui_models
+from ui import search
 
 PAGE_SIZE = 20
 CONTEXT = 3
@@ -20,6 +25,13 @@ NON_FILTER_FIELDS = [
     'query'
 ]
 
+
+def _mkurl(request, path, query=None):
+    return urlunparse((
+        request.META['wsgi.url_scheme'],
+        request.META['HTTP_HOST'],
+        path, None, query, None
+    ))
 
 @require_http_methods(['GET',])
 def index(request, template_name='names/index.html'):
@@ -44,7 +56,7 @@ def index(request, template_name='names/index.html'):
     m_camp_selected = None
     paginator = None
     if kwargs_values:
-        form = SearchForm(
+        form = forms.SearchForm(
             local_GET,
             hosts=settings.NAMESDB_DOCSTORE_HOSTS,
             index=settings.NAMESDB_DOCSTORE_INDEX
@@ -69,7 +81,7 @@ def index(request, template_name='names/index.html'):
                 response, thispage, pagesize, CONTEXT, request.META['QUERY_STRING']
             )
     else:
-        form = SearchForm(
+        form = forms.SearchForm(
             hosts=settings.NAMESDB_DOCSTORE_HOSTS,
             index=settings.NAMESDB_DOCSTORE_INDEX
         )
@@ -79,142 +91,6 @@ def index(request, template_name='names/index.html'):
         'form': form,
         'm_camp_choices': m_camp_choices,
         'm_camp_selected': m_camp_selected,
-        'body': json.dumps(body, indent=4, separators=(',', ': '), sort_keys=True),
-        'paginator': paginator,
-    })
-
-
-# Old index view.  Still contains code from when the index search
-# was a query field and a bunch of filter fields.
-#
-#@require_http_methods(['GET',])
-#def index(request, template_name='names/index.html'):
-#    thispage = int(request.GET.get('page', 1))
-#    pagesize = int(request.GET.get('pagesize', PAGE_SIZE))
-#    kwargs = [(key,val) for key,val in request.GET.items()]
-#    
-#    # All the filter fields are MultipleChoiceFields, which does not
-#    # support an "empty_label" choice.  Unfortunately, the UI design
-#    # makes use of a <select> with a blank "All camps" default.
-#    # So... make a copy of request.GET and forcibly remove 'm_camp'
-#    # if the "All camps" choice was selected.
-#    local_GET = request.GET.copy()
-#    if ('m_camp' in local_GET.keys()) and not local_GET.get('m_camp'):
-#        local_GET.pop('m_camp')
-#    
-#    search = None
-#    if 'query' in request.GET:
-#        form = SearchForm(local_GET, hosts=HOSTS, index=INDEX)
-#        if form.is_valid():
-#            filters = form.cleaned_data
-#            query = filters.pop('query')
-#            start,end = models.Paginator.start_end(thispage, pagesize)
-#            search = models.search(
-#                HOSTS, INDEX,
-#                query=query,
-#                filters=filters,
-#                start=start,
-#                pagesize=pagesize,
-#            )
-#    else:
-#        form = SearchForm(hosts=HOSTS, index=INDEX)
-#    if not search:
-#        # empty search to populate field choice document counts
-#        filters = {
-#          'm_birthyear': [],
-#          'm_camp': [],
-#          'm_dataset': [],
-#          'm_gender': [],
-#          'm_originalstate': []
-#        }
-#        search = models.search(
-#            HOSTS, INDEX,
-#            filters=filters,
-#        )
-#    body = search.to_dict()
-#    response = search.execute()
-#    m_camp_choices = form.fields['m_camp'].choices
-#    m_camp_selected = filters['m_camp']
-#    #form.update_doc_counts(response)
-#    paginator = models.Paginator(
-#        response, thispage, pagesize, CONTEXT, request.META['QUERY_STRING']
-#    )
-#    return render_to_response(
-#        template_name,
-#        {
-#            'kwargs': kwargs,
-#            'form': form,
-#            'm_camp_choices': m_camp_choices,
-#            'm_camp_selected': m_camp_selected,
-#            'body': json.dumps(body, indent=4, separators=(',', ': '), sort_keys=True),
-#            'paginator': paginator,
-#        },
-#        context_instance=RequestContext(request)
-#    )
-
-
-@require_http_methods(['GET',])
-def search(request, template_name='names/search.html'):
-    """
-    specify filter field names and optional values in URL/request.GET
-    form constructs itself with those fields
-    each field has aggregation (list of choices with counts)
-    form contains the list of fields
-    flexible: lets user construct "impossible" forms (e.g. both FAR and WRA fields)
-    """
-    thispage = int(request.GET.get('page', 1))
-    pagesize = int(request.GET.get('pagesize', PAGE_SIZE))
-    kwargs = [(key,val) for key,val in request.GET.items()]
-    
-    # for use in form
-    defined_fields = [key for key in definitions.FIELD_DEFINITIONS.keys()]
-    filters = {
-        key:val
-        for key,val in request.GET.items()
-        if key in defined_fields
-    }
-    query = request.GET.get('query', '')
-
-    search = None
-    if 'query' in request.GET:
-        form = FlexiSearchForm(
-            request.GET,
-            hosts=settings.NAMESDB_DOCSTORE_HOSTS,
-            index=settings.NAMESDB_DOCSTORE_INDEX,
-            filters=filters
-        )
-        if form.is_valid():
-            filters = form.cleaned_data
-            query = filters.pop('query')
-            search = models.search(
-                settings.NAMESDB_DOCSTORE_HOSTS,
-                settings.NAMESDB_DOCSTORE_INDEX,
-                query=query,
-                filters=filters,
-            )
-    else:
-        form = FlexiSearchForm(
-            hosts=settings.NAMESDB_DOCSTORE_HOSTS,
-            index=settings.NAMESDB_DOCSTORE_INDEX,
-            filters=filters
-        )
-    if not search:
-        search = models.search(
-            settings.NAMESDB_DOCSTORE_HOSTS,
-            settings.NAMESDB_DOCSTORE_INDEX,
-            query=query,
-            filters=filters,
-        )
-    
-    body = search.to_dict()
-    response = search.execute()
-    form.update_doc_counts(response)
-    paginator = models.Paginator(
-        response, thispage, pagesize, CONTEXT, request.META['QUERY_STRING']
-    )
-    return render(request, template_name, {
-        'kwargs': kwargs,
-        'form': form,
         'body': json.dumps(body, indent=4, separators=(',', ': '), sort_keys=True),
         'paginator': paginator,
     })
@@ -239,3 +115,103 @@ def detail(request, id, template_name='names/detail.html'):
     return render(request, template_name, {
         'record': record,
     })
+
+CAMP_LABELS = {key: val for key,val in forms.FORMS_CHOICES['m_camp-choices']}
+STATES = {
+    'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas',
+    'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut',
+    'DE': 'Delaware', 'DC': 'District of Columbia', 'FL': 'Florida',
+    'GA': 'Georgia', 'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois',
+    'IN': 'Indiana', 'IA': 'Iowa', 'KS': 'Kansas', 'KY': 'Kentucky',
+    'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland', 'MA': 'Massachusetts',
+    'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri',
+    'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire',
+    'NJ': 'New Jersey', 'NM': 'New Mexico', 'NY': 'New York',
+    'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio',
+    'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island',
+    'SC': 'South Carolina', 'SD': 'South Dakota', 'TN': 'Tennessee',
+    'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont', 'VA': 'Virginia',
+    'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin',
+    'WY': 'Wyoming',
+}
+
+def search_ui(request):
+    api_url = '%s?%s' % (
+        _mkurl(request, reverse('ui-api-names-search')),
+        request.META['QUERY_STRING']
+    )
+    context = {
+        'searching': False,
+        'filters': True,
+        'api_url': api_url,
+    }
+    
+    if request.GET.get('fulltext'):
+        context['searching'] = True
+        
+        if request.GET.get('offset'):
+            # limit and offset args take precedence over page
+            limit = request.GET.get(
+                'limit', int(request.GET.get('limit', settings.RESULTS_PER_PAGE))
+            )
+            offset = request.GET.get(
+                'offset', int(request.GET.get('offset', 0))
+            )
+        elif request.GET.get('page'):
+            limit = settings.RESULTS_PER_PAGE
+            thispage = int(request.GET['page'])
+            offset = search.es_offset(limit, thispage)
+        else:
+            limit = settings.RESULTS_PER_PAGE
+            offset = 0
+        
+        searcher = search.Searcher(
+            conn=api.names_es,
+            index=settings.NAMESDB_DOCSTORE_INDEX,
+        )
+        searcher.prepare(
+            params=request,
+            params_whitelist=['fulltext', 'm_camp'],
+            search_models=['names-record'],
+            fields=definitions.SEARCH_FIELDS,
+            fields_nested=[],
+            fields_agg={'m_camp': 'm_camp'},
+        )
+        results = searcher.execute(limit, offset)
+        # camp names instead of keywords
+        for o in results.objects:
+            o['m_camp'] = CAMP_LABELS.get(
+                o['m_camp'],
+                o['m_camp']
+            )
+        # US state names
+        for o in results.objects:
+            o['m_originalstate'] = STATES.get(
+                o['m_originalstate'],
+                o['m_originalstate']
+            )
+        
+        form = forms.SearchForm(
+            data=request.GET.copy(),
+            search_results=results,
+        )
+        context['results'] = results
+        context['form'] = form
+        
+        if results.objects:
+            paginator = Paginator(
+                results.ordered_dict(
+                    request=request,
+                    format_functions=ui_models.FORMATTERS,
+                    pad=True,
+                )['objects'],
+                results.page_size,
+            )
+            page = paginator.page(results.this_page)
+            context['paginator'] = paginator
+            context['page'] = page
+
+    else:
+        context['form'] = forms.SearchForm()
+
+    return render(request, 'names/index.html', context)

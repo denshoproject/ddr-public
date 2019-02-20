@@ -58,7 +58,7 @@ ASSETS_VERSION=20170206
 ASSETS_TGZ=ddr-public-assets-$(ASSETS_VERSION).tar.gz
 ASSETS_INSTALL_DIR=$(MEDIA_BASE)/assets/$(ASSETS_VERSION)
 
-ELASTICSEARCH=elasticsearch-2.4.4.deb
+ELASTICSEARCH=elasticsearch-2.4.6.deb
 
 SUPERVISOR_GUNICORN_CONF=/etc/supervisor/conf.d/ddrpublic.conf
 NGINX_CONF=/etc/nginx/sites-available/ddrpublic.conf
@@ -257,7 +257,7 @@ install-namesdb: install-virtualenv
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_NAMESDB) && python setup.py install
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_NAMESDB) && pip3 install -U -r requirements.txt
+	cd $(INSTALL_NAMESDB) && pip3 install --cache-dir=$(PIP_CACHE_DIR) -U -r requirements.txt
 
 uninstall-namesdb: install-virtualenv
 	@echo ""
@@ -281,7 +281,7 @@ install-ddr-public: clean-ddr-public
 	@echo "install-ddr-public -----------------------------------------------------"
 	apt-get --assume-yes install imagemagick sqlite3 supervisor
 	source $(VIRTUALENV)/bin/activate; \
-	pip3 install -U -r $(INSTALL_PUBLIC)/requirements.txt
+	pip3 install --cache-dir=$(PIP_CACHE_DIR) -U -r $(INSTALL_PUBLIC)/requirements.txt
 # logs dir
 	-mkdir $(LOG_BASE)
 	chown -R ddr.root $(LOG_BASE)
