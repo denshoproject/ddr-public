@@ -186,10 +186,10 @@ PRETTY_TIME_FORMAT = '%I:%M %p'
 PRETTY_DATETIME_FORMAT = '%d %B %Y, %I:%M %p'
 
 # django-cors-headers (see https://github.com/ottoyiu/django-cors-headers/)
-CORS_ORIGIN_ALLOW_ALL = config.getboolean('app', 'cors_origin_allow_all')
+CORS_ORIGIN_ALLOW_ALL = config.getboolean('public', 'cors_origin_allow_all')
 CORS_ORIGIN_WHITELIST = [
     domain.strip()
-    for domain in config.get('app', 'cors_origin_whitelist').split(',')
+    for domain in config.get('public', 'cors_origin_whitelist').split(',')
 ]
 ## Only send CORS headers for API.
 #CORS_URLS_REGEX = r'^/api/.*$'
