@@ -63,17 +63,12 @@ IA metadata: {{ object.ia_meta|safe }}
               {% if transcripts %}
               <a href="{{ transcripts.interview.links.download }}" class="btn btn-default btn-xs">
                 <i class="fa fa-download"></i>
-                Download full transcript
+                Download transcript
               </a>
               {% endif %}
-              <a href="{{ signature.links.img }}" class="btn btn-default btn-xs">
+              <a href="{{ object.ia_meta.files.mp4.url }}" class="btn btn-default btn-xs">
                 <i class="fa fa-download"></i>
-                Download large
-                ({{ signature.access_size|filesizeformat }})
-              </a>
-              <a href="{{ signature.links.download }}" class="btn btn-default btn-xs">
-                <i class="fa fa-download"></i>
-                Download full-size
+                Download MP4
                 ({{ signature.size|filesizeformat }})
               </a>
             </div><!-- #object-download -->
