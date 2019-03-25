@@ -6,6 +6,7 @@ import json
 import logging
 logger = logging.getLogger(__name__)
 import os
+import re
 from urllib.parse import urlparse, urlunsplit
 
 from elasticsearch_dsl import Index, Search, A, Q, A
@@ -436,6 +437,32 @@ class SearchResults(object):
         return data
 
 
+def sanitize_input(text):
+    # Escape special characters
+    # http://lucene.apache.org/core/old_versioned_docs/versions/2_9_1/queryparsersyntax.html
+    text = re.sub(
+        '([{}])'.format(re.escape('\\+\-&|!(){}\[\]^~*?:\/')),
+        r"\\\1",
+        text
+    )
+    
+    # AND, OR, and NOT are used by lucene as logical operators.
+    ## We need to escape these.
+    # ...actually, we don't. We want these to be available.
+    #for word in ['AND', 'OR', 'NOT']:
+    #    escaped_word = "".join(["\\" + letter for letter in word])
+    #    text = re.sub(
+    #        r'\s*\b({})\b\s*'.format(word),
+    #        r" {} ".format(escaped_word),
+    #        text
+    #    )
+    
+    # Escape odd quotes
+    quote_count = text.count('"')
+    if quote_count % 2 == 1:
+        text = re.sub(r'(.*)"(.*)', r'\1\"\2', text)
+    return text
+
 class Searcher(object):
     """Wrapper around elasticsearch_dsl.Search
     
@@ -484,9 +511,16 @@ class Searcher(object):
             params = params.GET.copy()
         elif isinstance(params, RestRequest):
             params = params.query_params.dict()
-        # self.params is a copy of the params arg as it was passed to the method.
-        # It is used for informational purposes and is passed to SearchResults.
-        self.params = deepcopy(params)
+        
+        # self.params is a copy of the params arg as it was passed
+        # to the method.  It is used for informational purposes
+        # and is passed to SearchResults.
+        # Sanitize while copying.
+        self.params = {
+            key: sanitize_input(val)
+            for key,val in params.items()
+        }
+        
         # scrub fields not in whitelist
         bad_fields = [
             key for key in params.keys()
