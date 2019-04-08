@@ -1371,7 +1371,7 @@ class Term(object):
             field='%s.id' % fieldname,
             size=1000
         )
-        results = search.Searcher(search=s).execute(limit=1000, offset=0)
+        results = search.OldSearcher(search=s).execute(limit=1000, offset=0)
         # fieldname:term:id dict
         aggs = {}
         for fieldname,data in results.aggregations.items():

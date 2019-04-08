@@ -20,6 +20,6 @@ def ui_state(f):
         for key,val in UI_STATE_DEFAULTS.items():
             if UI_STATE_DEFAULTS.get(key) and not request.session.get(key):
                 request.session[key] = UI_STATE_DEFAULTS[key]
-        
+
         return f(*args, **kwargs)
     return wrapper
