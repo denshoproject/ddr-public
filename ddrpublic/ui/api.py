@@ -203,7 +203,7 @@ def object_children(request, object_id):
     raise Exception("Could not match ID,model,view.")
 
 def _list(request, data):
-    host = request.META['HTTP_HOST']
+    host = request.META.get('HTTP_HOST')
     path = request.META['PATH_INFO']
     if data.get('prev'):
         data['prev'] = 'http://%s%s%s' % (host, path, data['prev'])
