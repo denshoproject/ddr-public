@@ -334,7 +334,11 @@ IA metadata: {{ object.ia_meta|safe }}
               <p>
                 {% rightsbadge segment.rights %}
               </p>
-
+              {% if segment.rights_statement %}
+              <p>
+                {{ segment.rights_statement }}
+              </p>
+             {% endif %}
             </div>
 
 

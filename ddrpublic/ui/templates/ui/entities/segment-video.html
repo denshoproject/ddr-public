@@ -417,6 +417,11 @@ IA metadata: {{ segment.ia_meta|safe }}
               <p>
                 {% rightsbadge entity.rights %}
               </p>
+              {% if entity.rights_statement %}
+              <p>
+                {{ entity.rights_statement }}
+              </p>
+             {% endif %}
 
             </div><!-- .desc .productDescription -->
 
