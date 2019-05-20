@@ -60,8 +60,14 @@
                 <p>{{ object.id }}</p>
                 <h3 class="page-header">DESCRIPTION</h3>
                 <p>{{ object.description|safe }}</p>
-                {% if object.scopecontent %}
-                <p>{{ object.scopecontent|safe }}</p>
+                {% if object.scopecontent or object.bioghist %}
+                <p style="text-align:right;font-size:11px;"><a data-toggle="collapse" data-target="#extradesc">Additional detail...</a></p>
+                    <div class="collapse" id="extradesc">
+                        <h3 class="page-header">Scope and Content</h3>
+                        <p>{{ object.scopecontent|safe }}</p>
+                        <h3 class="page-header">History</h3>
+                        <p>{{ object.bioghist|safe }}
+                    </div>
                 {% endif %}
                 <!-- core meta -->
                 <div class="row">
@@ -81,6 +87,18 @@
                 <p>{{ object.extent }}</p>
                 <h3 class="page-header">CONTRIBUTOR</h3>
                 <p>{{ object.contributor }}</p>
+                {% if object.physloc %}
+                <h3 class="page-header">PHYSICAL LOCATION</h3>
+                <p>{{ object.physloc }}</p>
+                {% endif %}
+                {% if object.acqinfo %}
+                <h3 class="page-header">ACQUISITION INFORMATION</h3>
+                <p>{{ object.acqinfo }}</p>
+                {% endif %}
+                {% if object.custodhist %}
+                <h3 class="page-header">CUSTODIAL HISTORY</h3>
+                <p>{{ object.custodhist }}</p>
+                {% endif %}
                 <h3 class="page-header">PREFERRED CITATION</h3>
                 <p>{{ object.prefercite }}</p>
                 <h3 class="page-header">RIGHTS</h3>
