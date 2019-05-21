@@ -63,10 +63,14 @@
                 {% if object.scopecontent or object.bioghist %}
                 <p style="text-align:right;font-size:11px;"><a data-toggle="collapse" data-target="#extradesc">Additional detail...</a></p>
                     <div class="collapse" id="extradesc">
+                        {% if object.scopecontent %}
                         <h3 class="page-header">Scope and Content</h3>
                         <p>{{ object.scopecontent|safe }}</p>
+                        {% endif %}
+                        {% if object.bioghist %}
                         <h3 class="page-header">History</h3>
                         <p>{{ object.bioghist|safe }}
+                        {% endif %}
                     </div>
                 {% endif %}
                 <!-- core meta -->
@@ -89,25 +93,25 @@
                 <p>{{ object.contributor }}</p>
                 {% if object.physloc %}
                 <h3 class="page-header">PHYSICAL LOCATION</h3>
-                <p>{{ object.physloc }}</p>
+                <p>{{ object.physloc|safe }}</p>
                 {% endif %}
                 {% if object.acqinfo %}
                 <h3 class="page-header">ACQUISITION INFORMATION</h3>
-                <p>{{ object.acqinfo }}</p>
+                <p>{{ object.acqinfo|safe }}</p>
                 {% endif %}
                 {% if object.custodhist %}
                 <h3 class="page-header">CUSTODIAL HISTORY</h3>
-                <p>{{ object.custodhist }}</p>
+                <p>{{ object.custodhist|safe }}</p>
                 {% endif %}
                 <h3 class="page-header">PREFERRED CITATION</h3>
-                <p>{{ object.prefercite }}</p>
+                <p>{{ object.prefercite|safe }}</p>
                 <h3 class="page-header">RIGHTS</h3>
                 <p>
                     {% rightsbadge object.rights %}
                 </p>
                 {% if object.userrestrict %}
                 <p>
-                    {{ object.userrestrict }}
+                    {{ object.userrestrict|safe }}
                 </p>
                 {% endif %}
             </div><!-- end desc -->
