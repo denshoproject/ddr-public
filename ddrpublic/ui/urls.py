@@ -33,16 +33,16 @@ urlpatterns = [
     #path(r'^api/swagger(?P<format>\.json|\.yaml)',
     #     schema_view.without_ui(cache_timeout=0), name='schema-json'
     #),
-    url(r'^api/swagger/',
+    url(r'^api/swagger/$',
         schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'
     ),
-    url(r'^api/redoc/',
+    url(r'^api/redoc/$',
         schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'
     ),
     
     url(r'^api/0.2/ui-state/$', ui_state, name='ui-api-state'),
     
-    url(r'^api/0.2/search/help/', TemplateView.as_view(template_name="ui/search/help.html"), name='ui-about'),
+    url(r'^api/0.2/search/help/$', TemplateView.as_view(template_name="ui/search/help.html"), name='ui-about'),
     url(r'^api/0.2/search/$', api.Search.as_view(), name='ui-api-search'),
     
     url(r'^api/0.2/names/(?P<object_id>[0-9a-zA-Z_:-]+)', api.name, name='ui-api-names-name'),
@@ -64,9 +64,9 @@ urlpatterns = [
     
     url(r'^api/0.2/$', api.index, name='ui-api-index'),
     url(r'^api/0.1/$', api.index, name='ui-api-index'),
-    url(r'^api', api.index, name='ui-api-index'),
+    url(r'^api/$', api.index, name='ui-api-index'),
     
-    url(r'^about/', TemplateView.as_view(template_name="ui/about.html"), name='ui-about'),
+    url(r'^about/$', TemplateView.as_view(template_name="ui/about.html"), name='ui-about'),
     url(r'^contact/$', TemplateView.as_view(template_name='ui/about.html'), name='ui-contact'),
     url(r'^terms/$', TemplateView.as_view(template_name='ui/terms.html'), name='ui-terms'),
     url(r'^using/$', TemplateView.as_view(template_name='ui/using.html'), name='ui-using'),
@@ -89,20 +89,20 @@ urlpatterns = [
     
     url(r'^collections/$', collections.list, name='ui-collections-list'),
     
-    url(r'^interviews/(?P<oid>[\w\d-]+)/', entities.interview, name='ui-interview'),
+    url(r'^interviews/(?P<oid>[\w\d-]+)/$', entities.interview, name='ui-interview'),
     
     url(r'^r/(?P<oid>[\w\d-]+)/$', entities.nodes, name='ui-file-role'),
     
     # match legacy urls
-    url(r'^(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/(?P<role>[\w]+)/(?P<sha1>[\w\d]+)/', objects.legacy, name='ui-legacy'),
-    url(r'^(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/(?P<role>[\w]+)/', objects.legacy, name='ui-legacy'),
-    url(r'^(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/', objects.legacy, name='ui-legacy'),
-    url(r'^(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/', objects.legacy, name='ui-legacy'),
+    url(r'^(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/(?P<role>[\w]+)/(?P<sha1>[\w\d]+)/$', objects.legacy, name='ui-legacy'),
+    url(r'^(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/(?P<role>[\w]+)/$', objects.legacy, name='ui-legacy'),
+    url(r'^(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/$', objects.legacy, name='ui-legacy'),
+    url(r'^(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/$', objects.legacy, name='ui-legacy'),
     
     url(r'^(?P<oid>[\w\d-]+)/search/$', search.collection, name='ui-search-collection'),
     url(r'^(?P<oid>[\w\d-]+)/objects/$', objects.children, name='ui-object-children'),
     url(r'^(?P<oid>[\w\d-]+)/files/$', objects.nodes, name='ui-object-nodes'),
-    url(r'^(?P<oid>[\w\d-]+)/', objects.detail, name='ui-object-detail'),
+    url(r'^(?P<oid>[\w\d-]+)/$', objects.detail, name='ui-object-detail'),
     
     url(r'^$', index, name='ui-index'),
 ]

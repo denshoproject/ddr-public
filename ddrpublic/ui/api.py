@@ -203,7 +203,7 @@ def object_children(request, object_id):
     raise Exception("Could not match ID,model,view.")
 
 def _list(request, data):
-    host = request.META['HTTP_HOST']
+    host = request.META.get('HTTP_HOST')
     path = request.META['PATH_INFO']
     if data.get('prev'):
         data['prev'] = 'http://%s%s%s' % (host, path, data['prev'])
@@ -349,7 +349,7 @@ def facet(request, facet_id, format=None):
 @api_view(['GET'])
 def facetterm(request, facet_id, term_id, format=None):
     object_id = '%s-%s' % (facet_id, term_id)
-    data = Term.get(oid, request)
+    data = Term.get(object_id, request)
     return _detail(request, data)
 
 

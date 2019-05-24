@@ -49,7 +49,7 @@ IA metadata: {{ object.ia_meta|safe }}
 -->
 <!-- begin VideoJS player -->
 <video id="clip" class="embed-responsive embed-responsive-16by9 video-js vjs-big-play-centered vjs-fluid" controls preload="auto" width="560" height="384" poster="" data-setup="{}">
-  <source src="https://archive.org/download/ddr-densho-1000-400-2/ddr-densho-1000-400-2-mezzanine-6877a9b0c9.mp4" type="video/mp4">
+  <source src="{{ object.ia_meta.files.mp4.url }}" type="video/mp4">
     <p class="vjs-no-js">
       To view this video please enable JavaScript, and consider upgrading to a web browser that
       <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
@@ -59,21 +59,16 @@ IA metadata: {{ object.ia_meta|safe }}
             </div><!-- #object-display -->
 
             {% if signature %}
-            <div id="object-download">
+            <div id="object-download" style="padding-top: 5px;">
               {% if transcripts %}
               <a href="{{ transcripts.interview.links.download }}" class="btn btn-default btn-xs">
                 <i class="fa fa-download"></i>
-                Download full transcript
+                Download transcript
               </a>
               {% endif %}
-              <a href="{{ signature.links.img }}" class="btn btn-default btn-xs">
+              <a href="{{ object.ia_meta.files.mp4.url }}" class="btn btn-default btn-xs">
                 <i class="fa fa-download"></i>
-                Download large
-                ({{ signature.access_size|filesizeformat }})
-              </a>
-              <a href="{{ signature.links.download }}" class="btn btn-default btn-xs">
-                <i class="fa fa-download"></i>
-                Download full-size
+                Download MP4
                 ({{ signature.size|filesizeformat }})
               </a>
             </div><!-- #object-download -->

@@ -21,7 +21,7 @@ from ..decorators import ui_state
 def _mkurl(request, path, query=None):
     return urlunparse((
         request.META['wsgi.url_scheme'],
-        request.META['HTTP_HOST'],
+        request.META.get('HTTP_HOST'),
         path, None, query, None
     ))
 

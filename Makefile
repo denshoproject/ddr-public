@@ -8,7 +8,7 @@ GIT_SOURCE_URL=https://github.com/densho/ddr-public
 
 PYTHON_VERSION=python3.5
 
-# Release name e.g. jessie
+# Release name e.g. stretch
 DEBIAN_CODENAME := $(shell lsb_release -sc)
 # Release numbers e.g. 8.10
 DEBIAN_RELEASE := $(shell lsb_release -sr)
@@ -66,13 +66,10 @@ NGINX_CONF_LINK=/etc/nginx/sites-enabled/ddrpublic.conf
 
 DEB_BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr -d _ | tr -d -)
 DEB_ARCH=amd64
-DEB_NAME_JESSIE=$(APP)-$(DEB_BRANCH)
 DEB_NAME_STRETCH=$(APP)-$(DEB_BRANCH)
 # Application version, separator (~), Debian release tag e.g. deb8
 # Release tag used because sortable and follows Debian project usage.
-DEB_VERSION_JESSIE=$(APP_VERSION)~deb8
 DEB_VERSION_STRETCH=$(APP_VERSION)~deb9
-DEB_FILE_JESSIE=$(DEB_NAME_JESSIE)_$(DEB_VERSION_JESSIE)_$(DEB_ARCH).deb
 DEB_FILE_STRETCH=$(DEB_NAME_STRETCH)_$(DEB_VERSION_STRETCH)_$(DEB_ARCH).deb
 DEB_VENDOR=Densho.org
 DEB_MAINTAINER=<geoffrey.jost@densho.org>
@@ -472,54 +469,8 @@ install-fpm:
 
 # https://stackoverflow.com/questions/32094205/set-a-custom-install-directory-when-making-a-deb-package-with-fpm
 # https://brejoc.com/tag/fpm/
-deb: deb-jessie deb-stretch
+deb: deb-stretch
 
-# deb-jessie and deb-stretch are identical
-deb-jessie:
-	@echo ""
-	@echo "DEB packaging (jessie) -------------------------------------------------"
-	-rm -Rf $(DEB_FILE_JESSIE)
-	virtualenv --python=python3 --relocatable $(VIRTUALENV)  # Make venv relocatable
-	fpm   \
-	--verbose   \
-	--input-type dir   \
-	--output-type deb   \
-	--name $(DEB_NAME_JESSIE)   \
-	--version $(DEB_VERSION_JESSIE)   \
-	--package $(DEB_FILE_JESSIE)   \
-	--url "$(GIT_SOURCE_URL)"   \
-	--vendor "$(DEB_VENDOR)"   \
-	--maintainer "$(DEB_MAINTAINER)"   \
-	--description "$(DEB_DESCRIPTION)"   \
-	--depends "imagemagick"  \
-	--depends "libxml2-dev"  \
-	--depends "libxslt1-dev"  \
-	--depends "libz-dev"  \
-	--depends "nginx"   \
-	--depends "python3"   \
-	--depends "redis-server"   \
-	--depends "sqlite3"  \
-	--depends "supervisor"   \
-	--after-install "bin/fpm-mkdir-log.sh"   \
-	--chdir $(INSTALL_PUBLIC)   \
-	conf/ddrpublic.cfg=etc/ddr/ddrpublic.cfg   \
-	bin=$(DEB_BASE)   \
-	conf=$(DEB_BASE)   \
-	COPYRIGHT=$(DEB_BASE)   \
-	ddrpublic=$(DEB_BASE)   \
-	.git=$(DEB_BASE)   \
-	.gitignore=$(DEB_BASE)   \
-	INSTALL=$(DEB_BASE)   \
-	LICENSE=$(DEB_BASE)   \
-	Makefile=$(DEB_BASE)   \
-	namesdb=$(DEB_BASE)   \
-	README.rst=$(DEB_BASE)   \
-	requirements.txt=$(DEB_BASE)   \
-	venv=$(DEB_BASE)   \
-	venv/ddrpublic/lib/$(PYTHON_VERSION)/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
-	VERSION=$(DEB_BASE)
-
-# deb-jessie and deb-stretch are identical
 deb-stretch:
 	@echo ""
 	@echo "DEB packaging (stretch) ------------------------------------------------"
