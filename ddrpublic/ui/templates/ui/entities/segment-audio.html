@@ -60,7 +60,7 @@
       container: '#waveform-timeline'
     })
   });
-  wavesurfer.load('{{ object.ia_meta.files.mp3.url }}');
+  wavesurfer.load('{{ segment.ia_meta.files.mp3.url }}');
 </script>
 {% endblock javascript %}
 
@@ -79,7 +79,7 @@
 <!--
 templatekey: {{ templatekey }}
 template:    {{ template }}
-IA metadata: {{ object.ia_meta|safe }}
+IA metadata: {{ segment.ia_meta|safe }}
 -->
 <!-- begin audioplayer -->
 <div id="aplayer-container" style="margin-bottom:15px;">
@@ -136,10 +136,10 @@ IA metadata: {{ object.ia_meta|safe }}
               Download full transcript
             </a>
             <br />
-            <a href="{{ object.ia_meta.files.mp3.url }}" class="btn btn-default btn-xs">
+            <a href="{{ segment.ia_meta.files.mp3.url }}" class="btn btn-default btn-xs">
               <i class="fa fa-download"></i>
               Download fullsize
-              ({{ object.ia_meta.files.mp3.size|filesizeformat }})
+              ({{ segment.ia_meta.files.mp3.size|filesizeformat }})
             </a>
 
           </div><!-- #dls_tab .tab-pane -->
