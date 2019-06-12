@@ -297,7 +297,7 @@ test-ddr-public:
 	@echo ""
 	@echo "test-ddr-public --------------------------------------------------------"
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_PUBLIC); python ddrpublic/manage.py test ui --keepdb
+	cd $(INSTALL_PUBLIC); pytest --disable-warnings ddrpublic/
 
 shell:
 	source $(VIRTUALENV)/bin/activate; \

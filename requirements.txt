@@ -22,3 +22,10 @@ requests==2.21.0                   # Apache2  y
 sorl-thumbnail==12.4.1             # BSD      y
 
 bpython==0.17.1
+
+coverage
+pytest
+pytest-cov
+pytest-django
+pytest-testmon
+pytest-xdist
