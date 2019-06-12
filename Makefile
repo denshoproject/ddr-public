@@ -94,6 +94,7 @@ help:
 	@echo "    install-app     - Just installer tasks for ddr-public"
 	@echo "    install-static  - Downloads static media (Bootstrap, jquery, etc)"
 	@echo ""
+	@echo "test    - Run unit tests"
 	@echo ""
 	@echo "migrate - Initialize or update Django app's database tables."
 	@echo ""
@@ -155,6 +156,8 @@ help-all:
 get: get-ddr-public
 
 install: install-prep get-app install-app install-daemons install-static install-configs
+
+test: test-app
 
 uninstall: uninstall-app uninstall-configs
 
@@ -228,6 +231,8 @@ get-app: get-namesdb get-ddr-public
 
 install-app: install-virtualenv install-namesdb install-ddr-public install-configs install-daemon-configs
 
+test-app: test-ddr-public
+
 uninstall-app: uninstall-namesdb uninstall-ddr-public uninstall-configs uninstall-daemon-configs
 
 clean-app: clean-ddr-public
@@ -287,6 +292,12 @@ install-ddr-public: clean-ddr-public
 	-mkdir $(SQLITE_BASE)
 	chown -R ddr.root $(SQLITE_BASE)
 	chmod -R 755 $(SQLITE_BASE)
+
+test-ddr-public:
+	@echo ""
+	@echo "test-ddr-public --------------------------------------------------------"
+	source $(VIRTUALENV)/bin/activate; \
+	cd $(INSTALL_PUBLIC); python ddrpublic/manage.py test ui --keepdb
 
 uninstall-ddr-public:
 	@echo ""
