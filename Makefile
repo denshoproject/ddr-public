@@ -299,6 +299,14 @@ test-ddr-public:
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_PUBLIC); python ddrpublic/manage.py test ui --keepdb
 
+shell:
+	source $(VIRTUALENV)/bin/activate; \
+	cd $(INSTALL_PUBLIC); python ddrpublic/manage.py shell
+
+runserver:
+	source $(VIRTUALENV)/bin/activate; \
+	cd $(INSTALL_PUBLIC); python ddrpublic/manage.py runserver 0.0.0.0:8000
+
 uninstall-ddr-public:
 	@echo ""
 	@echo "uninstall-ddr-public ---------------------------------------------------"
