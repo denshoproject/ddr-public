@@ -28,7 +28,7 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     url(r'^redirect/archive.densho.org$', redirect, name='ui-redirect'),
-    url(r'^names', include('names.urls')),
+    url(r'^names/', include('names.urls')),
     
     #path(r'^api/swagger(?P<format>\.json|\.yaml)',
     #     schema_view.without_ui(cache_timeout=0), name='schema-json'
