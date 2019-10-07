@@ -12,7 +12,6 @@ from urllib.parse import urlparse, urlunsplit
 from elasticsearch_dsl import Index, Search, A, Q, A
 from elasticsearch_dsl.query import Match, MultiMatch, QueryString
 from elasticsearch_dsl.connections import connections
-from elasticsearch_dsl.result import Result
 
 from rest_framework.request import Request as RestRequest
 from rest_framework.reverse import reverse
@@ -221,7 +220,7 @@ def es_host_name(conn):
     return ':'.join([hostdata['host'], hostdata['port']])
 
 def es_search():
-    return Search(using=DOCSTORE.es, index=DOCSTORE.indexname)
+    return Search(using=DOCSTORE.es)
 
 
 class ESPaginator(Paginator):
@@ -474,13 +473,12 @@ class Searcher(object):
     >>> d = r.to_dict(request)
     """
     
-    def __init__(self, conn=DOCSTORE.es, index=DOCSTORE.indexname, search=None):
+    def __init__(self, conn=DOCSTORE.es, search=None):
         """
         @param conn: elasticsearch.Elasticsearch with hosts/port
         @param index: str Elasticsearch index name
         """
         self.conn = conn
-        self.index = index
         self.s = search
         fields = []
         params = {}
@@ -489,8 +487,8 @@ class Searcher(object):
         sort_cleaned = None
     
     def __repr__(self):
-        return u"<Searcher '%s/%s', %s>" % (
-            es_host_name(self.conn), self.index, self.params
+        return u"<Searcher '%s', %s>" % (
+            es_host_name(self.conn), self.params
         )
 
     def prepare(self, params={}, params_whitelist=SEARCH_PARAM_WHITELIST, search_models=SEARCH_MODELS, fields=SEARCH_INCLUDE_FIELDS, fields_nested=SEARCH_NESTED_FIELDS, fields_agg=SEARCH_AGG_FIELDS):
@@ -535,9 +533,11 @@ class Searcher(object):
             fulltext = ''
         
         if params.get('models'):
-            models = params.pop('models')
+            indices = ','.join(
+                ['{}{}'.format(docstore.INDEX_PREFIX, m) for m in models]
+            )
         else:
-            models = search_models
+            indices = search_models
 
         parent = ''
         if params.get('parent'):
@@ -549,7 +549,7 @@ class Searcher(object):
         
         s = Search(
             using=self.conn,
-            index=self.index,
+            index=indices,
             doc_type=models,
         )
         #s = s.source(include=SEARCH_LIST_FIELDS)
@@ -665,7 +665,6 @@ class OldSearcher(object):
     'ok'
     >>> d = r.to_dict(request)
     """
-    index = DOCSTORE.indexname
     fields = []
     q = OrderedDict()
     query = {}

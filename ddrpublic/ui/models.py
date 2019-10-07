@@ -15,10 +15,12 @@ from rest_framework.exceptions import NotFound
 from rest_framework.reverse import reverse
 
 from . import docstore
+from . import identifier
 from . import search
 from namesdb import definitions
 
-es = Elasticsearch(settings.DOCSTORE_HOSTS)
+# set default hosts and index
+DOCSTORE = docstore.Docstore()
 
 DEFAULT_SIZE = 10
 DEFAULT_LIMIT = 25
@@ -267,7 +269,10 @@ def docstore_search(text='', must=[], should=[], mustnot=[], models=[], fields=[
     )
 
 def _object(request, oid, format=None):
-    data = es.get(index=settings.DOCSTORE_INDEX, doc_type='_all', id=oid)
+    data = DOCSTORE.es.get(
+        index=DOCSTORE.index_name(identifier.Identifier(oid).model),
+        id=oid
+    )
     return format_object_detail2(data, request)
 
 def _object_children(document, request, models=[], sort_fields=[], limit=DEFAULT_LIMIT, offset=0):
@@ -376,7 +381,7 @@ def paginate_results(results, offset, limit, request=None):
     offset = int(offset)
     limit = int(limit)
     data = OrderedDict()
-    data['total'] = int(results['hits']['total'])
+    data['total'] = len(results['hits'])
     data['page_size'] = limit
     
     data['prev'] = None
@@ -401,12 +406,13 @@ def format_object_detail2(document, request, listitem=False):
     """
     if document.get('_source'):
         oid = document['_id']
-        model = document['_type']
+        model = document['_index']
         document = document['_source']
     else:
         oid = document.pop('id')
         model = document.pop('model')
-
+    model = model.replace(docstore.INDEX_PREFIX, '')
+    
     d = OrderedDict()
     d['id'] = oid
     d['model'] = model
@@ -490,7 +496,7 @@ def format_narrator(document, request, listitem=False):
     
     if document.get('_source'):
         oid = document['_id']
-        model = document['_type']
+        model = document['_index']
         document = document['_source']
         
     oid = document.pop('id')
@@ -529,7 +535,7 @@ def format_narrator(document, request, listitem=False):
 def format_facet(document, request, listitem=False):
     if document.get('_source'):
         oid = document['_id']
-        model = document['_type']
+        model = document['_index']
         document = document['_source']
     else:
         oid = document.pop('id')
@@ -559,7 +565,7 @@ def format_facet(document, request, listitem=False):
 def format_term(document, request, listitem=False):
     if document.get('_source'):
         oid = document['_id']
-        model = document['_type']
+        model = document['_index']
         document = document['_source']
     else:
         oid = document.pop('id')
@@ -646,22 +652,26 @@ def format_name_record(document, request, listitem=False):
     return d
 
 FORMATTERS = {
-    'narrator': format_narrator,
-    'facet': format_facet,
-    'facetterm': format_term,
-    'collection': format_object_detail2,
-    'entity': format_object_detail2,
-    'file': format_object_detail2,
+    'ddrnarrator': format_narrator,
+    'ddrfacet': format_facet,
+    'ddrfacetterm': format_term,
+    'ddrcollection': format_object_detail2,
+    'ddrentity': format_object_detail2,
+    'ddrfile': format_object_detail2,
     'names-record': format_name_record,
 }
 
-def format_list_objects(results, request, function=format_object_detail2):
+def format_list_objects(results, request, function):
     """Iterate through results objects apply format_object_detail function
+    
+    @param results: Output of models.paginate_results
+    @param request: Django request object.
+    @param function: Item formatting function
     """
     results['objects'] = []
     while(results['hits']):
         hit = results['hits'].pop(0)
-        doctype = hit['_type']
+        doctype = hit['_index']
         function = FORMATTERS.get(doctype, format_object_detail2)
         results['objects'].append(
             function(hit, request, listitem=True)
@@ -695,37 +705,39 @@ def facet_labels():
     
     @returns: dict of facet ids mapped to labels
     """
-    key = 'facet:ids-labels'
-    cached = cache.get(key)
-    if not cached:
-        
-        SORT_FIELDS = ['id', 'title',]
-        LIST_FIELDS = ['id', 'facet', 'title',]
-        q = docstore.search_query(
-            should=[
-                {"terms": {"facet": [
-                    'format', 'genre', 'language', 'rights',
-                ]}}
-            ]
-        )
-        results = docstore.Docstore().search(
-            doctypes=['facetterm'],
-            query=q,
-            sort=SORT_FIELDS,
-            fields=LIST_FIELDS,
-            from_=0,
-            size=10000,
-        )
-        ids_labels = {}
-        for hit in results['hits']['hits']:
-            d = hit['_source']
-            if not ids_labels.get(d['facet']):
-                ids_labels[d['facet']] = {}
-            ids_labels[d['facet']][d['id']] = d['title']
-        
-        cached = ids_labels
-        cache.set(key, cached, settings.CACHE_TIMEOUT)
-    return cached
+    # TODO 264-elastic7 uncomment this!
+    #key = 'facet:ids-labels'
+    #cached = cache.get(key)
+    #if not cached:
+    #    
+    #    SORT_FIELDS = ['id', 'title',]
+    #    LIST_FIELDS = ['id', 'facet', 'title',]
+    #    q = docstore.search_query(
+    #        should=[
+    #            {"terms": {"facet": [
+    #                'format', 'genre', 'language', 'rights',
+    #            ]}}
+    #        ]
+    #    )
+    #    results = docstore.Docstore().search(
+    #        doctypes=['facetterm'],
+    #        query=q,
+    #        sort=SORT_FIELDS,
+    #        fields=LIST_FIELDS,
+    #        from_=0,
+    #        size=10000,
+    #    )
+    #    ids_labels = {}
+    #    for hit in results['hits']['hits']:
+    #        d = hit['_source']
+    #        if not ids_labels.get(d['facet']):
+    #            ids_labels[d['facet']] = {}
+    #        ids_labels[d['facet']][d['id']] = d['title']
+    #    
+    #    cached = ids_labels
+    #    cache.set(key, cached, settings.CACHE_TIMEOUT)
+    #return cached
+    return []
 
 FACET_LABELS = facet_labels()
 
@@ -929,7 +941,7 @@ class Narrator(object):
     
     @staticmethod
     def get(oid, request):
-        document = es.get(index=settings.DOCSTORE_INDEX, doc_type='narrator', id=oid)
+        document = DOCSTORE.es.get(index=settings.DOCSTORE_INDEX, doc_type='narrator', id=oid)
         if not document:
             raise NotFound()
         data = format_narrator(document, request)
@@ -1021,7 +1033,7 @@ class Facet(object):
     
     @staticmethod
     def get(oid, request):
-        document = es.get(index=settings.DOCSTORE_INDEX, doc_type='facet', id=oid)
+        document = DOCSTORE.es.get(index=settings.DOCSTORE_INDEX, doc_type='facet', id=oid)
         if not document:
             raise NotFound()
         data = format_facet(document, request)
@@ -1237,7 +1249,7 @@ class Term(object):
     
     @staticmethod
     def get(oid, request):
-        document = es.get(index=settings.DOCSTORE_INDEX, doc_type='facetterm', id=oid)
+        document = DOCSTORE.es.get(index=settings.DOCSTORE_INDEX, doc_type='facetterm', id=oid)
         if not document:
             raise NotFound()
         # save data for breadcrumbs
@@ -1567,7 +1579,7 @@ class NameRecord(object):
     
     @staticmethod
     def get(oid, request):
-        document = es.get(
+        document = DOCSTORE.es.get(
             index=settings.NAMESDB_DOCSTORE_INDEX, doc_type='names-record', id=oid
         )
         if not document:

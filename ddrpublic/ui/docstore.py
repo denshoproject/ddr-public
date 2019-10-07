@@ -7,42 +7,93 @@ from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search, Q
 
+INDEX_PREFIX = 'ddr'
+
 MAX_SIZE = 1000
 
 
 class Docstore():
 
-    def __init__(self, hosts=settings.DOCSTORE_HOSTS, index=settings.DOCSTORE_INDEX, connection=None):
+    def __init__(self, hosts=settings.DOCSTORE_HOSTS, connection=None):
         self.hosts = hosts
-        self.indexname = index
         if connection:
             self.es = connection
         else:
             self.es = Elasticsearch(hosts)
     
+    def index_name(self, model):
+        return '{}{}'.format(INDEX_PREFIX, model)
+    
+    def __repr__(self):
+        return "<%s.%s %s:%s*>" % (
+            self.__module__, self.__class__.__name__, self.hosts, INDEX_PREFIX
+        )
+    
     def health(self):
         return self.es.cluster.health()
     
-    def index_exists(self, index):
-        return self.es.indices.exists(index=index)
+    def index_exists(self, indexname):
+        """
+        """
+        return self.es.indices.exists(index=indexname)
+    
+    def status(self):
+        """Returns status information from the Elasticsearch cluster.
+        
+        >>> docstore.Docstore().status()
+        {
+            u'indices': {
+                u'ddrpublic-dev': {
+                    u'total': {
+                        u'store': {
+                            u'size_in_bytes': 4438191,
+                            u'throttle_time_in_millis': 0
+                        },
+                        u'docs': {
+                            u'max_doc': 2664,
+                            u'num_docs': 2504,
+                            u'deleted_docs': 160
+                        },
+                        ...
+                    },
+                    ...
+                }
+            },
+            ...
+        }
+        """
+        return self.es.indices.stats()
+    
+    def index_names(self):
+        """Returns list of index names
+        """
+        return [name for name in self.status()['indices'].keys()]
      
     def exists(self, model, document_id):
         """
         @param model:
         @param document_id:
         """
-        return self.es.exists(index=self.indexname, doc_type=model, id=document_id)
-     
+        return self.es.exists(
+            index=self.index_name(model),
+            id=document_id
+        )
+    
     def get(self, model, document_id, fields=None):
-        """
+        """Get a single document by its id.
+        
         @param model:
         @param document_id:
         @param fields: boolean Only return these fields
+        @returns: repo_models.elastic.ESObject or None
         """
-        if self.exists(model, document_id):
-            ES_Class = ELASTICSEARCH_CLASSES_BY_MODEL[model]
-            return ES_Class.get(document_id, using=self.es, index=self.indexname)
-        return None
+        ES_Class = ELASTICSEARCH_CLASSES_BY_MODEL[model]
+        return ES_Class.get(
+            id=document_id,
+            index=self.index_name(model),
+            using=self.es,
+            ignore=404,
+        )
 
     def count(self, doctypes=[], query={}):
         """Executes a query and returns number of hits.
@@ -54,11 +105,11 @@ class Docstore():
         @param query: dict The search definition using Elasticsearch Query DSL
         @returns raw ElasticSearch query output
         """
-        logger.debug('count(index=%s, doctypes=%s, query=%s' % (
-            self.indexname, doctypes, query
-        ))
+        logger.debug('count(doctypes=%s, query=%s' % (doctypes, query))
         if not query:
-            raise Exception("Can't do an empty search. Give me something to work with here.")
+            raise Exception(
+                "Can't do an empty search. Give me something to work with here."
+            )
         
         doctypes = ','.join(doctypes)
         logger.debug(json.dumps(query))
@@ -83,26 +134,31 @@ class Docstore():
         @param size: int Number of results to return
         @returns raw ElasticSearch query output
         """
-        logger.debug('search(index=%s, doctypes=%s, query=%s, sort=%s, fields=%s, from_=%s, size=%s' % (
-            self.indexname, doctypes, query, sort, fields, from_, size
+        logger.debug(
+            'search(doctypes=%s, query=%s, sort=%s, fields=%s, from_=%s, size=%s' % (
+                doctypes, query, sort, fields, from_, size
         ))
         if not query:
-            raise Exception("Can't do an empty search. Give me something to work with here.")
+            raise Exception(
+                "Can't do an empty search. Give me something to work with here."
+            )
         
+        indices = ','.join(
+            ['{}{}'.format(INDEX_PREFIX, m) for m in doctypes]
+        )
         doctypes = ','.join(doctypes)
         logger.debug(json.dumps(query))
         _clean_dict(sort)
         sort_cleaned = _clean_sort(sort)
         fields = ','.join(fields)
-        
+
         results = self.es.search(
-            index=self.indexname,
-            doc_type=doctypes,
+            index=indices,
             body=query,
-            sort=sort_cleaned,
+            #sort=sort_cleaned,  # TODO figure out sorting
             from_=from_,
             size=size,
-            _source_include=fields,
+            #_source_include=fields,  # TODO figure out fields
         )
         return results
 
@@ -112,13 +168,20 @@ def aggs_dict(aggregations):
     
     input
     {
-    u'format': {u'buckets': [{u'doc_count': 2, u'key': u'ds'}], u'doc_count_error_upper_bound': 0, u'sum_other_doc_count': 0},
-    u'rights': {u'buckets': [{u'doc_count': 3, u'key': u'cc'}], u'doc_count_error_upper_bound': 0, u'sum_other_doc_count': 0},
+        u'format': {
+            u'buckets': [{u'doc_count': 2, u'key': u'ds'}],
+            u'doc_count_error_upper_bound': 0,
+            u'sum_other_doc_count': 0
+        },
+        u'rights': {
+            u'buckets': [{u'doc_count': 3, u'key': u'cc'}],
+            u'doc_count_error_upper_bound': 0, u'sum_other_doc_count': 0
+        },
     }
     output
     {
-    u'format': {u'ds': 2},
-    u'rights': {u'cc': 3},
+        u'format': {u'ds': 2},
+        u'rights': {u'cc': 3},
     }
     """
     return {
@@ -167,7 +230,10 @@ def search_query(text='', must=[], should=[], mustnot=[], aggs={}):
     
     >>> from ui import docstore,format_json
     >>> t = 'posthuman'
-    >>> a = [{'terms':{'language':['eng','chi']}}, {'terms':{'creators.role':['distraction']}}]
+    >>> a = [
+        {'terms':{'language':['eng','chi']}},
+        {'terms':{'creators.role':['distraction']}}
+    ]
     >>> q = docstore.search_query(text=t, must=a)
     >>> print(format_json(q))
     >>> d = ['entity','segment']
@@ -242,7 +308,7 @@ def _page_bottom_top(total, index, page_size):
         return bottom,top,num_pages
 
 def massage_query_results(results, thispage, page_size):
-    """Takes ES query, makes facsimile of original object; pads results for paginator.
+    """Takes ES query, makes facsimile of orig objects; pads results for paginator
     
     Problem: Django Paginator only displays current page but needs entire result set.
     Actually, it just needs a list that is the same size as the actual result set.
