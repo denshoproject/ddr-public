@@ -86,7 +86,11 @@ SEARCH_AGG_FIELDS = {
 }
 
 # TODO move to ddr-defs/repo_models/elastic.py?
-SEARCH_MODELS = ['collection','entity','narrator']
+SEARCH_MODELS = [
+    'ddrcollection',
+    'ddrentity',
+    'ddrnarrator'
+]
 
 NAMESDB_SEARCH_MODELS = ['names-record']
 
@@ -270,7 +274,7 @@ class SearchResults(object):
             # objects
             self.objects = [hit for hit in results]
             if results.hits.total:
-                self.total = int(results.hits.total)
+                self.total = len(results.hits)
 
             # aggregations
             self.aggregations = {}
@@ -279,15 +283,17 @@ class SearchResults(object):
                     
                     # nested aggregations
                     # TODO parameterize this
-                    if field == 'topics':
-                        self.aggregations['topics'] = results.aggregations['topics']['topics_ids'].buckets
-                        
-                    elif field == 'facility':
-                        self.aggregations['facility'] = results.aggregations['facility']['facility_ids'].buckets
-                    
-                    # simple aggregations
-                    else:
-                        self.aggregations[field] = results.aggregations[field].buckets
+                    # TODO 264-elastic7 uncomment this
+                    #if field == 'topics':
+                    #    self.aggregations['topics'] = results.aggregations['topics']['topics_ids'].buckets
+                    #    
+                    #elif field == 'facility':
+                    #    self.aggregations['facility'] = results.aggregations['facility']['facility_ids'].buckets
+                    # 
+                    ## simple aggregations
+                    #else:
+                    #    self.aggregations[field] = results.aggregations[field].buckets
+                    pass
 
                     #if VOCAB_TOPICS_IDS_TITLES.get(field):
                     #    self.aggregations[field] = []
@@ -418,7 +424,7 @@ class SearchResults(object):
         
         # page
         for o in self.objects:
-            format_function = format_functions[o.meta.doc_type]
+            format_function = format_functions[o.meta.index]
             data['objects'].append(
                 format_function(
                     document=o.to_dict(),
@@ -533,9 +539,9 @@ class Searcher(object):
             fulltext = ''
         
         if params.get('models'):
-            indices = ','.join(
-                ['{}{}'.format(docstore.INDEX_PREFIX, m) for m in models]
-            )
+            indices = ','.join([
+                DOCSTORE.index_name(model) for model in models
+            ])
         else:
             indices = search_models
 
@@ -547,11 +553,7 @@ class Searcher(object):
             if parent:
                 parent = '%s*' % parent
         
-        s = Search(
-            using=self.conn,
-            index=indices,
-            doc_type=models,
-        )
+        s = Search(using=self.conn, index=indices)
         #s = s.source(include=SEARCH_LIST_FIELDS)
         
         # fulltext query

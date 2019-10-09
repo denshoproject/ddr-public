@@ -96,10 +96,7 @@ def search_ui(request):
             limit = settings.RESULTS_PER_PAGE
             offset = 0
         
-        searcher = search.Searcher(
-            conn=api.ddr_es,
-            index=settings.DOCSTORE_INDEX,
-        )
+        searcher = search.Searcher(conn=api.ddr_es)
         searcher.prepare(
             params=request,
             params_whitelist=search.SEARCH_PARAM_WHITELIST,

@@ -265,7 +265,8 @@ def docstore_search(text='', must=[], should=[], mustnot=[], models=[], fields=[
             ),
             offset, limit, request
         ),
-        request
+        request,
+        format_object_detail2
     )
 
 def _object(request, oid, format=None):
@@ -342,7 +343,8 @@ def children(request, model, parent_id, sort_fields, limit=DEFAULT_LIMIT, offset
             ),
             offset, limit, request
         ),
-        request
+        request,
+        format_object_detail2
     )
 
 def count_children(model, parent_id):
@@ -938,10 +940,14 @@ class File(object):
 INTERVIEW_LIST_FIELDS = SEARCH_RETURN_FIELDS + ['creation', 'location']
 
 class Narrator(object):
+    model = 'narrator'
     
     @staticmethod
     def get(oid, request):
-        document = DOCSTORE.es.get(index=settings.DOCSTORE_INDEX, doc_type='narrator', id=oid)
+        document = DOCSTORE.es.get(
+            index=DOCSTORE.index_name(Narrator.model),
+            id=oid
+        )
         if not document:
             raise NotFound()
         data = format_narrator(document, request)
@@ -1021,7 +1027,8 @@ class Narrator(object):
                 ),
                 offset, limit, request
             ),
-            request
+            request,
+            format_object_detail2
         )
         # add segment count per interview
         for d in results['objects']:
@@ -1033,7 +1040,10 @@ class Facet(object):
     
     @staticmethod
     def get(oid, request):
-        document = DOCSTORE.es.get(index=settings.DOCSTORE_INDEX, doc_type='facet', id=oid)
+        document = DOCSTORE.es.get(
+            index=DOCSTORE.index_name('facet'),
+            id=oid
+        )
         if not document:
             raise NotFound()
         data = format_facet(document, request)
@@ -1249,7 +1259,10 @@ class Term(object):
     
     @staticmethod
     def get(oid, request):
-        document = DOCSTORE.es.get(index=settings.DOCSTORE_INDEX, doc_type='facetterm', id=oid)
+        document = DOCSTORE.es.get(
+            index=DOCSTORE.index_name('facetterm'),
+            id=oid
+        )
         if not document:
             raise NotFound()
         # save data for breadcrumbs
@@ -1365,7 +1378,10 @@ class Term(object):
         @returns: None
         """
         ds = docstore.Docstore()
-        s = elasticsearch_dsl.Search(using=ds.es, index=ds.indexname)
+        s = elasticsearch_dsl.Search(
+            using=ds.es,
+            index=ds.index_name('facetterm')
+        )
         s = s.query("match_all")
         for dt in doctypes:
             s = s.doc_type(dt)
@@ -1439,7 +1455,8 @@ class Term(object):
                 ),
                 offset, limit, request
             ),
-            request
+            request,
+            format_object_detail2
         )
 
 

@@ -111,12 +111,14 @@ class Docstore():
                 "Can't do an empty search. Give me something to work with here."
             )
         
+        indices = ','.join(
+            ['{}{}'.format(INDEX_PREFIX, m) for m in doctypes]
+        )
         doctypes = ','.join(doctypes)
         logger.debug(json.dumps(query))
         
         return self.es.count(
-            index=self.indexname,
-            doc_type=doctypes,
+            index=indices,
             body=query,
         )
     
