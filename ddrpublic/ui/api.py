@@ -14,6 +14,8 @@ from rest_framework.views import APIView
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
+from . import docstore
+from . import identifier
 from .misc import filter_if_branded
 from .models import Repository, Organization, Collection, Entity, File
 from .models import Narrator, Facet, Term
@@ -21,6 +23,9 @@ from .models import NameRecord
 from .models import FORMATTERS
 from . import search
 from namesdb.definitions import SEARCH_FIELDS as NAMESDB_SEARCH_FIELDS
+
+# set default hosts and index
+DOCSTORE = docstore.Docstore()
 
 DEFAULT_LIMIT = 25
 
@@ -157,10 +162,9 @@ class Search(APIView):
         else:
             limit = settings.RESULTS_PER_PAGE
             offset = 0
-        
+
         searcher = search.Searcher(
             conn=ddr_es,
-            index=settings.DOCSTORE_INDEX,
             #mappings=identifier.ELASTICSEARCH_CLASSES_BY_MODEL,
             #fields=identifier.ELASTICSEARCH_LIST_FIELDS,
         )
@@ -192,8 +196,11 @@ def object_children(request, object_id):
     p - page (offset)
     """
     # TODO just get doc_type
-    document = ddr_es.get(index=settings.DOCSTORE_INDEX, doc_type='_all', id=object_id)
-    model = document['_type']
+    document = DOCSTORE.es.get(
+        index=DOCSTORE.index_name(identifier.Identifier(object_id).model),
+        id=object_id
+    )
+    model = document['_index'].replace(docstore.INDEX_PREFIX, '')
     if   model == 'repository': return organizations(request._request, object_id)
     elif model == 'organization': return collections(request._request, object_id)
     elif model == 'collection': return entities(request._request, object_id)
@@ -274,8 +281,11 @@ def object_detail(request, object_id):
     """OBJECT DETAIL DOCS
     """
     # TODO just get doc_type
-    document = ddr_es.get(index=settings.DOCSTORE_INDEX, doc_type='_all', id=object_id)
-    model = document['_type']
+    document = DOCSTORE.es.get(
+        index=DOCSTORE.index_name(identifier.Identifier(object_id).model),
+        id=object_id
+    )
+    model = document['_index'].replace(docstore.INDEX_PREFIX, '')
     if   model == 'repository': return repository(request._request, object_id)
     elif model == 'organization': return organization(request._request, object_id)
     elif model == 'collection': return collection(request._request, object_id)
