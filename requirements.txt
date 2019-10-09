@@ -18,7 +18,7 @@ envoy==0.0.3                       # MIT      ???
 GitPython==2.1.10                  # BSD      y
 gunicorn==19.8.1                   # MIT      y
 redis==2.10.6                      # MIT      y
-requests==2.21.0                   # Apache2  y
+requests==2.22.0                   # Apache2  y
 sorl-thumbnail==12.4.1             # BSD      y
 
 bpython==0.17.1
