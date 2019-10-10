@@ -707,39 +707,29 @@ def facet_labels():
     
     @returns: dict of facet ids mapped to labels
     """
-    # TODO 264-elastic7 uncomment this!
-    #key = 'facet:ids-labels'
-    #cached = cache.get(key)
-    #if not cached:
-    #    
-    #    SORT_FIELDS = ['id', 'title',]
-    #    LIST_FIELDS = ['id', 'facet', 'title',]
-    #    q = docstore.search_query(
-    #        should=[
-    #            {"terms": {"facet": [
-    #                'format', 'genre', 'language', 'rights',
-    #            ]}}
-    #        ]
-    #    )
-    #    results = docstore.Docstore().search(
-    #        doctypes=['facetterm'],
-    #        query=q,
-    #        sort=SORT_FIELDS,
-    #        fields=LIST_FIELDS,
-    #        from_=0,
-    #        size=10000,
-    #    )
-    #    ids_labels = {}
-    #    for hit in results['hits']['hits']:
-    #        d = hit['_source']
-    #        if not ids_labels.get(d['facet']):
-    #            ids_labels[d['facet']] = {}
-    #        ids_labels[d['facet']][d['id']] = d['title']
-    #    
-    #    cached = ids_labels
-    #    cache.set(key, cached, settings.CACHE_TIMEOUT)
-    #return cached
-    return []
+    SORT_FIELDS = ['id', 'title',]
+    LIST_FIELDS = ['id', 'facet', 'title',]
+    q = docstore.search_query(
+        should=[
+            {"terms": {"facet": [
+                'format', 'genre', 'language', 'rights',
+            ]}}
+        ]
+    )
+    results = docstore.Docstore().search(
+        query=q,
+        sort=SORT_FIELDS,
+        fields=LIST_FIELDS,
+        from_=0,
+        size=10000,
+    )
+    ids_labels = {}
+    for hit in results['hits']['hits']:
+        d = hit['_source']
+        if not ids_labels.get(d['facet']):
+            ids_labels[d['facet']] = {}
+        ids_labels[d['facet']][d['id']] = d['title']
+    return ids_labels
 
 FACET_LABELS = facet_labels()
 
