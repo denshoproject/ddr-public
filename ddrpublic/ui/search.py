@@ -282,18 +282,15 @@ class SearchResults(object):
                 for field in results.aggregations.to_dict().keys():
                     
                     # nested aggregations
-                    # TODO parameterize this
-                    # TODO 264-elastic7 uncomment this
-                    #if field == 'topics':
-                    #    self.aggregations['topics'] = results.aggregations['topics']['topics_ids'].buckets
-                    #    
-                    #elif field == 'facility':
-                    #    self.aggregations['facility'] = results.aggregations['facility']['facility_ids'].buckets
-                    # 
-                    ## simple aggregations
-                    #else:
-                    #    self.aggregations[field] = results.aggregations[field].buckets
-                    pass
+                    if field in ['topics', 'facility']:
+                        field_ids = '{}_ids'.format(field)
+                        aggs = results.aggregations[field]
+                        self.aggregations[field] = aggs[field_ids].buckets
+                     
+                    # simple aggregations
+                    else:
+                        aggs = results.aggregations[field]
+                        self.aggregations[field] = aggs.buckets
 
                     #if VOCAB_TOPICS_IDS_TITLES.get(field):
                     #    self.aggregations[field] = []
