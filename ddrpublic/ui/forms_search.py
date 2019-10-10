@@ -18,13 +18,10 @@ from ui import search
 #     'facility-choices: [...],
 # }
 
-# TODO 264-elastic7 uncomment this!
-#FORMS_CHOICES = docstore.Docstore().es.get(
-#    index=settings.DOCSTORE_INDEX,
-#    doc_type='forms',
-#    id='forms-choices'
-#)['_source']
-FORMS_CHOICES = {}
+FORMS_CHOICES = docstore.Docstore().es.get(
+    index='forms',
+    id='forms-choices'
+)['_source']
 
 # Pretty labels for multiple choice fields
 # (After initial search the choice lists come from search aggs lists
