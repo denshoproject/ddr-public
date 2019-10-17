@@ -8,6 +8,7 @@ names_es = Elasticsearch(settings.NAMESDB_DOCSTORE_HOSTS)
 
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.request import Request as RestRequest
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
@@ -162,14 +163,14 @@ class Search(APIView):
         else:
             limit = settings.RESULTS_PER_PAGE
             offset = 0
-
+        
         searcher = search.Searcher(
             conn=ddr_es,
             #mappings=identifier.ELASTICSEARCH_CLASSES_BY_MODEL,
             #fields=identifier.ELASTICSEARCH_LIST_FIELDS,
         )
         searcher.prepare(
-            params=request,
+            params=request.query_params.dict(),
             params_whitelist=search.SEARCH_PARAM_WHITELIST,
             search_models=search.SEARCH_MODELS,
             fields=search.SEARCH_INCLUDE_FIELDS,
@@ -440,8 +441,12 @@ class NamesSearch(APIView):
             conn=names_es,
             index=settings.NAMESDB_DOCSTORE_INDEX,
         )
+        if isinstance(request, HttpRequest):
+            params = request.GET.copy()
+        elif isinstance(request, RestRequest):
+            params = request.query_params.dict()
         searcher.prepare(
-            params=request,
+            params=params,
             params_whitelist=['fulltext', 'm_camp'],
             search_models=['names-record'],
             fields=NAMESDB_SEARCH_FIELDS,

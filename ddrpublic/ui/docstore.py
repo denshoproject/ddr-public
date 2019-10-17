@@ -5,7 +5,6 @@ logger = logging.getLogger(__name__)
 from django.conf import settings
 
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Search, Q
 
 INDEX_PREFIX = 'ddr'
 

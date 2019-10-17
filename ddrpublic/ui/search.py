@@ -9,7 +9,7 @@ import os
 import re
 from urllib.parse import urlparse, urlunsplit
 
-from elasticsearch_dsl import Index, Search, A, Q, A
+from elasticsearch_dsl import Index, Search, A, Q
 from elasticsearch_dsl.query import Match, MultiMatch, QueryString
 from elasticsearch_dsl.connections import connections
 
@@ -368,17 +368,43 @@ class SearchResults(object):
     
     def to_dict(self, request, format_functions):
         """Express search results in API and Redis-friendly structure
+        
+        @param request: HttpRequest or RestRequest
+        @param format_functions: dict
         returns: dict
         """
-        return self._dict({}, request, format_functions)
+        if isinstance(request, HttpRequest):
+            params = request.GET.copy()
+        elif isinstance(request, RestRequest):
+            params = request.query_params.dict()
+        elif hasattr(self, 'params') and self.params:
+            params = deepcopy(self.params)
+        
+        return self._dict(params, {}, format_functions, request)
     
     def ordered_dict(self, request, format_functions, pad=False):
         """Express search results in API and Redis-friendly structure
+        
+        @param request: HttpRequest or RestRequest
+        @param format_functions: dict
         returns: OrderedDict
         """
-        return self._dict(OrderedDict(), request, format_functions, pad=pad)
+        if isinstance(request, HttpRequest):
+            params = request.GET.copy()
+        elif isinstance(request, RestRequest):
+            params = request.query_params.dict()
+        elif hasattr(self, 'params') and self.params:
+            params = deepcopy(self.params)
+        
+        return self._dict(params, OrderedDict(), format_functions, request, pad=pad)
     
-    def _dict(self, data, request, format_functions, pad=False):
+    def _dict(self, params, data, format_functions, request, pad=False):
+        """
+        @param params: dict
+        @param data: dict
+        @param format_functions: dict
+        @param pad: bool
+        """
         data['total'] = self.total
         data['limit'] = self.limit
         data['offset'] = self.offset
@@ -387,38 +413,20 @@ class SearchResults(object):
         data['page_size'] = self.page_size
         data['this_page'] = self.this_page
         data['num_this_page'] = len(self.objects)
-
-        if isinstance(request, HttpRequest):
-            params = request.GET.copy()
-        elif isinstance(request, RestRequest):
-            params = request.query_params.dict()
-        elif hasattr(self, 'params') and self.params:
-            params = deepcopy(self.params)
-        
         if params.get('page'): params.pop('page')
         if params.get('limit'): params.pop('limit')
         if params.get('offset'): params.pop('offset')
         qs = [key + '=' + val for key,val in params.items()]
         query_string = '&'.join(qs)
-
         data['prev_api'] = ''
-        if self.prev_offset != None:
-            data['prev_api'] = self._make_prevnext_url(
-                u'%s&limit=%s&offset=%s' % (query_string, self.limit, self.prev_offset),
-                request
-            )
         data['next_api'] = ''
-        if self.next_offset != None:
-            data['next_api'] = self._make_prevnext_url(
-                u'%s&limit=%s&offset=%s' % (query_string, self.limit, self.next_offset),
-                request
-            )
         data['objects'] = []
+        data['query'] = self.query
+        data['aggregations'] = self.aggregations
         
         # pad before
         if pad:
             data['objects'] += [{'n':n} for n in range(0, self.page_start)]
-        
         # page
         for o in self.objects:
             format_function = format_functions[o.meta.index]
@@ -429,13 +437,26 @@ class SearchResults(object):
                     listitem=True,
                 )
             )
-        
         # pad after
         if pad:
             data['objects'] += [{'n':n} for n in range(self.page_next, self.total)]
         
-        data['query'] = self.query
-        data['aggregations'] = self.aggregations
+        # API prev/next
+        if self.prev_offset != None:
+            data['prev_api'] = self._make_prevnext_url(
+                u'%s&limit=%s&offset=%s' % (
+                    query_string, self.limit, self.prev_offset
+                ),
+                request
+            )
+        if self.next_offset != None:
+            data['next_api'] = self._make_prevnext_url(
+                u'%s&limit=%s&offset=%s' % (
+                    query_string, self.limit, self.next_offset
+                ),
+                request
+            )
+        
         return data
 
 
@@ -497,7 +518,7 @@ class Searcher(object):
     def prepare(self, params={}, params_whitelist=SEARCH_PARAM_WHITELIST, search_models=SEARCH_MODELS, fields=SEARCH_INCLUDE_FIELDS, fields_nested=SEARCH_NESTED_FIELDS, fields_agg=SEARCH_AGG_FIELDS):
         """Assemble elasticsearch_dsl.Search object
         
-        @param params:           dict or HttpRequest
+        @param params:           dict
         @param params_whitelist: list Accept only these (SEARCH_PARAM_WHITELIST)
         @param search_models:    list Limit to these ES doctypes (SEARCH_MODELS)
         @param fields:           list Retrieve these fields (SEARCH_INCLUDE_FIELDS)
@@ -507,11 +528,6 @@ class Searcher(object):
         """
 
         # gather inputs ------------------------------
-        
-        if isinstance(params, HttpRequest):
-            params = params.GET.copy()
-        elif isinstance(params, RestRequest):
-            params = params.query_params.dict()
         
         # self.params is a copy of the params arg as it was passed
         # to the method.  It is used for informational purposes

@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
+from django.http.request import HttpRequest
 from django.shortcuts import render
 
 from elasticsearch.exceptions import ConnectionError, ConnectionTimeout
@@ -98,7 +99,7 @@ def search_ui(request):
         
         searcher = search.Searcher(conn=api.ddr_es)
         searcher.prepare(
-            params=request,
+            params=request.GET.copy(),
             params_whitelist=search.SEARCH_PARAM_WHITELIST,
             search_models=search.SEARCH_MODELS,
             fields=search.SEARCH_INCLUDE_FIELDS,

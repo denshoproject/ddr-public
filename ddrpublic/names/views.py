@@ -4,6 +4,7 @@ from urllib.parse import urlparse, urlunparse
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
+from django.http.request import HttpRequest
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
@@ -170,7 +171,7 @@ def search_ui(request):
             index=settings.NAMESDB_DOCSTORE_INDEX,
         )
         searcher.prepare(
-            params=request,
+            params=request.GET.copy(),
             params_whitelist=['fulltext', 'm_camp'],
             search_models=['names-record'],
             fields=definitions.SEARCH_FIELDS,
