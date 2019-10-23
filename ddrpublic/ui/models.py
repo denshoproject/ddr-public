@@ -1403,6 +1403,32 @@ class Term(object):
             term['doc_count'] = ''
             if aggs.get(fid) and aggs[fid].get(tid):
                 term['doc_count'] = aggs[fid].get(tid)
+
+    @staticmethod
+    def topics_tree(term, request):
+        """Terms tree for a particular term, with URLs
+        
+        @param term: dict or OrderedDict
+        @param request
+        @returns: list
+        """
+        ancestors_oids = [
+            'topics-{}'.format(id)
+            for id in term.get('ancestors', [])
+        ]
+        #children_oids = [
+        #    'topics-{}'.format(id)
+        #    for id in term.get('children', [])
+        #]
+        tree = [
+            t for t in Facet.topics_terms(request)
+            if (
+                    (t['id'] in ancestors_oids)
+                    or (t['id'] == term['id'])
+                    #or (t['id'] in children_oids)
+            )
+        ]
+        return tree
     
     @staticmethod
     def objects(facet_id, term_id, request=None, limit=DEFAULT_LIMIT, offset=0):

@@ -79,12 +79,7 @@ def term( request, facet_id, term_id ):
     
     # terms tree (topics)
     if facet_id == 'topics':
-        term['tree'] = [
-            t for t in models.Facet.topics_terms(request)
-            if (t['id'] in term.get('ancestors', [])) # ancestors of current term
-            or (t['id'] == term['id'])                # current term
-            or (term['id'] in t.get('ancestors', [])) # children of current term
-        ]
+        term['tree'] = models.Term.topics_tree(term, request)
     
     # API urls for elinks
     for item in term.get('elinks', []):
