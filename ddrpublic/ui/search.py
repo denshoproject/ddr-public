@@ -546,10 +546,12 @@ class Searcher(object):
         for key in bad_fields:
             params.pop(key)
         
-        if params.get('fulltext'):
+        match_all = False
+        fulltext = ''
+        if params.get('match_all'):
+            match_all = True
+        elif params.get('fulltext'):
             fulltext = params.pop('fulltext')
-        else:
-            fulltext = ''
         
         if params.get('models'):
             indices = ','.join([
@@ -568,6 +570,9 @@ class Searcher(object):
         
         s = Search(using=self.conn, index=indices)
         #s = s.source(include=SEARCH_LIST_FIELDS)
+
+        if match_all:
+            s = s.query('match_all')
         
         # fulltext query
         if fulltext:
