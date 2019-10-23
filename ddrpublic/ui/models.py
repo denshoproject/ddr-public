@@ -5,8 +5,6 @@ import os
 from urllib.parse import urlparse, urlunsplit
 
 import requests
-from elasticsearch import Elasticsearch
-import elasticsearch_dsl
 
 from django.conf import settings
 from django.core.cache import cache
@@ -1357,39 +1355,14 @@ class Term(object):
             ],
             ...
         
-        models.gather_nested_aggregations(
-            terms,
-            doctypes=['entity','segment'],
-            fieldname='topics'
-        )
-        
         @param doctypes: list
         @param fieldnames: list
         @returns: None
         """
-        ds = docstore.Docstore()
-        s = elasticsearch_dsl.Search(
-            using=ds.es,
-            index=ds.index_name('facetterm')
-        )
-        s = s.query("match_all")
-        for dt in doctypes:
-            s = s.doc_type(dt)
-        # aggregations buckets for each nested field
-        #s.aggs.bucket(
-        #    'topics', 'nested', path='topics'
-        #).bucket(
-        #    'topic_ids', 'terms', field='topics.id', size=1000
-        #)
-        s.aggs.bucket(
-            fieldname, 'nested', path=fieldname
-        ).bucket(
-            '%s_ids' % fieldname,
-            'terms',
-            field='%s.id' % fieldname,
-            size=1000
-        )
-        results = search.OldSearcher(search=s).execute(limit=1000, offset=0)
+        searcher = search.Searcher()
+        searcher.prepare(params={'match_all': 'true'})
+        results = searcher.execute(10000, 0)
+
         # fieldname:term:id dict
         aggs = {}
         for fieldname,data in results.aggregations.items():
