@@ -100,12 +100,12 @@ IA metadata: {{ segment.ia_meta|safe }}
                   <td>
                     {% if s.id == segment.id %}
                     <i class="fa fa-angle-double-right"></i>
-                        {{ s.description|segmentoneline }}
+                        {{ s.description|segmentoneline|safe|truncatewords_html:50 }}
                     ({{ s.id }})
                     - {{ s.extent }}
                     {% else %}
                     <a href="{% url "ui-interview" s.id %}?tableft=segments">
-                      {{ s.description|segmentoneline }}
+                      {{ s.description|segmentoneline|safe|truncatewords_html:50 }}
                       ({{ s.id }})
                       - {{ s.extent }}
                     </a>
