@@ -106,12 +106,10 @@ DOCSTORE_HOSTS = [{
     'host':config.get('public', 'docstore_host').split(':')[0],
     'port':config.get('public', 'docstore_host').split(':')[1],
 }]
-DOCSTORE_INDEX = config.get('public', 'docstore_index')
 NAMESDB_DOCSTORE_HOSTS = [{
     'host':config.get('public', 'namesdb_host').split(':')[0],
     'port':config.get('public', 'namesdb_host').split(':')[1],
 }]
-NAMESDB_DOCSTORE_INDEX = config.get('public', 'namesdb_index')
 
 # Filesystem path and URL for static media (mostly used for interfaces).
 STATIC_ROOT = config.get('public', 'static_root')

@@ -437,10 +437,7 @@ class NamesSearch(APIView):
             limit = settings.RESULTS_PER_PAGE
             offset = 0
         
-        searcher = search.Searcher(
-            conn=names_es,
-            index=settings.NAMESDB_DOCSTORE_INDEX,
-        )
+        searcher = search.Searcher()
         if isinstance(request, HttpRequest):
             params = request.GET.copy()
         elif isinstance(request, RestRequest):

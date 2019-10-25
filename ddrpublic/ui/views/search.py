@@ -238,7 +238,7 @@ def term_query( request, field, term ):
             'record_lastmod': request.GET.get('record_lastmod', ''),}
     
     # do the query
-    results = models.cached_query(settings.DOCSTORE_HOSTS, settings.DOCSTORE_INDEX,
+    results = models.cached_query(settings.DOCSTORE_HOSTS,
                                   terms=terms, filters=filters,
                                   fields=fields, sort=sort)
     thispage = request.GET.get('page', 1)

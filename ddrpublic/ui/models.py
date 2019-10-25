@@ -1586,7 +1586,8 @@ class NameRecord(object):
     @staticmethod
     def get(oid, request):
         document = DOCSTORE.es.get(
-            index=settings.NAMESDB_DOCSTORE_INDEX, doc_type='names-record', id=oid
+            index='namesdbrecord',
+            id=oid
         )
         if not document:
             raise NotFound()

@@ -7,7 +7,6 @@ from django.conf import settings
 from django.core.cache import cache
 
 from ui import dvcs
-from ui.docstore import aliases_indices
 from ui.forms import SearchForm
 from ui.misc import assets_base, domain_org, choose_base_template
 
@@ -17,26 +16,6 @@ COMMITS_TEXT = '\n'.join([
     'pub: %s' % COMMITS_DDRPUBLIC,
 ])
 
-
-def docstore_info():
-    """
-    {
-    'hosts': [{'host': '192.168.56.1', 'port': '9200'}],
-    'aliases': [{'index': u'ddrpub-20170321', 'alias': u'ddrpublic-dev'}]
-    }
-    """
-    key = 'hosts-aliases-indices'
-    cached = cache.get(key)
-    if not cached:
-
-        text = '\n'.join([
-            '%s -> %s' % (x['alias'], x['index'])
-            for x in aliases_indices()
-        ])
-        
-        cached = text
-        cache.set(key, cached, settings.CACHE_TIMEOUT)
-    return cached
 
 def sitewide(request):
     """Variables that need to be inserted into all templates.
@@ -60,9 +39,7 @@ def sitewide(request):
         'version': settings.VERSION,
         'packages': settings.PACKAGES,
         'docstore_hosts': settings.DOCSTORE_HOSTS[0]['host'],
-        'docstore_index': settings.DOCSTORE_INDEX,
         'namesdb_hosts': settings.NAMESDB_DOCSTORE_HOSTS[0]['host'],
-        'namesdb_index': settings.NAMESDB_DOCSTORE_INDEX,
         'ASSETS_BASE': assets_base(request),
         'hide_header_search': False,
         'search_form': SearchForm,

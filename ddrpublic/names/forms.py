@@ -20,7 +20,6 @@ from ui import search
 #     'facility-choices: [...],
 # }
 #FORMS_CHOICES = docstore.Docstore().es.get(
-#    index=settings.DOCSTORE_INDEX,
 #    doc_type='forms',
 #    id='forms-choices'
 #)['_source']
