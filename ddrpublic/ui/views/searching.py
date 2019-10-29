@@ -97,7 +97,7 @@ def search_ui(request):
             limit = settings.RESULTS_PER_PAGE
             offset = 0
         
-        searcher = search.Searcher(conn=api.ddr_es)
+        searcher = search.Searcher()
         searcher.prepare(
             params=request.GET.copy(),
             params_whitelist=search.SEARCH_PARAM_WHITELIST,

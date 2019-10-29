@@ -164,11 +164,7 @@ class Search(APIView):
             limit = settings.RESULTS_PER_PAGE
             offset = 0
         
-        searcher = search.Searcher(
-            conn=ddr_es,
-            #mappings=identifier.ELASTICSEARCH_CLASSES_BY_MODEL,
-            #fields=identifier.ELASTICSEARCH_LIST_FIELDS,
-        )
+        searcher = search.Searcher()
         searcher.prepare(
             params=request.query_params.dict(),
             params_whitelist=search.SEARCH_PARAM_WHITELIST,
