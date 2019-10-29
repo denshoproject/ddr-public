@@ -110,19 +110,19 @@
     </tr>
   </thead>
   <tbody>
-{% for r in record.family_members %}
+{% for object in record.family_members %}
     <tr>
       <td>
-        <a href="{{ r.absolute_url }}">
-        {{ r.m_lastname }},&nbsp;{{ r.m_firstname }}&nbsp;({{ r.m_gender }})
+        <a href="{{ object.links.html }}">
+          {{ object.m_lastname }}, {{ object.m_firstname }} ({{ object.m_gender }})
         </a>
       </td>
-      <td>{{ r.m_camp_label }}</td>
-      <td>{{ r.m_birthyear }}</td>
-      <td>{{ r.m_originalstate_label }}</td>
-      <td>{{ r.m_familyno }}</td>
-      <td>{{ r.m_individualno }}</td>
-      <td>{{ r.m_dataset_label }}</td>
+      <td>{{ object.m_camp_label }}</td>
+      <td>{{ object.m_birthyear }}</td>
+      <td>{{ object.m_originalstate_label }}</td>
+      <td>{{ object.m_familyno }}</td>
+      <td>{{ object.m_individualno }}</td>
+      <td>{{ object.m_dataset_label }}</td>
     </tr>
 {% endfor %}
   </tbody>
