@@ -117,12 +117,12 @@
         {{ r.m_lastname }},&nbsp;{{ r.m_firstname }}&nbsp;({{ r.m_gender }})
         </a>
       </td>
-      <td>{{ r.fields.m_camp.value }}</td>
-      <td>{{ r.fields.m_birthyear.value }}</td>
-      <td>{{ r.fields.m_originalstate.value }}</td>
-      <td>{{ r.fields.m_familyno.value }}</td>
-      <td>{{ r.fields.m_individualno.value }}</td>
-      <td>{{ r.fields.m_dataset.value }}</td>
+      <td>{{ r.m_camp_label }}</td>
+      <td>{{ r.m_birthyear }}</td>
+      <td>{{ r.m_originalstate_label }}</td>
+      <td>{{ r.m_familyno }}</td>
+      <td>{{ r.m_individualno }}</td>
+      <td>{{ r.m_dataset_label }}</td>
     </tr>
 {% endfor %}
   </tbody>

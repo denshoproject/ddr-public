@@ -4,7 +4,6 @@ from django.conf import settings
 
 from elasticsearch import Elasticsearch
 ddr_es = Elasticsearch(settings.DOCSTORE_HOSTS)
-names_es = Elasticsearch(settings.NAMESDB_DOCSTORE_HOSTS)
 
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -20,10 +19,8 @@ from . import identifier
 from .misc import filter_if_branded
 from .models import Repository, Organization, Collection, Entity, File
 from .models import Narrator, Facet, Term
-from .models import NameRecord
 from .models import FORMATTERS
 from . import search
-from namesdb.definitions import SEARCH_FIELDS as NAMESDB_SEARCH_FIELDS
 
 # set default hosts and index
 DOCSTORE = docstore.Docstore()
@@ -358,95 +355,3 @@ def facetterm(request, facet_id, term_id, format=None):
     object_id = '%s-%s' % (facet_id, term_id)
     data = Term.get(object_id, request)
     return _detail(request, data)
-
-
-class NamesSearch(APIView):
-    
-    @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter(
-            'fulltext',
-            description='Search string using Elasticsearch query_string syntax.',
-            required=True,
-            in_=openapi.IN_QUERY, type=openapi.TYPE_STRING
-        ),
-        openapi.Parameter(
-            'm_camp',
-            description='One or more camp IDs e.g. "9-rohwer".',
-            in_=openapi.IN_QUERY, type=openapi.TYPE_STRING
-        ),
-        openapi.Parameter(
-            'page',
-            description='Selected results page (default: 0).',
-            in_=openapi.IN_QUERY, type=openapi.TYPE_STRING
-        ),
-    ])
-    def get(self, request, format=None):
-        """Search the Names Database; good for simpler searches.
-        
-        Search API help: /api/0.2/search/help/
-        """
-        if request.GET.get('fulltext'):
-            return self.grep(request)
-        return Response({})
-    
-    @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter(
-            'body',
-            description='DESCRIPTION HERE',
-            required=True,
-            in_=openapi.IN_FORM, type=openapi.TYPE_STRING),
-    ])
-    def post(self, request, format=None):
-        """Search the Names Database; good for more complicated custom searches.
-        
-        Search API help: /api/0.2/search/help/
-        """
-        if request.data.get('fulltext'):
-            return self.grep(request)
-        return Response({})
-    
-    def grep(self, request):
-        """NamesDB search
-        """
-        def reget(request, field):
-            if request.GET.get(field):
-                return request.GET[field]
-            elif request.data.get(field):
-                return request.data[field]
-            return None
-        
-        fulltext = reget(request, 'fulltext')
-        offset = reget(request, 'offset')
-        limit = reget(request, 'limit')
-        page = reget(request, 'page')
-        
-        if offset:
-            # limit and offset args take precedence over page
-            if not limit:
-                limit = settings.RESULTS_PER_PAGE
-            offset = int(offset)
-        elif page:
-            limit = settings.RESULTS_PER_PAGE
-            thispage = int(page)
-            offset = search.es_offset(limit, thispage)
-        else:
-            limit = settings.RESULTS_PER_PAGE
-            offset = 0
-        
-        searcher = search.Searcher()
-        if isinstance(request, HttpRequest):
-            params = request.GET.copy()
-        elif isinstance(request, RestRequest):
-            params = request.query_params.dict()
-        searcher.prepare(
-            params=params,
-            params_whitelist=['fulltext', 'm_camp'],
-            search_models=['names-record'],
-            fields=NAMESDB_SEARCH_FIELDS,
-            fields_nested=[],
-            fields_agg={'m_camp':'m_camp'},
-        )
-        results = searcher.execute(limit, offset)
-        return Response(
-            results.ordered_dict(request, format_functions=FORMATTERS)
-        )

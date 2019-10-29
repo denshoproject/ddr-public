@@ -15,7 +15,6 @@ from rest_framework.reverse import reverse
 from . import docstore
 from . import identifier
 from . import search
-from namesdb import definitions
 
 # set default hosts and index
 DOCSTORE = docstore.Docstore()
@@ -622,35 +621,6 @@ def format_term(document, request, listitem=False):
             d[key] = document[key]
     return d
 
-def format_name_record(document, request, listitem=False):
-    if document.get('_source'):
-        document = document['_source']
-
-    oid = ':'.join([
-        document['m_dataset'], document['m_pseudoid']
-    ])
-    
-    d = OrderedDict()
-    d['id'] = oid
-    # links
-    d['links'] = OrderedDict()
-    d['links']['html'] = reverse(
-        'names-detail', args=[oid], request=request
-    )
-    d['links']['json'] = reverse(
-        'ui-api-names-name', args=[oid], request=request
-    )
-    # everything else
-    if listitem:
-        for key in definitions.SEARCH_FIELDS:
-            if document.get(key):
-                d[key] = document[key]
-    else:
-        for key in definitions.FIELD_DEFINITIONS_NAMES:
-            if document.get(key):
-                d[key] = document[key]
-    return d
-
 FORMATTERS = {
     'ddrnarrator': format_narrator,
     'ddrfacet': format_facet,
@@ -658,7 +628,6 @@ FORMATTERS = {
     'ddrcollection': format_object_detail2,
     'ddrentity': format_object_detail2,
     'ddrfile': format_object_detail2,
-    'names-record': format_name_record,
 }
 
 def format_list_objects(results, request, function):
@@ -1579,20 +1548,3 @@ def facilities():
         ]
         cache.set(key, cached, 15) # settings.ELASTICSEARCH_QUERY_TIMEOUT)
     return cached
-
-
-class NameRecord(object):
-    
-    @staticmethod
-    def get(oid, request):
-        document = DOCSTORE.es.get(
-            index='namesdbrecord',
-            id=oid
-        )
-        if not document:
-            raise NotFound()
-        data = format_name_record(document, request)
-        HIDDEN_FIELDS = []
-        for field in HIDDEN_FIELDS:
-            pop_field(data, field)
-        return data
