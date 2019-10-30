@@ -27,6 +27,10 @@ SEARCH_RETURN_FIELDS = [
 ]
 
 SEARCH_PARAM_WHITELIST = [
+    'fulltext',
+    'model',
+    'models',
+    'parent',
     'id', '_id', 'meta.id', 'm_dataset', 'm_pseudoid', 'm_camp', 'm_familyno',
 ]
 SEARCH_MODELS = ['namesdbrecord']
