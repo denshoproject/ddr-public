@@ -274,7 +274,7 @@ class SearchResults(object):
             # objects
             self.objects = [hit for hit in results]
             if results.hits.total:
-                self.total = len(results.hits)
+                self.total = results.hits.total.value
 
             # aggregations
             self.aggregations = {}
