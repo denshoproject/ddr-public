@@ -546,36 +546,16 @@ class Searcher(object):
         for key in bad_fields:
             params.pop(key)
         
-        match_all = False
-        fulltext = ''
-        if params.get('match_all'):
-            match_all = True
-        elif params.get('fulltext'):
-            fulltext = params.pop('fulltext')
-        
+        indices = search_models
         if params.get('models'):
-            indices = ','.join([
-                DOCSTORE.index_name(model) for model in models
-            ])
-        else:
-            indices = search_models
-
-        parent = ''
-        if params.get('parent'):
-            parent = params.pop('parent')
-            if isinstance(parent, list) and (len(parent) == 1):
-                parent = parent[0]
-            if parent:
-                parent = '%s*' % parent
+            indices = ','.join([DOCSTORE.index_name(model) for model in models])
         
         s = Search(using=self.conn, index=indices)
-        #s = s.source(include=SEARCH_LIST_FIELDS)
-
-        if match_all:
-            s = s.query('match_all')
         
-        # fulltext query
-        if fulltext:
+        if params.get('match_all'):
+            s = s.query('match_all')
+        elif params.get('fulltext'):
+            fulltext = params.pop('fulltext')
             # MultiMatch chokes on lists
             if isinstance(fulltext, list) and (len(fulltext) == 1):
                 fulltext = fulltext[0]
@@ -590,8 +570,12 @@ class Searcher(object):
                 )
             )
 
-        if parent:
-            parent = '%s*' % parent
+        if params.get('parent'):
+            parent = params.pop('parent')
+            if isinstance(parent, list) and (len(parent) == 1):
+                parent = parent[0]
+            if parent:
+                parent = '%s*' % parent
             s = s.query("wildcard", id=parent)
         
         # filters
