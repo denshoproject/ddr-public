@@ -136,3 +136,100 @@ def search_ui(request):
         context['search_form'] = forms.SearchForm()
 
     return render(request, 'ui/search/results.html', context)
+
+def collection(request, oid):
+    #filter_if_branded(request, i)
+    collection = models.Collection.get(oid, request)
+    if not collection:
+        raise Http404
+    return parent_search(request, collection)
+
+def facetterm(request, facet_id, term_id):
+    oid = '-'.join([facet_id, term_id])
+    term = models.Term.get(oid, request)
+    if not term:
+        raise Http404
+    return parent_search(request, term)
+
+def narrator(request, oid):
+    narrator = models.Narrator.get(oid, request)
+    if not narrator:
+        raise Http404
+    return parent_search(request, narrator)
+
+@ui_state
+def parent_search(request, obj):
+    """search within collection/facetterm/narrator
+    """
+    api_url = '%s?%s' % (
+        _mkurl(request, reverse('ui-api-search')),
+        request.META['QUERY_STRING']
+    )
+    this_url = reverse('ui-search-results')
+    template = 'ui/search/results.html'
+    template_extends = "ui/search/base.html"
+    context = {
+        'hide_header_search': True,
+        'searching': False,
+        'filters': True,
+        'api_url': api_url,
+    }
+
+    params = request.GET.copy()
+    limit,offset = limit_offset(request)
+    params['parent'] = obj['id']
+    search_models = search.SEARCH_MODELS
+    
+    # search collection
+    if obj['model'] == 'collection':
+        search_models = ['ddrentity', 'ddrsegment']
+        this_url = reverse('ui-search-collection', args=[obj['id']])
+        template_extends = "ui/collections/base.html"
+    # search topic
+    elif (obj['model'] == 'ddrfacetterm') and (obj['facet'] == 'topics'):
+        this_url = reverse('ui-search-facetterm', args=[obj['facet'], obj['term_id']])
+        template_extends = "ui/facets/base-topics.html"
+        obj['model'] = 'topics'
+    # search facility
+    elif (obj['model'] == 'ddrfacetterm') and (obj['facet'] == 'facility'):
+        this_url = reverse('ui-search-facetterm', args=[obj['facet'], obj['term_id']])
+        template_extends = "ui/facets/base-facility.html"
+        obj['model'] = 'facilities'
+    # search narrator
+    elif obj['model'] == 'narrator':
+        search_models = ['ddrentity', 'ddrsegment']
+        this_url = reverse('ui-search-narrator', args=[obj['id']])
+        template_extends = "ui/narrators/base.html"
+        obj['title'] = obj['display_name']
+    context['template_extends'] = template_extends
+    context['object'] = obj
+
+    searcher = search.Searcher()
+    searcher.prepare(
+        params=params,
+        params_whitelist=search.SEARCH_PARAM_WHITELIST,
+        search_models=search_models,
+        fields=search.SEARCH_INCLUDE_FIELDS,
+        fields_nested=search.SEARCH_NESTED_FIELDS,
+        fields_agg=search.SEARCH_AGG_FIELDS,
+    )
+    results = searcher.execute(limit, offset)
+    paginator = Paginator(
+        results.ordered_dict(
+            request=request,
+            format_functions=models.FORMATTERS,
+            pad=True,
+        )['objects'],
+        results.page_size,
+    )
+    page = paginator.page(results.this_page)
+    form = forms.SearchForm(
+        data=params,
+        search_results=results,
+    )
+    context['results'] = results
+    context['search_form'] = form
+    context['paginator'] = paginator
+    context['page'] = page
+
+    return render(request, 'ui/search/results.html', context)
