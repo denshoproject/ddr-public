@@ -8,7 +8,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 from names import api as names_api
 from . import api
-from .views import browse, search, searching, collections, entities, objects, index
+from .views import browse, searching, collections, entities, objects, index
 from .views import cite, ui_state, redirect, index
 
 API_BASE = '/api/0.2/'
@@ -82,7 +82,6 @@ urlpatterns = [
     url(r'^browse/(?P<facet_id>[\w]+)/$', browse.facet, name='ui-browse-facet'),
     url(r'^browse/$', browse.index, name='ui-browse-index'),
     
-    url(r'^search/(?P<field>[\w]+):(?P<term>[\w ,]+)/$', search.term_query, name='ui-search-term-query'),
     url(r'^search/results/$', searching.search_ui, name='ui-search-results'),
     url(r'^search/$', searching.search_ui, name='ui-search-index'),
     
