@@ -156,7 +156,7 @@ class Docstore():
         results = self.es.search(
             index=indices,
             body=query,
-            #sort=sort_cleaned,  # TODO figure out sorting
+            sort=sort_cleaned,
             from_=from_,
             size=size,
             #_source_include=fields,  # TODO figure out fields

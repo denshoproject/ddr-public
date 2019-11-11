@@ -712,9 +712,15 @@ class Repository(object):
 
     @staticmethod
     def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
+        sort_fields = [
+            ['repo','asc'],
+            ['org','asc'],
+            ['id','asc'],
+        ]
         return _object_children(
             document=_object(request, oid),
             request=request,
+            sort_fields=sort_fields,
             limit=limit,
             offset=offset
         )
@@ -728,9 +734,16 @@ class Organization(object):
 
     @staticmethod
     def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
+        sort_fields = [
+            ['repo','asc'],
+            ['org','asc'],
+            ['cid','asc'],
+            ['id','asc'],
+        ]
         return _object_children(
             document=_object(request, oid),
             request=request,
+            sort_fields=sort_fields,
             limit=limit,
             offset=offset
         )
@@ -744,9 +757,17 @@ class Collection(object):
 
     @staticmethod
     def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
+        sort_fields = [
+            ['repo','asc'],
+            ['org','asc'],
+            ['cid','asc'],
+            ['eid','asc'],
+            ['id','asc'],
+        ]
         return _object_children(
             document=_object(request, oid),
             request=request,
+            sort_fields=sort_fields,
             limit=limit,
             offset=offset
         )
@@ -802,10 +823,21 @@ class Entity(object):
     @staticmethod
     def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
         models = ['entity','segment']
+        sort_fields = [
+            ['repo','asc'],
+            ['org','asc'],
+            ['cid','asc'],
+            ['eid','asc'],
+            ['role','desc'],
+            ['sort','asc'],
+            ['sha1','asc'],
+            ['id','asc'],
+        ]
         return _object_children(
             document=_object(request, oid),
             request=request,
             models=models,
+            sort_fields=sort_fields,
             limit=limit,
             offset=offset
         )
@@ -1396,17 +1428,22 @@ class Term(object):
                 }}
             ],
         )
+        sort_fields = [
+            ['repo','asc'],
+            ['org','asc'],
+            ['cid','asc'],
+            ['eid','asc'],
+            ['role','desc'],
+            ['sort','asc'],
+            ['sha1','asc'],
+            ['id','asc'],
+        ]
         return format_list_objects(
             paginate_results(
                 docstore.Docstore().search(
                     doctypes=models,
                     query=q,
-                    sort=[
-                        'sort',
-                        'id',
-                        'record_created',
-                        'record_lastmod',
-                    ],
+                    sort=sort_fields,
                     fields=SEARCH_RETURN_FIELDS,
                     from_=offset,
                     size=limit,
