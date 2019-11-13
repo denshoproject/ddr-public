@@ -20,7 +20,6 @@ def index( request ):
     return render(request, 'ui/browse/index.html', {})
 
 @ui_state
-@cache_page(settings.CACHE_TIMEOUT)
 def narrators(request):
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
@@ -53,7 +52,6 @@ def narrator(request, oid):
     })
 
 @ui_state
-@cache_page(settings.CACHE_TIMEOUT)
 def facet(request, facet_id):
     if facet_id == 'topics':
         template_name = 'ui/facets/facet-topics.html'
@@ -70,7 +68,7 @@ def facet(request, facet_id):
         'api_url': reverse('ui-api-facetterms', args=[facet_id]),
     })
 
-@cache_page(settings.CACHE_TIMEOUT)
+@ui_state
 def term( request, facet_id, term_id ):
     oid = '-'.join([facet_id, term_id])
     template_name = 'ui/facets/term-%s.html' % facet_id

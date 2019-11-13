@@ -952,34 +952,38 @@ class Narrator(object):
     
     @staticmethod
     def narrators(request, limit=DEFAULT_LIMIT, offset=0):
-        SORT_FIELDS = [
-            ['last_name','asc'],
-            ['first_name','asc'],
-            ['middle_name','asc'],
-        ]
-        LIST_FIELDS = [
-            'id',
-            'display_name',
-            'image_url',
-            'generation',
-            'birth_location',
-            'b_date',
-            'd_date',
-            'bio',
-        ]
-        q = docstore.search_query(
-            must=[
-                { "match_all": {}}
+        key = 'narrators'
+        results = cache.get(key)
+        if not results:
+            SORT_FIELDS = [
+                ['last_name','asc'],
+                ['first_name','asc'],
+                ['middle_name','asc'],
             ]
-        )
-        results = docstore.Docstore().search(
-            doctypes=['narrator'],
-            query=q,
-            sort=SORT_FIELDS,
-            fields=LIST_FIELDS,
-            from_=offset,
-            size=limit,
-        )
+            LIST_FIELDS = [
+                'id',
+                'display_name',
+                'image_url',
+                'generation',
+                'birth_location',
+                'b_date',
+                'd_date',
+                'bio',
+            ]
+            q = docstore.search_query(
+                must=[
+                    { "match_all": {}}
+                ]
+            )
+            results = docstore.Docstore().search(
+                doctypes=['narrator'],
+                query=q,
+                sort=SORT_FIELDS,
+                fields=LIST_FIELDS,
+                from_=offset,
+                size=limit,
+            )
+            cache.set(key, results, settings.CACHE_TIMEOUT)
         return format_list_objects(
             paginate_results(
                 results,
@@ -1420,37 +1424,42 @@ class Term(object):
         @param offset: int
         @returns: SearchResults
         """
-        models = CHILDREN.keys()
-        q = docstore.search_query(
-            must=[
-                {"nested": {
-                    "path": facet_id,
-                    "query": {"term": {
-                        "%s.id" % facet_id: term_id
+        key = 'term:{}:{}:objects'.format(facet_id, term_id)
+        results = cache.get(key)
+        if not results:
+            models = CHILDREN.keys()
+            q = docstore.search_query(
+                must=[
+                    {"nested": {
+                        "path": facet_id,
+                        "query": {"term": {
+                            "%s.id" % facet_id: term_id
+                        }}
                     }}
-                }}
-            ],
-        )
-        sort_fields = [
-            ['repo','asc'],
-            ['org','asc'],
-            ['cid','asc'],
-            ['eid','asc'],
-            ['role','desc'],
-            ['sort','asc'],
-            ['sha1','asc'],
-            ['id','asc'],
-        ]
+                ],
+            )
+            sort_fields = [
+                ['repo','asc'],
+                ['org','asc'],
+                ['cid','asc'],
+                ['eid','asc'],
+                ['role','desc'],
+                ['sort','asc'],
+                ['sha1','asc'],
+                ['id','asc'],
+            ]
+            results = docstore.Docstore().search(
+                doctypes=models,
+                query=q,
+                sort=sort_fields,
+                fields=SEARCH_RETURN_FIELDS,
+                from_=offset,
+                size=limit,
+            )
+            cache.set(key, results, settings.CACHE_TIMEOUT)
         return format_list_objects(
             paginate_results(
-                docstore.Docstore().search(
-                    doctypes=models,
-                    query=q,
-                    sort=sort_fields,
-                    fields=SEARCH_RETURN_FIELDS,
-                    from_=offset,
-                    size=limit,
-                ),
+                results,
                 offset, limit, request
             ),
             request,
