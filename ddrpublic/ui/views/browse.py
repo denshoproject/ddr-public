@@ -24,18 +24,20 @@ def narrators(request):
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
     offset = models.search_offset(thispage, pagesize)
-    paginator = Paginator(
-        models.pad_results(
-            models.Narrator.narrators(
-                request,
-                limit=pagesize,
-                offset=offset,
-            ),
-            pagesize,
-            thispage
-        ),
-        pagesize
+    results = models.Narrator.narrators(
+        request,
+        limit=pagesize,
+        offset=offset,
     )
+    paginator = Paginator(
+        results.ordered_dict(
+            request=request,
+            format_functions=models.FORMATTERS,
+            pad=True,
+        )['objects'],
+        results.page_size,
+    )
+    page = paginator.page(results.this_page)
     return render(request, 'ui/narrators/list.html', {
         'paginator': paginator,
         'page': paginator.page(thispage),

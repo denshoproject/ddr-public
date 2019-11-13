@@ -955,12 +955,12 @@ class Narrator(object):
         key = 'narrators'
         results = cache.get(key)
         if not results:
-            SORT_FIELDS = [
-                ['last_name','asc'],
-                ['first_name','asc'],
-                ['middle_name','asc'],
+            sort_fields = [
+                'last_name',
+                'first_name',
+                'middle_name',
             ]
-            LIST_FIELDS = [
+            list_fields = [
                 'id',
                 'display_name',
                 'image_url',
@@ -970,30 +970,21 @@ class Narrator(object):
                 'd_date',
                 'bio',
             ]
-            q = docstore.search_query(
-                must=[
-                    { "match_all": {}}
-                ]
+            params={
+                'match_all': '1',
+                'sort': sort_fields,
+            }
+            searcher = search.Searcher()
+            searcher.prepare(
+                params=params,
+                search_models=['ddrnarrator'],
+                fields=list_fields,
+                fields_nested=[],
+                fields_agg={},
             )
-            results = docstore.Docstore().search(
-                doctypes=['narrator'],
-                query=q,
-                sort=SORT_FIELDS,
-                fields=LIST_FIELDS,
-                from_=offset,
-                size=limit,
-            )
+            results = searcher.execute(limit, offset)
             cache.set(key, results, settings.CACHE_TIMEOUT)
-        return format_list_objects(
-            paginate_results(
-                results,
-                offset,
-                limit,
-                request
-            ),
-            request,
-            format_narrator
-        )
+        return results
 
     @staticmethod
     def interviews(narrator_id, request, limit=DEFAULT_LIMIT, offset=0):
