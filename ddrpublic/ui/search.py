@@ -462,30 +462,43 @@ class SearchResults(object):
 
 
 def sanitize_input(text):
-    # Escape special characters
-    # http://lucene.apache.org/core/old_versioned_docs/versions/2_9_1/queryparsersyntax.html
-    text = re.sub(
-        '([{}])'.format(re.escape('\\+\-&|!(){}\[\]^~*?:\/')),
-        r"\\\1",
-        text
-    )
+    if isinstance(text, str):
+        data = [text]
+    elif isinstance(text, list):
+        data = text
+    elif isinstance(text, dict):
+        # TODO we aren't handling those yet :P
+        return text
     
-    # AND, OR, and NOT are used by lucene as logical operators.
-    ## We need to escape these.
-    # ...actually, we don't. We want these to be available.
-    #for word in ['AND', 'OR', 'NOT']:
-    #    escaped_word = "".join(["\\" + letter for letter in word])
-    #    text = re.sub(
-    #        r'\s*\b({})\b\s*'.format(word),
-    #        r" {} ".format(escaped_word),
-    #        text
-    #    )
+    cleaned = []
+    for t in data:
+        # Escape special characters
+        # http://lucene.apache.org/core/old_versioned_docs/versions/2_9_1/queryparsersyntax.html
+        t = re.sub(
+            '([{}])'.format(re.escape('\\+\-&|!(){}\[\]^~*?:\/')),
+            r"\\\1",
+            t
+        )
+        # AND, OR, and NOT are used by lucene as logical operators.
+        ## We need to escape these.
+        # ...actually, we don't. We want these to be available.
+        #for word in ['AND', 'OR', 'NOT']:
+        #    escaped_word = "".join(["\\" + letter for letter in word])
+        #    text = re.sub(
+        #        r'\s*\b({})\b\s*'.format(word),
+        #        r" {} ".format(escaped_word),
+        #        text
+        #    )
+        # Escape odd quotes
+        quote_count = t.count('"')
+        if quote_count % 2 == 1:
+            t = re.sub(r'(.*)"(.*)', r'\1\"\2', t)
+        cleaned.append(t)
     
-    # Escape odd quotes
-    quote_count = text.count('"')
-    if quote_count % 2 == 1:
-        text = re.sub(r'(.*)"(.*)', r'\1\"\2', text)
-    return text
+    if isinstance(text, str):
+        return cleaned[0]
+    elif isinstance(text, list):
+        return cleaned
 
 class Searcher(object):
     """Wrapper around elasticsearch_dsl.Search
