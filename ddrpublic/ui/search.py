@@ -35,6 +35,7 @@ DOCSTORE = docstore.Docstore()
 # TODO move to ddr-defs/repo_models/elastic.py?
 SEARCH_PARAM_WHITELIST = [
     'fulltext',
+    'sort',
     'model',
     'models',
     'parent',
@@ -551,6 +552,11 @@ class Searcher(object):
             indices = ','.join([DOCSTORE.index_name(model) for model in models])
         
         s = Search(using=self.conn, index=indices)
+        
+        # sorting
+        if params.get('sort'):
+            args = params.pop('sort')
+            s = s.sort(*args)
         
         if params.get('match_all'):
             s = s.query('match_all')
