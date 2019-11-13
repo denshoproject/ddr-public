@@ -1,10 +1,12 @@
 import json
 import logging
 logger = logging.getLogger(__name__)
+import sys
 
 from django.conf import settings
 
 from elasticsearch import Elasticsearch
+from elasticsearch.exceptions import TransportError
 
 INDEX_PREFIX = 'ddr'
 
@@ -30,6 +32,14 @@ class Docstore():
     
     def health(self):
         return self.es.cluster.health()
+    
+    def start_test(self):
+        try:
+            self.es.cluster.health()
+        except TransportError:
+            logger.critical('Elasticsearch cluster unavailable')
+            print('CRITICAL: Elasticsearch cluster unavailable')
+            sys.exit(1)
     
     def index_exists(self, indexname):
         """

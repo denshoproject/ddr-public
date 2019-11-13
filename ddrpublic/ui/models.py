@@ -16,6 +16,9 @@ from . import docstore
 from . import identifier
 from . import search
 
+# see if cluster is available, quit with nice message if not
+docstore.Docstore().start_test()
+
 # set default hosts and index
 DOCSTORE = docstore.Docstore()
 
