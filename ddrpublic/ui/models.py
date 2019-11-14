@@ -57,33 +57,43 @@ FILE_LIST_FIELDS = ['id', 'model', 'title', 'description', 'access_rel','sort',]
 # TODO mode to ddr-defs: knows too much about structure of ID
 #      Does Elasticsearch have lambda functions for sorting?
 REPOSITORY_LIST_SORT = [
-    ['repo','asc'],
+    'repo',
 ]
 ORGANIZATION_LIST_SORT = [
-    ['repo','asc'],
-    ['org','asc'],
+    'repo',
+    'org',
 ]
 COLLECTION_LIST_SORT = [
-    ['repo','asc'],
-    ['org','asc'],
-    ['cid','asc'],
-    ['id','asc'],
+    'repo',
+    'org',
+    'cid',
+    'id',
 ]
 ENTITY_LIST_SORT = [
-    ['repo','asc'],
-    ['org','asc'],
-    ['cid','asc'],
-    ['eid','asc'],
-    ['id','asc'],
+    'repo',
+    'org',
+    'cid',
+    'eid',
+    'id',
 ]
 FILE_LIST_SORT = [
-    ['repo','asc'],
-    ['org','asc'],
-    ['cid','asc'],
-    ['eid','asc'],
-    ['sort','asc'],
-    ['role','desc'],
-    ['id','asc'],
+    'repo',
+    'org',
+    'cid',
+    'eid',
+    'sort',
+    '-role',
+    'id',
+]
+OBJECT_LIST_SORT = [
+    'repo',
+    'org',
+    'cid',
+    'eid',
+    '-role',
+    'sort',
+    'sha1',
+    'id',
 ]
 
 MODEL_LIST_SETTINGS = {
@@ -283,16 +293,7 @@ def _object_children(document, request, models=[], sort_fields=[], limit=DEFAULT
     if not models:
         models = CHILDREN[document['model']]
     if not sort_fields:
-        sort_fields = [
-            'repo',
-            'org',
-            'cid',
-            'eid',
-            'role',
-            'sort',
-            'sha1',
-            'id',
-        ]
+        sort_fields = OBJECT_LIST_SORT
     return children(
         request=request,
         model=models,
@@ -713,15 +714,10 @@ class Repository(object):
 
     @staticmethod
     def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
-        sort_fields = [
-            ['repo','asc'],
-            ['org','asc'],
-            ['id','asc'],
-        ]
         return _object_children(
             document=_object(request, oid),
             request=request,
-            sort_fields=sort_fields,
+            sort_fields=ORGANIZATION_LIST_SORT,
             limit=limit,
             offset=offset
         )
@@ -735,16 +731,10 @@ class Organization(object):
 
     @staticmethod
     def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
-        sort_fields = [
-            ['repo','asc'],
-            ['org','asc'],
-            ['cid','asc'],
-            ['id','asc'],
-        ]
         return _object_children(
             document=_object(request, oid),
             request=request,
-            sort_fields=sort_fields,
+            sort_fields=COLLECTION_LIST_SORT,
             limit=limit,
             offset=offset
         )
