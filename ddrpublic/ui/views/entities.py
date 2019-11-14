@@ -69,26 +69,39 @@ def detail(request, oid):
     # children/nodes
     thispage = request.GET.get('page', 1)
     pagesize = 5
+    offset = models.search_offset(thispage, pagesize)
+    
+    children_results = models.Entity.children(
+        document=entity,
+        request=request,
+        limit=pagesize,
+        offset=offset,
+    )
     children_paginator = Paginator(
-        models.pad_results(
-            models.Entity.children(
-                oid, request, limit=pagesize, offset=0,
-            ),
-            pagesize,
-            thispage
-        ),
-        pagesize
+        children_results.ordered_dict(
+            request=request,
+            format_functions=models.FORMATTERS,
+            pad=True,
+        )['objects'],
+        children_results.page_size,
+    )
+    children_page = children_paginator.page(children_results.this_page)
+    
+    nodes_results = models.Entity.files(
+        document=entity,
+        request=request,
+        limit=pagesize,
+        offset=offset,
     )
     nodes_paginator = Paginator(
-        models.pad_results(
-            models.Entity.files(
-                oid, request, limit=pagesize, offset=0,
-            ),
-            pagesize,
-            thispage
-        ),
-        pagesize
+        nodes_results.ordered_dict(
+            request=request,
+            format_functions=models.FORMATTERS,
+            pad=True,
+        )['objects'],
+        nodes_results.page_size,
     )
+    nodes_page = nodes_paginator.page(nodes_results.this_page)
     
     transcripts = models.Entity.transcripts(
         entity['id'], entity['parent_id'], entity['collection_id'],
@@ -116,9 +129,9 @@ def detail(request, oid):
         'organization': organization,
         'signature': signature,
         'children_paginator': children_paginator,
-        'children_page': children_paginator.page(thispage),
+        'children_page': children_page,
         'nodes_paginator': nodes_paginator,
-        'nodes_page': nodes_paginator.page(thispage),
+        'nodes_page': nodes_page,
         'api_url': reverse('ui-api-object', args=[oid]),
     })
 
@@ -205,23 +218,25 @@ def children( request, oid, role=None ):
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
     offset = models.search_offset(thispage, pagesize)
-    paginator = Paginator(
-        models.pad_results(
-            models._object_children(
-                document=entity,
-                request=request,
-                limit=pagesize,
-                offset=offset,
-            ),
-            pagesize,
-            thispage
-        ),
-        pagesize
+    results = models.Entity.children(
+        document=entity,
+        request=request,
+        limit=pagesize,
+        offset=offset,
     )
+    paginator = Paginator(
+        results.ordered_dict(
+            request=request,
+            format_functions=models.FORMATTERS,
+            pad=True,
+        )['objects'],
+        results.page_size,
+    )
+    page = paginator.page(results.this_page)
     return render(request, 'ui/entities/children.html', {
         'object': entity,
         'paginator': paginator,
-        'page': paginator.page(thispage),
+        'page': page,
         'api_url': reverse('ui-api-object-children', args=[oid]),
     })
 
@@ -238,23 +253,25 @@ def nodes( request, oid, role=None ):
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
     offset = models.search_offset(thispage, pagesize)
-    paginator = Paginator(
-        models.pad_results(
-            models.Entity.files(
-                oid,
-                request,
-                limit=pagesize,
-                offset=offset,
-            ),
-            pagesize,
-            thispage
-        ),
-        pagesize
+    results = models.Entity.files(
+        document=entity,
+        request=request,
+        limit=pagesize,
+        offset=offset,
     )
+    paginator = Paginator(
+        results.ordered_dict(
+            request=request,
+            format_functions=models.FORMATTERS,
+            pad=True,
+        )['objects'],
+        results.page_size,
+    )
+    page = paginator.page(results.this_page)
     return render(request, 'ui/entities/nodes.html', {
         'object': entity,
         'paginator': paginator,
-        'page': paginator.page(thispage),
+        'page': page,
         'api_url': reverse('ui-api-object-nodes', args=[oid]),
     })
 

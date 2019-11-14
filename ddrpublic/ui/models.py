@@ -277,29 +277,29 @@ def _object(request, oid, format=None):
     return format_object_detail2(data, request)
 
 def _object_children(document, request, models=[], sort_fields=[], limit=DEFAULT_LIMIT, offset=0):
+    """
+    TODO this function is probably superfluous
+    """
     if not models:
         models = CHILDREN[document['model']]
     if not sort_fields:
         sort_fields = [
-            ['repo','asc'],
-            ['org','asc'],
-            ['cid','asc'],
-            ['eid','asc'],
-            ['role','desc'],
-            ['sort','asc'],
-            ['sha1','asc'],
-            ['id','asc'],
+            'repo',
+            'org',
+            'cid',
+            'eid',
+            'role',
+            'sort',
+            'sha1',
+            'id',
         ]
-    data = children(
+    return children(
         request=request,
         model=models,
         parent_id=document['id'],
         sort_fields=sort_fields,
         limit=limit, offset=offset
     )
-    for d in data['objects']:
-        d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
-    return data
 
 def children(request, model, parent_id, sort_fields, limit=DEFAULT_LIMIT, offset=0, just_count=False):
     """Return object children list in Django REST Framework format.
@@ -321,32 +321,30 @@ def children(request, model, parent_id, sort_fields, limit=DEFAULT_LIMIT, offset
         models = ','.join(model)
     else:
         raise Exception('model must be a string or a list')
-    q = docstore.search_query(
-        must=[
-            {"term": {"parent_id": parent_id}},
-        ],
-    )
     if just_count:
+        q = docstore.search_query(
+            must=[
+                {"term": {"parent_id": parent_id}},
+            ],
+        )
         return docstore.Docstore().count(
             doctypes=model,
             query=q,
         )
-    return format_list_objects(
-        paginate_results(
-            docstore.Docstore().search(
-                doctypes=model,
-                query=q,
-                sort=sort_fields,
-                fields=SEARCH_RETURN_FIELDS,
-                from_=offset,
-                size=limit,
-            ),
-            offset, limit, request
-        ),
-        request,
-        format_object_detail2
+    indices = ','.join([DOCSTORE.index_name(model) for model in models])
+    params={
+        'parent': parent_id,
+        'sort': sort_fields,
+    }
+    searcher = search.Searcher()
+    searcher.prepare(
+        params=params,
+        search_models=indices,
+        fields_nested=[],
+        fields_agg={},
     )
-
+    return searcher.execute(limit, offset)
+    
 def count_children(model, parent_id):
     """Return count of object's children
     
@@ -759,18 +757,10 @@ class Collection(object):
         return _object(request, oid)
 
     @staticmethod
-    def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
-        sort_fields = [
-            ['repo','asc'],
-            ['org','asc'],
-            ['cid','asc'],
-            ['eid','asc'],
-            ['id','asc'],
-        ]
+    def children(document, request, limit=DEFAULT_LIMIT, offset=0):
         return _object_children(
-            document=_object(request, oid),
+            document=document,
             request=request,
-            sort_fields=sort_fields,
             limit=limit,
             offset=offset
         )
@@ -824,45 +814,23 @@ class Entity(object):
         return _object(request, oid)
 
     @staticmethod
-    def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
+    def children(document, request, limit=DEFAULT_LIMIT, offset=0):
         models = ['entity','segment']
-        sort_fields = [
-            ['repo','asc'],
-            ['org','asc'],
-            ['cid','asc'],
-            ['eid','asc'],
-            ['role','desc'],
-            ['sort','asc'],
-            ['sha1','asc'],
-            ['id','asc'],
-        ]
         return _object_children(
-            document=_object(request, oid),
+            document=document,
             request=request,
             models=models,
-            sort_fields=sort_fields,
             limit=limit,
             offset=offset
         )
 
     @staticmethod
-    def files(oid, request, limit=DEFAULT_LIMIT, offset=0):
+    def files(document, request, limit=DEFAULT_LIMIT, offset=0):
         models = ['file']
-        sort_fields = [
-            ['repo','asc'],
-            ['org','asc'],
-            ['cid','asc'],
-            ['eid','asc'],
-            ['role','desc'],
-            ['sort','asc'],
-            ['sha1','asc'],
-            ['id','asc'],
-        ]
         return _object_children(
-            document=_object(request, oid),
+            document=document,
             request=request,
             models=models,
-            sort_fields=sort_fields,
             limit=limit,
             offset=offset
         )
