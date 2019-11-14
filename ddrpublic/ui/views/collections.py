@@ -25,16 +25,16 @@ def list( request ):
             org['id'], request,
             limit=settings.ELASTICSEARCH_MAX_SIZE,
         )
-        organizations.append( (org, collections['objects']) )
+        organizations.append( (org, collections.objects) )
     else:
         # default site
         orgs = models.Repository.children(repo, request)
-        for org in orgs['objects']:
+        for org in orgs.objects:
             collections = models.Organization.children(
                 org['id'], request,
                 limit=settings.ELASTICSEARCH_MAX_SIZE,
             )
-            organizations.append( (org, collections['objects']) )
+            organizations.append( (org, collections.objects) )
     return render(request, 'ui/collections.html', {
         'organizations': organizations,
     })
