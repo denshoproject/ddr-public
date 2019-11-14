@@ -594,7 +594,7 @@ class Searcher(object):
             if isinstance(parent, list) and (len(parent) == 1):
                 parent = parent[0]
             if parent:
-                parent = '%s*' % parent
+                parent = '%s-*' % parent
             s = s.query("wildcard", id=parent)
         
         # filters
