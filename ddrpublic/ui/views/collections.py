@@ -23,12 +23,13 @@ def list( request ):
         collections = models.Organization.children(
             org.id, request, limit=settings.ELASTICSEARCH_MAX_SIZE,
         )
+        org_formatted = models.format_object_detail2(org.to_dict(), request)
         objects = collections.ordered_dict(
             request=request,
             format_functions=models.FORMATTERS,
             pad=True,
         )['objects']
-        organizations.append( (org, objects) )
+        organizations.append( (org_formatted,objects) )
     else:
         # default site
         orgs = models.Repository.children(repo, request)
@@ -36,12 +37,13 @@ def list( request ):
             collections = models.Organization.children(
                 org.id, request, limit=settings.ELASTICSEARCH_MAX_SIZE,
             )
+            org_formatted = models.format_object_detail2(org.to_dict(), request)
             objects = collections.ordered_dict(
                 request=request,
                 format_functions=models.FORMATTERS,
                 pad=True,
             )['objects']
-            organizations.append( (org, objects) )
+            organizations.append( (org_formatted,objects) )
     return render(request, 'ui/collections.html', {
         'organizations': organizations,
     })
