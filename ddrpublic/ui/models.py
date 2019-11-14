@@ -910,7 +910,7 @@ class Narrator(object):
     
     @staticmethod
     def narrators(request, limit=DEFAULT_LIMIT, offset=0):
-        key = 'narrators'
+        key = 'narrators:{}:{}'.format(limit, offset)
         results = cache.get(key)
         if not results:
             sort_fields = [
