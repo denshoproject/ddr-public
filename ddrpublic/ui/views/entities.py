@@ -43,9 +43,9 @@ def detail(request, oid):
             return HttpResponseRedirect(reverse('ui-interview', args=[oid]))
         elif (model == 'entity'):
             segments = models.Entity.children(oid, request, limit=1)
-            if segments['objects']:
+            if segments.objects:
                 # make sure this is actually a segment before redirecting
-                s = models._object(request, segments['objects'][0]['id'])
+                s = models._object(request, segments.objects[0]['id'])
                 if s['model'] == 'segment':
                     return HttpResponseRedirect(reverse('ui-interview', args=[s['id']]))
     
@@ -152,7 +152,7 @@ def interview(request, oid):
     
     # TODO only id, title, extent
     segments = models._object_children(
-        oid=oid,
+        document=entity,
         models=['entity','segment'],
         request=request,
         limit=1000,
@@ -163,16 +163,16 @@ def interview(request, oid):
         item['term_node'] = item['term'].split(':')[-1].strip()
     # get next,prev segments
     segment['index'] = 0
-    num_segments = len(segments['objects'])
-    for n,s in enumerate(segments['objects']):
+    num_segments = len(segments.objects)
+    for n,s in enumerate(segments.objects):
         if s['id'] == segment['id']:
             segment['index'] = n
     segment['prev'] = None; segment['next'] = None
     pr = segment['index'] - 1; nx = segment['index'] + 1
     if pr >= 0:
-        segment['prev'] = segments['objects'][pr]['id']
+        segment['prev'] = segments.objects[pr]['id']
     if nx < num_segments:
-        segment['next'] = segments['objects'][nx]['id']
+        segment['next'] = segments.objects[nx]['id']
     # segment index for humans
     segment['this'] = segment['index'] + 1
     
