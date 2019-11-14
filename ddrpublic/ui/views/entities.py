@@ -72,7 +72,7 @@ def detail(request, oid):
     offset = models.search_offset(thispage, pagesize)
     
     children_results = models.Entity.children(
-        document=entity,
+        oid=oid,
         request=request,
         limit=pagesize,
         offset=offset,
@@ -88,7 +88,7 @@ def detail(request, oid):
     children_page = children_paginator.page(children_results.this_page)
     
     nodes_results = models.Entity.files(
-        document=entity,
+        oid=oid,
         request=request,
         limit=pagesize,
         offset=offset,
@@ -152,7 +152,7 @@ def interview(request, oid):
     
     # TODO only id, title, extent
     segments = models._object_children(
-        document=entity,
+        oid=oid,
         models=['entity','segment'],
         request=request,
         limit=1000,
@@ -219,7 +219,7 @@ def children( request, oid, role=None ):
     pagesize = settings.RESULTS_PER_PAGE
     offset = models.search_offset(thispage, pagesize)
     results = models.Entity.children(
-        document=entity,
+        oid=oid,
         request=request,
         limit=pagesize,
         offset=offset,
@@ -254,7 +254,7 @@ def nodes( request, oid, role=None ):
     pagesize = settings.RESULTS_PER_PAGE
     offset = models.search_offset(thispage, pagesize)
     results = models.Entity.files(
-        document=entity,
+        oid=oid,
         request=request,
         limit=pagesize,
         offset=offset,

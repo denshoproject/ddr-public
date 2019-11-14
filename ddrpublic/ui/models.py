@@ -747,9 +747,9 @@ class Collection(object):
         return _object(request, oid)
 
     @staticmethod
-    def children(document, request, limit=DEFAULT_LIMIT, offset=0):
+    def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
         return _object_children(
-            document=document,
+            document=_object(request, oid),
             request=request,
             limit=limit,
             offset=offset
@@ -804,10 +804,10 @@ class Entity(object):
         return _object(request, oid)
 
     @staticmethod
-    def children(document, request, limit=DEFAULT_LIMIT, offset=0):
+    def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
         models = ['entity','segment']
         return _object_children(
-            document=document,
+            document=_object(request, oid),
             request=request,
             models=models,
             limit=limit,
@@ -815,10 +815,10 @@ class Entity(object):
         )
 
     @staticmethod
-    def files(document, request, limit=DEFAULT_LIMIT, offset=0):
+    def files(oid, request, limit=DEFAULT_LIMIT, offset=0):
         models = ['file']
         return _object_children(
-            document=document,
+            document=_object(request, oid),
             request=request,
             models=models,
             limit=limit,

@@ -54,7 +54,7 @@ def detail(request, oid):
     thispage = 1
     pagesize = 10
     results = models.Collection.children(
-        document=collection,
+        oid=oid,
         request=request,
         limit=pagesize,
         offset=0,
@@ -89,7 +89,7 @@ def children(request, oid):
     pagesize = settings.RESULTS_PER_PAGE
     offset = models.search_offset(thispage, pagesize)
     results = models.Collection.children(
-        document=collection,
+        oid=oid,
         request=request,
         limit=pagesize,
         offset=offset,
