@@ -1376,44 +1376,19 @@ class Term(object):
         key = 'term:{}:{}:objects'.format(facet_id, term_id)
         results = cache.get(key)
         if not results:
-            models = CHILDREN.keys()
-            q = docstore.search_query(
-                must=[
-                    {"nested": {
-                        "path": facet_id,
-                        "query": {"term": {
-                            "%s.id" % facet_id: term_id
-                        }}
-                    }}
-                ],
+            params = {
+                'match_all': 'true',
+            }
+            params[facet_id] = term_id
+            searcher = search.Searcher()
+            searcher.prepare(
+                params=params,
+                fields_nested=[],
+                fields_agg={},
             )
-            sort_fields = [
-                ['repo','asc'],
-                ['org','asc'],
-                ['cid','asc'],
-                ['eid','asc'],
-                ['role','desc'],
-                ['sort','asc'],
-                ['sha1','asc'],
-                ['id','asc'],
-            ]
-            results = docstore.Docstore().search(
-                doctypes=models,
-                query=q,
-                sort=sort_fields,
-                fields=SEARCH_RETURN_FIELDS,
-                from_=offset,
-                size=limit,
-            )
+            results = searcher.execute(limit, offset)
             cache.set(key, results, settings.CACHE_TIMEOUT)
-        return format_list_objects(
-            paginate_results(
-                results,
-                offset, limit, request
-            ),
-            request,
-            format_object_detail2
-        )
+        return results
 
 
 # TODO REPLACE THESE HARDCODED VALUES!!!

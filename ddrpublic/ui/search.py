@@ -36,6 +36,8 @@ DOCSTORE = docstore.Docstore()
 SEARCH_PARAM_WHITELIST = [
     'fulltext',
     'sort',
+    'topics',
+    'facility',
     'model',
     'models',
     'parent',
@@ -573,6 +575,7 @@ class Searcher(object):
         
         if params.get('match_all'):
             s = s.query('match_all')
+        
         elif params.get('fulltext'):
             fulltext = params.pop('fulltext')
             # MultiMatch chokes on lists
@@ -588,6 +591,25 @@ class Searcher(object):
                     default_operator='AND',
                 )
             )
+        
+        elif params.get('topics') or params.get('facility'):
+            # SPECIAL CASE FOR DDRPUBLIC TOPICS, FACILITY BROWSE PAGES
+            if params.get('topics'):
+                q = Q('bool',
+                      must=[Q('nested',
+                              path='topics',
+                              query=Q('term', topics__id=params.pop('topics'))
+                      )]
+                )
+                s = s.query(q)
+            elif params.get('facility'):
+                q = Q('bool',
+                      must=[Q('nested',
+                              path='facility',
+                              query=Q('term', facility__id=params.pop('facility'))
+                      )]
+                )
+                s = s.query(q)
 
         if params.get('parent'):
             parent = params.pop('parent')

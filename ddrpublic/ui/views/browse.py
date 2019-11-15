@@ -104,24 +104,25 @@ def term( request, facet_id, term_id ):
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
     offset = models.search_offset(thispage, pagesize)
-    
-    paginator = Paginator(
-        models.pad_results(
-            models.Term.objects(
-                facet_id, term_id,
-                limit=pagesize,
-                offset=offset,
-                request=request,
-            ),
-            pagesize,
-            thispage
-        ),
-        pagesize
+    results = models.Term.objects(
+        facet_id, term_id,
+        limit=pagesize,
+        offset=offset,
+        request=request,
     )
+    paginator = Paginator(
+        results.ordered_dict(
+            request=request,
+            format_functions=models.FORMATTERS,
+            pad=True,
+        )['objects'],
+        results.page_size,
+    )
+    page = paginator.page(results.this_page)
     return render(request, template_name, {
         'facet': facet,
         'term': term,
         'paginator': paginator,
-        'page': paginator.page(thispage),
+        'page': page,
         'api_url': reverse('ui-api-term', args=[facet['id'], term['term_id']]),
     })
