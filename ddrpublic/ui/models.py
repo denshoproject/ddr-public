@@ -1330,7 +1330,7 @@ class Term(object):
         for term in terms:
             fid = term['facet']
             tid = str(term['term_id'])
-            term['doc_count'] = ''
+            term['doc_count'] = 0
             if aggs.get(fid) and aggs[fid].get(tid):
                 term['doc_count'] = aggs[fid].get(tid)
 
