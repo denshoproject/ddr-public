@@ -1198,7 +1198,7 @@ class Facet(object):
             # add doc_count per term
             for term in terms:
                 term['doc_count'] = Term.objects(
-                    'topics', str(term['term_id']),
+                    'facility', str(term['term_id']),
                     limit=settings.RESULTS_PER_PAGE, offset=0,
                     request=None,
                 ).total
@@ -1313,7 +1313,7 @@ class Term(object):
         @param offset: int
         @returns: SearchResults
         """
-        key = 'term:{}:{}:objects'.format(facet_id, term_id)
+        key = 'term:{}:{}:{}:{}:objects'.format(facet_id, term_id, limit, offset)
         results = cache.get(key)
         if not results:
             params = {
