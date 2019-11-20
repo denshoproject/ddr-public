@@ -100,6 +100,7 @@ for value in PARTNER_DOMAINS.values():
 LOG_LEVEL = config.get('public', 'log_level')
 
 CACHE_TIMEOUT = int(config.get('public', 'cache_timeout'))
+CACHE_TIMEOUT_LONG = int(config.get('public', 'cache_timeout_long'))
 
 # Elasticsearch
 DOCSTORE_HOSTS = [{
