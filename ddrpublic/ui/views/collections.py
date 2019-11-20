@@ -20,21 +20,30 @@ def list( request ):
     if repo and org:
         # partner site
         organization_id = '%s-%s' % (repo,org) # TODO relies on knowledge of ID structure!
-        organization = models.Organization.get(organization_id)
         collections = models.Organization.children(
-            org['id'], request,
-            limit=settings.ELASTICSEARCH_MAX_SIZE,
+            org.id, request, limit=settings.ELASTICSEARCH_MAX_SIZE,
         )
-        organizations.append( (org, collections['objects']) )
+        org_formatted = models.format_object_detail2(org.to_dict(), request)
+        objects = collections.ordered_dict(
+            request=request,
+            format_functions=models.FORMATTERS,
+            pad=True,
+        )['objects']
+        organizations.append( (org_formatted,objects) )
     else:
         # default site
         orgs = models.Repository.children(repo, request)
-        for org in orgs['objects']:
+        for org in orgs.objects:
             collections = models.Organization.children(
-                org['id'], request,
-                limit=settings.ELASTICSEARCH_MAX_SIZE,
+                org.id, request, limit=settings.ELASTICSEARCH_MAX_SIZE,
             )
-            organizations.append( (org, collections['objects']) )
+            org_formatted = models.format_object_detail2(org.to_dict(), request)
+            objects = collections.ordered_dict(
+                request=request,
+                format_functions=models.FORMATTERS,
+                pad=True,
+            )['objects']
+            organizations.append( (org_formatted,objects) )
     return render(request, 'ui/collections.html', {
         'organizations': organizations,
     })
@@ -53,24 +62,26 @@ def detail(request, oid):
         organization = None
     thispage = 1
     pagesize = 10
-    paginator = Paginator(
-        models.pad_results(
-            models._object_children(
-                document=collection,
-                request=request,
-                limit=pagesize,
-                offset=0,
-            ),
-            pagesize,
-            thispage
-        ),
-        pagesize
+    results = models.Collection.children(
+        oid=oid,
+        request=request,
+        limit=pagesize,
+        offset=0,
     )
+    paginator = Paginator(
+        results.ordered_dict(
+            request=request,
+            format_functions=models.FORMATTERS,
+            pad=True,
+        )['objects'],
+        results.page_size,
+    )
+    page = paginator.page(results.this_page)
     return render(request, 'ui/collections/detail.html', {
         'object': collection,
         'organization': organization,
         'paginator': paginator,
-        'page': paginator.page(thispage),
+        'page': page,
         'api_url': reverse('ui-api-object', args=[oid]),
     })
 
@@ -86,23 +97,25 @@ def children(request, oid):
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
     offset = models.search_offset(thispage, pagesize)
-    paginator = Paginator(
-        models.pad_results(
-            models._object_children(
-                document=collection,
-                request=request,
-                limit=pagesize,
-                offset=offset,
-            ),
-            pagesize,
-            thispage
-        ),
-        pagesize
+    results = models.Collection.children(
+        oid=oid,
+        request=request,
+        limit=pagesize,
+        offset=offset,
     )
+    paginator = Paginator(
+        results.ordered_dict(
+            request=request,
+            format_functions=models.FORMATTERS,
+            pad=True,
+        )['objects'],
+        results.page_size,
+    )
+    page = paginator.page(results.this_page)
     return render(request, 'ui/collections/children.html', {
         'object': collection,
         'paginator': paginator,
-        'page': paginator.page(thispage),
+        'page': page,
         'api_url': reverse('ui-api-object-children', args=[oid]),
     })
 

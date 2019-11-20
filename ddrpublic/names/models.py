@@ -6,36 +6,140 @@ import os
 import sys
 
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Index, Search, Q
+from elasticsearch_dsl import Search, Q
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.core.cache import cache
+
+from rest_framework.exceptions import NotFound
+from rest_framework.reverse import reverse
 
 from namesdb import sourcefile
 from namesdb import definitions
 from namesdb.models import Record, DOC_TYPE
+from names import forms
+from ui import docstore
+from ui import search
 
-ES = Elasticsearch(settings.NAMESDB_DOCSTORE_HOSTS)
+NAME_RECORD_DOCTYPE = 'namesdbrecord'
 
+SEARCH_RETURN_FIELDS = [
+]
 
-def make_hosts(text):
-    hosts = []
-    for host in text.split(','):
-        h,p = host.split(':')
-        hosts.append( {'host':h, 'port':p} )
-    return hosts
+SEARCH_PARAM_WHITELIST = [
+    'fulltext',
+    'model',
+    'models',
+    'parent',
+    'id', '_id', 'meta.id', 'm_dataset', 'm_pseudoid', 'm_camp', 'm_familyno',
+]
+SEARCH_MODELS = ['namesdbrecord']
+SEARCH_INCLUDE_FIELDS = definitions.SEARCH_FIELDS
+SEARCH_NESTED_FIELDS = []
+SEARCH_AGG_FIELDS = {'m_camp': 'm_camp'}
 
-def set_hosts_index(hosts, index):
-    logging.debug('Index %s' % index)
-    return Index(index)
+DATASET_LABELS = definitions.FIELD_DEFINITIONS['m_dataset']['choices']
+CAMP_LABELS = {key: val for key,val in forms.FORMS_CHOICES['m_camp-choices']}
+STATES = {
+    'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas',
+    'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut',
+    'DE': 'Delaware', 'DC': 'District of Columbia', 'FL': 'Florida',
+    'GA': 'Georgia', 'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois',
+    'IN': 'Indiana', 'IA': 'Iowa', 'KS': 'Kansas', 'KY': 'Kentucky',
+    'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland', 'MA': 'Massachusetts',
+    'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri',
+    'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire',
+    'NJ': 'New Jersey', 'NM': 'New Mexico', 'NY': 'New York',
+    'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio',
+    'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island',
+    'SC': 'South Carolina', 'SD': 'South Dakota', 'TN': 'Tennessee',
+    'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont', 'VA': 'Virginia',
+    'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin',
+    'WY': 'Wyoming',
+}
 
-
-class Rcrd(Record):
+def format_name_record(document, request, listitem=False):
+    """
+    @param document: dict Raw results from docstore.Docstore().es.get
+    @param request: Django HttpRequest
+    @param listitem: bool
+    @returns: OrderedDict
+    """
+    model = NAME_RECORD_DOCTYPE
+    if hasattr(document, 'meta'):
+        oid = document.meta.id
+        document = document.to_dict()
+    if document.get('_source'):
+        oid = document['_id']
+        document = document['_source']
+    elif document.get('m_dataset') and document.get('m_pseudoid'):
+        oid = ':'.join([document.get('m_dataset'), document.get('m_pseudoid')])
+    else:
+        oid = document.pop('id')
     
-    class Meta:
-        doc_type = DOC_TYPE
+    d = OrderedDict()
+    d['id'] = oid
+    # links
+    d['links'] = OrderedDict()
+    d['links']['html'] = reverse(
+        'names-detail', args=[oid], request=request
+    )
+    d['links']['json'] = reverse(
+        'names-api-name', args=[oid], request=request
+    )
+    # everything else
+    if listitem:
+        for key in definitions.SEARCH_FIELDS:
+            if document.get(key):
+                d[key] = document[key]
+    else:
+        for key in definitions.FIELD_DEFINITIONS_NAMES:
+            if document.get(key):
+                d[key] = document[key]
+    # pretty versions of certain values
+    if d.get('m_camp'):
+        d['m_camp_label'] = CAMP_LABELS.get(d['m_camp'])
+    if d.get('m_originalstate'):
+        d['m_originalstate_label'] = STATES.get(d['m_originalstate'])
+    if d.get('m_dataset'):
+        d['m_dataset_label'] = DATASET_LABELS.get(d['m_dataset'])
+    return d
 
-    def fields_enriched(self, label=False, description=False, list_fields=[]):
+FORMATTERS = {
+    'namesdbrecord': format_name_record,
+}
+
+
+class NameRecord(object):
+
+    @staticmethod
+    def make_id(document):
+        return ':'.join([
+            document['m_dataset'], document['m_pseudoid']
+        ])
+
+    @staticmethod
+    def get(oid, request):
+        """Returns document as OrderedDict of fields:values
+        
+        @param oid: str Object ID
+        @param request: Django HttpRequest
+        @returns: OrderedDict
+        """
+        document = docstore.Docstore().es.get(
+            index=NAME_RECORD_DOCTYPE,
+            id=oid
+        )
+        if not document:
+            raise NotFound()
+        data = format_name_record(document, request)
+        HIDDEN_FIELDS = []
+        for field in HIDDEN_FIELDS:
+            pop_field(data, field)
+        return data
+
+    @staticmethod
+    def fields_enriched(record, label=False, description=False, list_fields=[]):
         """Returns an OrderedDict of (field, value) tuples for displaying values
         
         # list fields and values in order
@@ -46,19 +150,21 @@ class Rcrd(Record):
         >>> record.details.m_dataset.label
         >>> record.details.m_dataset.value
         
+        @param record: OrderedDict (not an elasticsearch_dsl..Hit)
         @param label: boolean Get pretty label for fields.
         @param description: boolean Get pretty description for fields. boolean
-        @param list_fields: list If non-blank get pretty values only for these fields.
+        @param list_fields: list If non-blank get pretty values for these fields.
         @returns: OrderedDict
         """
         details = []
-        fieldnames  = definitions.DATASETS[self.m_dataset]
+        fieldnames  = definitions.DATASETS[record['m_dataset']]
         # some datasets do not have the 'm_dataset' field
         if 'm_dataset' not in fieldnames:
              fieldnames.insert(0, 'm_dataset')
         for fieldname in fieldnames:
-            value = getattr(self, fieldname, None)
-            display = definitions.FIELD_DEFINITIONS.get(fieldname, {}).get('display', None)
+            value = record.get(fieldname)
+            field_def = definitions.FIELD_DEFINITIONS.get(fieldname, {})
+            display = field_def.get('display', None)
             if value and display:
                 # display datetimes as dates
                 if isinstance(value, datetime.datetime):
@@ -72,251 +178,75 @@ class Rcrd(Record):
                 }
                 if (not list_fields) or (fieldname in list_fields):
                     # get pretty value from FIELD_DEFINITIONS
-                    choices = definitions.FIELD_DEFINITIONS.get(fieldname, {}).get('choices', {})
+                    choices = field_def.get('choices', {})
                     if choices and choices.get(value, None):
                         data['value'] = choices[value]
                 if label:
-                    data['label'] = definitions.FIELD_DEFINITIONS.get(fieldname, {}).get('label', fieldname)
+                    data['label'] = field_def.get('label', fieldname)
                 if description:
-                    data['description'] = definitions.FIELD_DEFINITIONS.get(fieldname, {}).get('description', '')
+                    data['description'] = field_def.get('description', '')
                 item = (fieldname, data)
                 details.append(item)
         return OrderedDict(details)
-    
-    def absolute_url(self):
-        return reverse(
-            'names-detail',
-            kwargs={'id': self.meta.id}
-        )
-
-def same_familyno(hosts, index, record):
-    """Lists other Records with the same m_familyno.
-    
-    @param hosts: list settings.DOCSTORE_HOSTS
-    @param index: elasticsearch_dsl.Index
-    @returns: list of Records
-    """
-    if record.m_familyno:
-        response = search(
-            hosts, index, filters={'m_familyno':[record.m_familyno]},
-        ).execute()
-        not_this_record = [
-            r for r in records(response)
-            if not (r.m_pseudoid == record.m_pseudoid)
-        ]
-        return not_this_record
-    return []
-
-def other_datasets(hosts, index, record):
-    """Lists occurances of the m_pseudoid in other datasets
-    
-    @param hosts: list settings.DOCSTORE_HOSTS
-    @param index: elasticsearch_dsl.Index
-    @returns: list of Records
-    """
-    response = search(
-        hosts, index, filters={'m_pseudoid':[record.m_pseudoid]},
-    ).execute()
-    not_this_record = [
-        r for r in records(response)
-        if not (r.meta.id == record.meta.id)
-    ]
-    return not_this_record
-
-
-def field_values(hosts, index, field):
-    """Gets all values for the field with doc_counts.
-    
-    @param hosts: list settings.DOCSTORE_HOSTS
-    @param index: elasticsearch_dsl.Index
-    @param field: str Field name. 
-    @returns: 
-    """
-    return Record.field_values(field, es=ES, index=index)
-
-
-def _hitvalue(hit, field):
-    """Extracts list-wrapped values from their lists.
-    
-    TODO use the one in namesdb
-    
-    For some reason, Search hit objects wrap values in lists.
-    returns the value inside the list.
-    
-    @param hit: Elasticsearch search hit object
-    @param field: str field name
-    @return: value
-    """
-    v = hit.get(field)
-    vtype = type(v)
-    value = None
-    if hit.get(field) and isinstance(hit[field], list):
-        value = hit[field][0]
-    elif hit.get(field):
-        value = hit[field]
-    return value
-
-def _from_hit(hit):
-    """Builds Record object from Elasticsearch hit
-    
-    TODO use the one in namesdb
-    
-    @param hit
-    @returns: Record
-    """
-    htype = type(hit)
-    hit_d = hit.__dict__['_d_']
-    m_pseudoid = _hitvalue(hit_d, 'm_pseudoid')
-    m_dataset = _hitvalue(hit_d, 'm_dataset')
-    if m_dataset and m_pseudoid:
-        record = Rcrd(meta={
-            'index': settings.NAMESDB_DOCSTORE_INDEX,
-            'id': ':'.join([m_dataset, m_pseudoid])
-        })
-        for field in definitions.FIELDS_MASTER:
-            setattr(record, field, _hitvalue(hit_d, field))
-        record.m_dataset = m_dataset
-        return record
-    return None
-
-def search(
-        hosts, index, query_type='multi_match', query='', filters={},
-        sort='m_pseudoid', start=0, pagesize=10
-):
-    """Constructs Search object
-    
-    Note: allows any combination of filters, even illogical ones
-    
-    @param hosts: list settings.DOCSTORE_HOSTS
-    @param index: elasticsearch_dsl.Index
-    @param query_type: str Name of query type.
-    @param query: str Query string.
-    @param filters: dict Filters and their arguments.
-    @param sort: str Name of field on which to sort.
-    @param start: int Start of result set.
-    @param pagesize: int Number of records to return.
-    @returns: elasticsearch_dsl.Search
-    """
-    ## remove empty filter args
-    #filter_args = {key:val for key,val in filters.items() if val}
-    #if not (query or filter_args):
-    #    return None,[]
-    s = Search(using=ES, index=index)
-    s = s.doc_type(Record)
-    if filters:
-        for field,values in filters.items():
-            if values:
-                # multiple terms for a field are OR-ed
-                s = s.filter('terms', **{field: values})
-    if query:
-        s = s.query(
-            query_type, query=query, fields=definitions.FIELDS_MASTER
-        )
-    # aggregations
-    if filters:
-        for field in filters.keys():
-            s.aggs.bucket(field, 'terms', field=field, size=1000)
-    s = s.fields(definitions.FIELDS_MASTER)
-    s = s.sort(sort)
-    s = s[start:start+pagesize]
-    return s
-
-def records(response):
-    """
-    @param response
-    @returns: list of Records
-    """
-    records = []
-    for hit in response:
-        record = _from_hit(hit)
-        if record:
-            record.fields = record.fields_enriched(
-                label=False, description=False, list_fields=definitions.FIELDS_MASTER
-            )
-            records.append(record)
-    return records
-
-class Paginator(object):
-    response = None
-    thispage = -1
-    pagesize = -1
-    query = ''
-    total = -1
-    count = -1
-    num_pages = -1
-    first = 1
-    last = -1
-    prev = -1
-    next = -1
-    start = -1
-    end = -1
-    range = []
-    object_list = []
-    labels = {'first':'First', 'prev':'Previous', 'next':'Next', 'last':'Last'}
-    
-    def __init__(self, response, thispage, pagesize, context, query, **kwargs):
-        self.response = response
-        self.thispage = thispage
-        self.pagesize = pagesize
-        
-        self.total = response.hits.total
-        self.count = self.total
-        self.num_pages,mod = divmod(self.total, self.pagesize)
-        if mod:
-            self.num_pages = self.num_pages + 1
-        self.first = 1
-        self.last = self.num_pages
-        self.prev = self.thispage - 1
-        if self.prev <= 0:
-            self.prev = None
-        self.next = self.thispage + 1
-        if self.next > self.num_pages:
-            self.next = None
-        self.start,self.end = Paginator.start_end(self.thispage, self.pagesize)
-        self.object_list = records(response)
-        
-        range_start = self.thispage - context
-        if range_start <= 1:
-            range_start = 1
-        range_end = self.thispage + 1 + context
-        if range_end > self.num_pages:
-            range_end = self.num_pages
-        self.range = range(range_start, range_end)
-
-        qs = []
-        for q in query.split('&'):
-            if '=' in q:
-                if q.split('=')[0] != 'page':
-                    qs.append(q)
-        self.query = '&'.join(qs)
-    
-    def __repr__(self):
-        return "<Paginator %s/%s %s:%s>" % (self.thispage, self.num_pages, self.start, self.end)
 
     @staticmethod
-    def start_end(thispage, pagesize, total=10000):
-        """Calculates start,end indexes for page.
-        @param thispage: int
-        @param pagesize: int
-        @param total: int
-        """
-        start = (thispage - 1) * pagesize
-        if start < 0:
-            start = 0
-        if start > total:
-            start  = total
-        end = start + pagesize
-        if end > total:
-            end = total
-        return start,end
+    def other_datasets(record):
+        """Lists occurances of the m_pseudoid in other datasets
         
-    
+        @param hosts: list settings.DOCSTORE_HOSTS
+        @returns: list of Records
+        """
+        #response = search(
+        #    hosts, index, filters={'m_pseudoid':[record.m_pseudoid]},
+        #).execute()
+        #not_this_record = [
+        #    r for r in records(response)
+        #    if not (r.meta.id == record.meta.id)
+        #]
+        #return not_this_record
+        params = {'m_pseudoid': record_m_pseudoid_nospaces}
+        searcher = search.Searcher()
+        searcher.prepare(
+            params=params,
+            params_whitelist=SEARCH_PARAM_WHITELIST,
+            search_models=SEARCH_MODELS,
+            fields=SEARCH_INCLUDE_FIELDS,
+            fields_nested=SEARCH_NESTED_FIELDS,
+            fields_agg=SEARCH_AGG_FIELDS,
+        )
+        results = searcher.execute(limit=10000, offset=0)
+        not_this_record = [
+            r for r in results.objects
+            if not (NameRecord.make_id(r) == record['id'])
+        ]
+        return not_this_record
 
-def search_aggregation(hosts, index, field):
-    s = Search(using=ES, index=index)
-    s = s.doc_type(Record)
-    s.aggs.bucket('choices', 'terms', field=field)
-    
-    response = s.execute()
-    records = [Record.from_hit(hit) for hit in response]
-    return records
+    @staticmethod
+    def same_familyno(record, request):
+        """Lists other Records with the same m_familyno.
+        
+        @returns: list of Records
+        """
+        if record.get('m_familyno'):
+            familyno = record['m_familyno']
+        elif record.get('m_altfamilyid'):
+            familyno = record['m_altfamilyid']
+        else:
+            return []
+        params = {'m_familyno': familyno}
+        searcher = search.Searcher()
+        searcher.prepare(
+            params=params,
+            params_whitelist=SEARCH_PARAM_WHITELIST,
+            search_models=SEARCH_MODELS,
+            fields=SEARCH_INCLUDE_FIELDS,
+            fields_nested=SEARCH_NESTED_FIELDS,
+            fields_agg=SEARCH_AGG_FIELDS,
+        )
+        results = searcher.execute(limit=10000, offset=0)
+        not_this_record = [
+            format_name_record(r, request)
+            for r in results.objects
+            if not (NameRecord.make_id(r) == record['id'])
+        ]
+        return not_this_record

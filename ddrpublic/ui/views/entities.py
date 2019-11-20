@@ -43,9 +43,9 @@ def detail(request, oid):
             return HttpResponseRedirect(reverse('ui-interview', args=[oid]))
         elif (model == 'entity'):
             segments = models.Entity.children(oid, request, limit=1)
-            if segments['objects']:
+            if segments.objects:
                 # make sure this is actually a segment before redirecting
-                s = models._object(request, segments['objects'][0]['id'])
+                s = models._object(request, segments.objects[0]['id'])
                 if s['model'] == 'segment':
                     return HttpResponseRedirect(reverse('ui-interview', args=[s['id']]))
     
@@ -69,26 +69,39 @@ def detail(request, oid):
     # children/nodes
     thispage = request.GET.get('page', 1)
     pagesize = 5
+    offset = models.search_offset(thispage, pagesize)
+    
+    children_results = models.Entity.children(
+        oid=oid,
+        request=request,
+        limit=pagesize,
+        offset=offset,
+    )
     children_paginator = Paginator(
-        models.pad_results(
-            models.Entity.children(
-                oid, request, limit=pagesize, offset=0,
-            ),
-            pagesize,
-            thispage
-        ),
-        pagesize
+        children_results.ordered_dict(
+            request=request,
+            format_functions=models.FORMATTERS,
+            pad=True,
+        )['objects'],
+        children_results.page_size,
+    )
+    children_page = children_paginator.page(children_results.this_page)
+    
+    nodes_results = models.Entity.files(
+        oid=oid,
+        request=request,
+        limit=pagesize,
+        offset=offset,
     )
     nodes_paginator = Paginator(
-        models.pad_results(
-            models.Entity.files(
-                oid, request, limit=pagesize, offset=0,
-            ),
-            pagesize,
-            thispage
-        ),
-        pagesize
+        nodes_results.ordered_dict(
+            request=request,
+            format_functions=models.FORMATTERS,
+            pad=True,
+        )['objects'],
+        nodes_results.page_size,
     )
+    nodes_page = nodes_paginator.page(nodes_results.this_page)
     
     transcripts = models.Entity.transcripts(
         entity['id'], entity['parent_id'], entity['collection_id'],
@@ -116,9 +129,9 @@ def detail(request, oid):
         'organization': organization,
         'signature': signature,
         'children_paginator': children_paginator,
-        'children_page': children_paginator.page(thispage),
+        'children_page': children_page,
         'nodes_paginator': nodes_paginator,
-        'nodes_page': nodes_paginator.page(thispage),
+        'nodes_page': nodes_page,
         'api_url': reverse('ui-api-object', args=[oid]),
     })
 
@@ -150,16 +163,16 @@ def interview(request, oid):
         item['term_node'] = item['term'].split(':')[-1].strip()
     # get next,prev segments
     segment['index'] = 0
-    num_segments = len(segments['objects'])
-    for n,s in enumerate(segments['objects']):
+    num_segments = len(segments.objects)
+    for n,s in enumerate(segments.objects):
         if s['id'] == segment['id']:
             segment['index'] = n
     segment['prev'] = None; segment['next'] = None
     pr = segment['index'] - 1; nx = segment['index'] + 1
     if pr >= 0:
-        segment['prev'] = segments['objects'][pr]['id']
+        segment['prev'] = segments.objects[pr]['id']
     if nx < num_segments:
-        segment['next'] = segments['objects'][nx]['id']
+        segment['next'] = segments.objects[nx]['id']
     # segment index for humans
     segment['this'] = segment['index'] + 1
     
@@ -205,23 +218,25 @@ def children( request, oid, role=None ):
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
     offset = models.search_offset(thispage, pagesize)
-    paginator = Paginator(
-        models.pad_results(
-            models._object_children(
-                document=entity,
-                request=request,
-                limit=pagesize,
-                offset=offset,
-            ),
-            pagesize,
-            thispage
-        ),
-        pagesize
+    results = models.Entity.children(
+        oid=oid,
+        request=request,
+        limit=pagesize,
+        offset=offset,
     )
+    paginator = Paginator(
+        results.ordered_dict(
+            request=request,
+            format_functions=models.FORMATTERS,
+            pad=True,
+        )['objects'],
+        results.page_size,
+    )
+    page = paginator.page(results.this_page)
     return render(request, 'ui/entities/children.html', {
         'object': entity,
         'paginator': paginator,
-        'page': paginator.page(thispage),
+        'page': page,
         'api_url': reverse('ui-api-object-children', args=[oid]),
     })
 
@@ -238,23 +253,25 @@ def nodes( request, oid, role=None ):
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
     offset = models.search_offset(thispage, pagesize)
-    paginator = Paginator(
-        models.pad_results(
-            models.Entity.files(
-                oid,
-                request,
-                limit=pagesize,
-                offset=offset,
-            ),
-            pagesize,
-            thispage
-        ),
-        pagesize
+    results = models.Entity.files(
+        oid=oid,
+        request=request,
+        limit=pagesize,
+        offset=offset,
     )
+    paginator = Paginator(
+        results.ordered_dict(
+            request=request,
+            format_functions=models.FORMATTERS,
+            pad=True,
+        )['objects'],
+        results.page_size,
+    )
+    page = paginator.page(results.this_page)
     return render(request, 'ui/entities/nodes.html', {
         'object': entity,
         'paginator': paginator,
-        'page': paginator.page(thispage),
+        'page': page,
         'api_url': reverse('ui-api-object-nodes', args=[oid]),
     })
 

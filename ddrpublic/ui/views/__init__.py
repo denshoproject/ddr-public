@@ -31,12 +31,11 @@ def ui_state(request):
         'searchfilters': ['open', 'closed'],
     }
     for key,choices in UI_STATE.items():
-        if request.GET.get(key) in choices:
+        if request.GET.get(key) and (request.GET[key] in choices):
             request.session[key] = request.GET[key]
+            request.session.modified = True
             return HttpResponse(
-                json.dumps({
-                    'selected': request.GET[key],
-                }),
+                json.dumps({'selected': request.GET[key]}),
                 content_type="application/json"
             )
     return Http404()

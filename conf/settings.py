@@ -100,18 +100,17 @@ for value in PARTNER_DOMAINS.values():
 LOG_LEVEL = config.get('public', 'log_level')
 
 CACHE_TIMEOUT = int(config.get('public', 'cache_timeout'))
+CACHE_TIMEOUT_LONG = int(config.get('public', 'cache_timeout_long'))
 
 # Elasticsearch
 DOCSTORE_HOSTS = [{
     'host':config.get('public', 'docstore_host').split(':')[0],
     'port':config.get('public', 'docstore_host').split(':')[1],
 }]
-DOCSTORE_INDEX = config.get('public', 'docstore_index')
 NAMESDB_DOCSTORE_HOSTS = [{
     'host':config.get('public', 'namesdb_host').split(':')[0],
     'port':config.get('public', 'namesdb_host').split(':')[1],
 }]
-NAMESDB_DOCSTORE_INDEX = config.get('public', 'namesdb_index')
 
 # Filesystem path and URL for static media (mostly used for interfaces).
 STATIC_ROOT = config.get('public', 'static_root')
@@ -435,15 +434,15 @@ STATICFILES_FINDERS = (
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
-MIDDLEWARE_CLASSES = (
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    #'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     #'django.contrib.auth.middleware.AuthenticationMiddleware',
     #'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-)
+]
 
 ROOT_URLCONF = 'ui.urls'
 

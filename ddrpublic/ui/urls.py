@@ -6,8 +6,9 @@ from drf_yasg import openapi
 from rest_framework import permissions
 from rest_framework.urlpatterns import format_suffix_patterns
 
+from names import api as names_api
 from . import api
-from .views import browse, search, searching, collections, entities, objects, index
+from .views import browse, searching, collections, entities, objects, index
 from .views import cite, ui_state, redirect, index
 
 API_BASE = '/api/0.2/'
@@ -45,8 +46,8 @@ urlpatterns = [
     url(r'^api/0.2/search/help/$', TemplateView.as_view(template_name="ui/search/help.html"), name='ui-about'),
     url(r'^api/0.2/search/$', api.Search.as_view(), name='ui-api-search'),
     
-    url(r'^api/0.2/names/(?P<object_id>[0-9a-zA-Z_:-]+)', api.name, name='ui-api-names-name'),
-    url(r'^api/0.2/names', api.NamesSearch.as_view(), name='ui-api-names-search'),
+    url(r'^api/0.2/names/(?P<object_id>[0-9a-zA-Z_:-]+)', names_api.name, name='names-api-name'),
+    url(r'^api/0.2/names', names_api.Search.as_view(), name='names-api-search'),
     
     url(r'^api/0.2/narrator/(?P<object_id>[\w]+)/interviews/$', api.narrator_interviews, name='ui-api-narrator-interviews'),
     url(r'^api/0.2/narrator/(?P<object_id>[\w]+)/$', api.narrator, name='ui-api-narrator'),
@@ -72,16 +73,15 @@ urlpatterns = [
     url(r'^using/$', TemplateView.as_view(template_name='ui/using.html'), name='ui-using'),
     url(r'^ethicalediting/$', TemplateView.as_view(template_name='ui/ethicalediting.html'), name='ui-ethicalediting'),
     
-    url(r'^narrators/(?P<oid>[\w]+)/search/$', search.narrator, name='ui-search-narrator'),
+    url(r'^narrators/(?P<oid>[\w]+)/search/$', searching.narrator, name='ui-search-narrator'),
     url(r'^narrators/(?P<oid>[\w]+)/$', browse.narrator, name='ui-narrators-detail'),
     url(r'^narrators/$', browse.narrators, name='ui-narrators-list'),
     
-    url(r'^browse/(?P<facet_id>[\w]+)/(?P<term_id>[\w]+)/search/$', search.facetterm, name='ui-search-facetterm'),
+    url(r'^browse/(?P<facet_id>[\w]+)/(?P<term_id>[\w]+)/search/$', searching.facetterm, name='ui-search-facetterm'),
     url(r'^browse/(?P<facet_id>[\w]+)/(?P<term_id>[\w]+)/$', browse.term, name='ui-browse-term'),
     url(r'^browse/(?P<facet_id>[\w]+)/$', browse.facet, name='ui-browse-facet'),
     url(r'^browse/$', browse.index, name='ui-browse-index'),
     
-    url(r'^search/(?P<field>[\w]+):(?P<term>[\w ,]+)/$', search.term_query, name='ui-search-term-query'),
     url(r'^search/results/$', searching.search_ui, name='ui-search-results'),
     url(r'^search/$', searching.search_ui, name='ui-search-index'),
     
@@ -99,7 +99,7 @@ urlpatterns = [
     url(r'^(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/$', objects.legacy, name='ui-legacy'),
     url(r'^(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/$', objects.legacy, name='ui-legacy'),
     
-    url(r'^(?P<oid>[\w\d-]+)/search/$', search.collection, name='ui-search-collection'),
+    url(r'^(?P<oid>[\w\d-]+)/search/$', searching.collection, name='ui-search-collection'),
     url(r'^(?P<oid>[\w\d-]+)/objects/$', objects.children, name='ui-object-children'),
     url(r'^(?P<oid>[\w\d-]+)/files/$', objects.nodes, name='ui-object-nodes'),
     url(r'^(?P<oid>[\w\d-]+)/$', objects.detail, name='ui-object-detail'),

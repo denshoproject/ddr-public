@@ -12,13 +12,13 @@ django-redis==4.9.0                # BSD      y
 django-redis-sessions==0.6.1       # BSD      y
 djangorestframework==3.9.0         # BSD      y
 drf-yasg==1.11.1                   # BSD      y
-elasticsearch>=2.4.0,<3.0.0        # Apache   y       NOTE: match namesdb version
-elasticsearch-dsl>=2.0.0,<3.0.0    #                  NOTE: match namesdb version
+elasticsearch>=7.0.0,<8.0.0     # Apache y        y   NOTE: match namesdb version
+elasticsearch-dsl>=7.0.0,<8.0.0 # Apache y        y   NOTE: match namesdb version
 envoy==0.0.3                       # MIT      ???
 GitPython==2.1.10                  # BSD      y
 gunicorn==19.8.1                   # MIT      y
 redis==2.10.6                      # MIT      y
-requests==2.21.0                   # Apache2  y
+requests==2.22.0                   # Apache2  y
 sorl-thumbnail==12.4.1             # BSD      y
 
 bpython==0.17.1

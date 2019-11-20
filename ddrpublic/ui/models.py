@@ -5,8 +5,6 @@ import os
 from urllib.parse import urlparse, urlunsplit
 
 import requests
-from elasticsearch import Elasticsearch
-import elasticsearch_dsl
 
 from django.conf import settings
 from django.core.cache import cache
@@ -15,10 +13,14 @@ from rest_framework.exceptions import NotFound
 from rest_framework.reverse import reverse
 
 from . import docstore
+from . import identifier
 from . import search
-from namesdb import definitions
 
-es = Elasticsearch(settings.DOCSTORE_HOSTS)
+# see if cluster is available, quit with nice message if not
+docstore.Docstore().start_test()
+
+# set default hosts and index
+DOCSTORE = docstore.Docstore()
 
 DEFAULT_SIZE = 10
 DEFAULT_LIMIT = 25
@@ -55,33 +57,43 @@ FILE_LIST_FIELDS = ['id', 'model', 'title', 'description', 'access_rel','sort',]
 # TODO mode to ddr-defs: knows too much about structure of ID
 #      Does Elasticsearch have lambda functions for sorting?
 REPOSITORY_LIST_SORT = [
-    ['repo','asc'],
+    'repo',
 ]
 ORGANIZATION_LIST_SORT = [
-    ['repo','asc'],
-    ['org','asc'],
+    'repo',
+    'org',
 ]
 COLLECTION_LIST_SORT = [
-    ['repo','asc'],
-    ['org','asc'],
-    ['cid','asc'],
-    ['id','asc'],
+    'repo',
+    'org',
+    'cid',
+    'id',
 ]
 ENTITY_LIST_SORT = [
-    ['repo','asc'],
-    ['org','asc'],
-    ['cid','asc'],
-    ['eid','asc'],
-    ['id','asc'],
+    'repo',
+    'org',
+    'cid',
+    'eid',
+    'id',
 ]
 FILE_LIST_SORT = [
-    ['repo','asc'],
-    ['org','asc'],
-    ['cid','asc'],
-    ['eid','asc'],
-    ['sort','asc'],
-    ['role','desc'],
-    ['id','asc'],
+    'repo',
+    'org',
+    'cid',
+    'eid',
+    'sort',
+    '-role',
+    'id',
+]
+OBJECT_LIST_SORT = [
+    'repo',
+    'org',
+    'cid',
+    'eid',
+    '-role',
+    'sort',
+    'sha1',
+    'id',
 ]
 
 MODEL_LIST_SETTINGS = {
@@ -263,37 +275,32 @@ def docstore_search(text='', must=[], should=[], mustnot=[], models=[], fields=[
             ),
             offset, limit, request
         ),
-        request
+        request,
+        format_object_detail2
     )
 
 def _object(request, oid, format=None):
-    data = es.get(index=settings.DOCSTORE_INDEX, doc_type='_all', id=oid)
+    data = DOCSTORE.es.get(
+        index=DOCSTORE.index_name(identifier.Identifier(oid).model),
+        id=oid
+    )
     return format_object_detail2(data, request)
 
 def _object_children(document, request, models=[], sort_fields=[], limit=DEFAULT_LIMIT, offset=0):
+    """
+    TODO this function is probably superfluous
+    """
     if not models:
         models = CHILDREN[document['model']]
     if not sort_fields:
-        sort_fields = [
-            ['repo','asc'],
-            ['org','asc'],
-            ['cid','asc'],
-            ['eid','asc'],
-            ['role','desc'],
-            ['sort','asc'],
-            ['sha1','asc'],
-            ['id','asc'],
-        ]
-    data = children(
+        sort_fields = OBJECT_LIST_SORT
+    return children(
         request=request,
         model=models,
         parent_id=document['id'],
         sort_fields=sort_fields,
         limit=limit, offset=offset
     )
-    for d in data['objects']:
-        d['links']['thumb'] = local_thumb_url(d['links'].get('img',''), request)
-    return data
 
 def children(request, model, parent_id, sort_fields, limit=DEFAULT_LIMIT, offset=0, just_count=False):
     """Return object children list in Django REST Framework format.
@@ -315,31 +322,30 @@ def children(request, model, parent_id, sort_fields, limit=DEFAULT_LIMIT, offset
         models = ','.join(model)
     else:
         raise Exception('model must be a string or a list')
-    q = docstore.search_query(
-        must=[
-            {"term": {"parent_id": parent_id}},
-        ],
-    )
     if just_count:
+        q = docstore.search_query(
+            must=[
+                {"term": {"parent_id": parent_id}},
+            ],
+        )
         return docstore.Docstore().count(
             doctypes=model,
             query=q,
         )
-    return format_list_objects(
-        paginate_results(
-            docstore.Docstore().search(
-                doctypes=model,
-                query=q,
-                sort=sort_fields,
-                fields=SEARCH_RETURN_FIELDS,
-                from_=offset,
-                size=limit,
-            ),
-            offset, limit, request
-        ),
-        request
+    indices = ','.join([DOCSTORE.index_name(model) for model in models])
+    params={
+        'parent': parent_id,
+        'sort': sort_fields,
+    }
+    searcher = search.Searcher()
+    searcher.prepare(
+        params=params,
+        search_models=indices,
+        fields_nested=[],
+        fields_agg={},
     )
-
+    return searcher.execute(limit, offset)
+    
 def count_children(model, parent_id):
     """Return count of object's children
     
@@ -376,7 +382,7 @@ def paginate_results(results, offset, limit, request=None):
     offset = int(offset)
     limit = int(limit)
     data = OrderedDict()
-    data['total'] = int(results['hits']['total'])
+    data['total'] = len(results['hits'])
     data['page_size'] = limit
     
     data['prev'] = None
@@ -401,12 +407,13 @@ def format_object_detail2(document, request, listitem=False):
     """
     if document.get('_source'):
         oid = document['_id']
-        model = document['_type']
+        model = document['_index']
         document = document['_source']
     else:
         oid = document.pop('id')
         model = document.pop('model')
-
+    model = model.replace(docstore.INDEX_PREFIX, '')
+    
     d = OrderedDict()
     d['id'] = oid
     d['model'] = model
@@ -490,7 +497,7 @@ def format_narrator(document, request, listitem=False):
     
     if document.get('_source'):
         oid = document['_id']
-        model = document['_type']
+        model = document['_index']
         document = document['_source']
         
     oid = document.pop('id')
@@ -529,7 +536,7 @@ def format_narrator(document, request, listitem=False):
 def format_facet(document, request, listitem=False):
     if document.get('_source'):
         oid = document['_id']
-        model = document['_type']
+        model = document['_index']
         document = document['_source']
     else:
         oid = document.pop('id')
@@ -559,7 +566,7 @@ def format_facet(document, request, listitem=False):
 def format_term(document, request, listitem=False):
     if document.get('_source'):
         oid = document['_id']
-        model = document['_type']
+        model = document['_index']
         document = document['_source']
     else:
         oid = document.pop('id')
@@ -616,52 +623,26 @@ def format_term(document, request, listitem=False):
             d[key] = document[key]
     return d
 
-def format_name_record(document, request, listitem=False):
-    if document.get('_source'):
-        document = document['_source']
-
-    oid = ':'.join([
-        document['m_dataset'], document['m_pseudoid']
-    ])
-    
-    d = OrderedDict()
-    d['id'] = oid
-    # links
-    d['links'] = OrderedDict()
-    d['links']['html'] = reverse(
-        'names-detail', args=[oid], request=request
-    )
-    d['links']['json'] = reverse(
-        'ui-api-names-name', args=[oid], request=request
-    )
-    # everything else
-    if listitem:
-        for key in definitions.SEARCH_FIELDS:
-            if document.get(key):
-                d[key] = document[key]
-    else:
-        for key in definitions.FIELD_DEFINITIONS_NAMES:
-            if document.get(key):
-                d[key] = document[key]
-    return d
-
 FORMATTERS = {
-    'narrator': format_narrator,
-    'facet': format_facet,
-    'facetterm': format_term,
-    'collection': format_object_detail2,
-    'entity': format_object_detail2,
-    'file': format_object_detail2,
-    'names-record': format_name_record,
+    'ddrnarrator': format_narrator,
+    'ddrfacet': format_facet,
+    'ddrfacetterm': format_term,
+    'ddrcollection': format_object_detail2,
+    'ddrentity': format_object_detail2,
+    'ddrfile': format_object_detail2,
 }
 
-def format_list_objects(results, request, function=format_object_detail2):
+def format_list_objects(results, request, function):
     """Iterate through results objects apply format_object_detail function
+    
+    @param results: Output of models.paginate_results
+    @param request: Django request object.
+    @param function: Item formatting function
     """
     results['objects'] = []
     while(results['hits']):
         hit = results['hits'].pop(0)
-        doctype = hit['_type']
+        doctype = hit['_index']
         function = FORMATTERS.get(doctype, format_object_detail2)
         results['objects'].append(
             function(hit, request, listitem=True)
@@ -695,37 +676,29 @@ def facet_labels():
     
     @returns: dict of facet ids mapped to labels
     """
-    key = 'facet:ids-labels'
-    cached = cache.get(key)
-    if not cached:
-        
-        SORT_FIELDS = ['id', 'title',]
-        LIST_FIELDS = ['id', 'facet', 'title',]
-        q = docstore.search_query(
-            should=[
-                {"terms": {"facet": [
-                    'format', 'genre', 'language', 'rights',
-                ]}}
-            ]
-        )
-        results = docstore.Docstore().search(
-            doctypes=['facetterm'],
-            query=q,
-            sort=SORT_FIELDS,
-            fields=LIST_FIELDS,
-            from_=0,
-            size=10000,
-        )
-        ids_labels = {}
-        for hit in results['hits']['hits']:
-            d = hit['_source']
-            if not ids_labels.get(d['facet']):
-                ids_labels[d['facet']] = {}
-            ids_labels[d['facet']][d['id']] = d['title']
-        
-        cached = ids_labels
-        cache.set(key, cached, settings.CACHE_TIMEOUT)
-    return cached
+    SORT_FIELDS = ['id', 'title',]
+    LIST_FIELDS = ['id', 'facet', 'title',]
+    q = docstore.search_query(
+        should=[
+            {"terms": {"facet": [
+                'format', 'genre', 'language', 'rights',
+            ]}}
+        ]
+    )
+    results = docstore.Docstore().search(
+        query=q,
+        sort=SORT_FIELDS,
+        fields=LIST_FIELDS,
+        from_=0,
+        size=10000,
+    )
+    ids_labels = {}
+    for hit in results['hits']['hits']:
+        d = hit['_source']
+        if not ids_labels.get(d['facet']):
+            ids_labels[d['facet']] = {}
+        ids_labels[d['facet']][d['id']] = d['title']
+    return ids_labels
 
 FACET_LABELS = facet_labels()
 
@@ -744,6 +717,7 @@ class Repository(object):
         return _object_children(
             document=_object(request, oid),
             request=request,
+            sort_fields=ORGANIZATION_LIST_SORT,
             limit=limit,
             offset=offset
         )
@@ -760,6 +734,7 @@ class Organization(object):
         return _object_children(
             document=_object(request, oid),
             request=request,
+            sort_fields=COLLECTION_LIST_SORT,
             limit=limit,
             offset=offset
         )
@@ -842,21 +817,10 @@ class Entity(object):
     @staticmethod
     def files(oid, request, limit=DEFAULT_LIMIT, offset=0):
         models = ['file']
-        sort_fields = [
-            ['repo','asc'],
-            ['org','asc'],
-            ['cid','asc'],
-            ['eid','asc'],
-            ['role','desc'],
-            ['sort','asc'],
-            ['sha1','asc'],
-            ['id','asc'],
-        ]
         return _object_children(
             document=_object(request, oid),
             request=request,
             models=models,
-            sort_fields=sort_fields,
             limit=limit,
             offset=offset
         )
@@ -926,10 +890,14 @@ class File(object):
 INTERVIEW_LIST_FIELDS = SEARCH_RETURN_FIELDS + ['creation', 'location']
 
 class Narrator(object):
+    model = 'narrator'
     
     @staticmethod
     def get(oid, request):
-        document = es.get(index=settings.DOCSTORE_INDEX, doc_type='narrator', id=oid)
+        document = DOCSTORE.es.get(
+            index=DOCSTORE.index_name(Narrator.model),
+            id=oid
+        )
         if not document:
             raise NotFound()
         data = format_narrator(document, request)
@@ -942,44 +910,39 @@ class Narrator(object):
     
     @staticmethod
     def narrators(request, limit=DEFAULT_LIMIT, offset=0):
-        SORT_FIELDS = [
-            ['last_name','asc'],
-            ['first_name','asc'],
-            ['middle_name','asc'],
-        ]
-        LIST_FIELDS = [
-            'id',
-            'display_name',
-            'image_url',
-            'generation',
-            'birth_location',
-            'b_date',
-            'd_date',
-            'bio',
-        ]
-        q = docstore.search_query(
-            must=[
-                { "match_all": {}}
+        key = 'narrators:{}:{}'.format(limit, offset)
+        results = cache.get(key)
+        if not results:
+            sort_fields = [
+                'last_name',
+                'first_name',
+                'middle_name',
             ]
-        )
-        results = docstore.Docstore().search(
-            doctypes=['narrator'],
-            query=q,
-            sort=SORT_FIELDS,
-            fields=LIST_FIELDS,
-            from_=offset,
-            size=limit,
-        )
-        return format_list_objects(
-            paginate_results(
-                results,
-                offset,
-                limit,
-                request
-            ),
-            request,
-            format_narrator
-        )
+            list_fields = [
+                'id',
+                'display_name',
+                'image_url',
+                'generation',
+                'birth_location',
+                'b_date',
+                'd_date',
+                'bio',
+            ]
+            params={
+                'match_all': '1',
+                'sort': sort_fields,
+            }
+            searcher = search.Searcher()
+            searcher.prepare(
+                params=params,
+                search_models=['ddrnarrator'],
+                fields=list_fields,
+                fields_nested=[],
+                fields_agg={},
+            )
+            results = searcher.execute(limit, offset)
+            cache.set(key, results, settings.CACHE_TIMEOUT)
+        return results
 
     @staticmethod
     def interviews(narrator_id, request, limit=DEFAULT_LIMIT, offset=0):
@@ -1009,7 +972,8 @@ class Narrator(object):
                 ),
                 offset, limit, request
             ),
-            request
+            request,
+            format_object_detail2
         )
         # add segment count per interview
         for d in results['objects']:
@@ -1021,7 +985,10 @@ class Facet(object):
     
     @staticmethod
     def get(oid, request):
-        document = es.get(index=settings.DOCSTORE_INDEX, doc_type='facet', id=oid)
+        document = DOCSTORE.es.get(
+            index=DOCSTORE.index_name('facet'),
+            id=oid
+        )
         if not document:
             raise NotFound()
         data = format_facet(document, request)
@@ -1177,6 +1144,7 @@ class Facet(object):
         key = 'facet:%s:terms' % facet_id
         cached = cache.get(key)
         if not cached:
+            
             terms = Facet.children(
                 facet_id, request,
                 sort=[('title','asc')],
@@ -1188,13 +1156,16 @@ class Facet(object):
                     'ui-browse-term', args=[facet_id, term['term_id']]
                 )
             terms = Facet.make_tree(terms)
-            Term.term_aggs_nested(
-                terms,
-                doctypes=['entity','segment'],
-                fieldname='topics',
-            )
+            # add doc_count per term
+            for term in terms:
+                term['doc_count'] = Term.objects(
+                    'topics', str(term['term_id']),
+                    limit=settings.RESULTS_PER_PAGE, offset=0,
+                    request=None,
+                ).total
+            
             cached = terms
-            cache.set(key, cached, settings.CACHE_TIMEOUT)
+            cache.set(key, cached, settings.CACHE_TIMEOUT_LONG)
         return cached
 
     @staticmethod
@@ -1211,6 +1182,7 @@ class Facet(object):
         key = 'facet:%s:terms' % facet_id
         cached = cache.get(key)
         if not cached:
+            
             terms = Facet.children(
                 facet_id, request,
                 sort=[('title','asc')],
@@ -1223,13 +1195,16 @@ class Facet(object):
                     'ui-browse-term', args=[facet_id, term_id]
                 )
             terms = sorted(terms, key=lambda term: term['title'])
-            Term.term_aggs_nested(
-                terms,
-                doctypes=['entity','segment'],
-                fieldname='facility',
-            )
+            # add doc_count per term
+            for term in terms:
+                term['doc_count'] = Term.objects(
+                    'topics', str(term['term_id']),
+                    limit=settings.RESULTS_PER_PAGE, offset=0,
+                    request=None,
+                ).total
+            
             cached = terms
-            cache.set(key, cached, settings.CACHE_TIMEOUT)
+            cache.set(key, cached, settings.CACHE_TIMEOUT_LONG)
         return cached
 
 
@@ -1237,7 +1212,10 @@ class Term(object):
     
     @staticmethod
     def get(oid, request):
-        document = es.get(index=settings.DOCSTORE_INDEX, doc_type='facetterm', id=oid)
+        document = DOCSTORE.es.get(
+            index=DOCSTORE.index_name('facetterm'),
+            id=oid
+        )
         if not document:
             raise NotFound()
         # save data for breadcrumbs
@@ -1295,96 +1273,32 @@ class Term(object):
             request,
             format_facet
         )
-    
+
     @staticmethod
-    def term_aggregations(field, fieldname, terms, request):
-        """Add number of documents for each facet term
+    def topics_tree(term, request):
+        """Terms tree for a particular term, with URLs
         
-        @param field: str Field name in ES (e.g. 'topics.id')
-        @param fieldname: str Fieldname in ddrpublic (e.g. 'topics')
-        @param terms list
+        @param term: dict or OrderedDict
+        @param request
+        @returns: list
         """
-        # aggregations
-        query = {
-            'models': [
-                'entity',
-                'segment',
-            ],
-            'aggs': {
-                fieldname: {
-                    'terms': {
-                        'field': field,
-                        'size': len(terms), # doc counts for all terms
-                    }
-                },
-            }
-        }
-        results = docstore_search(
-            models=query['models'],
-            aggs=query['aggs'],
-            request=request,
-        )
-        aggs = docstore.aggs_dict(results.get('aggregations'))[fieldname]
-        # assign num docs per term
-        for term in terms:
-            num = aggs.get(str(term['term_id']), 0) # aggs keys are str(int)s
-            term['doc_count'] = num            # could be used for sorting terms!
-    
-    @staticmethod
-    def term_aggs_nested(terms, doctypes=[], fieldname=''):
-        """Add number of documents for each facet term (nested fields)
-        
-        NOTE: assumes values are in the form FIELDNAME.id
-        Example:
-            ...
-            'topics': [
-                {'id': 123, 'title': 'Topic Title'},
-            ],
-            ...
-        
-        models.gather_nested_aggregations(
-            terms,
-            doctypes=['entity','segment'],
-            fieldname='topics'
-        )
-        
-        @param doctypes: list
-        @param fieldnames: list
-        @returns: None
-        """
-        ds = docstore.Docstore()
-        s = elasticsearch_dsl.Search(using=ds.es, index=ds.indexname)
-        s = s.query("match_all")
-        for dt in doctypes:
-            s = s.doc_type(dt)
-        # aggregations buckets for each nested field
-        #s.aggs.bucket(
-        #    'topics', 'nested', path='topics'
-        #).bucket(
-        #    'topic_ids', 'terms', field='topics.id', size=1000
-        #)
-        s.aggs.bucket(
-            fieldname, 'nested', path=fieldname
-        ).bucket(
-            '%s_ids' % fieldname,
-            'terms',
-            field='%s.id' % fieldname,
-            size=1000
-        )
-        results = search.OldSearcher(search=s).execute(limit=1000, offset=0)
-        # fieldname:term:id dict
-        aggs = {}
-        for fieldname,data in results.aggregations.items():
-            aggs[fieldname] = {}
-            for item in data:
-                aggs[fieldname][item['key']] = item['doc_count']
-        # assign doc_count per term
-        for term in terms:
-            fid = term['facet']
-            tid = str(term['term_id'])
-            term['doc_count'] = ''
-            if aggs.get(fid) and aggs[fid].get(tid):
-                term['doc_count'] = aggs[fid].get(tid)
+        ancestors_oids = [
+            'topics-{}'.format(id)
+            for id in term.get('ancestors', [])
+        ]
+        #children_oids = [
+        #    'topics-{}'.format(id)
+        #    for id in term.get('children', [])
+        #]
+        tree = [
+            t for t in Facet.topics_terms(request)
+            if (
+                    (t['id'] in ancestors_oids)
+                    or (t['id'] == term['id'])
+                    #or (t['id'] in children_oids)
+            )
+        ]
+        return tree
     
     @staticmethod
     def objects(facet_id, term_id, request=None, limit=DEFAULT_LIMIT, offset=0):
@@ -1399,36 +1313,22 @@ class Term(object):
         @param offset: int
         @returns: SearchResults
         """
-        models = CHILDREN.keys()
-        q = docstore.search_query(
-            must=[
-                {"nested": {
-                    "path": facet_id,
-                    "query": {"term": {
-                        "%s.id" % facet_id: term_id
-                    }}
-                }}
-            ],
-        )
-        return format_list_objects(
-            paginate_results(
-                docstore.Docstore().search(
-                    doctypes=models,
-                    query=q,
-                    sort=[
-                        'sort',
-                        'id',
-                        'record_created',
-                        'record_lastmod',
-                    ],
-                    fields=SEARCH_RETURN_FIELDS,
-                    from_=offset,
-                    size=limit,
-                ),
-                offset, limit, request
-            ),
-            request
-        )
+        key = 'term:{}:{}:objects'.format(facet_id, term_id)
+        results = cache.get(key)
+        if not results:
+            params = {
+                'match_all': 'true',
+            }
+            params[facet_id] = term_id
+            searcher = search.Searcher()
+            searcher.prepare(
+                params=params,
+                fields_nested=[],
+                fields_agg={},
+            )
+            results = searcher.execute(limit, offset)
+            cache.set(key, results, settings.CACHE_TIMEOUT)
+        return results
 
 
 # TODO REPLACE THESE HARDCODED VALUES!!!
@@ -1561,19 +1461,3 @@ def facilities():
         ]
         cache.set(key, cached, 15) # settings.ELASTICSEARCH_QUERY_TIMEOUT)
     return cached
-
-
-class NameRecord(object):
-    
-    @staticmethod
-    def get(oid, request):
-        document = es.get(
-            index=settings.NAMESDB_DOCSTORE_INDEX, doc_type='names-record', id=oid
-        )
-        if not document:
-            raise NotFound()
-        data = format_name_record(document, request)
-        HIDDEN_FIELDS = []
-        for field in HIDDEN_FIELDS:
-            pop_field(data, field)
-        return data

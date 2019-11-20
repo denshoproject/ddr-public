@@ -9,10 +9,9 @@ import os
 import re
 from urllib.parse import urlparse, urlunsplit
 
-from elasticsearch_dsl import Index, Search, A, Q, A
+from elasticsearch_dsl import Index, Search, A, Q
 from elasticsearch_dsl.query import Match, MultiMatch, QueryString
 from elasticsearch_dsl.connections import connections
-from elasticsearch_dsl.result import Result
 
 from rest_framework.request import Request as RestRequest
 from rest_framework.reverse import reverse
@@ -36,6 +35,9 @@ DOCSTORE = docstore.Docstore()
 # TODO move to ddr-defs/repo_models/elastic.py?
 SEARCH_PARAM_WHITELIST = [
     'fulltext',
+    'sort',
+    'topics',
+    'facility',
     'model',
     'models',
     'parent',
@@ -87,7 +89,11 @@ SEARCH_AGG_FIELDS = {
 }
 
 # TODO move to ddr-defs/repo_models/elastic.py?
-SEARCH_MODELS = ['collection','entity','narrator']
+SEARCH_MODELS = [
+    'ddrcollection',
+    'ddrentity',
+    'ddrnarrator'
+]
 
 NAMESDB_SEARCH_MODELS = ['names-record']
 
@@ -221,7 +227,7 @@ def es_host_name(conn):
     return ':'.join([hostdata['host'], hostdata['port']])
 
 def es_search():
-    return Search(using=DOCSTORE.es, index=DOCSTORE.indexname)
+    return Search(using=DOCSTORE.es)
 
 
 class ESPaginator(Paginator):
@@ -271,7 +277,7 @@ class SearchResults(object):
             # objects
             self.objects = [hit for hit in results]
             if results.hits.total:
-                self.total = int(results.hits.total)
+                self.total = results.hits.total.value
 
             # aggregations
             self.aggregations = {}
@@ -279,16 +285,15 @@ class SearchResults(object):
                 for field in results.aggregations.to_dict().keys():
                     
                     # nested aggregations
-                    # TODO parameterize this
-                    if field == 'topics':
-                        self.aggregations['topics'] = results.aggregations['topics']['topics_ids'].buckets
-                        
-                    elif field == 'facility':
-                        self.aggregations['facility'] = results.aggregations['facility']['facility_ids'].buckets
-                    
+                    if field in ['topics', 'facility']:
+                        field_ids = '{}_ids'.format(field)
+                        aggs = results.aggregations[field]
+                        self.aggregations[field] = aggs[field_ids].buckets
+                     
                     # simple aggregations
                     else:
-                        self.aggregations[field] = results.aggregations[field].buckets
+                        aggs = results.aggregations[field]
+                        self.aggregations[field] = aggs.buckets
 
                     #if VOCAB_TOPICS_IDS_TITLES.get(field):
                     #    self.aggregations[field] = []
@@ -366,17 +371,43 @@ class SearchResults(object):
     
     def to_dict(self, request, format_functions):
         """Express search results in API and Redis-friendly structure
+        
+        @param request: HttpRequest or RestRequest
+        @param format_functions: dict
         returns: dict
         """
-        return self._dict({}, request, format_functions)
+        if isinstance(request, HttpRequest):
+            params = request.GET.copy()
+        elif isinstance(request, RestRequest):
+            params = request.query_params.dict()
+        elif hasattr(self, 'params') and self.params:
+            params = deepcopy(self.params)
+        
+        return self._dict(params, {}, format_functions, request)
     
     def ordered_dict(self, request, format_functions, pad=False):
         """Express search results in API and Redis-friendly structure
+        
+        @param request: HttpRequest or RestRequest
+        @param format_functions: dict
         returns: OrderedDict
         """
-        return self._dict(OrderedDict(), request, format_functions, pad=pad)
+        if isinstance(request, HttpRequest):
+            params = request.GET.copy()
+        elif isinstance(request, RestRequest):
+            params = request.query_params.dict()
+        elif hasattr(self, 'params') and self.params:
+            params = deepcopy(self.params)
+        
+        return self._dict(params, OrderedDict(), format_functions, request, pad=pad)
     
-    def _dict(self, data, request, format_functions, pad=False):
+    def _dict(self, params, data, format_functions, request, pad=False):
+        """
+        @param params: dict
+        @param data: dict
+        @param format_functions: dict
+        @param pad: bool
+        """
         data['total'] = self.total
         data['limit'] = self.limit
         data['offset'] = self.offset
@@ -385,41 +416,23 @@ class SearchResults(object):
         data['page_size'] = self.page_size
         data['this_page'] = self.this_page
         data['num_this_page'] = len(self.objects)
-
-        if isinstance(request, HttpRequest):
-            params = request.GET.copy()
-        elif isinstance(request, RestRequest):
-            params = request.query_params.dict()
-        elif hasattr(self, 'params') and self.params:
-            params = deepcopy(self.params)
-        
         if params.get('page'): params.pop('page')
         if params.get('limit'): params.pop('limit')
         if params.get('offset'): params.pop('offset')
         qs = [key + '=' + val for key,val in params.items()]
         query_string = '&'.join(qs)
-
         data['prev_api'] = ''
-        if self.prev_offset != None:
-            data['prev_api'] = self._make_prevnext_url(
-                u'%s&limit=%s&offset=%s' % (query_string, self.limit, self.prev_offset),
-                request
-            )
         data['next_api'] = ''
-        if self.next_offset != None:
-            data['next_api'] = self._make_prevnext_url(
-                u'%s&limit=%s&offset=%s' % (query_string, self.limit, self.next_offset),
-                request
-            )
         data['objects'] = []
+        data['query'] = self.query
+        data['aggregations'] = self.aggregations
         
         # pad before
         if pad:
             data['objects'] += [{'n':n} for n in range(0, self.page_start)]
-        
         # page
         for o in self.objects:
-            format_function = format_functions[o.meta.doc_type]
+            format_function = format_functions[o.meta.index]
             data['objects'].append(
                 format_function(
                     document=o.to_dict(),
@@ -427,41 +440,67 @@ class SearchResults(object):
                     listitem=True,
                 )
             )
-        
         # pad after
         if pad:
             data['objects'] += [{'n':n} for n in range(self.page_next, self.total)]
         
-        data['query'] = self.query
-        data['aggregations'] = self.aggregations
+        # API prev/next
+        if self.prev_offset != None:
+            data['prev_api'] = self._make_prevnext_url(
+                u'%s&limit=%s&offset=%s' % (
+                    query_string, self.limit, self.prev_offset
+                ),
+                request
+            )
+        if self.next_offset != None:
+            data['next_api'] = self._make_prevnext_url(
+                u'%s&limit=%s&offset=%s' % (
+                    query_string, self.limit, self.next_offset
+                ),
+                request
+            )
+        
         return data
 
 
 def sanitize_input(text):
-    # Escape special characters
-    # http://lucene.apache.org/core/old_versioned_docs/versions/2_9_1/queryparsersyntax.html
-    text = re.sub(
-        '([{}])'.format(re.escape('\\+\-&|!(){}\[\]^~*?:\/')),
-        r"\\\1",
-        text
-    )
+    if isinstance(text, str):
+        data = [text]
+    elif isinstance(text, list):
+        data = text
+    elif isinstance(text, dict):
+        # TODO we aren't handling those yet :P
+        return text
     
-    # AND, OR, and NOT are used by lucene as logical operators.
-    ## We need to escape these.
-    # ...actually, we don't. We want these to be available.
-    #for word in ['AND', 'OR', 'NOT']:
-    #    escaped_word = "".join(["\\" + letter for letter in word])
-    #    text = re.sub(
-    #        r'\s*\b({})\b\s*'.format(word),
-    #        r" {} ".format(escaped_word),
-    #        text
-    #    )
+    cleaned = []
+    for t in data:
+        # Escape special characters
+        # http://lucene.apache.org/core/old_versioned_docs/versions/2_9_1/queryparsersyntax.html
+        t = re.sub(
+            '([{}])'.format(re.escape('\\+\-&|!(){}\[\]^~*?:\/')),
+            r"\\\1",
+            t
+        )
+        # AND, OR, and NOT are used by lucene as logical operators.
+        ## We need to escape these.
+        # ...actually, we don't. We want these to be available.
+        #for word in ['AND', 'OR', 'NOT']:
+        #    escaped_word = "".join(["\\" + letter for letter in word])
+        #    text = re.sub(
+        #        r'\s*\b({})\b\s*'.format(word),
+        #        r" {} ".format(escaped_word),
+        #        text
+        #    )
+        # Escape odd quotes
+        quote_count = t.count('"')
+        if quote_count % 2 == 1:
+            t = re.sub(r'(.*)"(.*)', r'\1\"\2', t)
+        cleaned.append(t)
     
-    # Escape odd quotes
-    quote_count = text.count('"')
-    if quote_count % 2 == 1:
-        text = re.sub(r'(.*)"(.*)', r'\1\"\2', text)
-    return text
+    if isinstance(text, str):
+        return cleaned[0]
+    elif isinstance(text, list):
+        return cleaned
 
 class Searcher(object):
     """Wrapper around elasticsearch_dsl.Search
@@ -474,13 +513,12 @@ class Searcher(object):
     >>> d = r.to_dict(request)
     """
     
-    def __init__(self, conn=DOCSTORE.es, index=DOCSTORE.indexname, search=None):
+    def __init__(self, conn=DOCSTORE.es, search=None):
         """
         @param conn: elasticsearch.Elasticsearch with hosts/port
         @param index: str Elasticsearch index name
         """
         self.conn = conn
-        self.index = index
         self.s = search
         fields = []
         params = {}
@@ -489,14 +527,14 @@ class Searcher(object):
         sort_cleaned = None
     
     def __repr__(self):
-        return u"<Searcher '%s/%s', %s>" % (
-            es_host_name(self.conn), self.index, self.params
+        return u"<Searcher '%s', %s>" % (
+            es_host_name(self.conn), self.params
         )
 
     def prepare(self, params={}, params_whitelist=SEARCH_PARAM_WHITELIST, search_models=SEARCH_MODELS, fields=SEARCH_INCLUDE_FIELDS, fields_nested=SEARCH_NESTED_FIELDS, fields_agg=SEARCH_AGG_FIELDS):
         """Assemble elasticsearch_dsl.Search object
         
-        @param params:           dict or HttpRequest
+        @param params:           dict
         @param params_whitelist: list Accept only these (SEARCH_PARAM_WHITELIST)
         @param search_models:    list Limit to these ES doctypes (SEARCH_MODELS)
         @param fields:           list Retrieve these fields (SEARCH_INCLUDE_FIELDS)
@@ -506,11 +544,6 @@ class Searcher(object):
         """
 
         # gather inputs ------------------------------
-        
-        if isinstance(params, HttpRequest):
-            params = params.GET.copy()
-        elif isinstance(params, RestRequest):
-            params = params.query_params.dict()
         
         # self.params is a copy of the params arg as it was passed
         # to the method.  It is used for informational purposes
@@ -529,33 +562,22 @@ class Searcher(object):
         for key in bad_fields:
             params.pop(key)
         
-        if params.get('fulltext'):
-            fulltext = params.pop('fulltext')
-        else:
-            fulltext = ''
-        
+        indices = search_models
         if params.get('models'):
-            models = params.pop('models')
-        else:
-            models = search_models
-
-        parent = ''
-        if params.get('parent'):
-            parent = params.pop('parent')
-            if isinstance(parent, list) and (len(parent) == 1):
-                parent = parent[0]
-            if parent:
-                parent = '%s*' % parent
+            indices = ','.join([DOCSTORE.index_name(model) for model in models])
         
-        s = Search(
-            using=self.conn,
-            index=self.index,
-            doc_type=models,
-        )
-        #s = s.source(include=SEARCH_LIST_FIELDS)
+        s = Search(using=self.conn, index=indices)
         
-        # fulltext query
-        if fulltext:
+        # sorting
+        if params.get('sort'):
+            args = params.pop('sort')
+            s = s.sort(*args)
+        
+        if params.get('match_all'):
+            s = s.query('match_all')
+        
+        elif params.get('fulltext'):
+            fulltext = params.pop('fulltext')
             # MultiMatch chokes on lists
             if isinstance(fulltext, list) and (len(fulltext) == 1):
                 fulltext = fulltext[0]
@@ -569,9 +591,32 @@ class Searcher(object):
                     default_operator='AND',
                 )
             )
+        
+        elif params.get('topics') or params.get('facility'):
+            # SPECIAL CASE FOR DDRPUBLIC TOPICS, FACILITY BROWSE PAGES
+            if params.get('topics'):
+                q = Q('bool',
+                      must=[Q('nested',
+                              path='topics',
+                              query=Q('term', topics__id=params.pop('topics'))
+                      )]
+                )
+                s = s.query(q)
+            elif params.get('facility'):
+                q = Q('bool',
+                      must=[Q('nested',
+                              path='facility',
+                              query=Q('term', facility__id=params.pop('facility'))
+                      )]
+                )
+                s = s.query(q)
 
-        if parent:
-            parent = '%s*' % parent
+        if params.get('parent'):
+            parent = params.pop('parent')
+            if isinstance(parent, list) and (len(parent) == 1):
+                parent = parent[0]
+            if parent:
+                parent = '%s-*' % parent
             s = s.query("wildcard", id=parent)
         
         # filters
@@ -649,44 +694,6 @@ class Searcher(object):
             hit.index = '%s %s/%s' % (n, int(offset)+n, response.hits.total)
         return SearchResults(
             params=self.params,
-            query=self.s.to_dict(),
-            results=response,
-            limit=limit,
-            offset=offset,
-        )
-
-
-class OldSearcher(object):
-    """
-    >>> s = Searcher(index)
-    >>> s.prep(request_data)
-    'ok'
-    >>> r = s.execute()
-    'ok'
-    >>> d = r.to_dict(request)
-    """
-    index = DOCSTORE.indexname
-    fields = []
-    q = OrderedDict()
-    query = {}
-    sort_cleaned = None
-    s = None
-    
-    def __init__(self, search=None):
-        self.s = search
-    
-    def execute(self, limit, offset):
-        """Execute a query and return SearchResults
-        
-        @param limit: int
-        @param offset: int
-        @returns: SearchResults
-        """
-        if not self.s:
-            raise Exception('Searcher has no ES Search object.')
-        start,stop = start_stop(limit, offset)
-        response = self.s[start:stop].execute()
-        return SearchResults(
             query=self.s.to_dict(),
             results=response,
             limit=limit,

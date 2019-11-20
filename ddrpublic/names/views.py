@@ -4,6 +4,7 @@ from urllib.parse import urlparse, urlunparse
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
+from django.http.request import HttpRequest
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
@@ -11,7 +12,6 @@ from namesdb import definitions
 from . import forms
 from . import models
 from ui import api
-from ui import models as ui_models
 from ui import search
 
 PAGE_SIZE = 20
@@ -33,7 +33,6 @@ def _mkurl(request, path, query=None):
         path, None, query, None
     ))
 
-@require_http_methods(['GET',])
 def index(request, template_name='names/index.html'):
     """Simplified index page with just query and camp fields.
     """
@@ -59,7 +58,6 @@ def index(request, template_name='names/index.html'):
         form = forms.SearchForm(
             local_GET,
             hosts=settings.NAMESDB_DOCSTORE_HOSTS,
-            index=settings.NAMESDB_DOCSTORE_INDEX
         )
         if form.is_valid():
             filters = form.cleaned_data
@@ -67,7 +65,6 @@ def index(request, template_name='names/index.html'):
             start,end = models.Paginator.start_end(thispage, pagesize)
             search = models.search(
                 settings.NAMESDB_DOCSTORE_HOSTS,
-                settings.NAMESDB_DOCSTORE_INDEX,
                 query=query,
                 filters=filters,
                 start=start,
@@ -83,7 +80,6 @@ def index(request, template_name='names/index.html'):
     else:
         form = forms.SearchForm(
             hosts=settings.NAMESDB_DOCSTORE_HOSTS,
-            index=settings.NAMESDB_DOCSTORE_INDEX
         )
     m_camp_choices = form.fields['m_camp'].choices
     return render(request, template_name, {
@@ -95,49 +91,9 @@ def index(request, template_name='names/index.html'):
         'paginator': paginator,
     })
 
-
-@require_http_methods(['GET',])
-def detail(request, id, template_name='names/detail.html'):
-    record = models.Rcrd.get(
-        using=models.ES, index=settings.NAMESDB_DOCSTORE_INDEX, id=id
-    )
-    record.fields = record.fields_enriched(label=True, description=True).values()
-    record.other_datasets = models.other_datasets(
-        settings.NAMESDB_DOCSTORE_HOSTS,
-        settings.NAMESDB_DOCSTORE_INDEX,
-        record
-    )
-    record.family_members = models.same_familyno(
-        settings.NAMESDB_DOCSTORE_HOSTS,
-        settings.NAMESDB_DOCSTORE_INDEX,
-        record
-    )
-    return render(request, template_name, {
-        'record': record,
-    })
-
-CAMP_LABELS = {key: val for key,val in forms.FORMS_CHOICES['m_camp-choices']}
-STATES = {
-    'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas',
-    'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut',
-    'DE': 'Delaware', 'DC': 'District of Columbia', 'FL': 'Florida',
-    'GA': 'Georgia', 'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois',
-    'IN': 'Indiana', 'IA': 'Iowa', 'KS': 'Kansas', 'KY': 'Kentucky',
-    'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland', 'MA': 'Massachusetts',
-    'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri',
-    'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire',
-    'NJ': 'New Jersey', 'NM': 'New Mexico', 'NY': 'New York',
-    'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio',
-    'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island',
-    'SC': 'South Carolina', 'SD': 'South Dakota', 'TN': 'Tennessee',
-    'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont', 'VA': 'Virginia',
-    'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin',
-    'WY': 'Wyoming',
-}
-
 def search_ui(request):
     api_url = '%s?%s' % (
-        _mkurl(request, reverse('ui-api-names-search')),
+        _mkurl(request, reverse('names-api-search')),
         request.META['QUERY_STRING']
     )
     context = {
@@ -165,32 +121,16 @@ def search_ui(request):
             limit = settings.RESULTS_PER_PAGE
             offset = 0
         
-        searcher = search.Searcher(
-            conn=api.names_es,
-            index=settings.NAMESDB_DOCSTORE_INDEX,
-        )
+        searcher = search.Searcher()
         searcher.prepare(
-            params=request,
-            params_whitelist=['fulltext', 'm_camp'],
-            search_models=['names-record'],
-            fields=definitions.SEARCH_FIELDS,
-            fields_nested=[],
-            fields_agg={'m_camp': 'm_camp'},
+            params=request.GET.copy(),
+            params_whitelist=models.SEARCH_PARAM_WHITELIST,
+            search_models=models.SEARCH_MODELS,
+            fields=models.SEARCH_INCLUDE_FIELDS,
+            fields_nested=models.SEARCH_NESTED_FIELDS,
+            fields_agg=models.SEARCH_AGG_FIELDS,
         )
         results = searcher.execute(limit, offset)
-        # camp names instead of keywords
-        for o in results.objects:
-            o['m_camp'] = CAMP_LABELS.get(
-                o['m_camp'],
-                o['m_camp']
-            )
-        # US state names
-        for o in results.objects:
-            o['m_originalstate'] = STATES.get(
-                o['m_originalstate'],
-                o['m_originalstate']
-            )
-        
         form = forms.SearchForm(
             data=request.GET.copy(),
             search_results=results,
@@ -202,7 +142,7 @@ def search_ui(request):
             paginator = Paginator(
                 results.ordered_dict(
                     request=request,
-                    format_functions=ui_models.FORMATTERS,
+                    format_functions=models.FORMATTERS,
                     pad=True,
                 )['objects'],
                 results.page_size,
@@ -215,3 +155,19 @@ def search_ui(request):
         context['form'] = forms.SearchForm()
 
     return render(request, 'names/index.html', context)
+
+def detail(request, id, template_name='names/detail.html'):
+    try:
+        record = models.NameRecord.get(id, request)
+    except models.NotFound:
+        raise Http404
+    # Format field data, add labels
+    record_type = type(record)
+    record.fields = models.NameRecord.fields_enriched(record, True, True).values()
+    # TODO Doesn't seem to work on current production site
+    #record.other_datasets = models.NameRecord.other_datasets(record)
+    record.other_datasets = []
+    record.family_members = models.NameRecord.same_familyno(record, request)
+    return render(request, template_name, {
+        'record': record,
+    })
