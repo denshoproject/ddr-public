@@ -1313,7 +1313,7 @@ class Term(object):
         @param offset: int
         @returns: SearchResults
         """
-        key = 'term:{}:{}:objects'.format(facet_id, term_id)
+        key = 'term:{}:{}:{}:{}:objects'.format(facet_id, term_id, limit, offset)
         results = cache.get(key)
         if not results:
             params = {
