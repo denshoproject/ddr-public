@@ -1273,40 +1273,6 @@ class Term(object):
             request,
             format_facet
         )
-    
-    @staticmethod
-    def term_aggregations(field, fieldname, terms, request):
-        """Add number of documents for each facet term
-        
-        @param field: str Field name in ES (e.g. 'topics.id')
-        @param fieldname: str Fieldname in ddrpublic (e.g. 'topics')
-        @param terms list
-        """
-        # aggregations
-        query = {
-            'models': [
-                'entity',
-                'segment',
-            ],
-            'aggs': {
-                fieldname: {
-                    'terms': {
-                        'field': field,
-                        'size': len(terms), # doc counts for all terms
-                    }
-                },
-            }
-        }
-        results = docstore_search(
-            models=query['models'],
-            aggs=query['aggs'],
-            request=request,
-        )
-        aggs = docstore.aggs_dict(results.get('aggregations'))[fieldname]
-        # assign num docs per term
-        for term in terms:
-            num = aggs.get(str(term['term_id']), 0) # aggs keys are str(int)s
-            term['doc_count'] = num            # could be used for sorting terms!
 
     @staticmethod
     def topics_tree(term, request):
