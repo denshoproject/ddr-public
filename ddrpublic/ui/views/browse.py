@@ -20,23 +20,24 @@ def index( request ):
     return render(request, 'ui/browse/index.html', {})
 
 @ui_state
-@cache_page(settings.CACHE_TIMEOUT)
 def narrators(request):
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
     offset = models.search_offset(thispage, pagesize)
-    paginator = Paginator(
-        models.pad_results(
-            models.Narrator.narrators(
-                request,
-                limit=pagesize,
-                offset=offset,
-            ),
-            pagesize,
-            thispage
-        ),
-        pagesize
+    results = models.Narrator.narrators(
+        request,
+        limit=pagesize,
+        offset=offset,
     )
+    paginator = Paginator(
+        results.ordered_dict(
+            request=request,
+            format_functions=models.FORMATTERS,
+            pad=True,
+        )['objects'],
+        results.page_size,
+    )
+    page = paginator.page(results.this_page)
     return render(request, 'ui/narrators/list.html', {
         'paginator': paginator,
         'page': paginator.page(thispage),
@@ -53,7 +54,6 @@ def narrator(request, oid):
     })
 
 @ui_state
-@cache_page(settings.CACHE_TIMEOUT)
 def facet(request, facet_id):
     if facet_id == 'topics':
         template_name = 'ui/facets/facet-topics.html'
@@ -70,7 +70,7 @@ def facet(request, facet_id):
         'api_url': reverse('ui-api-facetterms', args=[facet_id]),
     })
 
-@cache_page(settings.CACHE_TIMEOUT)
+@ui_state
 def term( request, facet_id, term_id ):
     oid = '-'.join([facet_id, term_id])
     template_name = 'ui/facets/term-%s.html' % facet_id
@@ -79,12 +79,7 @@ def term( request, facet_id, term_id ):
     
     # terms tree (topics)
     if facet_id == 'topics':
-        term['tree'] = [
-            t for t in models.Facet.topics_terms(request)
-            if (t['id'] in term.get('ancestors', [])) # ancestors of current term
-            or (t['id'] == term['id'])                # current term
-            or (term['id'] in t.get('ancestors', [])) # children of current term
-        ]
+        term['tree'] = models.Term.topics_tree(term, request)
     
     # API urls for elinks
     for item in term.get('elinks', []):
@@ -109,24 +104,25 @@ def term( request, facet_id, term_id ):
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
     offset = models.search_offset(thispage, pagesize)
-    
-    paginator = Paginator(
-        models.pad_results(
-            models.Term.objects(
-                facet_id, term_id,
-                limit=pagesize,
-                offset=offset,
-                request=request,
-            ),
-            pagesize,
-            thispage
-        ),
-        pagesize
+    results = models.Term.objects(
+        facet_id, term_id,
+        limit=pagesize,
+        offset=offset,
+        request=request,
     )
+    paginator = Paginator(
+        results.ordered_dict(
+            request=request,
+            format_functions=models.FORMATTERS,
+            pad=True,
+        )['objects'],
+        results.page_size,
+    )
+    page = paginator.page(results.this_page)
     return render(request, template_name, {
         'facet': facet,
         'term': term,
         'paginator': paginator,
-        'page': paginator.page(thispage),
+        'page': page,
         'api_url': reverse('ui-api-term', args=[facet['id'], term['term_id']]),
     })
