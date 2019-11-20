@@ -1144,6 +1144,7 @@ class Facet(object):
         key = 'facet:%s:terms' % facet_id
         cached = cache.get(key)
         if not cached:
+            
             terms = Facet.children(
                 facet_id, request,
                 sort=[('title','asc')],
@@ -1155,13 +1156,16 @@ class Facet(object):
                     'ui-browse-term', args=[facet_id, term['term_id']]
                 )
             terms = Facet.make_tree(terms)
-            Term.term_aggs_nested(
-                terms,
-                doctypes=['entity','segment'],
-                fieldname='topics',
-            )
+            # add doc_count per term
+            for term in terms:
+                term['doc_count'] = Term.objects(
+                    'topics', str(term['term_id']),
+                    limit=settings.RESULTS_PER_PAGE, offset=0,
+                    request=None,
+                ).total
+            
             cached = terms
-            cache.set(key, cached, settings.CACHE_TIMEOUT)
+            cache.set(key, cached, settings.CACHE_TIMEOUT_LONG)
         return cached
 
     @staticmethod
@@ -1178,6 +1182,7 @@ class Facet(object):
         key = 'facet:%s:terms' % facet_id
         cached = cache.get(key)
         if not cached:
+            
             terms = Facet.children(
                 facet_id, request,
                 sort=[('title','asc')],
@@ -1190,13 +1195,16 @@ class Facet(object):
                     'ui-browse-term', args=[facet_id, term_id]
                 )
             terms = sorted(terms, key=lambda term: term['title'])
-            Term.term_aggs_nested(
-                terms,
-                doctypes=['entity','segment'],
-                fieldname='facility',
-            )
+            # add doc_count per term
+            for term in terms:
+                term['doc_count'] = Term.objects(
+                    'topics', str(term['term_id']),
+                    limit=settings.RESULTS_PER_PAGE, offset=0,
+                    request=None,
+                ).total
+            
             cached = terms
-            cache.set(key, cached, settings.CACHE_TIMEOUT)
+            cache.set(key, cached, settings.CACHE_TIMEOUT_LONG)
         return cached
 
 
@@ -1299,40 +1307,6 @@ class Term(object):
         for term in terms:
             num = aggs.get(str(term['term_id']), 0) # aggs keys are str(int)s
             term['doc_count'] = num            # could be used for sorting terms!
-    
-    @staticmethod
-    def term_aggs_nested(terms, doctypes=[], fieldname=''):
-        """Add number of documents for each facet term (nested fields)
-        
-        NOTE: assumes values are in the form FIELDNAME.id
-        Example:
-            ...
-            'topics': [
-                {'id': 123, 'title': 'Topic Title'},
-            ],
-            ...
-        
-        @param doctypes: list
-        @param fieldnames: list
-        @returns: None
-        """
-        searcher = search.Searcher()
-        searcher.prepare(params={'match_all': 'true'})
-        results = searcher.execute(10000, 0)
-
-        # fieldname:term:id dict
-        aggs = {}
-        for fieldname,data in results.aggregations.items():
-            aggs[fieldname] = {}
-            for item in data:
-                aggs[fieldname][item['key']] = item['doc_count']
-        # assign doc_count per term
-        for term in terms:
-            fid = term['facet']
-            tid = str(term['term_id'])
-            term['doc_count'] = 0
-            if aggs.get(fid) and aggs[fid].get(tid):
-                term['doc_count'] = aggs[fid].get(tid)
 
     @staticmethod
     def topics_tree(term, request):
