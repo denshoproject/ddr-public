@@ -196,6 +196,8 @@ CORS_ORIGIN_WHITELIST = [
 THROTTLE_ANON = config.get('public', 'throttle_anon')
 THROTTLE_USER = config.get('public', 'throttle_user')
 
+SITE_MSG_TEXT = config.get('public', 'site_msg_text')
+
 # ----------------------------------------------------------------------
 
 ADMINS = (

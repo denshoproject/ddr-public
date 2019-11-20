@@ -225,7 +225,20 @@ window.cookieconsent.initialise({
 {% endblock pageheader %}
 
     <div id="content">
-        {% block content %}{% endblock content %}
+
+{% if site_msg_text %}
+      <div id="site-message">
+        <div style="background-color: #f9ac9d;">
+          <div id="site-inner-message" class="alert alert-error">
+            <button type="button" class="close" data-dismiss="alert" style="color:#000;display:block;opacity: unset;margin-top: 4px;">&times;</button>
+            <i class="fa fa-exclamation-circle"></i>
+            {{ site_msg_text|safe }}
+          </div>
+        </div>
+      </div>
+{% endif %}{# site_msg_text #}
+
+      {% block content %}{% endblock content %}
     </div><!-- #content -->
 
     </div><!--WRAPPER -->

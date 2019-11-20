@@ -46,6 +46,7 @@ def sitewide(request):
         'partner': partner,
         'liststyle': request.session.get('liststyle', 'gallery'),
         'tab': request.session.get('liststyle', 'gallery'),
+        'site_msg_text': settings.SITE_MSG_TEXT,
         'BASE_TEMPLATE': base_template,
         'ENCYC_BASE': settings.ENCYC_BASE,
         'MEDIA_URL': settings.MEDIA_URL,
