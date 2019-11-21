@@ -206,11 +206,9 @@ def object_children(request, object_id):
 def _list(request, data):
     host = request.META.get('HTTP_HOST')
     path = request.META['PATH_INFO']
-    if data.get('prev'):
-        data['prev'] = 'http://%s%s%s' % (host, path, data['prev'])
-    if data.get('next'):
-        data['next'] = 'http://%s%s%s' % (host, path, data['next'])
-    return Response(data)
+    if isinstance(data, dict):
+        return Response(data)
+    return Response(data.ordered_dict(request, FORMATTERS))
     
 @api_view(['GET'])
 def organizations(request, object_id, format=None):
