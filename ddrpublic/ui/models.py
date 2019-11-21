@@ -627,8 +627,11 @@ FORMATTERS = {
     'ddrnarrator': format_narrator,
     'ddrfacet': format_facet,
     'ddrfacetterm': format_term,
+    'ddrrepository': format_object_detail2,
+    'ddrorganization': format_object_detail2,
     'ddrcollection': format_object_detail2,
     'ddrentity': format_object_detail2,
+    'ddrsegment': format_object_detail2,
     'ddrfile': format_object_detail2,
 }
 
