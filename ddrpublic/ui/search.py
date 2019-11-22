@@ -362,7 +362,7 @@ class SearchResults(object):
         if request:
             return urlunsplit([
                 request.META['wsgi.url_scheme'],
-                request.META['HTTP_HOST'],
+                request.META.get('HTTP_HOST', 'testserver'),
                 request.META['PATH_INFO'],
                 query,
                 None,
