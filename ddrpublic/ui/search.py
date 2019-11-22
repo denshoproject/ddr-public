@@ -100,7 +100,13 @@ NAMESDB_SEARCH_MODELS = ['names-record']
 # fields searched by query e.g. query will find search terms in these fields
 # TODO move to ddr-defs/repo_models/elastic.py?
 SEARCH_INCLUDE_FIELDS = [
+    'id',
     'model',
+    'links_html',
+    'links_json',
+    'links_img',
+    'links_thumb',
+    'links_children',
     'status',
     'public',
     'title',
