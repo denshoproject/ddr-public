@@ -574,6 +574,9 @@ class Searcher(object):
         
         s = Search(using=self.conn, index=indices)
         
+        # only return specified fields
+        s = s.source(fields)
+        
         # sorting
         if params.get('sort'):
             args = params.pop('sort')
