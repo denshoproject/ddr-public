@@ -100,7 +100,13 @@ NAMESDB_SEARCH_MODELS = ['names-record']
 # fields searched by query e.g. query will find search terms in these fields
 # TODO move to ddr-defs/repo_models/elastic.py?
 SEARCH_INCLUDE_FIELDS = [
+    'id',
     'model',
+    'links_html',
+    'links_json',
+    'links_img',
+    'links_thumb',
+    'links_children',
     'status',
     'public',
     'title',
@@ -362,7 +368,7 @@ class SearchResults(object):
         if request:
             return urlunsplit([
                 request.META['wsgi.url_scheme'],
-                request.META['HTTP_HOST'],
+                request.META.get('HTTP_HOST', 'testserver'),
                 request.META['PATH_INFO'],
                 query,
                 None,
@@ -567,6 +573,9 @@ class Searcher(object):
             indices = ','.join([DOCSTORE.index_name(model) for model in models])
         
         s = Search(using=self.conn, index=indices)
+        
+        # only return specified fields
+        s = s.source(fields)
         
         # sorting
         if params.get('sort'):

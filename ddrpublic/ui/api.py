@@ -171,9 +171,9 @@ class Search(APIView):
             fields_agg=search.SEARCH_AGG_FIELDS,
         )
         results = searcher.execute(limit, offset)
-        return Response(
-            results.ordered_dict(request, format_functions=FORMATTERS)
-        )
+        results_dict = results.ordered_dict(request, format_functions=FORMATTERS)
+        results_dict.pop('aggregations')
+        return Response(results_dict)
 
 
 @api_view(['GET'])
