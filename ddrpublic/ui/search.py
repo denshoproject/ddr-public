@@ -92,6 +92,7 @@ SEARCH_AGG_FIELDS = {
 SEARCH_MODELS = [
     'ddrcollection',
     'ddrentity',
+    'ddrsegment',
     'ddrnarrator'
 ]
 
