@@ -101,6 +101,7 @@ NAMESDB_SEARCH_MODELS = ['names-record']
 # fields searched by query e.g. query will find search terms in these fields
 # TODO move to ddr-defs/repo_models/elastic.py?
 SEARCH_INCLUDE_FIELDS = [
+    # ddr object fields
     'id',
     'model',
     'links_html',
@@ -124,6 +125,10 @@ SEARCH_INCLUDE_FIELDS = [
     'persons',
     'rights',
     'topics',
+    # narrator fields
+    'image_url',
+    'display_name',
+    'bio',
 ]
 
 # TODO move to ddr-defs/repo_models/elastic.py?
