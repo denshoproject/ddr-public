@@ -91,6 +91,22 @@ def index(request, template_name='names/index.html'):
         'paginator': paginator,
     })
 
+def _limit_offset(request):
+    if request.GET.get('offset'):
+        # limit and offset args take precedence over page
+        limit = request.GET.get(
+            'limit', int(request.GET.get('limit', settings.RESULTS_PER_PAGE))
+        )
+        offset = request.GET.get('offset', int(request.GET.get('offset', 0)))
+    elif request.GET.get('page'):
+        limit = settings.RESULTS_PER_PAGE
+        thispage = int(request.GET['page'])
+        offset = search.es_offset(limit, thispage)
+    else:
+        limit = settings.RESULTS_PER_PAGE
+        offset = 0
+    return limit,offset
+
 def search_ui(request):
     api_url = '%s?%s' % (
         _mkurl(request, reverse('names-api-search')),
@@ -105,22 +121,6 @@ def search_ui(request):
     if request.GET.get('fulltext'):
         context['searching'] = True
         
-        if request.GET.get('offset'):
-            # limit and offset args take precedence over page
-            limit = request.GET.get(
-                'limit', int(request.GET.get('limit', settings.RESULTS_PER_PAGE))
-            )
-            offset = request.GET.get(
-                'offset', int(request.GET.get('offset', 0))
-            )
-        elif request.GET.get('page'):
-            limit = settings.RESULTS_PER_PAGE
-            thispage = int(request.GET['page'])
-            offset = search.es_offset(limit, thispage)
-        else:
-            limit = settings.RESULTS_PER_PAGE
-            offset = 0
-        
         searcher = search.Searcher()
         searcher.prepare(
             params=request.GET.copy(),
@@ -130,26 +130,27 @@ def search_ui(request):
             fields_nested=models.SEARCH_NESTED_FIELDS,
             fields_agg=models.SEARCH_AGG_FIELDS,
         )
+        limit,offset = _limit_offset(request)
         results = searcher.execute(limit, offset)
+        paginator = Paginator(
+            results.ordered_dict(
+                request=request,
+                format_functions=models.FORMATTERS,
+                pad=True,
+            )['objects'],
+            results.page_size,
+        )
+        page = paginator.page(results.this_page)
+        
         form = forms.SearchForm(
             data=request.GET.copy(),
             search_results=results,
         )
-        context['results'] = results
-        context['form'] = form
         
-        if results.objects:
-            paginator = Paginator(
-                results.ordered_dict(
-                    request=request,
-                    format_functions=models.FORMATTERS,
-                    pad=True,
-                )['objects'],
-                results.page_size,
-            )
-            page = paginator.page(results.this_page)
-            context['paginator'] = paginator
-            context['page'] = page
+        context['results'] = results
+        context['paginator'] = paginator
+        context['page'] = page
+        context['form'] = form
 
     else:
         context['form'] = forms.SearchForm()
