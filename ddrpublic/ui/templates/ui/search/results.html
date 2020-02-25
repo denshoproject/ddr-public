@@ -69,7 +69,17 @@
       </div>
     </div><!-- .col -->
   </div><!-- .row -->
-{% if searching %}
+{% if searching and not page.object_list %}
+    <div class="resultInfo">
+      <h3>
+        No results for "{{ search_form.fulltext.value }}"
+      </h3>
+    </div>
+    <div id="no_results" style="margin-top: -25px;margin-bottom: 20px;">
+      We're sorry - your keywords were not found.
+      Please enter another query or try browsing by category instead.
+    </div>
+{% elif searching %}
   <div class="row">
 	<div class="col-sm-12 col-md-12">
 
