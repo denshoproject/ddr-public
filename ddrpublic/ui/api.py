@@ -265,7 +265,8 @@ def facetterms(request, facet_id, format=None):
 @api_view(['GET'])
 def term_objects(request, facet_id, term_id, limit=DEFAULT_LIMIT, offset=0):
     object_id = '%s-%s' % (facet_id, term_id)
-    data = Term.objects(facet_id, term_id, request, offset=offset)
+    offset = int(request.GET.get('offset', 0))
+    data = Term.objects(facet_id, term_id, request, limit=limit, offset=offset)
     return _list(request, data)
 
 @api_view(['GET'])
