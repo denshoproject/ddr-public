@@ -3,10 +3,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import Http404, render
+from django.urls import reverse
 
 from .. import misc
 

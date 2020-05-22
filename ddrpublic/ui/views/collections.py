@@ -3,8 +3,8 @@ logger = logging.getLogger(__name__)
 
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.core.urlresolvers import reverse
 from django.shortcuts import Http404, render
+from django.urls import reverse
 from django.views.decorators.cache import cache_page
 
 from .. import models
