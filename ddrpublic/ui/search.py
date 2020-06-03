@@ -483,9 +483,10 @@ def sanitize_input(text):
         data = text
     
     BAD_SEARCH_CHARS = r'!+/:[\]^{}~'
-    for c in BAD_SEARCH_CHARS:
-        text = text.replace(c, '')
-    text = text.replace('  ', ' ')
+    for word in text:
+        for c in BAD_SEARCH_CHARS:
+            word = word.replace(c, '')
+        word = word.replace('  ', ' ')
     
     cleaned = []
     for t in data:
