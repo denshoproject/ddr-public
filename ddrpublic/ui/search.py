@@ -476,13 +476,11 @@ class SearchResults(object):
 
 
 def sanitize_input(text):
+    assert (isinstance(text, str) or isinstance(text, list))
     if isinstance(text, str):
         data = [text]
     elif isinstance(text, list):
         data = text
-    elif isinstance(text, dict):
-        # TODO we aren't handling those yet :P
-        return text
     
     BAD_SEARCH_CHARS = r'!+/:[\]^{}~'
     for c in BAD_SEARCH_CHARS:
