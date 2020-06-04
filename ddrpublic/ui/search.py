@@ -476,25 +476,24 @@ class SearchResults(object):
 
 
 def sanitize_input(text):
+    assert (isinstance(text, str) or isinstance(text, list))
     if isinstance(text, str):
         data = [text]
     elif isinstance(text, list):
         data = text
-    elif isinstance(text, dict):
-        # TODO we aren't handling those yet :P
-        return text
     
     BAD_SEARCH_CHARS = r'!+/:[\]^{}~'
-    for c in BAD_SEARCH_CHARS:
-        text = text.replace(c, '')
-    text = text.replace('  ', ' ')
+    for word in text:
+        for c in BAD_SEARCH_CHARS:
+            word = word.replace(c, '')
+        word = word.replace('  ', ' ')
     
     cleaned = []
     for t in data:
         # Escape special characters
         # http://lucene.apache.org/core/old_versioned_docs/versions/2_9_1/queryparsersyntax.html
         t = re.sub(
-            '([{}])'.format(re.escape('\\+\-&|!(){}\[\]^~*?:\/')),
+            '([{}])'.format(re.escape('&|!(){}\[\]^~*?:\/')),
             r"\\\1",
             t
         )
