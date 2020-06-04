@@ -7,8 +7,8 @@
 beautifulsoup4==4.6.0              # MIT      y
 django>=2.2.0,<3.0                 # MIT      y
 django-bootstrap-pagination==1.6.4 # MIT      ???
-django-cors-headers==2.2.0         # MIT      y
-django-redis==4.9.0                # BSD      y
+django-cors-headers==3.3.0         # MIT      y
+django-redis==4.12.1               # BSD      y
 django-redis-sessions==0.6.1       # BSD      y
 djangorestframework>=3.10.0,<3.11  # BSD      y
 drf-yasg>=1.17.0,<1.18             # BSD      y
@@ -17,9 +17,9 @@ elasticsearch-dsl>=7.0.0,<8.0.0 # Apache y        y   NOTE: match namesdb versio
 envoy==0.0.3                       # MIT      ???
 GitPython==3.1.1                   # BSD      y
 gunicorn==19.8.1                   # MIT      y
-redis==2.10.6                      # MIT      y
+redis>=3.5.0,<3.6                  # MIT      y
 requests==2.22.0                   # Apache2  y
-sorl-thumbnail==12.4.1             # BSD      y
+sorl-thumbnail==12.6.3             # BSD      y
 
 bpython==0.17.1
 

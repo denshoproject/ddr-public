@@ -189,6 +189,7 @@ CORS_ORIGIN_ALLOW_ALL = config.getboolean('public', 'cors_origin_allow_all')
 CORS_ORIGIN_WHITELIST = [
     domain.strip()
     for domain in config.get('public', 'cors_origin_whitelist').split(',')
+    if domain.strip()
 ]
 ## Only send CORS headers for API.
 #CORS_URLS_REGEX = r'^/api/.*$'
@@ -255,14 +256,14 @@ DATABASES = {
 
 REDIS_HOST = '127.0.0.1'
 REDIS_PORT = '6379'
-REDIS_DB_CACHE = 0
-REDIS_DB_SORL = 3
+REDIS_DB_CACHE = '0'
+REDIS_DB_SORL = '3'
 
 CACHES = {
     "default": {
         #'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "%s:%s:%s" % (REDIS_HOST, REDIS_PORT, REDIS_DB_CACHE),
+        "LOCATION": "redis://%s:%s" % (REDIS_HOST, REDIS_PORT),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
