@@ -3,7 +3,7 @@ logger = logging.getLogger(__name__)
 
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import Http404, get_object_or_404, redirect, render_to_response
+from django.shortcuts import Http404, get_object_or_404, redirect
 from django.template import RequestContext
 from django.urls import reverse
 
