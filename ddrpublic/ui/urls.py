@@ -1,7 +1,7 @@
 from django.urls import include, path
 from django.views.generic import TemplateView
 
-from drf_yasg.views import get_schema_view
+from drf_yasg import views as yasg_views
 from drf_yasg import openapi
 from rest_framework import permissions
 from rest_framework.urlpatterns import format_suffix_patterns
@@ -13,14 +13,14 @@ from .views import cite, ui_state, redirect, index
 
 API_BASE = '/api/0.2/'
 
-schema_view = get_schema_view(
+schema_view = yasg_views.get_schema_view(
    openapi.Info(
       title="Densho Digital Repository API",
       default_version='0.2',
-      description="DESCRIPTION TEXT HERE",
+      #description="DESCRIPTION TEXT HERE",
       terms_of_service="http://ddr.densho.org/terms/",
       contact=openapi.Contact(email="info@densho.org"),
-      license=openapi.License(name="TBD"),
+      #license=openapi.License(name="TBD"),
    ),
    #validators=['flex', 'ssv'],
    public=True,
@@ -31,19 +31,24 @@ urlpatterns = [
     path('redirect/archive.densho.org', redirect, name='ui-redirect'),
     path('names/', include('names.urls')),
     
-    #path(r'^api/swagger(?P<format>\.json|\.yaml)',
-    #     schema_view.without_ui(cache_timeout=0), name='schema-json'
-    #),
+    path('api/swagger.json',
+         schema_view.without_ui(cache_timeout=0), name='schema-json'
+    ),
+    path('api/swagger.yaml',
+         schema_view.without_ui(cache_timeout=0), name='schema-yaml'
+    ),
     path('api/swagger/',
-        schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'
+         schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'
     ),
     path('api/redoc/',
-        schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'
+         schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'
     ),
     
     path('api/0.2/ui-state/', ui_state, name='ui-api-state'),
     
-    path('api/0.2/search/help/', TemplateView.as_view(template_name="ui/search/help.html"), name='ui-about'),
+    path('api/search/help/',
+         TemplateView.as_view(template_name="ui/search/help.html"), name='ui-api-search-help'
+    ),
     path('api/0.2/search/', api.Search.as_view(), name='ui-api-search'),
     
     path('api/0.2/names/<slug:object_id>/', names_api.name, name='names-api-name'),
