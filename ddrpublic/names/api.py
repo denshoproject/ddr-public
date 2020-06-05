@@ -10,8 +10,6 @@ from rest_framework.request import Request as RestRequest
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
 
 from ui import docstore
 from ui import search
@@ -65,44 +63,27 @@ def name(request, object_id, format=None):
 
 class Search(APIView):
     
-    @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter(
-            'fulltext',
-            description='Search string using Elasticsearch query_string syntax.',
-            required=True,
-            in_=openapi.IN_QUERY, type=openapi.TYPE_STRING
-        ),
-        openapi.Parameter(
-            'm_camp',
-            description='One or more camp IDs e.g. "9-rohwer".',
-            in_=openapi.IN_QUERY, type=openapi.TYPE_STRING
-        ),
-        openapi.Parameter(
-            'page',
-            description='Selected results page (default: 0).',
-            in_=openapi.IN_QUERY, type=openapi.TYPE_STRING
-        ),
-    ])
     def get(self, request, format=None):
         """Search the Names Database; good for simpler searches.
         
-        Search API help: /api/0.2/search/help/
+        `fulltext`: Search string using Elasticsearch query_string syntax.
+        `m_camp`: One or more camp IDs e.g. "9-rohwer".
+        `page`: Selected results page (default: 0).
+
+        Search API help: /api/search/help/
         """
         if request.GET.get('fulltext'):
             return self.grep(request)
         return Response({})
     
-    @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter(
-            'body',
-            description='DESCRIPTION HERE',
-            required=True,
-            in_=openapi.IN_FORM, type=openapi.TYPE_STRING),
-    ])
     def post(self, request, format=None):
         """Search the Names Database; good for more complicated custom searches.
         
-        Search API help: /api/0.2/search/help/
+        `fulltext`: Search string using Elasticsearch query_string syntax.
+        `m_camp`: One or more camp IDs e.g. "9-rohwer".
+        `page`: Selected results page (default: 0).
+        
+        Search API help: /api/search/help/
         """
         if request.data.get('fulltext'):
             return self.grep(request)
