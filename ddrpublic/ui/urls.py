@@ -96,8 +96,6 @@ urlpatterns = [
     
     path('interviews/<slug:oid>/', entities.interview, name='ui-interview'),
     
-    path('<slug:oid>/', entities.nodes, name='ui-file-role'),
-    
     # match legacy urls
     path('<slug:repo>/<slug:org>/<slug:cid>/<slug:eid>/<slug:role>/<slug:sha1>/', objects.legacy, name='ui-legacy'),
     path('<slug:repo>/<slug:org>/<slug:cid>/<slug:eid>/<slug:role>/', objects.legacy, name='ui-legacy'),
