@@ -476,20 +476,24 @@ class SearchResults(object):
 
 
 def sanitize_input(text):
+    assert (isinstance(text, str) or isinstance(text, list))
     if isinstance(text, str):
         data = [text]
     elif isinstance(text, list):
         data = text
-    elif isinstance(text, dict):
-        # TODO we aren't handling those yet :P
-        return text
+    
+    BAD_SEARCH_CHARS = r'!+/:[\]^{}~'
+    for word in text:
+        for c in BAD_SEARCH_CHARS:
+            word = word.replace(c, '')
+        word = word.replace('  ', ' ')
     
     cleaned = []
     for t in data:
         # Escape special characters
         # http://lucene.apache.org/core/old_versioned_docs/versions/2_9_1/queryparsersyntax.html
         t = re.sub(
-            '([{}])'.format(re.escape('\\+\-&|!(){}\[\]^~*?:\/')),
+            '([{}])'.format(re.escape('&|!(){}\[\]^~*?:\/')),
             r"\\\1",
             t
         )
@@ -524,6 +528,7 @@ class Searcher(object):
     'ok'
     >>> d = r.to_dict(request)
     """
+    params = {}
     
     def __init__(self, conn=DOCSTORE.es, search=None):
         """
@@ -561,10 +566,12 @@ class Searcher(object):
         # to the method.  It is used for informational purposes
         # and is passed to SearchResults.
         # Sanitize while copying.
-        self.params = {
-            key: sanitize_input(val)
-            for key,val in params.items()
-        }
+        if params:
+            self.params = {
+                key: sanitize_input(val)
+                for key,val in params.items()
+            }
+        params = deepcopy(self.params)
         
         # scrub fields not in whitelist
         bad_fields = [

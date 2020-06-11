@@ -5,10 +5,10 @@ from urllib.parse import urlparse, urlunparse
 
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.http.request import HttpRequest
 from django.shortcuts import render
+from django.urls import reverse
 
 from elasticsearch.exceptions import ConnectionError, ConnectionTimeout
 
@@ -91,25 +91,26 @@ def search_ui(request):
         'api_url': api_url,
     }
     
+    searcher = search.Searcher()
     if request.GET.get('fulltext'):
-        context['searching'] = True
-        
         # Redirect if fulltext is a DDR ID
         if is_ddr_id(request.GET.get('fulltext')):
             return HttpResponseRedirect(
                 reverse('ui-object-detail', args=[
                     request.GET.get('fulltext')
             ]))
-        
-        searcher = search.Searcher()
+        params = request.GET.copy()
         searcher.prepare(
-            params=request.GET.copy(),
+            params=params,
             params_whitelist=search.SEARCH_PARAM_WHITELIST,
             search_models=search.SEARCH_MODELS,
             fields=search.SEARCH_INCLUDE_FIELDS,
             fields_nested=search.SEARCH_NESTED_FIELDS,
             fields_agg=search.SEARCH_AGG_FIELDS,
         )
+        context['searching'] = True
+    
+    if searcher.params.get('fulltext'):
         limit,offset = limit_offset(request)
         results = searcher.execute(limit, offset)
         paginator = Paginator(
@@ -133,6 +134,9 @@ def search_ui(request):
         context['search_form'] = form
 
     else:
+        form = forms.SearchForm(
+            data=request.GET.copy(),
+        )
         context['search_form'] = forms.SearchForm()
 
     return render(request, 'ui/search/results.html', context)

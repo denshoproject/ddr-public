@@ -55,79 +55,39 @@ def index(request, format=None):
 
 class Search(APIView):
     
-    @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter(
-            'fulltext',
-            description='Search string using Elasticsearch query_string syntax.',
-            required=True,
-            in_=openapi.IN_QUERY, type=openapi.TYPE_STRING
-        ),
-        openapi.Parameter(
-            'topics',
-            description='Topic term ID(s) from http://partner.densho.org/vocab/api/0.2/topics.json.',
-            in_=openapi.IN_QUERY,
-            type=openapi.TYPE_ARRAY, items={'type':'integer'}
-        ),
-        openapi.Parameter(
-            'facility',
-            description='Facility ID(s) from http://partner.densho.org/vocab/api/0.2/facility.json.',
-            in_=openapi.IN_QUERY,
-            type=openapi.TYPE_ARRAY, items={'type':'integer'}
-        ),
-        openapi.Parameter(
-            'format',
-            description='Format term ID(s) from http://partner.densho.org/vocab/api/0.2/format.json.',
-            in_=openapi.IN_QUERY,
-            type=openapi.TYPE_ARRAY, items={'type':'string'}
-        ),
-        openapi.Parameter(
-            'genre',
-            description='Genre term ID(s) from http://partner.densho.org/vocab/api/0.2/genre.json',
-            in_=openapi.IN_QUERY,
-            type=openapi.TYPE_ARRAY, items={'type':'string'}
-        ),
-        openapi.Parameter(
-            'rights',
-            description='Rights term ID(s) from http://partner.densho.org/vocab/api/0.2/rights.json',
-            in_=openapi.IN_QUERY,
-            type=openapi.TYPE_ARRAY, items={'type':'string'}
-        ),
-        openapi.Parameter(
-            'page',
-            description='Selected results page (default: 0).',
-            in_=openapi.IN_QUERY, type=openapi.TYPE_STRING
-        ),
-    ])
     def get(self, request, format=None):
         """Search the Repository; good for simpler searches.
         
-        Search API help: /api/0.2/search/help/
+        `fulltext`: Search string using Elasticsearch query_string syntax.
+        `topics`: Topic term ID(s) from http://partner.densho.org/vocab/api/0.2/topics.json.
+        `facility`: Facility ID(s) from http://partner.densho.org/vocab/api/0.2/facility.json.
+        `format`: Format term ID(s) from http://partner.densho.org/vocab/api/0.2/format.json.
+        `genre`: Genre term ID(s) from http://partner.densho.org/vocab/api/0.2/genre.json
+        `rights`: Rights term ID(s) from http://partner.densho.org/vocab/api/0.2/rights.json
+        `page`: Selected results page (default: 0).
+        
+        Search API help: /api/search/help/
         """
         if request.GET.get('fulltext'):
             return self.grep(request)
         return Response({})
     
-    @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter(
-            'body',
-            description='DESCRIPTION HERE',
-            required=True,
-            in_=openapi.IN_FORM, type=openapi.TYPE_STRING),
-    ])
     def post(self, request, format=None):
         """Search the Repository; good for more complicated custom searches.
         
-        Search API help: /api/0.2/search/help/
+        Search API help: /api/search/help/
         
         Sample search body JSON:
         
-        {
-            "fulltext": "seattle",
-            "must": [
-                {"topics": "239"}
-            ]
-        }
-
+        {"fulltext": "seattle", "must": [{"topics": "239"}]}
+        
+        `fulltext`: Search string using Elasticsearch query_string syntax.
+        `topics`: Topic term ID(s) from http://partner.densho.org/vocab/api/0.2/topics.json.
+        `facility`: Facility ID(s) from http://partner.densho.org/vocab/api/0.2/facility.json.
+        `format`: Format term ID(s) from http://partner.densho.org/vocab/api/0.2/format.json.
+        `genre`: Genre term ID(s) from http://partner.densho.org/vocab/api/0.2/genre.json
+        `rights`: Rights term ID(s) from http://partner.densho.org/vocab/api/0.2/rights.json
+        `page`: Selected results page (default: 0).
         """
         if request.data.get('fulltext'):
             return self.grep(request)
@@ -183,11 +143,7 @@ def object_nodes(request, object_id):
 
 @api_view(['GET'])
 def object_children(request, object_id):
-    """OBJECT CHILDREN DOCS
-    
-    s - sort
-    n - number of results AKA page size (limit)
-    p - page (offset)
+    """List children for a collection or collection object
     """
     # TODO just get doc_type
     document = DOCSTORE.es.get(
@@ -247,12 +203,18 @@ def files(request, object_id, format=None):
 
 @api_view(['GET'])
 def facets(request, object_id, format=None):
+    """List of facets
+    """
     offset = int(request.GET.get('offset', 0))
     data = Facet.nodes(object_id, request, offset=offset)
     return _list(request, data)
 
 @api_view(['GET'])
 def facetterms(request, facet_id, format=None):
+    """Terms for specified facet
+    
+    `facet_id`: "topics", "facility", "format", "genre", or "rights". 
+    """
     offset = int(request.GET.get('offset', 0))
     data = Facet.children(
         facet_id, request,
@@ -264,6 +226,17 @@ def facetterms(request, facet_id, format=None):
 
 @api_view(['GET'])
 def term_objects(request, facet_id, term_id, limit=DEFAULT_LIMIT, offset=0):
+    """DDR objects for specified facet term
+    
+    `facet_id`: "topics", "facility", "format", "genre", or "rights". 
+    `term_id`: A term ID from one of the following lists:
+    
+    - http://partner.densho.org/vocab/api/0.2/topics.json
+    - http://partner.densho.org/vocab/api/0.2/facility.json
+    - http://partner.densho.org/vocab/api/0.2/format.json
+    - http://partner.densho.org/vocab/api/0.2/genre.json
+    - http://partner.densho.org/vocab/api/0.2/rights.json
+    """
     object_id = '%s-%s' % (facet_id, term_id)
     offset = int(request.GET.get('offset', 0))
     data = Term.objects(facet_id, term_id, request, limit=limit, offset=offset)
@@ -271,7 +244,7 @@ def term_objects(request, facet_id, term_id, limit=DEFAULT_LIMIT, offset=0):
 
 @api_view(['GET'])
 def object_detail(request, object_id):
-    """OBJECT DETAIL DOCS
+    """Information for a specific object.
     """
     # TODO just get doc_type
     document = DOCSTORE.es.get(
@@ -346,11 +319,26 @@ def facet_index(request, format=None):
 
 @api_view(['GET'])
 def facet(request, facet_id, format=None):
+    """Detail for specified facet
+    
+    `facet_id`: "topics", "facility", "format", "genre", or "rights". 
+    """
     data = Facet.get(facet_id, request)
     return _detail(request, data)
 
 @api_view(['GET'])
 def facetterm(request, facet_id, term_id, format=None):
+    """Detail for specified facet term
+    
+    `facet_id`: "topics", "facility", "format", "genre", or "rights". 
+    `term_id`: A term ID from one of the following lists:
+    
+    - http://partner.densho.org/vocab/api/0.2/topics.json
+    - http://partner.densho.org/vocab/api/0.2/facility.json
+    - http://partner.densho.org/vocab/api/0.2/format.json
+    - http://partner.densho.org/vocab/api/0.2/genre.json
+    - http://partner.densho.org/vocab/api/0.2/rights.json
+    """
     object_id = '%s-%s' % (facet_id, term_id)
     data = Term.get(object_id, request)
     return _detail(request, data)

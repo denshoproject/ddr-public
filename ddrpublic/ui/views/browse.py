@@ -4,8 +4,8 @@ from urllib.parse import urlparse
 
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.core.urlresolvers import reverse
 from django.shortcuts import render
+from django.urls import reverse
 from django.views.decorators.cache import cache_page
 
 from .. import encyc

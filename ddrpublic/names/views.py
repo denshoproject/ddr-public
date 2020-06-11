@@ -3,9 +3,9 @@ from urllib.parse import urlparse, urlunparse
 
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
 from django.shortcuts import render
+from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from namesdb import definitions

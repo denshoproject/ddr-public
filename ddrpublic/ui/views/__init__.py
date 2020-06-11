@@ -3,10 +3,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import Http404, render
+from django.urls import reverse
 
 from .. import misc
 
@@ -40,22 +40,22 @@ def ui_state(request):
             )
     return Http404()
 
-def error400(request):
-    return render(request, 'ui/400.html', {
-        'ASSETS_BASE': misc.assets_base(request),
-    })
+def handler400(request, exception):
+    response = render(request, "ui/404.html", context={})
+    response.status_code = 400
+    return response
 
-def error403(request):
-    return render(request, 'ui/403.html', {
-        'ASSETS_BASE': misc.assets_base(request),
-    })
+def handler403(request, exception):
+    response = render(request, "ui/404.html", context={})
+    response.status_code = 403
+    return response
 
-def error404(request):
-    return render(request, 'ui/404.html', {
-        'ASSETS_BASE': misc.assets_base(request),
-    })
+def handler404(request, exception):
+    response = render(request, "ui/404.html", context={})
+    response.status_code = 404
+    return response
 
-def error500(request):
-    return render(request, 'ui/500.html', {
-        'ASSETS_BASE': misc.assets_base(request),
-    })
+def handler500(request):
+    response = render(request, "ui/500.html", context={})
+    response.status_code = 500
+    return response
