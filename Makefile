@@ -71,7 +71,7 @@ DEB_ARCH=amd64
 DEB_NAME_BUSTER=$(APP)-$(DEB_BRANCH)
 # Application version, separator (~), Debian release tag e.g. deb8
 # Release tag used because sortable and follows Debian project usage.
-DEB_VERSION_BUSTER=$(APP_VERSION)~deb9
+DEB_VERSION_BUSTER=$(APP_VERSION)~deb10
 DEB_FILE_BUSTER=$(DEB_NAME_BUSTER)_$(DEB_VERSION_BUSTER)_$(DEB_ARCH).deb
 DEB_VENDOR=Densho.org
 DEB_MAINTAINER=<geoffrey.jost@densho.org>
