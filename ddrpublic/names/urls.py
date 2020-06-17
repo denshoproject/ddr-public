@@ -11,6 +11,8 @@ urlpatterns = [
     path('api/0.2/names', api.Search.as_view(), name='names-api-search'),
     
     path('search/', views.search_ui, name='names-search'),
-    path('<slug:id>/', views.detail, name='names-detail'),
+    re_path(r'^(?P<object_id>[0-9a-zA-Z_:-]+)',
+            views.detail, name='names-detail'
+    ),
     path('', views.search_ui, name='names-index'),
 ]

@@ -29,7 +29,7 @@ NON_FILTER_FIELDS = [
 def _mkurl(request, path, query=None):
     return urlunparse((
         request.META['wsgi.url_scheme'],
-        request.META['HTTP_HOST'],
+        request.META.get('HTTP_HOST'),
         path, None, query, None
     ))
 
@@ -157,9 +157,9 @@ def search_ui(request):
 
     return render(request, 'names/index.html', context)
 
-def detail(request, id, template_name='names/detail.html'):
+def detail(request, object_id, template_name='names/detail.html'):
     try:
-        record = models.NameRecord.get(id, request)
+        record = models.NameRecord.get(object_id, request)
     except models.NotFound:
         raise Http404
     # Format field data, add labels
