@@ -295,11 +295,19 @@ install-ddr-public: clean-ddr-public
 	chown -R ddr.root $(SQLITE_BASE)
 	chmod -R 755 $(SQLITE_BASE)
 
-test-ddr-public:
+test-ddr-public: test-ddr-public-ui test-ddr-public-names
+
+test-ddr-public-ui:
 	@echo ""
-	@echo "test-ddr-public --------------------------------------------------------"
+	@echo "test-ddr-public-ui ----------------------------------------"
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_PUBLIC); python ddrpublic/manage.py test ui
+
+test-ddr-public-names:
+	@echo ""
+	@echo "test-ddr-public-names ----------------------------------------"
+	source $(VIRTUALENV)/bin/activate; \
+	cd $(INSTALL_PUBLIC); python ddrpublic/manage.py test names
 
 shell:
 	source $(VIRTUALENV)/bin/activate; \
