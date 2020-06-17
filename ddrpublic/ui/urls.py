@@ -6,7 +6,6 @@ from drf_yasg import openapi
 from rest_framework import permissions
 from rest_framework.urlpatterns import format_suffix_patterns
 
-from names import api as names_api
 from . import api
 from .views import browse, searching, collections, entities, objects, index
 from .views import cite, ui_state, redirect, index
@@ -50,9 +49,6 @@ urlpatterns = [
          TemplateView.as_view(template_name="ui/search/help.html"), name='ui-api-search-help'
     ),
     path('api/0.2/search/', api.Search.as_view(), name='ui-api-search'),
-    
-    path('api/0.2/names/<slug:object_id>/', names_api.name, name='names-api-name'),
-    path('api/0.2/names', names_api.Search.as_view(), name='names-api-search'),
     
     path('api/0.2/narrator/<slug:object_id>/interviews/', api.narrator_interviews, name='ui-api-narrator-interviews'),
     path('api/0.2/narrator/<slug:object_id>/', api.narrator, name='ui-api-narrator'),
