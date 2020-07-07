@@ -129,6 +129,7 @@ SEARCH_INCLUDE_FIELDS = [
     'image_url',
     'display_name',
     'bio',
+    'extent',
 ]
 
 # TODO move to ddr-defs/repo_models/elastic.py?
