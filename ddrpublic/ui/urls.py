@@ -27,6 +27,9 @@ schema_view = yasg_views.get_schema_view(
 )
 
 urlpatterns = [
+    
+    path('robots.txt', include('robots.urls')),
+    
     path('redirect/archive.densho.org', redirect, name='ui-redirect'),
     path('names/', include('names.urls')),
     
