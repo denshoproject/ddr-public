@@ -113,6 +113,7 @@ SEARCH_INCLUDE_FIELDS = [
     'public',
     'title',
     'description',
+    'record_lastmod',
     'contributor',
     'creators',
     'facility',
