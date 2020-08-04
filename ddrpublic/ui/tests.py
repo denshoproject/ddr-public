@@ -2,6 +2,18 @@ from django.test import TestCase
 from django.urls import reverse
 
 
+class RobotsView(TestCase):
+    def test_robots(self):
+        response = self.client.get(reverse('robots_rule_list'))
+        self.assertEqual(response.status_code, 200)
+
+
+class SitemapView(TestCase):
+    def test_sitemap(self):
+        response = self.client.get(reverse('ui-sitemap'))
+        self.assertEqual(response.status_code, 200)
+
+
 class APIIndexView(TestCase):
 
     def test_index(self):
