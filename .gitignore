@@ -4,9 +4,8 @@
 *.deb
 *.svg
 build/
-ddr-cmdln/
-ddr-defs/
 ddrpublic/ddrpublic/settings.py
+ddr-public-assets/
 namesdb/
 src/
 tmp/

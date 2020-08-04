@@ -31,10 +31,12 @@ PACKAGE_TIMESTAMP := $(shell git log -1 --pretty="%ad" --date=short | tr -d -)
 PACKAGE_SERVER=ddr.densho.org/static/ddrpublic
 
 SRC_REPO_NAMESDB=https://github.com/densho/namesdb.git
+SRC_REPO_ASSETS=https://github.com/densho/ddr-public-assets.git
 
 INSTALL_BASE=/opt
 INSTALL_PUBLIC=$(INSTALL_BASE)/ddr-public
 INSTALL_NAMESDB=./namesdb
+INSTALL_ASSETS=/opt/ddr-public/ddr-public-assets
 REQUIREMENTS=./requirements.txt
 PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
 
@@ -50,6 +52,7 @@ LOG_BASE=/var/log/ddr
 
 MEDIA_BASE=/var/www/ddrpublic
 MEDIA_ROOT=$(MEDIA_BASE)/media
+ASSETS_ROOT=$(MEDIA_BASE)/assets
 STATIC_ROOT=$(MEDIA_BASE)/static
 
 # Media assets are packaged in an "assets/" dir, *without the version*.
@@ -229,7 +232,7 @@ install-virtualenv:
 	test -d $(VIRTUALENV) || virtualenv --python=python3 $(VIRTUALENV)
 
 
-get-app: get-namesdb get-ddr-public
+get-app: get-namesdb get-ddr-public get-static
 
 install-app: install-virtualenv install-namesdb install-ddr-public install-configs install-daemon-configs
 
@@ -336,48 +339,31 @@ migrate:
 	chmod -R 755 $(LOG_BASE)
 
 
-install-static: get-ddrpublic-assets install-ddrpublic-assets install-restframework install-swagger
-
-clean-static: clean-ddrpublic-assets clean-restframework clean-swagger
-
-get-ddrpublic-assets:
+get-static:
 	@echo ""
-	@echo "get assets --------------------------------------------------------------"
-	-mkdir -p /tmp/$(ASSETS_VERSION)
-	wget -nc -P /tmp http://$(PACKAGE_SERVER)/$(ASSETS_TGZ)
+	@echo "get-static --------------------------------------------------------------"
+	if test -d $(INSTALL_ASSETS); \
+	then cd $(INSTALL_ASSETS) && git pull; \
+	else cd $(INSTALL_PUBLIC) && git clone $(SRC_REPO_ASSETS); \
+	fi
 
-install-ddrpublic-assets:
+install-static:
 	@echo ""
-	@echo "install assets ----------------------------------------------------------"
-	rm -Rf $(ASSETS_INSTALL_DIR)
-	-mkdir -p $(ASSETS_INSTALL_DIR)
-	-mkdir -p /tmp/$(ASSETS_VERSION)
-	tar xzf /tmp/$(ASSETS_TGZ) -C /tmp/$(ASSETS_VERSION)
-	mv /tmp/$(ASSETS_VERSION)/assets/* $(ASSETS_INSTALL_DIR)
+	@echo "install static ----------------------------------------------------------"
+	-mkdir $(MEDIA_BASE)
+	-mkdir $(MEDIA_ROOT)
+	chown -R ddr.root $(MEDIA_ROOT)
+	chmod -R 755 $(MEDIA_ROOT)
+	-mkdir $(ASSETS_ROOT)
+	-mkdir $(STATIC_ROOT)
+	-cp -R $(INSTALL_ASSETS)/assets/* $(ASSETS_ROOT)/
+	-cp -R $(INSTALL_ASSETS)/static/* $(STATIC_ROOT)/
 
-clean-ddrpublic-assets:
+clean-static:
 	@echo ""
-	@echo "clean assets ------------------------------------------------------------"
-	-rm -Rf $(ASSETS_INSTALL_DIR)
-	-mkdir -p /tmp/$(ASSETS_VERSION)
-
-install-restframework:
-	@echo ""
-	@echo "rest-framework assets ---------------------------------------------------"
-	-mkdir -p $(MEDIA_BASE)
-	cp -R $(VIRTUALENV)/lib/$(PYTHON_VERSION)/site-packages/rest_framework/static/rest_framework/ $(STATIC_ROOT)/
-
-install-swagger:
-	@echo ""
-	@echo "rest-swagger assets -----------------------------------------------------"
-	-mkdir -p $(MEDIA_BASE)
-	cp -R $(VIRTUALENV)/lib/$(PYTHON_VERSION)/site-packages/drf_yasg/static/drf-yasg/ $(STATIC_ROOT)/
-
-clean-restframework:
-	-rm -Rf $(STATIC_ROOT)/rest_framework/
-
-clean-swagger:
-	-rm -Rf $(STATIC_ROOT)/drf_yasg/
+	@echo "clean static ------------------------------------------------------------"
+	-rm -Rf $(ASSETS_ROOT)/
+	-rm -Rf $(STATIC_ROOT)/
 
 
 install-configs:
