@@ -1,3 +1,4 @@
+from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
 from django.views.generic import TemplateView
 
@@ -7,8 +8,13 @@ from rest_framework import permissions
 from rest_framework.urlpatterns import format_suffix_patterns
 
 from . import api
+from . import sitemaps
 from .views import browse, searching, collections, entities, objects, index
 from .views import cite, ui_state, redirect, index
+
+SITEMAPS = {
+    'collections': sitemaps.CollectionSitemap,
+}
 
 API_BASE = '/api/0.2/'
 
@@ -27,6 +33,10 @@ schema_view = yasg_views.get_schema_view(
 )
 
 urlpatterns = [
+    
+    path('robots.txt', include('robots.urls')),
+    path('sitemap.xml', sitemap, {'sitemaps': SITEMAPS}, name='ui-sitemap'),
+    
     path('redirect/archive.densho.org', redirect, name='ui-redirect'),
     path('names/', include('names.urls')),
     

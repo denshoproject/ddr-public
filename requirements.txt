@@ -11,6 +11,7 @@ django-cors-headers==3.3.0         # MIT      y
 django-redis==4.12.1               # BSD      y
 django-redis-sessions==0.6.1       # BSD      y
 djangorestframework>=3.11.0,<3.12  # BSD      y
+django-robots==4.0                 # BSD
 drf-yasg>=1.17.0,<1.18             # BSD      y
 elasticsearch>=7.0.0,<8.0.0     # Apache y        y   NOTE: match namesdb version
 elasticsearch-dsl>=7.0.0,<8.0.0 # Apache y        y   NOTE: match namesdb version

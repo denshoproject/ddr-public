@@ -215,6 +215,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     #'django.contrib.messages',
+    'django.contrib.sitemaps',
     'django.contrib.staticfiles',
     #'django.contrib.admin',
     #
@@ -222,12 +223,18 @@ INSTALLED_APPS = (
     'corsheaders',
     'drf_yasg',
     'rest_framework',
+    'robots',
     'sorl.thumbnail',
     #
     'ddrpublic',
     'ui',
     'names',
 )
+
+ROBOTS_CACHE_TIMEOUT = 60*60*24
+ROBOTS_USE_HOST = True
+ROBOTS_USE_SCHEME_IN_HOST = True
+ROBOTS_USE_SITEMAP = True
 
 API_BASE = '/api/0.2/'
 

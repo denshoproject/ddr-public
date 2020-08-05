@@ -30,16 +30,17 @@ PACKAGE_TIMESTAMP := $(shell git log -1 --pretty="%ad" --date=short | tr -d -)
 # - templates/static/nginx.conf.j2
 PACKAGE_SERVER=ddr.densho.org/static/ddrpublic
 
-SRC_REPO_NAMESDB=https://github.com/densho/namesdb.git
+SRC_REPO_NAMESDB=https://github.com/densho/namesdb
+SRC_REPO_ASSETS=https://github.com/denshoproject/ddr-public-assets.git
 
 INSTALL_BASE=/opt
 INSTALL_PUBLIC=$(INSTALL_BASE)/ddr-public
 INSTALL_NAMESDB=./namesdb
+INSTALL_ASSETS=/opt/ddr-public-assets
 REQUIREMENTS=./requirements.txt
 PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
 
 VIRTUALENV=./venv/ddrpublic
-SETTINGS=./ddrpublic/ddrpublic/settings.py
 
 CONF_BASE=/etc/ddr
 CONF_PRODUCTION=$(CONF_BASE)/ddrpublic.cfg
@@ -50,6 +51,7 @@ LOG_BASE=/var/log/ddr
 
 MEDIA_BASE=/var/www/ddrpublic
 MEDIA_ROOT=$(MEDIA_BASE)/media
+ASSETS_ROOT=$(MEDIA_BASE)/assets
 STATIC_ROOT=$(MEDIA_BASE)/static
 
 # Media assets are packaged in an "assets/" dir, *without the version*.
@@ -65,6 +67,13 @@ ELASTICSEARCH=elasticsearch-2.4.6.deb
 SUPERVISOR_GUNICORN_CONF=/etc/supervisor/conf.d/ddrpublic.conf
 NGINX_CONF=/etc/nginx/sites-available/ddrpublic.conf
 NGINX_CONF_LINK=/etc/nginx/sites-enabled/ddrpublic.conf
+
+TGZ_BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr -d _ | tr -d -)
+TGZ_FILE=$(APP)_$(APP_VERSION)
+TGZ_DIR=$(INSTALL_PUBLIC)/$(TGZ_FILE)
+TGZ_PUBLIC=$(TGZ_DIR)/ddr-public
+TGZ_NAMES=$(TGZ_DIR)/ddr-public/namesdb
+TGZ_ASSETS=$(TGZ_DIR)/ddr-public/ddr-public-assets
 
 DEB_BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr -d _ | tr -d -)
 DEB_ARCH=amd64
@@ -94,7 +103,6 @@ help:
 	@echo "    install-elasticsearch"
 	@echo "    get-app         - Runs git-clone or git-pull on ddr-public"
 	@echo "    install-app     - Just installer tasks for ddr-public"
-	@echo "    install-static  - Downloads static media (Bootstrap, jquery, etc)"
 	@echo ""
 	@echo "test    - Run unit tests"
 	@echo ""
@@ -145,7 +153,6 @@ help-all:
 	@echo "install-prep    - git-config, add-user, apt-update, install-misc-tools"
 	@echo "install-daemons - install-nginx install-redis install-elasticsearch"
 	@echo "install-ddr     - install-ddr-public"
-	@echo "install-static  - "
 	@echo "update  - Do an update"
 	@echo "restart - Restart servers"
 	@echo "status  - Server status"
@@ -157,7 +164,7 @@ help-all:
 
 get: get-ddr-public
 
-install: install-prep get-app install-app install-daemons install-static install-configs
+install: install-prep get-app install-app install-daemons install-configs
 
 test: test-app
 
@@ -229,7 +236,7 @@ install-virtualenv:
 	test -d $(VIRTUALENV) || virtualenv --python=python3 $(VIRTUALENV)
 
 
-get-app: get-namesdb get-ddr-public
+get-app: get-namesdb get-ddr-public get-static
 
 install-app: install-virtualenv install-namesdb install-ddr-public install-configs install-daemon-configs
 
@@ -294,6 +301,11 @@ install-ddr-public: clean-ddr-public
 	-mkdir $(SQLITE_BASE)
 	chown -R ddr.root $(SQLITE_BASE)
 	chmod -R 755 $(SQLITE_BASE)
+# media dir
+	-mkdir $(MEDIA_BASE)
+	-mkdir $(MEDIA_ROOT)
+	chown -R ddr.root $(MEDIA_ROOT)
+	chmod -R 755 $(MEDIA_ROOT)
 
 test-ddr-public: test-ddr-public-ui test-ddr-public-names
 
@@ -336,50 +348,6 @@ migrate:
 	chmod -R 755 $(LOG_BASE)
 
 
-install-static: get-ddrpublic-assets install-ddrpublic-assets install-restframework install-swagger
-
-clean-static: clean-ddrpublic-assets clean-restframework clean-swagger
-
-get-ddrpublic-assets:
-	@echo ""
-	@echo "get assets --------------------------------------------------------------"
-	-mkdir -p /tmp/$(ASSETS_VERSION)
-	wget -nc -P /tmp http://$(PACKAGE_SERVER)/$(ASSETS_TGZ)
-
-install-ddrpublic-assets:
-	@echo ""
-	@echo "install assets ----------------------------------------------------------"
-	rm -Rf $(ASSETS_INSTALL_DIR)
-	-mkdir -p $(ASSETS_INSTALL_DIR)
-	-mkdir -p /tmp/$(ASSETS_VERSION)
-	tar xzf /tmp/$(ASSETS_TGZ) -C /tmp/$(ASSETS_VERSION)
-	mv /tmp/$(ASSETS_VERSION)/assets/* $(ASSETS_INSTALL_DIR)
-
-clean-ddrpublic-assets:
-	@echo ""
-	@echo "clean assets ------------------------------------------------------------"
-	-rm -Rf $(ASSETS_INSTALL_DIR)
-	-mkdir -p /tmp/$(ASSETS_VERSION)
-
-install-restframework:
-	@echo ""
-	@echo "rest-framework assets ---------------------------------------------------"
-	-mkdir -p $(MEDIA_BASE)
-	cp -R $(VIRTUALENV)/lib/$(PYTHON_VERSION)/site-packages/rest_framework/static/rest_framework/ $(STATIC_ROOT)/
-
-install-swagger:
-	@echo ""
-	@echo "rest-swagger assets -----------------------------------------------------"
-	-mkdir -p $(MEDIA_BASE)
-	cp -R $(VIRTUALENV)/lib/$(PYTHON_VERSION)/site-packages/drf_yasg/static/drf-yasg/ $(STATIC_ROOT)/
-
-clean-restframework:
-	-rm -Rf $(STATIC_ROOT)/rest_framework/
-
-clean-swagger:
-	-rm -Rf $(STATIC_ROOT)/drf_yasg/
-
-
 install-configs:
 	@echo ""
 	@echo "configuring ddr-public -------------------------------------------------"
@@ -393,10 +361,6 @@ install-configs:
 	touch $(CONF_LOCAL)
 	chown ddr.root $(CONF_LOCAL)
 	chmod 640 $(CONF_LOCAL)
-# web app settings
-	cp $(INSTALL_PUBLIC)/conf/settings.py $(SETTINGS)
-	chown root.root $(SETTINGS)
-	chmod 644 $(SETTINGS)
 
 uninstall-configs:
 	-rm $(SETTINGS)
@@ -490,6 +454,29 @@ git-status:
 	cd $(INSTALL_PUBLIC) && git status
 
 
+tgz-local:
+	rm -Rf $(TGZ_DIR)
+	git clone $(INSTALL_PUBLIC) $(TGZ_PUBLIC)
+	git clone $(INSTALL_NAMESDB) $(TGZ_NAMES)
+	git clone $(INSTALL_ASSETS) $(TGZ_ASSETS)
+	cd $(TGZ_PUBLIC); git checkout develop; git checkout master
+	cd $(TGZ_NAMES); git checkout develop; git checkout master
+	cd $(TGZ_ASSETS); git checkout develop; git checkout master
+	tar czf $(TGZ_FILE).tgz $(TGZ_FILE)
+	rm -Rf $(TGZ_DIR)
+
+tgz:
+	rm -Rf $(TGZ_DIR)
+	git clone $(GIT_SOURCE_URL) $(TGZ_PUBLIC)
+	git clone $(SRC_REPO_NAMESDB) $(TGZ_NAMES)
+	git clone $(SRC_REPO_ASSETS) $(TGZ_ASSETS)
+	cd $(TGZ_PUBLIC); git checkout develop; git checkout master
+	cd $(TGZ_NAMES); git checkout develop; git checkout master
+	cd $(TGZ_ASSETS); git checkout develop; git checkout master
+	tar czf $(TGZ_FILE).tgz $(TGZ_FILE)
+	rm -Rf $(TGZ_DIR)
+
+
 # http://fpm.readthedocs.io/en/latest/
 install-fpm:
 	@echo "install-fpm ------------------------------------------------------------"
@@ -541,6 +528,4 @@ deb-buster:
 	README.rst=$(DEB_BASE)   \
 	requirements.txt=$(DEB_BASE)   \
 	venv=$(DEB_BASE)   \
-	venv/ddrpublic/lib/$(PYTHON_VERSION)/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
-	venv/ddrpublic/lib/$(PYTHON_VERSION)/site-packages/drf_yasg/static/=$(STATIC_ROOT)  \
 	VERSION=$(DEB_BASE)
