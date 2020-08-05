@@ -30,8 +30,8 @@ PACKAGE_TIMESTAMP := $(shell git log -1 --pretty="%ad" --date=short | tr -d -)
 # - templates/static/nginx.conf.j2
 PACKAGE_SERVER=ddr.densho.org/static/ddrpublic
 
-SRC_REPO_NAMESDB=https://github.com/densho/namesdb.git
-SRC_REPO_ASSETS=https://github.com/densho/ddr-public-assets.git
+SRC_REPO_NAMESDB=https://github.com/densho/namesdb
+SRC_REPO_ASSETS=https://github.com/denshoproject/ddr-public-assets.git
 
 INSTALL_BASE=/opt
 INSTALL_PUBLIC=$(INSTALL_BASE)/ddr-public
@@ -68,6 +68,13 @@ ELASTICSEARCH=elasticsearch-2.4.6.deb
 SUPERVISOR_GUNICORN_CONF=/etc/supervisor/conf.d/ddrpublic.conf
 NGINX_CONF=/etc/nginx/sites-available/ddrpublic.conf
 NGINX_CONF_LINK=/etc/nginx/sites-enabled/ddrpublic.conf
+
+TGZ_BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr -d _ | tr -d -)
+TGZ_FILE=$(APP)_$(APP_VERSION)
+TGZ_DIR=$(INSTALL_PUBLIC)/$(TGZ_FILE)
+TGZ_PUBLIC=$(TGZ_DIR)/ddr-public
+TGZ_NAMES=$(TGZ_DIR)/ddr-public/namesdb
+TGZ_ASSETS=$(TGZ_DIR)/ddr-public/ddr-public-assets
 
 DEB_BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr -d _ | tr -d -)
 DEB_ARCH=amd64
@@ -474,6 +481,29 @@ status:
 git-status:
 	@echo "------------------------------------------------------------------------"
 	cd $(INSTALL_PUBLIC) && git status
+
+
+tgz-local:
+	rm -Rf $(TGZ_DIR)
+	git clone $(INSTALL_PUBLIC) $(TGZ_PUBLIC)
+	git clone $(INSTALL_NAMESDB) $(TGZ_NAMES)
+	git clone $(INSTALL_ASSETS) $(TGZ_ASSETS)
+	cd $(TGZ_PUBLIC); git checkout develop; git checkout master
+	cd $(TGZ_NAMES); git checkout develop; git checkout master
+	cd $(TGZ_ASSETS); git checkout develop; git checkout master
+	tar czf $(TGZ_FILE).tgz $(TGZ_FILE)
+	rm -Rf $(TGZ_DIR)
+
+tgz:
+	rm -Rf $(TGZ_DIR)
+	git clone $(GIT_SOURCE_URL) $(TGZ_PUBLIC)
+	git clone $(SRC_REPO_NAMESDB) $(TGZ_NAMES)
+	git clone $(SRC_REPO_ASSETS) $(TGZ_ASSETS)
+	cd $(TGZ_PUBLIC); git checkout develop; git checkout master
+	cd $(TGZ_NAMES); git checkout develop; git checkout master
+	cd $(TGZ_ASSETS); git checkout develop; git checkout master
+	tar czf $(TGZ_FILE).tgz $(TGZ_FILE)
+	rm -Rf $(TGZ_DIR)
 
 
 # http://fpm.readthedocs.io/en/latest/
