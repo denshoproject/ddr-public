@@ -41,7 +41,6 @@ REQUIREMENTS=./requirements.txt
 PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
 
 VIRTUALENV=./venv/ddrpublic
-SETTINGS=./ddrpublic/ddrpublic/settings.py
 
 CONF_BASE=/etc/ddr
 CONF_PRODUCTION=$(CONF_BASE)/ddrpublic.cfg
@@ -386,10 +385,6 @@ install-configs:
 	touch $(CONF_LOCAL)
 	chown ddr.root $(CONF_LOCAL)
 	chmod 640 $(CONF_LOCAL)
-# web app settings
-	cp $(INSTALL_PUBLIC)/conf/settings.py $(SETTINGS)
-	chown root.root $(SETTINGS)
-	chmod 644 $(SETTINGS)
 
 uninstall-configs:
 	-rm $(SETTINGS)
