@@ -103,7 +103,6 @@ help:
 	@echo "    install-elasticsearch"
 	@echo "    get-app         - Runs git-clone or git-pull on ddr-public"
 	@echo "    install-app     - Just installer tasks for ddr-public"
-	@echo "    install-static  - Downloads static media (Bootstrap, jquery, etc)"
 	@echo ""
 	@echo "test    - Run unit tests"
 	@echo ""
@@ -154,7 +153,6 @@ help-all:
 	@echo "install-prep    - git-config, add-user, apt-update, install-misc-tools"
 	@echo "install-daemons - install-nginx install-redis install-elasticsearch"
 	@echo "install-ddr     - install-ddr-public"
-	@echo "install-static  - "
 	@echo "update  - Do an update"
 	@echo "restart - Restart servers"
 	@echo "status  - Server status"
@@ -166,7 +164,7 @@ help-all:
 
 get: get-ddr-public
 
-install: install-prep get-app install-app install-daemons install-static install-configs
+install: install-prep get-app install-app install-daemons install-configs
 
 test: test-app
 
@@ -303,6 +301,11 @@ install-ddr-public: clean-ddr-public
 	-mkdir $(SQLITE_BASE)
 	chown -R ddr.root $(SQLITE_BASE)
 	chmod -R 755 $(SQLITE_BASE)
+# media dir
+	-mkdir $(MEDIA_BASE)
+	-mkdir $(MEDIA_ROOT)
+	chown -R ddr.root $(MEDIA_ROOT)
+	chmod -R 755 $(MEDIA_ROOT)
 
 test-ddr-public: test-ddr-public-ui test-ddr-public-names
 
@@ -343,33 +346,6 @@ migrate:
 	chmod -R 750 $(SQLITE_BASE)
 	chown -R ddr.root $(LOG_BASE)
 	chmod -R 755 $(LOG_BASE)
-
-
-get-static:
-	@echo ""
-	@echo "get-static --------------------------------------------------------------"
-	if test -d $(INSTALL_ASSETS); \
-	then cd $(INSTALL_ASSETS) && git pull; \
-	else cd $(INSTALL_PUBLIC) && git clone $(SRC_REPO_ASSETS); \
-	fi
-
-install-static:
-	@echo ""
-	@echo "install static ----------------------------------------------------------"
-	-mkdir $(MEDIA_BASE)
-	-mkdir $(MEDIA_ROOT)
-	chown -R ddr.root $(MEDIA_ROOT)
-	chmod -R 755 $(MEDIA_ROOT)
-	-mkdir $(ASSETS_ROOT)
-	-mkdir $(STATIC_ROOT)
-	-cp -R $(INSTALL_ASSETS)/assets/* $(ASSETS_ROOT)/
-	-cp -R $(INSTALL_ASSETS)/static/* $(STATIC_ROOT)/
-
-clean-static:
-	@echo ""
-	@echo "clean static ------------------------------------------------------------"
-	-rm -Rf $(ASSETS_ROOT)/
-	-rm -Rf $(STATIC_ROOT)/
 
 
 install-configs:
