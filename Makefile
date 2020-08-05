@@ -557,6 +557,4 @@ deb-buster:
 	README.rst=$(DEB_BASE)   \
 	requirements.txt=$(DEB_BASE)   \
 	venv=$(DEB_BASE)   \
-	venv/ddrpublic/lib/$(PYTHON_VERSION)/site-packages/rest_framework/static/rest_framework=$(STATIC_ROOT)  \
-	venv/ddrpublic/lib/$(PYTHON_VERSION)/site-packages/drf_yasg/static/=$(STATIC_ROOT)  \
 	VERSION=$(DEB_BASE)
