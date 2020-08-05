@@ -36,7 +36,7 @@ SRC_REPO_ASSETS=https://github.com/denshoproject/ddr-public-assets.git
 INSTALL_BASE=/opt
 INSTALL_PUBLIC=$(INSTALL_BASE)/ddr-public
 INSTALL_NAMESDB=./namesdb
-INSTALL_ASSETS=/opt/ddr-public/ddr-public-assets
+INSTALL_ASSETS=/opt/ddr-public-assets
 REQUIREMENTS=./requirements.txt
 PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
 
