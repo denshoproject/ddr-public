@@ -99,6 +99,7 @@ SEARCH_MODELS = [
 NAMESDB_SEARCH_MODELS = ['names-record']
 
 # fields searched by query e.g. query will find search terms in these fields
+# IMPORTANT: These are used for fulltext search so they must ALL be TEXT fields
 # TODO move to ddr-defs/repo_models/elastic.py?
 SEARCH_INCLUDE_FIELDS = [
     # ddr object fields
@@ -113,7 +114,6 @@ SEARCH_INCLUDE_FIELDS = [
     'public',
     'title',
     'description',
-    'record_lastmod',
     'contributor',
     'creators',
     'facility',
@@ -297,7 +297,14 @@ class SearchResults(object):
             self.aggregations = {}
             if hasattr(results, 'aggregations'):
                 for field in results.aggregations.to_dict().keys():
-                    
+
+                    # NOTE: Elasticsearch can only run fulltext queries on text
+                    # fields.  Missing aggregations data here may be caused
+                    # by non-text fields in SEARCH_INCLUDE_FIELDS.
+                    # Elasticsearch will not throw an error. Aggregations will
+                    # just not have the data that should be there.
+                    # See https://github.com/denshoproject/ddr-public/issues/161
+
                     # nested aggregations
                     if field in ['topics', 'facility']:
                         field_ids = '{}_ids'.format(field)

@@ -25,9 +25,12 @@ class CollectionSitemap(Sitemap):
     def items(self):
         items = []
         orgs = models.Repository.children('ddr', request=None) # TODO HARDCODED
+        SEARCH_INCLUDE_FIELDS = ['id', 'title', 'record_lastmod']
         for org in orgs.objects:
             collections = models.Organization.children(
-                org.id, request=None, limit=settings.ELASTICSEARCH_MAX_SIZE,
+                org.id, request=None,
+                fields=SEARCH_INCLUDE_FIELDS,
+                limit=settings.ELASTICSEARCH_MAX_SIZE,
             )
             for o in collections.objects:
                 item = Item()
