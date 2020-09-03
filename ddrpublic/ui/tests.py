@@ -152,8 +152,14 @@ class APINarratorViews(TestCase):
 
 class APISearchViews(TestCase):
 
-    def test_api_search(self):
+    def test_api_search_index(self):
         response = self.client.get(reverse('ui-api-search'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_api_search_results(self):
+        response = self.client.get(
+            reverse('ui-api-search'), {'fulltext': 'minidoka'}
+        )
         self.assertEqual(response.status_code, 200)
 
 
@@ -292,11 +298,27 @@ class SearchViews(TestCase):
         response = self.client.get(reverse('ui-search-index'))
         self.assertEqual(response.status_code, 200)
 
+    def test_search_results(self):
+        response = self.client.get(
+            reverse('ui-search-index'), {'fulltext': 'minidoka'}
+        )
+        self.assertEqual(response.status_code, 200)
+        
+        len_page_object_list = len(response.context['page'].object_list)
+        #print(f'len(page.object_list): {len_page_object_list}')
+        assert response.context['page'].object_list
+        #print(f"paginator.num_pages: {response.context['paginator'].num_pages}")
+        assert response.context['paginator'].num_pages
 
-
-
-
-
+        fieldname_aggs = [
+            (fieldname,aggs)
+            for fieldname,aggs in response.context['results'].aggregations.items()
+        ]
+        #print(fieldname_aggs)
+        assert response.context['results'].aggregations.get('topics')
+        for item in response.context['results'].aggregations['topics']:
+            assert item.key
+            assert item.doc_count
 
 
 #    # match legacy urls
