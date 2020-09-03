@@ -287,7 +287,7 @@ get-ddr-public:
 	@echo "get-ddr-public ---------------------------------------------------------"
 	git pull
 
-install-ddr-public: clean-ddr-public
+install-ddr-public: install-virtualenv clean-ddr-public
 	@echo ""
 	@echo "install-ddr-public -----------------------------------------------------"
 	apt-get --assume-yes install imagemagick sqlite3 supervisor

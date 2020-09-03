@@ -286,7 +286,7 @@ def _object(request, oid, format=None):
     )
     return format_object_detail2(data, request)
 
-def _object_children(document, request, models=[], sort_fields=[], limit=DEFAULT_LIMIT, offset=0):
+def _object_children(document, request, models=[], sort_fields=[], fields=search.SEARCH_INCLUDE_FIELDS, limit=DEFAULT_LIMIT, offset=0):
     """
     TODO this function is probably superfluous
     """
@@ -299,10 +299,11 @@ def _object_children(document, request, models=[], sort_fields=[], limit=DEFAULT
         model=models,
         parent_id=document['id'],
         sort_fields=sort_fields,
+        fields=fields,
         limit=limit, offset=offset
     )
 
-def children(request, model, parent_id, sort_fields, limit=DEFAULT_LIMIT, offset=0, just_count=False):
+def children(request, model, parent_id, sort_fields, fields=search.SEARCH_INCLUDE_FIELDS, limit=DEFAULT_LIMIT, offset=0, just_count=False):
     """Return object children list in Django REST Framework format.
     
     Returns a paged list with count/prev/next metadata
@@ -310,6 +311,7 @@ def children(request, model, parent_id, sort_fields, limit=DEFAULT_LIMIT, offset
     @param request: Django request object.
     @param model: str
     @param parent_id: str
+    @param fields: list
     @param sort_fields: list
     @param limit: int
     @param offset: int
@@ -341,6 +343,7 @@ def children(request, model, parent_id, sort_fields, limit=DEFAULT_LIMIT, offset
     searcher.prepare(
         params=params,
         search_models=indices,
+        fields=fields,
         fields_nested=[],
         fields_agg={},
     )
@@ -733,10 +736,11 @@ class Organization(object):
         return _object(request, oid)
 
     @staticmethod
-    def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
+    def children(oid, request, fields=search.SEARCH_INCLUDE_FIELDS, limit=DEFAULT_LIMIT, offset=0):
         return _object_children(
             document=_object(request, oid),
             request=request,
+            fields=fields,
             sort_fields=COLLECTION_LIST_SORT,
             limit=limit,
             offset=offset
