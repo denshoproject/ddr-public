@@ -1,3 +1,18 @@
+"""
+Loading Test Data
+
+ddrindex destroy --confirm
+ddrindex create
+ddrindex vocabs /opt/densho-vocab/api/0.2/
+ddrindex narrators /opt/densho-vocab/api/0.2/narrators.json
+ddrindex repo /var/www/media/ddr/ddr/repository.json
+ddrindex org /var/www/media/ddr/ddr-testing/organization.json
+ddrindex org /var/www/media/ddr/ddr-densho/organization.json
+ddrindex publish -r --force /var/www/media/ddr/ddr-densho-10
+ddrindex publish --force /var/www/media/ddr/ddr-densho-1000/
+ddrindex publish -r --force /var/www/media/ddr/ddr-densho-1000/files/ddr-densho-1000-1
+"""
+
 from django.test import TestCase
 from django.urls import reverse
 
