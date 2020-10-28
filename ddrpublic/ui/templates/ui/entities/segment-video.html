@@ -86,6 +86,10 @@ IA metadata: {{ segment.ia_meta|safe }}
               Download full transcript
             </a>
             <br />
+
+{% if "ddr-densho-122" in segment.id %}
+{% else %}
+
             <a href="{{ segment.ia_meta.files.mp4.url }}" class="btn btn-default btn-xs">
               <i class="fa fa-download"></i>
               Download MP4
@@ -96,6 +100,7 @@ IA metadata: {{ segment.ia_meta|safe }}
               Download full-size MPEG2
               ({{ segment.ia_meta.files.mpg.size|filesizeformat }})
             </a>
+{% endif %}
 
           </div><!-- #dls_tab .tab-pane -->
           <!-- end Left Tab -------------------------------------- -->
