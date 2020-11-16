@@ -32,7 +32,18 @@ def list( request ):
         organizations.append( (org_formatted,objects) )
     else:
         # default site
-        orgs = models.Repository.children(repo, request)
+        try:
+            orgs = models.Repository.children(repo, request)
+        except:  # NotFoundError:
+            raise Exception(
+                'No repository record. ' \
+                'Run "ddrindex repo /PATH/TO/REPO/repository.json".'
+            )
+        if not orgs.objects:
+            raise Exception(
+                'No organization records. ' \
+                'Run "ddrindex org /PATH/TO/ORG/organization.json".'
+            )
         for org in orgs.objects:
             collections = models.Organization.children(
                 org.id, request, limit=settings.ELASTICSEARCH_MAX_SIZE,
