@@ -53,7 +53,7 @@ IA metadata: {{ object.ia_meta|safe }}
                 Download large
                 ({{ signature.access_size|filesizeformat }})
               </a>
-              <a href="{{ signature.links.download }}" class="btn btn-default btn-xs">
+              <a href="{{ signature.links.download }}" download="{{ signature.download_file }}" class="btn btn-default btn-xs">
                 <i class="fa fa-download"></i>
                 Download full-size
                 ({{ signature.size|filesizeformat }})
