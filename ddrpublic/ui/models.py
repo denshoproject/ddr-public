@@ -438,11 +438,14 @@ def format_object_detail2(document, request, listitem=False):
         d['links']['img'] = '%s%s' % (settings.MEDIA_URL, document.pop('links_img'))
         d['links']['thumb'] = '%s%s' % (settings.MEDIA_URL_LOCAL, document.pop('links_thumb'))
         if document.get('links_download'):
-            #d['links']['download'] = '%s%s' % (settings.MEDIA_URL, links_download)
-            # Backblaze
-            d['links']['download'] = '{}{}'.format(
-                settings.BACKBLAZE_BUCKET_URL, document.pop('links_download')
-            )
+            if document.get('backblaze'):
+                d['links']['download'] = '{}{}'.format(
+                    settings.BACKBLAZE_BUCKET_URL, document.pop('links_download')
+                )
+            else:
+                d['links']['download'] = '{}{}'.format(
+                    settings.MEDIA_URL, document.pop('links_download')
+                )
     
     if not listitem:
         if document.get('parent_id'):
