@@ -435,10 +435,24 @@ def format_object_detail2(document, request, listitem=False):
     if document.get('mimetype') and ('text' in document['mimetype']):
         d['links']['download'] = '%s%s' % (settings.MEDIA_URL, document.pop('links_img'))
     else:
-        d['links']['img'] = '%s%s' % (settings.MEDIA_URL, document.pop('links_img'))
+        if document.get('backblaze'):
+            d['links']['img'] = '{}{}'.format(
+                settings.BACKBLAZE_BUCKET_URL, document.pop('links_img')
+            )
+        else:
+            d['links']['img'] = '{}{}'.format(
+                settings.MEDIA_URL, document.pop('links_img')
+            )
         d['links']['thumb'] = '%s%s' % (settings.MEDIA_URL_LOCAL, document.pop('links_thumb'))
         if document.get('links_download'):
-            d['links']['download'] = '%s%s' % (settings.MEDIA_URL, document.pop('links_download'))
+            if document.get('backblaze'):
+                d['links']['download'] = '{}{}'.format(
+                    settings.BACKBLAZE_BUCKET_URL, document.pop('links_download')
+                )
+            else:
+                d['links']['download'] = '{}{}'.format(
+                    settings.MEDIA_URL, document.pop('links_download')
+                )
     
     if not listitem:
         if document.get('parent_id'):
@@ -494,6 +508,9 @@ def format_object_detail2(document, request, listitem=False):
     for key in document.keys():
         if key not in HIDDEN_FIELDS:
             d[key] = document[key]
+    # download filename
+    if d['links'].get('download'):
+        d['download_file'] = os.path.basename(d['links']['download'])
     return d
 
 def format_narrator(document, request, listitem=False):

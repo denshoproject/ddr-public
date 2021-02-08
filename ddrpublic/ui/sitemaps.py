@@ -36,7 +36,10 @@ class CollectionSitemap(Sitemap):
                 item = Item()
                 item.title = o.title
                 item.location = reverse('ui-object-detail', [o.id])
-                item.timestamp = datetime.fromisoformat(o.record_lastmod)
+                try:
+                    item.timestamp = datetime.fromisoformat(o.record_lastmod)
+                except:
+                    item.timestamp = None
                 items.append(item)
         return items
     

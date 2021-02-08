@@ -153,6 +153,9 @@ SEGMENT_URL = config.get('public', 'segment_url')
 # Timeout for segment file metadata from Internet Archive
 IA_SEGMENT_CACHE_TIMEOUT = int(config.get('public', 'ia_segment_cache_timeout'))
 
+# Base URL for Backblaze public bucket
+BACKBLAZE_BUCKET_URL = config.get('public', 'backblaze_bucket_url')
+
 ACCESS_FILE_APPEND='-a'
 ACCESS_FILE_EXTENSION='.jpg'
 ACCESS_FILE_GEOMETRY='1024x1024>'
