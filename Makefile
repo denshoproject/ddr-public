@@ -294,16 +294,16 @@ install-ddr-public: install-virtualenv clean-ddr-public
 	source $(VIRTUALENV)/bin/activate; \
 	pip3 install --cache-dir=$(PIP_CACHE_DIR) -U -r $(INSTALL_PUBLIC)/requirements.txt
 # logs dir
-	-mkdir $(LOG_BASE)
+	-mkdir -p $(LOG_BASE)
 	chown -R ddr.root $(LOG_BASE)
 	chmod -R 755 $(LOG_BASE)
 # sqlite db dir
-	-mkdir $(SQLITE_BASE)
+	-mkdir -p $(SQLITE_BASE)
 	chown -R ddr.root $(SQLITE_BASE)
 	chmod -R 755 $(SQLITE_BASE)
 # media dir
-	-mkdir $(MEDIA_BASE)
-	-mkdir $(MEDIA_ROOT)
+	-mkdir -p $(MEDIA_BASE)
+	-mkdir -p $(MEDIA_ROOT)
 	chown -R ddr.root $(MEDIA_ROOT)
 	chmod -R 755 $(MEDIA_ROOT)
 
