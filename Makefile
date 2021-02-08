@@ -236,7 +236,7 @@ install-virtualenv:
 	test -d $(VIRTUALENV) || virtualenv --python=python3 $(VIRTUALENV)
 
 
-get-app: get-namesdb get-ddr-public get-static
+get-app: get-namesdb get-ddr-public
 
 install-app: install-virtualenv install-namesdb install-ddr-public install-configs install-daemon-configs
 
