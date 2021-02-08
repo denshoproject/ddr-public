@@ -339,6 +339,15 @@ clean-ddr-public:
 	-rm -Rf $(INSTALL_PUBLIC)/ddrpublic/src
 
 
+get-ddr-public-assets:
+	@echo ""
+	@echo "get-ddr-public-assets --------------------------------------------------"
+	if test -d $(INSTALL_ASSETS); \
+	then cd $(INSTALL_ASSETS) && git pull; \
+	else cd $(INSTALL_PUBLIC) && git clone $(SRC_REPO_ASSETS); \
+	fi
+
+
 migrate:
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_PUBLIC)/ddrpublic && python manage.py migrate --noinput
