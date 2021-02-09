@@ -54,13 +54,18 @@ MEDIA_ROOT=$(MEDIA_BASE)/media
 ASSETS_ROOT=$(MEDIA_BASE)/assets
 STATIC_ROOT=$(MEDIA_BASE)/static
 
+OPENJDK_PKG=
+ifeq ($(DEBIAN_CODENAME), buster)
+OPENJDK_PKG=openjdk-11-jre-headless
+endif
+
 ELASTICSEARCH=elasticsearch-7.3.1-amd64.de
 
 SUPERVISOR_GUNICORN_CONF=/etc/supervisor/conf.d/ddrpublic.conf
 NGINX_CONF=/etc/nginx/sites-available/ddrpublic.conf
 NGINX_CONF_LINK=/etc/nginx/sites-enabled/ddrpublic.conf
 
-TGZ_BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr -d _ | tr -d -)
+TGZ_BRANCH := $(shell python3 bin/package-branch.py)
 TGZ_FILE=$(APP)_$(APP_VERSION)
 TGZ_DIR=$(INSTALL_PUBLIC)/$(TGZ_FILE)
 TGZ_PUBLIC=$(TGZ_DIR)/ddr-public
