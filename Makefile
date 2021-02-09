@@ -54,6 +54,11 @@ MEDIA_ROOT=$(MEDIA_BASE)/media
 ASSETS_ROOT=$(MEDIA_BASE)/assets
 STATIC_ROOT=$(MEDIA_BASE)/static
 
+OPENJDK_PKG=
+ifeq ($(DEBIAN_CODENAME), buster)
+OPENJDK_PKG=openjdk-11-jre-headless
+endif
+
 ELASTICSEARCH=elasticsearch-7.3.1-amd64.de
 
 SUPERVISOR_GUNICORN_CONF=/etc/supervisor/conf.d/ddrpublic.conf
