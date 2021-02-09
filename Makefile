@@ -40,7 +40,7 @@ INSTALL_ASSETS=/opt/ddr-public-assets
 REQUIREMENTS=./requirements.txt
 PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
 
-VIRTUALENV=./venv/ddrpublic
+VIRTUALENV=$(INSTALL_PUBLIC)/venv/ddrpublic
 
 CONF_BASE=/etc/ddr
 CONF_PRODUCTION=$(CONF_BASE)/ddrpublic.cfg
@@ -54,15 +54,7 @@ MEDIA_ROOT=$(MEDIA_BASE)/media
 ASSETS_ROOT=$(MEDIA_BASE)/assets
 STATIC_ROOT=$(MEDIA_BASE)/static
 
-# Media assets are packaged in an "assets/" dir, *without the version*.
-# The assets/ dir must be tgz'd into an $(ASSETS_TGZ) file
-# and available for download from http://$(PACKAGE_SERVER)/$(ASSETS_TGZ).
-# You can also place $(ASSETS_TGZ) in /tmp/$(ASSETS_VERSION)/$(ASSETS_TGZ).
-ASSETS_VERSION=20170206
-ASSETS_TGZ=ddr-public-assets-$(ASSETS_VERSION).tar.gz
-ASSETS_INSTALL_DIR=$(MEDIA_BASE)/assets/$(ASSETS_VERSION)
-
-ELASTICSEARCH=elasticsearch-2.4.6.deb
+ELASTICSEARCH=elasticsearch-7.3.1-amd64.de
 
 SUPERVISOR_GUNICORN_CONF=/etc/supervisor/conf.d/ddrpublic.conf
 NGINX_CONF=/etc/nginx/sites-available/ddrpublic.conf
@@ -75,7 +67,9 @@ TGZ_PUBLIC=$(TGZ_DIR)/ddr-public
 TGZ_NAMES=$(TGZ_DIR)/ddr-public/namesdb
 TGZ_ASSETS=$(TGZ_DIR)/ddr-public/ddr-public-assets
 
-DEB_BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr -d _ | tr -d -)
+# Adding '-rcN' to VERSION will name the package "ddrlocal-release"
+# instead of "ddrlocal-BRANCH"
+DEB_BRANCH := $(shell python3 bin/package-branch.py)
 DEB_ARCH=amd64
 DEB_NAME_BUSTER=$(APP)-$(DEB_BRANCH)
 # Application version, separator (~), Debian release tag e.g. deb8
@@ -94,38 +88,21 @@ DEB_BASE=opt/ddr-public
 help:
 	@echo "ddr-public Install Helper"
 	@echo ""
-	@echo "install - Does a complete install. Idempotent, so run as many times as you like."
-	@echo "          IMPORTANT: Run 'adduser ddr' first to install ddr user and group."
-	@echo "          Installation instructions: make howto-install"
-	@echo "Subcommands:"
-	@echo "    install-prep    - Various preperatory tasks"
-	@echo "    install-daemons - Installs Nginx, Redis"
-	@echo "    install-elasticsearch"
-	@echo "    get-app         - Runs git-clone or git-pull on ddr-public"
-	@echo "    install-app     - Just installer tasks for ddr-public"
+	@echo "Most commands have subcommands (ex: install-ddr-cmdln, restart-supervisor)"
 	@echo ""
+	@echo "get     - Clones ddr-public, wgets static files & ES pkg."
+	@echo "install - Performs complete install. See also: make howto-install"
 	@echo "test    - Run unit tests"
 	@echo ""
-	@echo "migrate - Initialize or update Django app's database tables."
+	@echo "migrate - Init/update Django app's database tables."
 	@echo ""
 	@echo "branch BRANCH=[branch] - Switches ddr-public and supporting repos to [branch]."
 	@echo ""
-	@echo "reload  - Reloads supervisord and nginx configs"
-	@echo "reload-nginx"
-	@echo "reload-supervisors"
-	@echo ""
-	@echo "restart - Restarts all servers"
-	@echo "restart-elasticsearch"
-	@echo "restart-redis"
-	@echo "restart-nginx"
-	@echo "restart-supervisord"
-	@echo ""
-	@echo "status  - Server status"
-	@echo ""
+	@echo "deb       - Makes a DEB package install file."
+	@echo "remove    - Removes Debian packages for dependencies."
 	@echo "uninstall - Deletes 'compiled' Python files. Leaves build dirs and configs."
-	@echo "clean   - Deletes files created by building the program. Leaves configs."
+	@echo "clean     - Deletes files created while building app, leaves configs."
 	@echo ""
-	@echo "More install info: make howto-install"
 
 howto-install:
 	@echo "HOWTO INSTALL"
@@ -144,22 +121,9 @@ howto-install:
 	@echo "- [make branch BRANCH=develop]"
 	@echo "- [make install]"
 	@echo "- Place copy of 'ddr' repo in $(DDR_REPO_BASE)/ddr."
-	@echo "- make get-defs"
 	@echo "- make migrate"
 	@echo "- make restart"
 
-help-all:
-	@echo "install - Do a fresh install"
-	@echo "install-prep    - git-config, add-user, apt-update, install-misc-tools"
-	@echo "install-daemons - install-nginx install-redis install-elasticsearch"
-	@echo "install-ddr     - install-ddr-public"
-	@echo "update  - Do an update"
-	@echo "restart - Restart servers"
-	@echo "status  - Server status"
-	@echo "install-configs - "
-	@echo "update-ddr - "
-	@echo "uninstall - "
-	@echo "clean - "
 
 
 get: get-ddr-public
@@ -168,25 +132,24 @@ install: install-prep get-app install-app install-daemons install-configs
 
 test: test-app
 
+coverage: coverage-app
+
 uninstall: uninstall-app uninstall-configs
 
 clean: clean-app
 
 
-install-prep: apt-update install-core git-config install-misc-tools
+install-prep: ddr-user install-core git-config install-misc-tools
 
-apt-update:
-	@echo ""
-	@echo "Package update ---------------------------------------------------------"
-	apt-get --assume-yes update
-
-apt-upgrade:
-	@echo ""
-	@echo "Package upgrade --------------------------------------------------------"
-	apt-get --assume-yes upgrade
+ddr-user:
+	-addgroup --gid=1001 ddr
+	-adduser --uid=1001 --gid=1001 --home=/home/ddr --shell=/bin/bash --disabled-login --gecos "" ddr
+	-addgroup ddr plugdev
+	-addgroup ddr vboxsf
+	printf "\n\n# ddrlocal: Activate virtualnv on login\nsource $(VIRTUALENV)/bin/activate\n" >> /home/ddr/.bashrc; \
 
 install-core:
-	apt-get --assume-yes install bzip2 curl gdebi-core git-core logrotate ntp p7zip-full wget python3
+	apt-get --assume-yes install bzip2 curl gdebi-core git-core logrotate ntp p7zip-full wget
 
 git-config:
 	git config --global alias.st status
@@ -205,36 +168,59 @@ install-daemons: install-nginx install-redis
 install-nginx:
 	@echo ""
 	@echo "Nginx ------------------------------------------------------------------"
-	apt-get --assume-yes install nginx
+	apt-get --assume-yes remove apache2
+	apt-get --assume-yes install nginx-light
+
+remove-nginx:
+	apt-get --assume-yes remove nginx-light
 
 install-redis:
 	@echo ""
 	@echo "Redis ------------------------------------------------------------------"
 	apt-get --assume-yes install redis-server
 
-install-elasticsearch:
+remove-redis:
+	apt-get --assume-yes remove redis-server
+
+
+get-elasticsearch:
+	wget -nc -P /tmp/downloads http://$(PACKAGE_SERVER)/$(ELASTICSEARCH)
+
+install-elasticsearch: install-core
 	@echo ""
 	@echo "Elasticsearch ----------------------------------------------------------"
 # Elasticsearch is configured/restarted here so it's online by the time script is done.
-	apt-get --assume-yes install openjdk-7-jre
-	wget -nc -P /tmp/downloads http://$(PACKAGE_SERVER)/$(ELASTICSEARCH)
-	gdebi --non-interactive /tmp/downloads/$(ELASTICSEARCH)
-	cp $(INSTALLDIR)/conf/elasticsearch.yml /etc/elasticsearch/
-	chown root.root /etc/elasticsearch/elasticsearch.yml
-	chmod 644 /etc/elasticsearch/elasticsearch.yml
+	apt-get --assume-yes install $(OPENJDK_PKG)
+	-gdebi --non-interactive /tmp/downloads/$(ELASTICSEARCH)
+#cp $(INSTALL_LOCAL)/conf/elasticsearch.yml /etc/elasticsearch/
+#chown root.root /etc/elasticsearch/elasticsearch.yml
+#chmod 644 /etc/elasticsearch/elasticsearch.yml
 # 	@echo "${bldgrn}search engine (re)start${txtrst}"
-	/etc/init.d/elasticsearch restart
-	-mkdir -p /var/backups/elasticsearch
-	chown -R elasticsearch.elasticsearch /var/backups/elasticsearch
-	chmod -R 755 /var/backups/elasticsearch
+	-service elasticsearch stop
+	-systemctl disable elasticsearch.service
+
+enable-elasticsearch:
+	systemctl enable elasticsearch.service
+
+disable-elasticsearch:
+	systemctl disable elasticsearch.service
+
+remove-elasticsearch:
+	apt-get --assume-yes remove $(OPENJDK_PKG) elasticsearch
 
 
 install-virtualenv:
 	@echo ""
 	@echo "install-virtualenv -----------------------------------------------------"
-	apt-get --assume-yes install python-pip python-virtualenv
-	test -d $(VIRTUALENV) || virtualenv --python=python3 $(VIRTUALENV)
+	apt-get --assume-yes install python3-pip python3-venv
+	python3 -m venv $(VIRTUALENV)
 
+ install-setuptools: install-virtualenv
+	@echo ""
+	@echo "install-setuptools -----------------------------------------------------"
+	apt-get --assume-yes install python3-dev
+	source $(VIRTUALENV)/bin/activate; \
+	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) setuptools
 
 get-app: get-namesdb get-ddr-public
 
@@ -287,24 +273,28 @@ get-ddr-public:
 	@echo "get-ddr-public ---------------------------------------------------------"
 	git pull
 
-install-ddr-public: install-virtualenv clean-ddr-public
+install-ddr-public: install-setuptools mkdir-ddr-public
 	@echo ""
 	@echo "install-ddr-public -----------------------------------------------------"
 	apt-get --assume-yes install imagemagick sqlite3 supervisor
 	source $(VIRTUALENV)/bin/activate; \
-	pip3 install --cache-dir=$(PIP_CACHE_DIR) -U -r $(INSTALL_PUBLIC)/requirements.txt
+	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) -r $(INSTALL_PUBLIC)/requirements.txt
+
+mkdir-ddr-public:
+	@echo ""
+	@echo "mkdir-ddr-public --------------------------------------------------------"
 # logs dir
-	-mkdir -p $(LOG_BASE)
-	chown -R ddr.root $(LOG_BASE)
-	chmod -R 755 $(LOG_BASE)
+	-mkdir $(LOG_BASE)
+	chown -R ddr.ddr $(LOG_BASE)
+	chmod -R 775 $(LOG_BASE)
 # sqlite db dir
-	-mkdir -p $(SQLITE_BASE)
-	chown -R ddr.root $(SQLITE_BASE)
-	chmod -R 755 $(SQLITE_BASE)
+	-mkdir $(SQLITE_BASE)
+	chown -R ddr.ddr $(SQLITE_BASE)
+	chmod -R 775 $(SQLITE_BASE)
 # media dir
 	-mkdir -p $(MEDIA_BASE)
 	-mkdir -p $(MEDIA_ROOT)
-	chown -R ddr.root $(MEDIA_ROOT)
+	chown -R ddr.ddr $(MEDIA_ROOT)
 	chmod -R 755 $(MEDIA_ROOT)
 
 test-ddr-public: test-ddr-public-ui test-ddr-public-names
@@ -323,20 +313,21 @@ test-ddr-public-names:
 
 shell:
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_PUBLIC); python ddrpublic/manage.py shell
+	python ddrpublic/manage.py shell
 
 runserver:
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_PUBLIC); python ddrpublic/manage.py runserver 0.0.0.0:8000
+	python ddrpublic/manage.py runserver 0.0.0.0:8000
 
-uninstall-ddr-public:
+uninstall-ddr-public: install-setuptools
 	@echo ""
 	@echo "uninstall-ddr-public ---------------------------------------------------"
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_PUBLIC)/ddrpublic && pip3 uninstall -y -r $(INSTALL_PUBLIC)/requirements.txt
+	pip3 uninstall -y -r $(INSTALL_PUBLIC)/requirements.txt
 
 clean-ddr-public:
-	-rm -Rf $(INSTALL_PUBLIC)/ddrpublic/src
+	-rm -Rf $(VIRTUALENV)
+	-rm -Rf *.deb
 
 
 get-ddr-public-assets:
@@ -351,10 +342,10 @@ get-ddr-public-assets:
 migrate:
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_PUBLIC)/ddrpublic && python manage.py migrate --noinput
-	chown -R ddr.root $(SQLITE_BASE)
-	chmod -R 750 $(SQLITE_BASE)
-	chown -R ddr.root $(LOG_BASE)
-	chmod -R 755 $(LOG_BASE)
+	chown -R ddr.ddr $(SQLITE_BASE)
+	chmod -R 770 $(SQLITE_BASE)
+	chown -R ddr.ddr $(LOG_BASE)
+	chmod -R 775 $(LOG_BASE)
 
 
 install-configs:
@@ -396,73 +387,6 @@ uninstall-daemon-configs:
 	-rm $(NGINX_CONF_LINK)
 
 
-reload: reload-nginx reload-supervisor
-
-reload-nginx:
-	/etc/init.d/nginx reload
-
-reload-supervisor:
-	supervisorctl reload
-
-reload-app: reload-supervisor
-
-
-stop: stop-redis stop-nginx stop-supervisor
-
-stop-elasticsearch:
-	/etc/init.d/elasticsearch stop
-
-stop-redis:
-	/etc/init.d/redis-server stop
-
-stop-nginx:
-	/etc/init.d/nginx stop
-
-stop-supervisor:
-	/etc/init.d/supervisor stop
-
-stop-app:
-	supervisorctl stop ddrpublic
-
-
-restart: restart-redis restart-nginx restart-supervisor
-
-restart-elasticsearch:
-	/etc/init.d/elasticsearch restart
-
-restart-redis:
-	/etc/init.d/redis-server restart
-
-restart-nginx:
-	/etc/init.d/nginx restart
-
-restart-supervisor:
-	/etc/init.d/supervisor restart
-
-restart-app:
-	supervisorctl restart ddrpublic
-
-
-# just Redis and Supervisor
-restart-minimal: restart-redis stop-nginx restart-supervisor
-
-
-status:
-	@echo "------------------------------------------------------------------------"
-	-/etc/init.d/elasticsearch status
-	@echo " - - - - -"
-	-/etc/init.d/redis-server status
-	@echo " - - - - -"
-	-/etc/init.d/nginx status
-	@echo " - - - - -"
-	-supervisorctl status
-	@echo ""
-
-git-status:
-	@echo "------------------------------------------------------------------------"
-	cd $(INSTALL_PUBLIC) && git status
-
-
 tgz-local:
 	rm -Rf $(TGZ_DIR)
 	git clone $(INSTALL_PUBLIC) $(TGZ_PUBLIC)
@@ -473,6 +397,7 @@ tgz-local:
 	cd $(TGZ_ASSETS); git checkout develop; git checkout master
 	tar czf $(TGZ_FILE).tgz $(TGZ_FILE)
 	rm -Rf $(TGZ_DIR)
+
 
 tgz:
 	rm -Rf $(TGZ_DIR)
@@ -489,7 +414,7 @@ tgz:
 # http://fpm.readthedocs.io/en/latest/
 install-fpm:
 	@echo "install-fpm ------------------------------------------------------------"
-	apt-get install ruby ruby-dev rubygems build-essential
+	apt-get install --assume-yes ruby ruby-dev rubygems build-essential
 	gem install --no-ri --no-rdoc fpm
 
 # https://stackoverflow.com/questions/32094205/set-a-custom-install-directory-when-making-a-deb-package-with-fpm
@@ -500,7 +425,7 @@ deb-buster:
 	@echo ""
 	@echo "DEB packaging (buster) -------------------------------------------------"
 	-rm -Rf $(DEB_FILE_BUSTER)
-	virtualenv --python=python3 --relocatable $(VIRTUALENV)  # Make venv relocatable
+# Make package
 	fpm   \
 	--verbose   \
 	--input-type dir   \
@@ -513,9 +438,6 @@ deb-buster:
 	--maintainer "$(DEB_MAINTAINER)"   \
 	--description "$(DEB_DESCRIPTION)"   \
 	--depends "imagemagick"  \
-	--depends "libxml2-dev"  \
-	--depends "libxslt1-dev"  \
-	--depends "libz-dev"  \
 	--depends "nginx"   \
 	--depends "python3"   \
 	--depends "redis-server"   \
