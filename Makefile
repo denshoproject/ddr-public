@@ -60,7 +60,7 @@ SUPERVISOR_GUNICORN_CONF=/etc/supervisor/conf.d/ddrpublic.conf
 NGINX_CONF=/etc/nginx/sites-available/ddrpublic.conf
 NGINX_CONF_LINK=/etc/nginx/sites-enabled/ddrpublic.conf
 
-TGZ_BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr -d _ | tr -d -)
+TGZ_BRANCH := $(shell python3 bin/package-branch.py)
 TGZ_FILE=$(APP)_$(APP_VERSION)
 TGZ_DIR=$(INSTALL_PUBLIC)/$(TGZ_FILE)
 TGZ_PUBLIC=$(TGZ_DIR)/ddr-public
