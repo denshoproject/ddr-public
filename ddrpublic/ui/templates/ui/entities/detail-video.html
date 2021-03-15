@@ -60,7 +60,7 @@ IA metadata: {{ object.ia_meta|safe }}
 
             {% if signature %}
             <div id="object-download" style="padding-top: 5px;">
-              {% if transcripts %}
+              {% if transcripts.interview %}
               <a href="{{ transcripts.interview.links.download }}" class="btn btn-default btn-xs">
                 <i class="fa fa-download"></i>
                 Download transcript
