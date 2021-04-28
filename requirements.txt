@@ -8,6 +8,7 @@ beautifulsoup4==4.6.0              # MIT      y
 django>=3.1.0,<3.2                 # MIT      y
 django-bootstrap-pagination>=1.7,<1.8 # MIT      ???
 django-cors-headers>=3.7,<3.8      # MIT      y
+django-log-request-id              # BSD      y
 django-redis>=4.12,<4.13           # BSD      y
 django-redis-sessions>=0.6,<0.7    # BSD      y
 djangorestframework>=3.12.0,<3.13  # BSD      y
