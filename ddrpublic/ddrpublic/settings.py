@@ -232,6 +232,7 @@ INSTALLED_APPS = (
     'ddrpublic',
     'ui',
     'names',
+    'namesdb_public',
 )
 
 ROBOTS_CACHE_TIMEOUT = 60*60*24
@@ -370,6 +371,7 @@ TEMPLATES = [
                 #'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'names.context_processors.sitewide',
+                'namesdb_public.context_processors.sitewide',
                 'ui.context_processors.sitewide',
             ],
         },
