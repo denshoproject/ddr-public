@@ -111,6 +111,8 @@ NAMESDB_DOCSTORE_HOSTS = [{
     'host':config.get('public', 'namesdb_host').split(':')[0],
     'port':config.get('public', 'namesdb_host').split(':')[1],
 }]
+ELASTICSEARCH_USERNAME = 'elastic'
+ELASTICSEARCH_PASSWORD = config.get('public', 'elasticsearch_password')
 
 # Filesystem path and URL for static media (mostly used for interfaces).
 STATIC_ROOT = config.get('public', 'static_root')

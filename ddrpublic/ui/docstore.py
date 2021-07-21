@@ -14,7 +14,14 @@ MAX_SIZE = 1000
 
 
 def get_elasticsearch():
-    return Elasticsearch(settings.DOCSTORE_HOSTS)
+    return Elasticsearch(
+        settings.DOCSTORE_HOSTS,
+        http_auth=(
+            settings.ELASTICSEARCH_USERNAME, settings.ELASTICSEARCH_PASSWORD
+        ),
+        #scheme="https",
+        #port=443,
+    )
 
 
 class Docstore():
