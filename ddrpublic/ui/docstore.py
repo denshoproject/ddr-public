@@ -13,14 +13,15 @@ INDEX_PREFIX = 'ddr'
 MAX_SIZE = 1000
 
 
+def get_elasticsearch():
+    return Elasticsearch(settings.DOCSTORE_HOSTS)
+
+
 class Docstore():
 
-    def __init__(self, hosts=settings.DOCSTORE_HOSTS, connection=None):
-        self.hosts = hosts
-        if connection:
-            self.es = connection
-        else:
-            self.es = Elasticsearch(hosts)
+    def __init__(self):
+        self.hosts = settings.DOCSTORE_HOSTS
+        self.es = get_elasticsearch()
     
     def index_name(self, model):
         return '{}{}'.format(INDEX_PREFIX, model)
