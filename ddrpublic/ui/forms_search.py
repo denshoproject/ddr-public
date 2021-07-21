@@ -9,42 +9,49 @@ from django.core.cache import cache
 from ui import docstore
 from ui import search
 
-# sorted version of facility and topics tree as choice fields
-# {
-#     'topics-choices': [
-#         [u'topics-1', u'Immigration and citizenship'],
-#         ...
-#     ],
-#     'facility-choices: [...],
-# }
 
-try:
-    FORMS_CHOICES = docstore.Docstore().es.get(
-        index='forms',
-        id='forms-choices'
-    )['_source']
-except docstore.NotFoundError as err:
-    t = type(err)
-    raise Exception(f'{t} {err} (You probably need to run "ddrindex vocabs").')
-
-# Pretty labels for multiple choice fields
-# (After initial search the choice lists come from search aggs lists
-# which only include IDs and doc counts.)
-# {
-#     'topics': {
-#         '1': u'Immigration and citizenship',
-#         ...
-#     },
-#     'facility: {...},
-# }
-FORMS_CHOICE_LABELS = {}
-for key in FORMS_CHOICES.keys():
-    field = key.replace('-choices','')
-    FORMS_CHOICE_LABELS[field] = {
-        c[0].split('-')[1]: c[1]
-        for c in FORMS_CHOICES[key]
-    }
-
+def forms_choice_labels():
+    key = 'ddrpublic:forms_choice_labels'
+    timeout = 60 * 60 * 1
+    cached = cache.get(key)
+    if cached:
+        return cached
+    else:
+        # sorted version of facility and topics tree as choice fields
+        # {
+        #     'topics-choices': [
+        #         [u'topics-1', u'Immigration and citizenship'],
+        #         ...
+        #     ],
+        #     'facility-choices: [...],
+        # }
+        try:
+            forms_choices = docstore.Docstore().es.get(
+                index='forms',
+                id='forms-choices'
+            )['_source']
+        except docstore.NotFoundError as err:
+            t = type(err)
+            raise Exception(f'{t} {err} (You probably need to run "ddrindex vocabs").')
+        # Pretty labels for multiple choice fields
+        # (After initial search the choice lists come from search aggs lists
+        # which only include IDs and doc counts.)
+        # {
+        #     'topics': {
+        #         '1': u'Immigration and citizenship',
+        #         ...
+        #     },
+        #     'facility: {...},
+        # }
+        forms_choice_labels = {}
+        for key in forms_choices.keys():
+            field = key.replace('-choices','')
+            forms_choice_labels[field] = {
+                c[0].split('-')[1]: c[1]
+                for c in forms_choices[key]
+            }
+        cache.set(key, forms_choice_labels, timeout)
+    return forms_choice_labels
 
 class SearchForm(forms.Form):
     field_order = search.SEARCH_PARAM_WHITELIST
@@ -100,7 +107,7 @@ class SearchForm(forms.Form):
                 choices = []
                 for item in aggs:
                     try:
-                        label = FORMS_CHOICE_LABELS[fieldname][item['key']]
+                        label = forms_choice_labels()[fieldname][item['key']]
                     except:
                         label = item['key']
                     choice = (

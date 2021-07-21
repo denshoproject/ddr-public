@@ -11,7 +11,7 @@ from django.urls import reverse
 from .. import models
 from .. import misc
 from ..decorators import ui_state
-from ..forms_search import FORMS_CHOICE_LABELS
+from .. import forms_search
 
 
 ENTITY_TEMPLATE_DEFAULT = 'ui/entities/detail.html'
@@ -282,5 +282,5 @@ def labelify_vocab_term(fname,fdata):
     return {
         'id': fdata,
         'query': '?filter_%s=%s' % (fname,fdata),
-        'label': FORMS_CHOICE_LABELS.get(fname,{}).get(fdata,''),
+        'label': forms_search.forms_choice_labels().get(fname,{}).get(fdata,''),
     }
