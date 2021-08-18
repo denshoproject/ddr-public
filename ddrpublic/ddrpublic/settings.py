@@ -382,18 +382,24 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'ui/static'),
 )
 
+LOG_REQUEST_ID_HEADER = "HTTP_X_REQUEST_ID"
+GENERATE_REQUEST_ID_IF_NOT_IN_HEADER = True
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '%(asctime)s %(levelname)-8s [%(module)s.%(funcName)s]  %(message)s'
+            'format': '%(asctime)s %(request_id)s %(levelname)-8s [%(module)s.%(funcName)s]  %(message)s'
         },
         'simple': {
-            'format': '%(asctime)s %(levelname)-8s %(message)s'
+            'format': '%(asctime)s %(request_id)s %(levelname)-8s %(message)s'
         },
     },
     'filters': {
+        'request_id': {
+            '()': 'log_request_id.filters.RequestIDFilter'
+        },
         # only log when settings.DEBUG == False
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
@@ -407,6 +413,7 @@ LOGGING = {
         'console':{
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
+            'filters': ['request_id'],
             'formatter': 'simple',
         },
         'file': {
@@ -415,12 +422,14 @@ LOGGING = {
             'filename': '/var/log/ddr/public.log',
             'when': 'D',
             'backupCount': 14,
+            'filters': ['request_id'],
             'formatter': 'verbose',
         },
         'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
             'filters': ['require_debug_false'],
+            'filters': ['request_id'],
             'formatter': 'verbose',
         },
     },
@@ -449,6 +458,7 @@ STATICFILES_FINDERS = (
 )
 
 MIDDLEWARE = [
+    'log_request_id.middleware.RequestIDMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

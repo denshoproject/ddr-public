@@ -242,6 +242,67 @@ class ObjectViews(TestCase):
         response = self.client.get(reverse('ui-object-detail', args=[oid]))
         self.assertEqual(response.status_code, 200)
 
+    def test_entity_audio_simple(self):
+        # mp3, simple entity
+        oid = 'ddr-densho-400-1'
+        response = self.client.get(reverse('ui-object-detail', args=[oid]))
+        self.assertEqual(response.status_code, 200)
+        assert b'av:audio'                          in response.content
+        assert b'wavesurfer.playPause()'            in response.content
+        assert b'Download segment transcript'   not in response.content
+        assert b'Download full transcript'          in response.content
+        assert b'Download fullsize'                 in response.content
+
+    def test_entity_audio_segment(self):
+        # mp3, VH interview segment
+        oid = 'ddr-csujad-30-19-1'
+        response = self.client.get(reverse('ui-interview', args=[oid]))
+        self.assertEqual(response.status_code, 200)
+        assert b'vh:'                               in response.content
+        assert b'wavesurfer.playPause()'            in response.content
+        assert b'Download segment transcript'       in response.content
+        assert b'Download full transcript'          in response.content
+        assert b'Download fullsize'                 in response.content
+
+    def test_entity_video_mpg_inhouse(self):
+        # mpg, standard VH prepared in-house
+        oid = 'ddr-densho-1000-1-1'
+        response = self.client.get(reverse('ui-interview', args=[oid]))
+        self.assertEqual(response.status_code, 200)
+        assert b'vh:'                               in response.content
+        assert b'ui/entities/segment-video.html'    in response.content
+        assert b'video-js'                          in response.content
+        assert b'Download segment transcript'       in response.content
+        assert b'Download full transcript'          in response.content
+        assert b'Download MP4'                      in response.content
+        assert b'Download full-size'                in response.content
+
+    def test_entity_video_mp4_ia_streaming(self):
+        # original video mp4; IA-created streaming video
+        oid = 'ddr-densho-1020-13'
+        response = self.client.get(reverse('ui-object-detail', args=[oid]))
+        self.assertEqual(response.status_code, 200)
+        assert b'av:video'                          in response.content
+        assert b'ui/entities/detail-video.html'     in response.content
+        assert b'video-js'                          in response.content
+        assert b'Download segment transcript'   not in response.content
+        assert b'Download full transcript'      not in response.content
+        assert b'Download MP4'                      in response.content
+        assert b'Download full-size'            not in response.content
+
+    def test_entity_video_mp4_external_no_download(self):
+        # external video, stream-only/no download from IA
+        oid = 'ddr-densho-122-4-1'
+        response = self.client.get(reverse('ui-interview', args=[oid]))
+        self.assertEqual(response.status_code, 200)
+        assert b'vh:'                               in response.content
+        assert b'ui/entities/segment-video.html'    in response.content
+        assert b'video-js'                          in response.content
+        assert b'Download segment transcript'       in response.content
+        assert b'Download full transcript'          in response.content
+        assert b'Download MP4'                  not in response.content
+        assert b'Download full-size'            not in response.content
+
     def test_entity_children(self):
         oid = 'ddr-densho-10-2'
         response = self.client.get(reverse('ui-object-children', args=[oid]))
