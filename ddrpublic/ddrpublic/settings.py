@@ -103,16 +103,18 @@ CACHE_TIMEOUT = int(config.get('public', 'cache_timeout'))
 CACHE_TIMEOUT_LONG = int(config.get('public', 'cache_timeout_long'))
 
 # Elasticsearch
+DOCSTORE_SSL_CERTFILE = config.get('public', 'docstore_ssl_certfile')
 DOCSTORE_HOSTS = [{
     'host':config.get('public', 'docstore_host').split(':')[0],
     'port':config.get('public', 'docstore_host').split(':')[1],
 }]
+DOCSTORE_HOST = config.get('public', 'docstore_host')
 NAMESDB_DOCSTORE_HOSTS = [{
     'host':config.get('public', 'namesdb_host').split(':')[0],
     'port':config.get('public', 'namesdb_host').split(':')[1],
 }]
-ELASTICSEARCH_USERNAME = 'elastic'
-ELASTICSEARCH_PASSWORD = config.get('public', 'elasticsearch_password')
+DOCSTORE_USERNAME = 'elastic'
+DOCSTORE_PASSWORD = config.get('public', 'docstore_password')
 
 # Filesystem path and URL for static media (mostly used for interfaces).
 STATIC_ROOT = config.get('public', 'static_root')
