@@ -55,7 +55,7 @@ def detail(request, oid):
     signature = None
     if entity.get('signature_id'):
         signature = models._object(request, entity['signature_id'])
-    if signature:
+    if signature and signature['links'].get('img'):
         signature['access_size'] = models.file_size(signature['links']['img'])
     # facet terms
     facilities = [item for item in getattr(entity, 'facility', [])]
