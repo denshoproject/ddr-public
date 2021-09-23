@@ -6,7 +6,7 @@ import sys
 from django.conf import settings
 
 from elasticsearch import Elasticsearch
-from elasticsearch.exceptions import TransportError
+from elasticsearch.exceptions import NotFoundError, TransportError
 
 INDEX_PREFIX = 'ddr'
 

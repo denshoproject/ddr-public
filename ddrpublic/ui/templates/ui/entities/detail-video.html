@@ -60,17 +60,19 @@ IA metadata: {{ object.ia_meta|safe }}
 
             {% if signature %}
             <div id="object-download" style="padding-top: 5px;">
-              {% if transcripts %}
+              {% if transcripts.interview %}
               <a href="{{ transcripts.interview.links.download }}" class="btn btn-default btn-xs">
                 <i class="fa fa-download"></i>
                 Download transcript
               </a>
               {% endif %}
+{% if object.ia_meta.files.mp4.url %}
               <a href="{{ object.ia_meta.files.mp4.url }}" class="btn btn-default btn-xs">
                 <i class="fa fa-download"></i>
                 Download MP4
                 ({{ signature.size|filesizeformat }})
               </a>
+{% endif %}
             </div><!-- #object-download -->
             {% endif %}
 

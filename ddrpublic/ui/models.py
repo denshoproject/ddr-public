@@ -509,8 +509,10 @@ def format_object_detail2(document, request, listitem=False):
         if key not in HIDDEN_FIELDS:
             d[key] = document[key]
     # download filename
+    if d['links'].get('img'):
+        d['download_large'] = os.path.basename(d['links']['img'])
     if d['links'].get('download'):
-        d['download_file'] = os.path.basename(d['links']['download'])
+        d['download_fullsize'] = os.path.basename(d['links']['download'])
     return d
 
 def format_narrator(document, request, listitem=False):

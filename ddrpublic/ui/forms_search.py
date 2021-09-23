@@ -18,10 +18,14 @@ from ui import search
 #     'facility-choices: [...],
 # }
 
-FORMS_CHOICES = docstore.Docstore().es.get(
-    index='forms',
-    id='forms-choices'
-)['_source']
+try:
+    FORMS_CHOICES = docstore.Docstore().es.get(
+        index='forms',
+        id='forms-choices'
+    )['_source']
+except docstore.NotFoundError as err:
+    t = type(err)
+    raise Exception(f'{t} {err} (You probably need to run "ddrindex vocabs").')
 
 # Pretty labels for multiple choice fields
 # (After initial search the choice lists come from search aggs lists
