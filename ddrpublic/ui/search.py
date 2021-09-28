@@ -598,6 +598,8 @@ class Searcher(object):
         # field-specific searches embedded in fulltext
         if params.get('fulltext') and 'creators:' in params['fulltext']:
             params['creators'] = params.pop('fulltext').replace('creators:', '')
+        if params.get('fulltext') and 'persons:' in params['fulltext']:
+            params['persons'] = params.pop('fulltext').replace('persons:', '')
         
         s = Search(using=self.conn, index=indices)
         
