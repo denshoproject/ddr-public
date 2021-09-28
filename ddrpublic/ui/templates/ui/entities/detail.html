@@ -178,7 +178,11 @@ IA metadata: {{ object.ia_meta|safe }}
                             <h3 class="page-header">PERSONS/ORGANIZATIONS</h3>
                             <ul class="list-unstyled">
                               {% for item in object.persons %}
-                              <li>{{ item }}</li>
+                              <li>
+                                <a href="{% url "ui-search-results" %}?fulltext=persons:{{ item }}">
+                                  {{ item }}
+                                </a>
+                              </li>
                               {% endfor %}
                             </ul>
                         </div>
