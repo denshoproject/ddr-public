@@ -595,6 +595,10 @@ class Searcher(object):
         if params.get('models'):
             indices = ','.join([DOCSTORE.index_name(model) for model in models])
         
+        # field-specific searches embedded in fulltext
+        if params.get('fulltext') and 'creators:' in params['fulltext']:
+            params['creators'] = params.pop('fulltext').replace('creators:', '')
+        
         s = Search(using=self.conn, index=indices)
         
         # only return specified fields
@@ -623,6 +627,15 @@ class Searcher(object):
                     default_operator='AND',
                 )
             )
+        
+        elif params.get('creators'):
+            q = Q('bool',
+                  must=[Q('nested',
+                          path='creators',
+                          query=Q('term', creators__namepart=params.pop('creators'))
+                  )]
+            )
+            s = s.query(q)
         
         elif params.get('topics') or params.get('facility'):
             # SPECIAL CASE FOR DDRPUBLIC TOPICS, FACILITY BROWSE PAGES
