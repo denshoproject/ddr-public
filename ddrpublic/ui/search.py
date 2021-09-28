@@ -491,6 +491,7 @@ def sanitize_input(text):
     elif isinstance(text, list):
         data = text
     
+    # TODO result of this is not making it back into cleaned
     BAD_SEARCH_CHARS = r'!+/:[\]^{}~'
     for word in text:
         for c in BAD_SEARCH_CHARS:
@@ -502,7 +503,7 @@ def sanitize_input(text):
         # Escape special characters
         # http://lucene.apache.org/core/old_versioned_docs/versions/2_9_1/queryparsersyntax.html
         t = re.sub(
-            '([{}])'.format(re.escape('&|!(){}\[\]^~*?:\/')),
+            '([{}])'.format(re.escape('&|!(){}\[\]^~*?\/')),
             r"\\\1",
             t
         )
