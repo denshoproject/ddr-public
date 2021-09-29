@@ -58,22 +58,6 @@ def is_ddr_id(text, patterns=ID_PATTERNS):
                 return idparts
     return {}
 
-def limit_offset(request):
-    if request.GET.get('offset'):
-        # limit and offset args take precedence over page
-        limit = request.GET.get(
-            'limit', int(request.GET.get('limit', settings.RESULTS_PER_PAGE))
-        )
-        offset = request.GET.get('offset', int(request.GET.get('offset', 0)))
-    elif request.GET.get('page'):
-        limit = settings.RESULTS_PER_PAGE
-        thispage = int(request.GET['page'])
-        offset = search.es_offset(limit, thispage)
-    else:
-        limit = settings.RESULTS_PER_PAGE
-        offset = 0
-    return limit,offset
-
 
 # views ----------------------------------------------------
 
@@ -111,7 +95,7 @@ def search_ui(request):
         context['searching'] = True
     
     if searcher.params.get('fulltext'):
-        limit,offset = limit_offset(request)
+        limit,offset = search.limit_offset(request)
         results = searcher.execute(limit, offset)
         paginator = Paginator(
             results.ordered_dict(
@@ -180,7 +164,7 @@ def parent_search(request, obj):
     }
 
     params = request.GET.copy()
-    limit,offset = limit_offset(request)
+    limit,offset = search.limit_offset(request)
     params['parent'] = obj['id']
     search_models = search.SEARCH_MODELS
     
