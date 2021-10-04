@@ -45,8 +45,6 @@
 <!-- --------------------------------------------------------------- -->
 
 
-    <hr/>
-
 <form action="" method="get">
 
   <div class="row">
@@ -63,26 +61,19 @@
                   </div>
                   <div id="acordion1" class="collapse {% if request.session.searchfilters == "open" %}in{% endif %}">
                       <div class="panel-body">
-                          <!--
                           <div class="row">
                             <div class="col-sm-12 col-md-12">
                               <b>Topics</b><br />
                               {{ form.topics }}
                             </div>
                           </div>
-                          -->
                           <div class="row">
-                            <div class="col-sm-3 col-md-3">
-                              <b>Topics</b><br />{{ form.topics }}
-                            </div>
                             <div class="col-sm-3 col-md-3">
                               <b>Format</b><br />{{ form.format }}
                             </div>
                             <div class="col-sm-3 col-md-3">
                               <b>Genre</b><br />{{ form.genre }}
                             </div>
-                          </div>
-                          <div class="row">
                             <div class="col-sm-3 col-md-3">
                               <b>Usage</b><br />{{ form.rights }}
                             </div>
@@ -98,8 +89,6 @@
         </div>
   </div><!-- .row -->
 </form>
-
-    <hr/>
 
 
 {% if page.object_list %}
