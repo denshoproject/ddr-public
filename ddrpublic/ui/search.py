@@ -195,6 +195,22 @@ def es_offset(pagesize, thispage):
         page = 0
     return pagesize * page
 
+def limit_offset(request):
+    if request.GET.get('offset'):
+        # limit and offset args take precedence over page
+        limit = request.GET.get(
+            'limit', int(request.GET.get('limit', settings.RESULTS_PER_PAGE))
+        )
+        offset = request.GET.get('offset', int(request.GET.get('offset', 0)))
+    elif request.GET.get('page'):
+        limit = settings.RESULTS_PER_PAGE
+        thispage = int(request.GET['page'])
+        offset = es_offset(limit, thispage)
+    else:
+        limit = settings.RESULTS_PER_PAGE
+        offset = 0
+    return limit,offset
+
 def start_stop(limit, offset):
     """Convert Elasticsearch limit/offset to Python slicing start,stop
     
@@ -491,6 +507,7 @@ def sanitize_input(text):
     elif isinstance(text, list):
         data = text
     
+    # TODO result of this is not making it back into cleaned
     BAD_SEARCH_CHARS = r'!+/:[\]^{}~'
     for word in text:
         for c in BAD_SEARCH_CHARS:
@@ -502,7 +519,7 @@ def sanitize_input(text):
         # Escape special characters
         # http://lucene.apache.org/core/old_versioned_docs/versions/2_9_1/queryparsersyntax.html
         t = re.sub(
-            '([{}])'.format(re.escape('&|!(){}\[\]^~*?:\/')),
+            '([{}])'.format(re.escape('&|!(){}\[\]^~*?\/')),
             r"\\\1",
             t
         )
@@ -594,6 +611,12 @@ class Searcher(object):
         if params.get('models'):
             indices = ','.join([DOCSTORE.index_name(model) for model in models])
         
+        # field-specific searches embedded in fulltext
+        if params.get('fulltext') and 'creators:' in params['fulltext']:
+            params['creators'] = params.pop('fulltext').replace('creators:', '')
+        if params.get('fulltext') and 'persons:' in params['fulltext']:
+            params['persons'] = params.pop('fulltext').replace('persons:', '')
+        
         s = Search(using=self.conn, index=indices)
         
         # only return specified fields
@@ -622,6 +645,15 @@ class Searcher(object):
                     default_operator='AND',
                 )
             )
+        
+        elif params.get('creators'):
+            q = Q('bool',
+                  must=[Q('nested',
+                          path='creators',
+                          query=Q('term', creators__namepart=params.pop('creators'))
+                  )]
+            )
+            s = s.query(q)
         
         elif params.get('topics') or params.get('facility'):
             # SPECIAL CASE FOR DDRPUBLIC TOPICS, FACILITY BROWSE PAGES

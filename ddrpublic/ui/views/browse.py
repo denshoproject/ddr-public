@@ -9,7 +9,9 @@ from django.urls import reverse
 from django.views.decorators.cache import cache_page
 
 from .. import encyc
+from .. import forms_search as forms
 from .. import models
+from .. import search
 from ..decorators import ui_state
 
 SHOW_THESE = ['topics', 'facility', 'location', 'format', 'genre',]
@@ -99,17 +101,19 @@ def term( request, facet_id, term_id ):
             encyc.article_url_title(url)
             for url in term['encyc_urls']
         ]
-    
-    # term objects
-    thispage = int(request.GET.get('page', 1))
-    pagesize = settings.RESULTS_PER_PAGE
-    offset = models.search_offset(thispage, pagesize)
-    results = models.Term.objects(
-        facet_id, term_id,
-        limit=pagesize,
-        offset=offset,
-        request=request,
+
+    params = request.GET.copy()
+    params['match_all'] = 'true'
+    params[facet_id] = term_id
+    searcher = search.Searcher()
+    searcher.prepare(
+        params=params,
+        fields=search.SEARCH_INCLUDE_FIELDS,
+        fields_agg=search.SEARCH_AGG_FIELDS,
     )
+    
+    limit,offset = search.limit_offset(request)
+    results = searcher.execute(limit, offset)
     paginator = Paginator(
         results.ordered_dict(
             request=request,
@@ -119,10 +123,18 @@ def term( request, facet_id, term_id ):
         results.page_size,
     )
     page = paginator.page(results.this_page)
+    
+    form = forms.SearchForm(
+        data=request.GET.copy(),
+        search_results=results,
+    )
+
     return render(request, template_name, {
         'facet': facet,
         'term': term,
+        'results': results,
         'paginator': paginator,
         'page': page,
+        'form': form,
         'api_url': reverse('ui-api-term', args=[facet['id'], term['term_id']]),
     })

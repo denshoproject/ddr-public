@@ -374,7 +374,7 @@ class SearchViews(TestCase):
         response = self.client.get(reverse('ui-search-index'))
         self.assertEqual(response.status_code, 200)
 
-    def test_search_results(self):
+    def test_search_fulltext(self):
         response = self.client.get(
             reverse('ui-search-index'), {'fulltext': 'minidoka'}
         )
@@ -396,6 +396,45 @@ class SearchViews(TestCase):
             assert item.key
             assert item.doc_count
 
+    def test_search_persons(self):
+        """Searches the Persons/Organizations links on entity-detail pages"""
+        response = self.client.get(
+            reverse('ui-search-index'), {'fulltext': 'persons:Yasui, Sachi'}
+        )
+        self.assertEqual(response.status_code, 200)
+        
+        len_page_object_list = len(response.context['page'].object_list)
+        assert response.context['page'].object_list
+        assert response.context['paginator'].num_pages
+
+        fieldname_aggs = [
+            (fieldname,aggs)
+            for fieldname,aggs in response.context['results'].aggregations.items()
+        ]
+        assert response.context['results'].aggregations.get('topics')
+        for item in response.context['results'].aggregations['topics']:
+            assert item.key
+            assert item.doc_count
+
+    def test_search_creators(self):
+        """Searches the Persons/Organizations links on entity-detail pages"""
+        response = self.client.get(
+            reverse('ui-search-index'), {'fulltext': 'creators:Yanagihara, Akio'}
+        )
+        self.assertEqual(response.status_code, 200)
+        
+        len_page_object_list = len(response.context['page'].object_list)
+        assert response.context['page'].object_list
+        assert response.context['paginator'].num_pages
+
+        fieldname_aggs = [
+            (fieldname,aggs)
+            for fieldname,aggs in response.context['results'].aggregations.items()
+        ]
+        assert response.context['results'].aggregations.get('topics')
+        for item in response.context['results'].aggregations['topics']:
+            assert item.key
+            assert item.doc_count
 
 #    # match legacy urls
 #    url(r'^(?P<repo>[\w]+)/(?P<org>[\w]+)/(?P<cid>[\d]+)/(?P<eid>[\d]+)/(?P<role>[\w]+)/(?P<sha1>[\w\d]+)/', objects.legacy, name='ui-legacy'),
