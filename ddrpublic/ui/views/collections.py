@@ -109,8 +109,9 @@ def children(request, oid):
     misc.filter_if_branded(request, collection['organization_id'])
     
     params = request.GET.copy()
-    params['match_all'] = 'true'
     params['parent'] = oid
+    if not params.get('fulltext'):
+        params['match_all'] = 'true'
     params['sort'] = models.OBJECT_LIST_SORT
     searcher = search.Searcher()
     searcher.prepare(
