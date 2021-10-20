@@ -241,6 +241,9 @@ ROBOTS_USE_SITEMAP = True
 
 API_BASE = '/api/0.2/'
 
+# https://docs.djangoproject.com/en/3.0/ref/settings/#secure-proxy-ssl-header
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
