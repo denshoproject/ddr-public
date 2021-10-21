@@ -16,6 +16,9 @@ DEBIAN_RELEASE_TAG = deb$(shell lsb_release -sr | cut -c1)
 ifeq ($(DEBIAN_CODENAME), buster)
 	PYTHON_VERSION=python3.7
 endif
+ifeq ($(DEBIAN_CODENAME), bullseye)
+	PYTHON_VERSION=python3.9
+endif
 
 # current branch name minus dashes or underscores
 PACKAGE_BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr -d _ | tr -d -)
@@ -56,7 +59,10 @@ STATIC_ROOT=$(MEDIA_BASE)/static
 
 OPENJDK_PKG=
 ifeq ($(DEBIAN_CODENAME), buster)
-OPENJDK_PKG=openjdk-11-jre-headless
+	OPENJDK_PKG=openjdk-11-jre-headless
+endif
+ifeq ($(DEBIAN_CODENAME), bullseye)
+	OPENJDK_PKG=openjdk-17-jre-headless
 endif
 
 ELASTICSEARCH=elasticsearch-7.3.1-amd64.de
@@ -77,10 +83,13 @@ TGZ_ASSETS=$(TGZ_DIR)/ddr-public/ddr-public-assets
 DEB_BRANCH := $(shell python3 bin/package-branch.py)
 DEB_ARCH=amd64
 DEB_NAME_BUSTER=$(APP)-$(DEB_BRANCH)
+DEB_NAME_BULLSEYE=$(APP)-$(DEB_BRANCH)
 # Application version, separator (~), Debian release tag e.g. deb8
 # Release tag used because sortable and follows Debian project usage.
 DEB_VERSION_BUSTER=$(APP_VERSION)~deb10
+DEB_VERSION_BULLSEYE=$(APP_VERSION)~deb11
 DEB_FILE_BUSTER=$(DEB_NAME_BUSTER)_$(DEB_VERSION_BUSTER)_$(DEB_ARCH).deb
+DEB_FILE_BULLSEYE=$(DEB_NAME_BULLSEYEBUSTER)_$(DEB_VERSION_BULLSEYEBUSTER)_$(DEB_ARCH).deb
 DEB_VENDOR=Densho.org
 DEB_MAINTAINER=<geoffrey.jost@densho.org>
 DEB_DESCRIPTION=Densho Digital Repository site
@@ -426,7 +435,7 @@ install-fpm:
 
 # https://stackoverflow.com/questions/32094205/set-a-custom-install-directory-when-making-a-deb-package-with-fpm
 # https://brejoc.com/tag/fpm/
-deb: deb-buster
+deb: deb-bullseye
 
 deb-buster:
 	@echo ""
@@ -440,6 +449,46 @@ deb-buster:
 	--name $(DEB_NAME_BUSTER)   \
 	--version $(DEB_VERSION_BUSTER)   \
 	--package $(DEB_FILE_BUSTER)   \
+	--url "$(GIT_SOURCE_URL)"   \
+	--vendor "$(DEB_VENDOR)"   \
+	--maintainer "$(DEB_MAINTAINER)"   \
+	--description "$(DEB_DESCRIPTION)"   \
+	--depends "imagemagick"  \
+	--depends "nginx"   \
+	--depends "python3"   \
+	--depends "redis-server"   \
+	--depends "sqlite3"  \
+	--depends "supervisor"   \
+	--after-install "bin/fpm-mkdir-log.sh"   \
+	--chdir $(INSTALL_PUBLIC)   \
+	conf/ddrpublic.cfg=etc/ddr/ddrpublic.cfg   \
+	bin=$(DEB_BASE)   \
+	conf=$(DEB_BASE)   \
+	COPYRIGHT=$(DEB_BASE)   \
+	ddrpublic=$(DEB_BASE)   \
+	.git=$(DEB_BASE)   \
+	.gitignore=$(DEB_BASE)   \
+	INSTALL=$(DEB_BASE)   \
+	LICENSE=$(DEB_BASE)   \
+	Makefile=$(DEB_BASE)   \
+	namesdb=$(DEB_BASE)   \
+	README.rst=$(DEB_BASE)   \
+	requirements.txt=$(DEB_BASE)   \
+	venv=$(DEB_BASE)   \
+	VERSION=$(DEB_BASE)
+
+deb-bullseye:
+	@echo ""
+	@echo "DEB packaging (bullseye) -------------------------------------------------"
+	-rm -Rf $(DEB_FILE_BULLSEYE)
+# Make package
+	fpm   \
+	--verbose   \
+	--input-type dir   \
+	--output-type deb   \
+	--name $(DEB_NAME_BULLSEYE)   \
+	--version $(DEB_VERSION_BULLSEYE)   \
+	--package $(DEB_FILE_BULLSEYE)   \
 	--url "$(GIT_SOURCE_URL)"   \
 	--vendor "$(DEB_VENDOR)"   \
 	--maintainer "$(DEB_MAINTAINER)"   \
