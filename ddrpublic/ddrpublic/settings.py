@@ -418,10 +418,8 @@ LOGGING = {
         },
         'file': {
             'level': LOG_LEVEL,
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': '/var/log/ddr/public.log',
-            'when': 'D',
-            'backupCount': 14,
+            'class': 'logging.handlers.WatchedFileHandler',
+            'filename': '/var/log/ddr/ddrpublic.log',
             'filters': ['request_id'],
             'formatter': 'verbose',
         },
