@@ -116,6 +116,7 @@ def children(request, oid):
     searcher = search.Searcher()
     searcher.prepare(
         params=params,
+        search_models=['ddrentity'],
         fields=search.SEARCH_INCLUDE_FIELDS,
         fields_agg=search.SEARCH_AGG_FIELDS,
     )
