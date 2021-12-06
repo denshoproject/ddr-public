@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+{% load thumbnail ui_tags %}
+<!DOCTYPE html{% if og %} prefix="og: https://ogp.me/ns#"{% endif %}>
 <!--[if IE 8]>			<html class="ie ie8"> <![endif]-->
 <!--[if IE 9]>			<html class="ie ie9"> <![endif]-->
 <!--[if gt IE 9]><!-->	
@@ -14,7 +15,9 @@
 
 <title>{% block title %}{% endblock %} | Densho Digital Repository</title>
 
-{% block headmeta %}{% endblock headmeta %}
+{% block opengraph %}
+<!-- opengraph -->
+{% endblock opengraph %}
 
 <link rel="shortcut icon" sizes="16x16 24x24 32x32 48x48 64x64" href="/static/favicon.ico">
 <link rel="apple-touch-icon-precomposed" sizes="57x57" href="/static/favicon-57.png">

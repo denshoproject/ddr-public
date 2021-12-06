@@ -1,6 +1,10 @@
 {% extends "ui/collections/base.html" %}
 {% load thumbnail ui_tags %}
 
+{% block opengraph %}
+{% opengraph_meta object %}
+{% endblock opengraph %}
+
 {% block parent %}
 <div id="parent">
 <a href="{{ parent.links.html }}"><span class="label label-default">{{ parent.id }}</span></a>

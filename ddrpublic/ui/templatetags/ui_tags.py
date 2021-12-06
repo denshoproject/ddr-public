@@ -137,6 +137,44 @@ def rightsbadge( code ):
     t = template.loader.get_template(template_name)
     return t.render({'code':code})
 
+def opengraph_meta(object):
+    """Opengraph meta tags block
+    """
+    # debug info
+    object_fields = list(object.keys())
+    genre = object['genre']
+    format = object['format']
+    ia_meta = object.get('ia_meta')
+    #
+    og = {}
+    og['locale'] = 'en_us'
+    og['site_name'] = 'Densho Digital Repository'
+    og['type'] = 'image'
+    og['title'] = object['title']
+    og['description'] = object['description'][:250]
+    if len(object['description']) > 250:
+        og['description'] = og['description'] + '...'
+    og['url'] = object['links']['html']
+    og['image'] = object['links']['thumb']
+    og['image'] = object['links']['img']
+    og['image_alt'] = object['title']
+    # media
+    if object.get('ia_meta') and object['ia_meta'].get('files'):
+        # audio
+        if object['ia_meta']['files'].get('mp3'):
+            og['type'] = 'audio'
+            og['audio'] = object['ia_meta']['files']['mp3']['url']
+            og['audio_type'] = object['ia_meta']['mimetype']
+        # video
+        if object['ia_meta']['files'].get('mp4'):
+            og['type'] = 'video'
+            og['video'] = object['ia_meta']['files']['mp4']['url']
+            og['video_type'] = object['ia_meta']['mimetype']
+    #assert 0
+    t = template.loader.get_template('ui/opengraph-meta.html')
+    return t.render({'og':og})
+
+
 register.simple_tag(homeslideitem)
 register.simple_tag(breadcrumbs)
 register.simple_tag(document)
@@ -146,3 +184,4 @@ register.simple_tag(addthis)
 register.simple_tag(cite)
 register.simple_tag(rightspanel)
 register.simple_tag(rightsbadge)
+register.simple_tag(opengraph_meta)
