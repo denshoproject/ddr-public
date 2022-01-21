@@ -112,6 +112,14 @@ NAMESDB_DOCSTORE_HOSTS = [{
     'port':config.get('public', 'namesdb_host').split(':')[1],
 }]
 
+DOCSTORE_GREEN = [g for g in config['public'].get('docstore_green','').split(',') if g]
+DOCSTORE_BLUE  = [b for b in config['public'].get('docstore_blue', '').split(',') if b]
+DOCSTORE_CLUSTER = '¯\_(ツ)_/¯'
+if DOCSTORE_HOSTS[0]['host'] in DOCSTORE_GREEN:
+    DOCSTORE_CLUSTER = 'green'
+if DOCSTORE_HOSTS[0]['host'] in DOCSTORE_BLUE:
+    DOCSTORE_CLUSTER = 'blue'
+
 # Filesystem path and URL for static media (mostly used for interfaces).
 STATIC_ROOT = config.get('public', 'static_root')
 STATIC_URL='/static/'
