@@ -40,6 +40,7 @@ def sitewide(request):
         'packages': settings.PACKAGES,
         'docstore_hosts': settings.DOCSTORE_HOSTS[0]['host'],
         'namesdb_hosts': settings.NAMESDB_DOCSTORE_HOSTS[0]['host'],
+        'docstore_cluster': settings.DOCSTORE_CLUSTER,
         'ASSETS_BASE': assets_base(request),
         'hide_header_search': False,
         'search_form': SearchForm,

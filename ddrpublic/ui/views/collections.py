@@ -7,8 +7,10 @@ from django.shortcuts import Http404, render
 from django.urls import reverse
 from django.views.decorators.cache import cache_page
 
+from .. import forms_search as forms
 from .. import models
 from .. import misc
+from .. import search
 from ..decorators import ui_state
 
 
@@ -105,15 +107,21 @@ def children(request, oid):
     except models.NotFound:
         raise Http404
     misc.filter_if_branded(request, collection['organization_id'])
-    thispage = int(request.GET.get('page', 1))
-    pagesize = settings.RESULTS_PER_PAGE
-    offset = models.search_offset(thispage, pagesize)
-    results = models.Collection.children(
-        oid=oid,
-        request=request,
-        limit=pagesize,
-        offset=offset,
+    
+    params = request.GET.copy()
+    params['parent'] = oid
+    if not params.get('fulltext'):
+        params['match_all'] = 'true'
+    params['sort'] = models.OBJECT_LIST_SORT
+    searcher = search.Searcher()
+    searcher.prepare(
+        params=params,
+        search_models=['ddrentity'],
+        fields=search.SEARCH_INCLUDE_FIELDS,
+        fields_agg=search.SEARCH_AGG_FIELDS,
     )
+    limit,offset = search.limit_offset(request)
+    results = searcher.execute(limit, offset)
     paginator = Paginator(
         results.ordered_dict(
             request=request,
@@ -123,10 +131,17 @@ def children(request, oid):
         results.page_size,
     )
     page = paginator.page(results.this_page)
+    
+    form = forms.SearchForm(
+        data=request.GET.copy(),
+        search_results=results,
+    )
+
     return render(request, 'ui/collections/children.html', {
         'object': collection,
         'paginator': paginator,
         'page': page,
+        'form': form,
         'api_url': reverse('ui-api-object-children', args=[oid]),
     })
 

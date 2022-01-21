@@ -40,6 +40,7 @@ IA metadata: {{ object.ia_meta|safe }}
 -->
 {% if object.links.img %}
   {% thumbnail object.links.thumb "480x480" as img %}
+        <!-- thumbnail: {{ object.links.thumb }} -->
         <a href="{{ object.links.img }}" class="lightbox img-thumbnail" data-plugin-options="{"type":"image"}">
           <img src="{{ img.url }}" class="img-responsive">
         </a><br />
