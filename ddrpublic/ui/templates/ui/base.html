@@ -358,9 +358,8 @@ Include all compiled plugins (below), or include individual files as needed
 Rendered at {{ time }} by {{ pid }} on {{ host }}
 v{{ version }} {{ packages }}
 {{ commits|safe }}
-{{ docstore_hosts|safe }} {{ docstore_index|safe }}
-{{ namesdb_hosts|safe }} {{ namesdb_index|safe }}
-cluster: {{ docstore_cluster|safe }}
+ddrpublic {{ docstore_hosts|safe }} ({{ ddrpublic_cluster|safe }})
+namesdb   {{ namesdb_hosts|safe }} ({{ namesdb_cluster|safe }})
 -->
 
 </body>
