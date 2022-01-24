@@ -112,13 +112,18 @@ NAMESDB_DOCSTORE_HOSTS = [{
     'port':config.get('public', 'namesdb_host').split(':')[1],
 }]
 
-DOCSTORE_GREEN = [g for g in config['public'].get('docstore_green','').split(',') if g]
-DOCSTORE_BLUE  = [b for b in config['public'].get('docstore_blue', '').split(',') if b]
-DOCSTORE_CLUSTER = '¯\_(ツ)_/¯'
-if DOCSTORE_HOSTS[0]['host'] in DOCSTORE_GREEN:
-    DOCSTORE_CLUSTER = 'green'
-if DOCSTORE_HOSTS[0]['host'] in DOCSTORE_BLUE:
-    DOCSTORE_CLUSTER = 'blue'
+ELASTICSEARCH_GREEN = [g for g in config['public'].get('docstore_green','').split(',') if g]
+ELASTICSEARCH_BLUE  = [b for b in config['public'].get('docstore_blue', '').split(',') if b]
+DDRPUBLIC_CLUSTER = '¯\_(ツ)_/¯'
+if DOCSTORE_HOSTS[0]['host'] in ELASTICSEARCH_GREEN:
+    DDRPUBLIC_CLUSTER = 'green'
+elif DOCSTORE_HOSTS[0]['host'] in ELASTICSEARCH_BLUE:
+    DDRPUBLIC_CLUSTER = 'blue'
+NAMESDB_CLUSTER = '¯\_(ツ)_/¯'
+if NAMESDB_DOCSTORE_HOSTS[0]['host'] in ELASTICSEARCH_GREEN:
+    NAMESDB_CLUSTER = 'green'
+elif NAMESDB_DOCSTORE_HOSTS[0]['host'] in ELASTICSEARCH_BLUE:
+    NAMESDB_CLUSTER = 'blue'
 
 # Filesystem path and URL for static media (mostly used for interfaces).
 STATIC_ROOT = config.get('public', 'static_root')
