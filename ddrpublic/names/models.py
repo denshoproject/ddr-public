@@ -193,7 +193,7 @@ class NameRecord(object):
     def other_datasets(record):
         """Lists occurances of the m_pseudoid in other datasets
         
-        @param hosts: list settings.DOCSTORE_HOSTS
+        @param hosts: list settings.DOCSTORE_HOST
         @returns: list of Records
         """
         #response = search(

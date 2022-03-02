@@ -57,14 +57,14 @@ def index(request, template_name='names/index.html'):
     if kwargs_values:
         form = forms.SearchForm(
             local_GET,
-            hosts=settings.NAMESDB_DOCSTORE_HOSTS,
+            hosts=settings.NAMESDB_DOCSTORE_HOST,
         )
         if form.is_valid():
             filters = form.cleaned_data
             query = filters.pop('query')
             start,end = models.Paginator.start_end(thispage, pagesize)
             search = models.search(
-                settings.NAMESDB_DOCSTORE_HOSTS,
+                settings.NAMESDB_DOCSTORE_HOST,
                 query=query,
                 filters=filters,
                 start=start,
@@ -79,7 +79,7 @@ def index(request, template_name='names/index.html'):
             )
     else:
         form = forms.SearchForm(
-            hosts=settings.NAMESDB_DOCSTORE_HOSTS,
+            hosts=settings.NAMESDB_DOCSTORE_HOST,
         )
     m_camp_choices = form.fields['m_camp'].choices
     return render(request, template_name, {

@@ -103,26 +103,19 @@ CACHE_TIMEOUT = int(config.get('public', 'cache_timeout'))
 CACHE_TIMEOUT_LONG = int(config.get('public', 'cache_timeout_long'))
 
 # Elasticsearch
-DOCSTORE_HOSTS = [{
-    'host':config.get('public', 'docstore_host').split(':')[0],
-    'port':config.get('public', 'docstore_host').split(':')[1],
-}]
-NAMESDB_DOCSTORE_HOSTS = [{
-    'host':config.get('public', 'namesdb_host').split(':')[0],
-    'port':config.get('public', 'namesdb_host').split(':')[1],
-}]
-
+DOCSTORE_HOST = config.get('public', 'docstore_host')
+NAMESDB_DOCSTORE_HOST = config.get('public', 'namesdb_host')
 ELASTICSEARCH_GREEN = [g for g in config['public'].get('docstore_green','').split(',') if g]
 ELASTICSEARCH_BLUE  = [b for b in config['public'].get('docstore_blue', '').split(',') if b]
 DDRPUBLIC_CLUSTER = '¯\_(ツ)_/¯'
-if DOCSTORE_HOSTS[0]['host'] in ELASTICSEARCH_GREEN:
+if DOCSTORE_HOST in ELASTICSEARCH_GREEN:
     DDRPUBLIC_CLUSTER = 'green'
-elif DOCSTORE_HOSTS[0]['host'] in ELASTICSEARCH_BLUE:
+elif DOCSTORE_HOST in ELASTICSEARCH_BLUE:
     DDRPUBLIC_CLUSTER = 'blue'
 NAMESDB_CLUSTER = '¯\_(ツ)_/¯'
-if NAMESDB_DOCSTORE_HOSTS[0]['host'] in ELASTICSEARCH_GREEN:
+if NAMESDB_DOCSTORE_HOST in ELASTICSEARCH_GREEN:
     NAMESDB_CLUSTER = 'green'
-elif NAMESDB_DOCSTORE_HOSTS[0]['host'] in ELASTICSEARCH_BLUE:
+elif NAMESDB_DOCSTORE_HOST in ELASTICSEARCH_BLUE:
     NAMESDB_CLUSTER = 'blue'
 
 # Filesystem path and URL for static media (mostly used for interfaces).

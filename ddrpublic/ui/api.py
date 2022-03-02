@@ -3,7 +3,6 @@ from collections import OrderedDict
 from django.conf import settings
 
 from elasticsearch import Elasticsearch
-ddr_es = Elasticsearch(settings.DOCSTORE_HOSTS)
 
 from rest_framework import status
 from rest_framework.decorators import api_view
