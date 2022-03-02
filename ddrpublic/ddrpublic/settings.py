@@ -105,6 +105,9 @@ CACHE_TIMEOUT_LONG = int(config.get('public', 'cache_timeout_long'))
 # Elasticsearch
 DOCSTORE_HOST = config.get('public', 'docstore_host')
 NAMESDB_DOCSTORE_HOST = config.get('public', 'namesdb_host')
+DOCSTORE_SSL_CERTFILE = config.get('public', 'docstore_ssl_certfile')
+DOCSTORE_USERNAME = 'elastic'
+DOCSTORE_PASSWORD = config.get('public', 'docstore_password')
 ELASTICSEARCH_GREEN = [g for g in config['public'].get('docstore_green','').split(',') if g]
 ELASTICSEARCH_BLUE  = [b for b in config['public'].get('docstore_blue', '').split(',') if b]
 DDRPUBLIC_CLUSTER = '¯\_(ツ)_/¯'
