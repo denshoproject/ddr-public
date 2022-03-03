@@ -244,7 +244,7 @@ def django_page(limit, offset):
 def es_host_name(conn):
     """Extracts host:port from Elasticsearch conn object.
     
-    >>> es_host_name(Elasticsearch(settings.DOCSTORE_HOSTS))
+    >>> es_host_name(Elasticsearch(settings.DOCSTORE_HOST))
     "<Elasticsearch([{'host': '192.168.56.1', 'port': '9200'}])>"
     
     @param conn: elasticsearch.Elasticsearch with hosts/port
