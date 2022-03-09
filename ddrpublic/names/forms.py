@@ -7,9 +7,9 @@ from django import forms
 from django.conf import settings
 from django.core.cache import cache
 
-from ui import docstore
-from ui import search
-
+from elastictools import docstore
+from elastictools import search
+from . import models
 
 # sorted version of facility and topics tree as choice fields
 # {
@@ -25,18 +25,7 @@ from ui import search
 #)['_source']
 # TODO should not be hard-coded - move to ddr-vocabs?
 FORMS_CHOICES = {
-    'm_camp-choices': [
-        ('4-amache', 'Amache'),
-        ('3-gilariver', 'Gila River'),
-        ('5-heartmountain', 'Heart Mountain'),
-        ('6-jerome', 'Jerome'),
-        ('7-manzanar', 'Manzanar'),
-        ('8-minidoka', 'Minidoka'),
-        ('2-poston', 'Poston'),
-        ('9-rohwer', 'Rohwer'),
-        ('1-topaz', 'Topaz'),
-        ('10-tulelake', 'Tule Lake'),
-    ]
+    'm_camp-choices': [(key,val) for key,val in models.CAMP_LABELS.items()]
 }
 FORMS_CHOICES_DEFAULT = {
     'm_camp': [
@@ -64,7 +53,7 @@ for key in FORMS_CHOICES.keys():
 
 
 class SearchForm(forms.Form):
-    field_order = search.NAMESDB_SEARCH_PARAM_WHITELIST
+    field_order = models.SEARCH_PARAM_WHITELIST
     search_results = None
     
     def __init__( self, *args, **kwargs ):

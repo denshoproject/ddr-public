@@ -8,7 +8,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.urls import reverse
 
-from ui import docstore
+from elastictools import docstore
 
 FACETS_LIST_CACHE_KEY = 'facets:list'
 FACETS_FACET_CACHE_KEY = 'facets:{name}'
@@ -22,7 +22,7 @@ def facets_list():
     cached = cache.get(key)
     if not cached:
         facets_list = []
-        ds = docstore.Docstore()
+        ds = docstore.Docstore('ddr', settings.DOCSTORE_HOST, settings)
         facets = ds.get_facets()
         for name in facets:
             data = ds.get(model='facet', document_id=name)
@@ -295,7 +295,7 @@ def facet_terms(facet):
     If term is postcoordinate, all the terms come from the index, but there is not title/description.
     """
     facetterms = []
-    ds = docstore.Docstore()
+    ds = docstore.Docstore('ddr', settings.DOCSTORE_HOST, settings)
     results = ds.facet_terms(facet['name'], order='term')
     if facet.get('terms', []):
         # precoordinate

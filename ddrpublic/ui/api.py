@@ -2,8 +2,6 @@ from collections import OrderedDict
 
 from django.conf import settings
 
-from elasticsearch import Elasticsearch
-
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.request import Request as RestRequest
@@ -13,16 +11,14 @@ from rest_framework.views import APIView
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from . import docstore
+from elastictools import docstore
+from elastictools import search
 from . import identifier
 from .misc import filter_if_branded
+from .models import DOCSTORE
 from .models import Repository, Organization, Collection, Entity, File
 from .models import Narrator, Facet, Term
 from .models import FORMATTERS
-from . import search
-
-# set default hosts and index
-DOCSTORE = docstore.Docstore()
 
 DEFAULT_LIMIT = 25
 
@@ -120,7 +116,7 @@ class Search(APIView):
             limit = settings.RESULTS_PER_PAGE
             offset = 0
         
-        searcher = search.Searcher()
+        searcher = search.Searcher(models.DOCSTORE)
         searcher.prepare(
             params=request.query_params.dict(),
             params_whitelist=search.SEARCH_PARAM_WHITELIST,

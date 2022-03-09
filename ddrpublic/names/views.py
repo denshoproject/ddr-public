@@ -8,11 +8,11 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
+from elastictools import search
 from namesdb import definitions
 from . import forms
 from . import models
 from ui import api
-from ui import search
 
 PAGE_SIZE = 20
 CONTEXT = 3
@@ -121,11 +121,12 @@ def search_ui(request):
     if request.GET.get('fulltext'):
         context['searching'] = True
         
-        searcher = search.Searcher()
+        searcher = search.Searcher(models.DOCSTORE)
         searcher.prepare(
             params=request.GET.copy(),
             params_whitelist=models.SEARCH_PARAM_WHITELIST,
             search_models=models.SEARCH_MODELS,
+            sort=[],
             fields=models.SEARCH_INCLUDE_FIELDS,
             fields_nested=models.SEARCH_NESTED_FIELDS,
             fields_agg=models.SEARCH_AGG_FIELDS,

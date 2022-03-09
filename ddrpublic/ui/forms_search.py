@@ -6,8 +6,10 @@ from django import forms
 from django.conf import settings
 from django.core.cache import cache
 
-from ui import docstore
-from ui import search
+from elastictools import docstore
+from elastictools import search
+
+from . import models
 
 # sorted version of facility and topics tree as choice fields
 # {
@@ -19,7 +21,7 @@ from ui import search
 # }
 
 try:
-    FORMS_CHOICES = docstore.Docstore().es.get(
+    FORMS_CHOICES = models.DOCSTORE.es.get(
         index='forms',
         id='forms-choices'
     )['_source']
@@ -47,7 +49,7 @@ for key in FORMS_CHOICES.keys():
 
 
 class SearchForm(forms.Form):
-    field_order = search.SEARCH_PARAM_WHITELIST
+    field_order = models.SEARCH_PARAM_WHITELIST
     search_results = None
     
     def __init__( self, *args, **kwargs ):
@@ -88,7 +90,7 @@ class SearchForm(forms.Form):
                 'models',
                 forms.MultipleChoiceField(
                     label='Models',
-                    choices=[(model,model) for model in search.SEARCH_MODELS],
+                    choices=[(model,model) for model in models.SEARCH_MODELS],
                     required=False,
                 )
             ),
@@ -112,7 +114,7 @@ class SearchForm(forms.Form):
                     fields.append((
                         fieldname,
                         forms.MultipleChoiceField(
-                            label=search.SEARCH_FORM_LABELS.get(
+                            label=models.SEARCH_FORM_LABELS.get(
                                 fieldname, fieldname),
                             choices=choices,
                             required=False,
