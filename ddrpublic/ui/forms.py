@@ -5,7 +5,7 @@ from django import forms
 from django.conf import settings
 from django.core.cache import cache
 
-from ui import docstore
+from elastictools import docstore
 from ui import models
 
 class SearchForm(forms.Form):

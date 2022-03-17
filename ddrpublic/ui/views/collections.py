@@ -7,10 +7,10 @@ from django.shortcuts import Http404, render
 from django.urls import reverse
 from django.views.decorators.cache import cache_page
 
+from elastictools import search
 from .. import forms_search as forms
 from .. import models
 from .. import misc
-from .. import search
 from ..decorators import ui_state
 
 
@@ -112,15 +112,17 @@ def children(request, oid):
     params['parent'] = oid
     if not params.get('fulltext'):
         params['match_all'] = 'true'
-    params['sort'] = models.OBJECT_LIST_SORT
-    searcher = search.Searcher()
+    searcher = search.Searcher(models.DOCSTORE)
     searcher.prepare(
         params=params,
+        params_whitelist=models.SEARCH_PARAM_WHITELIST,
         search_models=['ddrentity'],
-        fields=search.SEARCH_INCLUDE_FIELDS,
-        fields_agg=search.SEARCH_AGG_FIELDS,
+        sort=models.OBJECT_LIST_SORT,
+        fields=models.SEARCH_INCLUDE_FIELDS,
+        fields_nested=models.SEARCH_NESTED_FIELDS,
+        fields_agg=models.SEARCH_AGG_FIELDS,
     )
-    limit,offset = search.limit_offset(request)
+    limit,offset = search.limit_offset(request, settings.RESULTS_PER_PAGE)
     results = searcher.execute(limit, offset)
     paginator = Paginator(
         results.ordered_dict(

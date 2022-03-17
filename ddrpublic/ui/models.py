@@ -12,18 +12,159 @@ from django.core.cache import cache
 from rest_framework.exceptions import NotFound
 from rest_framework.reverse import reverse
 
-from . import docstore
+from elastictools import docstore
+from elastictools import search
 from . import identifier
-from . import search
+
+INDEX_PREFIX = 'ddr'
 
 # see if cluster is available, quit with nice message if not
-docstore.Docstore().start_test()
+docstore.Docstore(INDEX_PREFIX, settings.DOCSTORE_HOST, settings).start_test()
 
 # set default hosts and index
-DOCSTORE = docstore.Docstore()
+DOCSTORE = docstore.Docstore('ddr', settings.DOCSTORE_HOST, settings)
 
 DEFAULT_SIZE = 10
 DEFAULT_LIMIT = 25
+
+# whitelist of params recognized in URL query
+# TODO move to ddr-defs/repo_models/elastic.py?
+SEARCH_PARAM_WHITELIST = [
+    'fulltext',
+    'sort',
+    'topics',
+    'facility',
+    'model',
+    'models',
+    'parent',
+    'status',
+    'public',
+    'topics',
+    'facility',
+    'contributor',
+    'creators',
+    'format',
+    'genre',
+    'geography',
+    'language',
+    'location',
+    'mimetype',
+    'persons',
+    'rights',
+]
+
+# fields where the relevant value is nested e.g. topics.id
+# TODO move to ddr-defs/repo_models/elastic.py?
+SEARCH_NESTED_FIELDS = [
+    'facility',
+    'topics',
+]
+
+# TODO move to ddr-defs/repo_models/elastic.py?
+SEARCH_AGG_FIELDS = {
+    #'model': 'model',
+    #'status': 'status',
+    #'public': 'public',
+    #'contributor': 'contributor',
+    #'creators': 'creators.namepart',
+    'facility': 'facility.id',
+    'format': 'format',
+    'genre': 'genre',
+    #'geography': 'geography.term',
+    #'language': 'language',
+    #'location': 'location',
+    #'mimetype': 'mimetype',
+    #'persons': 'persons',
+    'rights': 'rights',
+    'topics': 'topics.id',
+}
+
+# TODO move to ddr-defs/repo_models/elastic.py?
+SEARCH_MODELS = [
+    'ddrcollection',
+    'ddrentity',
+    'ddrsegment',
+    'ddrnarrator'
+]
+
+NAMESDB_SEARCH_MODELS = ['names-record']
+
+# fields searched by query e.g. query will find search terms in these fields
+# IMPORTANT: These are used for fulltext search so they must ALL be TEXT fields
+# TODO move to ddr-defs/repo_models/elastic.py?
+SEARCH_INCLUDE_FIELDS = [
+    # ddr object fields
+    'id',
+    'model',
+    'links_html',
+    'links_json',
+    'links_img',
+    'links_thumb',
+    'links_children',
+    'status',
+    'public',
+    'title',
+    'description',
+    'contributor',
+    'creators',
+    'facility',
+    'format',
+    'genre',
+    'geography',
+    'label',
+    'language',
+    'location',
+    'persons',
+    'rights',
+    'topics',
+    # narrator fields
+    'image_url',
+    'display_name',
+    'bio',
+    'extent',
+]
+
+# TODO move to ddr-defs/repo_models/elastic.py?
+SEARCH_FORM_LABELS = {
+    'model': 'Model',
+    'status': 'Status',
+    'public': 'Public',
+    'contributor': 'Contributor',
+    'creators.namepart': 'Creators',
+    'facility': 'Facility',
+    'format': 'Format',
+    'genre': 'Genre',
+    'geography.term': 'Geography',
+    'language': 'Language',
+    'location': 'Location',
+    'mimetype': 'Mimetype',
+    'persons': 'Persons',
+    'rights': 'Rights',
+    'topics': 'Topics',
+}
+
+NAMESDB_SEARCH_FORM_LABELS = {
+    'm_camp': 'Camp',
+}
+
+## TODO should this live in models?
+#def _vocab_choice_labels(field):
+#    return {
+#        str(term['id']): term['title']
+#        for term in vocab.get_vocab(
+#            os.path.join(settings.VOCAB_TERMS_URL % field)
+#        )['terms']
+#    }
+#VOCAB_TOPICS_IDS_TITLES = {
+#    'facility': _vocab_choice_labels('facility'),
+#    'format': _vocab_choice_labels('format'),
+#    'genre': _vocab_choice_labels('genre'),
+#    'language': _vocab_choice_labels('language'),
+#    'public': _vocab_choice_labels('public'),
+#    'rights': _vocab_choice_labels('rights'),
+#    'status': _vocab_choice_labels('status'),
+#    'topics': _vocab_choice_labels('topics'),
+#}
 
 CHILDREN = {
     'repository': ['organization'],
@@ -265,7 +406,7 @@ def docstore_search(text='', must=[], should=[], mustnot=[], models=[], fields=[
     )
     return format_list_objects(
         paginate_results(
-            docstore.Docstore().search(
+            DOCSTORE.search(
                 doctypes=models,
                 query=q,
                 sort=sort_fields,
@@ -286,7 +427,7 @@ def _object(request, oid, format=None):
     )
     return format_object_detail2(data, request)
 
-def _object_children(document, request, models=[], sort_fields=[], fields=search.SEARCH_INCLUDE_FIELDS, limit=DEFAULT_LIMIT, offset=0):
+def _object_children(document, request, models=[], sort_fields=[], fields=SEARCH_INCLUDE_FIELDS, limit=DEFAULT_LIMIT, offset=0):
     """
     TODO this function is probably superfluous
     """
@@ -303,7 +444,7 @@ def _object_children(document, request, models=[], sort_fields=[], fields=search
         limit=limit, offset=offset
     )
 
-def children(request, model, parent_id, sort_fields, fields=search.SEARCH_INCLUDE_FIELDS, limit=DEFAULT_LIMIT, offset=0, just_count=False):
+def children(request, model, parent_id, sort_fields, fields=SEARCH_INCLUDE_FIELDS, limit=DEFAULT_LIMIT, offset=0, just_count=False):
     """Return object children list in Django REST Framework format.
     
     Returns a paged list with count/prev/next metadata
@@ -330,19 +471,20 @@ def children(request, model, parent_id, sort_fields, fields=search.SEARCH_INCLUD
                 {"term": {"parent_id": parent_id}},
             ],
         )
-        return docstore.Docstore().count(
+        return DOCSTORE.count(
             doctypes=model,
             query=q,
         )
     indices = ','.join([DOCSTORE.index_name(model) for model in models])
     params={
         'parent': parent_id,
-        'sort': sort_fields,
     }
-    searcher = search.Searcher()
+    searcher = search.Searcher(DOCSTORE)
     searcher.prepare(
         params=params,
+        params_whitelist=SEARCH_PARAM_WHITELIST,
         search_models=indices,
+        sort=sort_fields,
         fields=fields,
         fields_nested=[],
         fields_agg={},
@@ -367,7 +509,7 @@ def count_children(model, parent_id):
             {"term": {"parent_id": parent_id}},
         ],
     )
-    r = docstore.Docstore().count(
+    r = DOCSTORE.count(
         doctypes=model,
         query=q,
     )
@@ -415,7 +557,7 @@ def format_object_detail2(document, request, listitem=False):
     else:
         oid = document.pop('id')
         model = document.pop('model')
-    model = model.replace(docstore.INDEX_PREFIX, '')
+    model = model.replace(INDEX_PREFIX, '')
     
     d = OrderedDict()
     d['id'] = oid
@@ -710,7 +852,7 @@ def facet_labels():
             ]}}
         ]
     )
-    results = docstore.Docstore().search(
+    results = DOCSTORE.search(
         query=q,
         sort=SORT_FIELDS,
         fields=LIST_FIELDS,
@@ -755,7 +897,7 @@ class Organization(object):
         return _object(request, oid)
 
     @staticmethod
-    def children(oid, request, fields=search.SEARCH_INCLUDE_FIELDS, limit=DEFAULT_LIMIT, offset=0):
+    def children(oid, request, fields=SEARCH_INCLUDE_FIELDS, limit=DEFAULT_LIMIT, offset=0):
         return _object_children(
             document=_object(request, oid),
             request=request,
@@ -956,12 +1098,13 @@ class Narrator(object):
             ]
             params={
                 'match_all': '1',
-                'sort': sort_fields,
             }
-            searcher = search.Searcher()
+            searcher = search.Searcher(DOCSTORE)
             searcher.prepare(
                 params=params,
+                params_whitelist=SEARCH_PARAM_WHITELIST,
                 search_models=['ddrnarrator'],
+                sort=sort_fields,
                 fields=list_fields,
                 fields_nested=[],
                 fields_agg={},
@@ -988,7 +1131,7 @@ class Narrator(object):
         )
         results = format_list_objects(
             paginate_results(
-                docstore.Docstore().search(
+                DOCSTORE.search(
                     doctypes=['entity'],
                     query=q,
                     sort=SORT_FIELDS,
@@ -1036,7 +1179,7 @@ class Facet(object):
                 { "match_all": {}}
             ]
         )
-        results = docstore.Docstore().search(
+        results = DOCSTORE.search(
             doctypes=['facet'],
             query=q,
             sort=SORT_FIELDS,
@@ -1071,7 +1214,7 @@ class Facet(object):
                 {'term': {'facet': oid}}
             ]
         )
-        results = docstore.Docstore().search(
+        results = DOCSTORE.search(
             doctypes=['facetterm'],
             query=q,
             sort=sort,
@@ -1281,7 +1424,7 @@ class Term(object):
                 { "match_all": {}}
             ]
         )
-        results = docstore.Docstore().search(
+        results = DOCSTORE.search(
             doctypes=['facetterm'],
             query=q,
             sort=SORT_FIELDS,
@@ -1346,9 +1489,13 @@ class Term(object):
                 'match_all': 'true',
             }
             params[facet_id] = term_id
-            searcher = search.Searcher()
+            searcher = search.Searcher(DOCSTORE)
             searcher.prepare(
                 params=params,
+                params_whitelist=SEARCH_PARAM_WHITELIST,
+                search_models=SEARCH_MODELS,
+                sort=[],
+                fields=SEARCH_INCLUDE_FIELDS,
                 fields_nested=[],
                 fields_agg={},
             )
