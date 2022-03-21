@@ -1,10 +1,13 @@
 # Django settings for ddrpublic.
 
 import configparser
+import json
 import logging
 import os
 import subprocess
 import sys
+
+from elastictools import docstore
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -108,18 +111,9 @@ NAMESDB_DOCSTORE_HOST = config.get('public', 'namesdb_host')
 DOCSTORE_SSL_CERTFILE = config.get('public', 'docstore_ssl_certfile')
 DOCSTORE_USERNAME = 'elastic'
 DOCSTORE_PASSWORD = config.get('public', 'docstore_password')
-ELASTICSEARCH_GREEN = [g for g in config['public'].get('docstore_green','').split(',') if g]
-ELASTICSEARCH_BLUE  = [b for b in config['public'].get('docstore_blue', '').split(',') if b]
-DDRPUBLIC_CLUSTER = '¯\_(ツ)_/¯'
-if DOCSTORE_HOST in ELASTICSEARCH_GREEN:
-    DDRPUBLIC_CLUSTER = 'green'
-elif DOCSTORE_HOST in ELASTICSEARCH_BLUE:
-    DDRPUBLIC_CLUSTER = 'blue'
-NAMESDB_CLUSTER = '¯\_(ツ)_/¯'
-if NAMESDB_DOCSTORE_HOST in ELASTICSEARCH_GREEN:
-    NAMESDB_CLUSTER = 'green'
-elif NAMESDB_DOCSTORE_HOST in ELASTICSEARCH_BLUE:
-    NAMESDB_CLUSTER = 'blue'
+_docstore_clusters = config.get('public', 'docstore_clusters')
+DOCSTORE_CLUSTER = docstore.cluster(_docstore_clusters, DOCSTORE_HOST)
+NAMESDB_CLUSTER = docstore.cluster(_docstore_clusters, NAMESDB_DOCSTORE_HOST)
 
 # Filesystem path and URL for static media (mostly used for interfaces).
 STATIC_ROOT = config.get('public', 'static_root')
