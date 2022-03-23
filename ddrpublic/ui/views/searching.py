@@ -6,16 +6,13 @@ from urllib.parse import urlparse, urlunparse
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.http import HttpResponseRedirect
-from django.http.request import HttpRequest
 from django.shortcuts import render
 from django.urls import reverse
 
-from elasticsearch.exceptions import ConnectionError, ConnectionTimeout
-
+from elastictools import search
 from .. import api
 from .. import forms_search as forms
 from .. import models
-from .. import search
 from ..decorators import ui_state
 
 
@@ -75,7 +72,7 @@ def search_ui(request):
         'api_url': api_url,
     }
     
-    searcher = search.Searcher()
+    searcher = search.Searcher(models.DOCSTORE)
     if request.GET.get('fulltext'):
         # Redirect if fulltext is a DDR ID
         if is_ddr_id(request.GET.get('fulltext')):
@@ -86,16 +83,17 @@ def search_ui(request):
         params = request.GET.copy()
         searcher.prepare(
             params=params,
-            params_whitelist=search.SEARCH_PARAM_WHITELIST,
-            search_models=search.SEARCH_MODELS,
-            fields=search.SEARCH_INCLUDE_FIELDS,
-            fields_nested=search.SEARCH_NESTED_FIELDS,
-            fields_agg=search.SEARCH_AGG_FIELDS,
+            params_whitelist=models.SEARCH_PARAM_WHITELIST,
+            search_models=models.SEARCH_MODELS,
+            sort=[],
+            fields=models.SEARCH_INCLUDE_FIELDS,
+            fields_nested=models.SEARCH_NESTED_FIELDS,
+            fields_agg=models.SEARCH_AGG_FIELDS,
         )
         context['searching'] = True
     
     if searcher.params.get('fulltext'):
-        limit,offset = search.limit_offset(request)
+        limit,offset = search.limit_offset(request, settings.RESULTS_PER_PAGE)
         results = searcher.execute(limit, offset)
         paginator = Paginator(
             results.ordered_dict(
@@ -164,9 +162,8 @@ def parent_search(request, obj):
     }
 
     params = request.GET.copy()
-    limit,offset = search.limit_offset(request)
+    limit,offset = search.limit_offset(request, settings.RESULTS_PER_PAGE)
     params['parent'] = obj['id']
-    search_models = search.SEARCH_MODELS
     
     # search collection
     if obj['model'] == 'collection':
@@ -192,14 +189,15 @@ def parent_search(request, obj):
     context['template_extends'] = template_extends
     context['object'] = obj
 
-    searcher = search.Searcher()
+    searcher = search.Searcher(models.DOCSTORE)
     searcher.prepare(
         params=params,
-        params_whitelist=search.SEARCH_PARAM_WHITELIST,
-        search_models=search_models,
-        fields=search.SEARCH_INCLUDE_FIELDS,
-        fields_nested=search.SEARCH_NESTED_FIELDS,
-        fields_agg=search.SEARCH_AGG_FIELDS,
+        params_whitelist=models.SEARCH_PARAM_WHITELIST,
+        search_models=models.SEARCH_MODELS,
+        sort=[],
+        fields=models.SEARCH_INCLUDE_FIELDS,
+        fields_nested=models.SEARCH_NESTED_FIELDS,
+        fields_agg=models.SEARCH_AGG_FIELDS,
     )
     results = searcher.execute(limit, offset)
     paginator = Paginator(

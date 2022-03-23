@@ -2,8 +2,6 @@ from collections import OrderedDict
 
 from django.conf import settings
 
-from elasticsearch import Elasticsearch
-
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.request import Request as RestRequest
@@ -13,16 +11,11 @@ from rest_framework.views import APIView
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from . import docstore
+from elastictools import docstore
+from elastictools import search
 from . import identifier
 from .misc import filter_if_branded
-from .models import Repository, Organization, Collection, Entity, File
-from .models import Narrator, Facet, Term
-from .models import FORMATTERS
-from . import search
-
-# set default hosts and index
-DOCSTORE = docstore.Docstore()
+from . import models
 
 DEFAULT_LIMIT = 25
 
@@ -120,17 +113,18 @@ class Search(APIView):
             limit = settings.RESULTS_PER_PAGE
             offset = 0
         
-        searcher = search.Searcher()
+        searcher = search.Searcher(models.DOCSTORE)
         searcher.prepare(
             params=request.query_params.dict(),
-            params_whitelist=search.SEARCH_PARAM_WHITELIST,
-            search_models=search.SEARCH_MODELS,
-            fields=search.SEARCH_INCLUDE_FIELDS,
-            fields_nested=search.SEARCH_NESTED_FIELDS,
-            fields_agg=search.SEARCH_AGG_FIELDS,
+            params_whitelist=models.SEARCH_PARAM_WHITELIST,
+            search_models=models.SEARCH_MODELS,
+            sort=[],
+            fields=models.SEARCH_INCLUDE_FIELDS,
+            fields_nested=models.SEARCH_NESTED_FIELDS,
+            fields_agg=models.SEARCH_AGG_FIELDS,
         )
         results = searcher.execute(limit, offset)
-        results_dict = results.ordered_dict(request, format_functions=FORMATTERS)
+        results_dict = results.ordered_dict(request, format_functions=models.FORMATTERS)
         results_dict.pop('aggregations')
         return Response(results_dict)
 
@@ -145,11 +139,11 @@ def object_children(request, object_id):
     """List children for a collection or collection object
     """
     # TODO just get doc_type
-    document = DOCSTORE.es.get(
-        index=DOCSTORE.index_name(identifier.Identifier(object_id).model),
+    document = models.DOCSTORE.es.get(
+        index=models.DOCSTORE.index_name(identifier.Identifier(object_id).model),
         id=object_id
     )
-    model = document['_index'].replace(docstore.INDEX_PREFIX, '')
+    model = document['_index'].replace(models.INDEX_PREFIX, '')
     if   model == 'repository': return organizations(request._request, object_id)
     elif model == 'organization': return collections(request._request, object_id)
     elif model == 'collection': return entities(request._request, object_id)
@@ -163,40 +157,40 @@ def _list(request, data):
     path = request.META['PATH_INFO']
     if isinstance(data, dict):
         return Response(data)
-    return Response(data.ordered_dict(request, FORMATTERS))
+    return Response(data.ordered_dict(request, models.FORMATTERS))
     
 @api_view(['GET'])
 def organizations(request, object_id, format=None):
     offset = int(request.GET.get('offset', 0))
-    return _list(request, Repository.children(
+    return _list(request, models.Repository.children(
         object_id, request, limit=DEFAULT_LIMIT, offset=offset
     ))
 
 @api_view(['GET'])
 def collections(request, object_id, format=None):
     offset = int(request.GET.get('offset', 0))
-    return _list(request, Organization.children(
+    return _list(request, models.Organization.children(
         object_id, request, limit=DEFAULT_LIMIT, offset=offset
     ))
 
 @api_view(['GET'])
 def entities(request, object_id, format=None):
     offset = int(request.GET.get('offset', 0))
-    return _list(request, Collection.children(
+    return _list(request, models.Collection.children(
         object_id, request, limit=DEFAULT_LIMIT, offset=offset
     ))
 
 @api_view(['GET'])
 def segments(request, object_id, format=None):
     offset = int(request.GET.get('offset', 0))
-    return _list(request, Entity.children(
+    return _list(request, models.Entity.children(
         object_id, request, limit=DEFAULT_LIMIT, offset=offset
     ))
 
 @api_view(['GET'])
 def files(request, object_id, format=None):
     offset = int(request.GET.get('offset', 0))
-    return _list(request, Entity.files(
+    return _list(request, models.Entity.files(
         object_id, request, limit=DEFAULT_LIMIT, offset=offset
     ))
 
@@ -205,7 +199,7 @@ def facets(request, object_id, format=None):
     """List of facets
     """
     offset = int(request.GET.get('offset', 0))
-    data = Facet.nodes(object_id, request, offset=offset)
+    data = models.Facet.nodes(object_id, request, offset=offset)
     return _list(request, data)
 
 @api_view(['GET'])
@@ -215,7 +209,7 @@ def facetterms(request, facet_id, format=None):
     `facet_id`: "topics", "facility", "format", "genre", or "rights". 
     """
     offset = int(request.GET.get('offset', 0))
-    data = Facet.children(
+    data = models.Facet.children(
         facet_id, request,
         sort=[('id','asc')],
         offset=offset,
@@ -238,7 +232,7 @@ def term_objects(request, facet_id, term_id, limit=DEFAULT_LIMIT, offset=0):
     """
     object_id = '%s-%s' % (facet_id, term_id)
     offset = int(request.GET.get('offset', 0))
-    data = Term.objects(facet_id, term_id, request, limit=limit, offset=offset)
+    data = models.Term.objects(facet_id, term_id, request, limit=limit, offset=offset)
     return _list(request, data)
 
 @api_view(['GET'])
@@ -246,11 +240,11 @@ def object_detail(request, object_id):
     """Information for a specific object.
     """
     # TODO just get doc_type
-    document = DOCSTORE.es.get(
-        index=DOCSTORE.index_name(identifier.Identifier(object_id).model),
+    document = models.DOCSTORE.es.get(
+        index=models.DOCSTORE.index_name(identifier.Identifier(object_id).model),
         id=object_id
     )
-    model = document['_index'].replace(docstore.INDEX_PREFIX, '')
+    model = document['_index'].replace(models.INDEX_PREFIX, '')
     if   model == 'repository': return repository(request._request, object_id)
     elif model == 'organization': return organization(request._request, object_id)
     elif model == 'collection': return collection(request._request, object_id)
@@ -268,26 +262,26 @@ def _detail(request, data):
 
 @api_view(['GET'])
 def repository(request, object_id, format=None):
-    return _detail(request, Repository.get(object_id, request))
+    return _detail(request, models.Repository.get(object_id, request))
 
 @api_view(['GET'])
 def organization(request, object_id, format=None):
-    return _detail(request, Organization.get(object_id, request))
+    return _detail(request, models.Organization.get(object_id, request))
 
 @api_view(['GET'])
 def collection(request, object_id, format=None):
     filter_if_branded(request, object_id)
-    return _detail(request, Collection.get(object_id, request))
+    return _detail(request, models.Collection.get(object_id, request))
 
 @api_view(['GET'])
 def entity(request, object_id, format=None):
     filter_if_branded(request, object_id)
-    return _detail(request, Entity.get(object_id, request))
+    return _detail(request, models.Entity.get(object_id, request))
 
 @api_view(['GET'])
 def file(request, object_id, format=None):
     filter_if_branded(request, object_id)
-    return _detail(request, File.get(object_id, request))
+    return _detail(request, models.File.get(object_id, request))
 
 @api_view(['GET'])
 def name(request, object_id, format=None):
@@ -297,23 +291,23 @@ def name(request, object_id, format=None):
 @api_view(['GET'])
 def narrators(request, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = Narrator.narrators(request, offset=offset)
+    data = models.Narrator.narrators(request, offset=offset)
     return _list(request, data)
 
 @api_view(['GET'])
 def narrator(request, object_id, format=None):
-    data = Narrator.get(object_id, request)
+    data = models.Narrator.get(object_id, request)
     return _detail(request, data)
 
 @api_view(['GET'])
 def narrator_interviews(request, object_id, format=None):
     offset = int(request.GET.get('offset', 0))
-    data = Narrator.interviews(object_id, request, limit=1000)
+    data = models.Narrator.interviews(object_id, request, limit=1000)
     return _list(request, data)
 
 @api_view(['GET'])
 def facet_index(request, format=None):
-    data = Facet.facets(request)
+    data = models.Facet.facets(request)
     return Response(data)
 
 @api_view(['GET'])
@@ -322,7 +316,7 @@ def facet(request, facet_id, format=None):
     
     `facet_id`: "topics", "facility", "format", "genre", or "rights". 
     """
-    data = Facet.get(facet_id, request)
+    data = models.Facet.get(facet_id, request)
     return _detail(request, data)
 
 @api_view(['GET'])
@@ -339,5 +333,5 @@ def facetterm(request, facet_id, term_id, format=None):
     - http://partner.densho.org/vocab/api/0.2/rights.json
     """
     object_id = '%s-%s' % (facet_id, term_id)
-    data = Term.get(object_id, request)
+    data = models.Term.get(object_id, request)
     return _detail(request, data)

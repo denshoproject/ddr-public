@@ -14,12 +14,14 @@ from django.core.cache import cache
 from rest_framework.exceptions import NotFound
 from rest_framework.reverse import reverse
 
+from elastictools import docstore
+from elastictools import search
 from namesdb import sourcefile
 from namesdb import definitions
 from namesdb.models import Record, DOC_TYPE
-from names import forms
-from ui import docstore
-from ui import search
+
+# set default hosts and index
+DOCSTORE = docstore.Docstore('ddr', settings.DOCSTORE_HOST, settings)
 
 NAME_RECORD_DOCTYPE = 'namesdbrecord'
 
@@ -39,7 +41,18 @@ SEARCH_NESTED_FIELDS = []
 SEARCH_AGG_FIELDS = {'m_camp': 'm_camp'}
 
 DATASET_LABELS = definitions.FIELD_DEFINITIONS['m_dataset']['choices']
-CAMP_LABELS = {key: val for key,val in forms.FORMS_CHOICES['m_camp-choices']}
+CAMP_LABELS = {
+    '4-amache': 'Amache',
+    '3-gilariver': 'Gila River',
+    '5-heartmountain': 'Heart Mountain',
+    '6-jerome': 'Jerome',
+    '7-manzanar': 'Manzanar',
+    '8-minidoka': 'Minidoka',
+    '2-poston': 'Poston',
+    '9-rohwer': 'Rohwer',
+    '1-topaz': 'Topaz',
+    '10-tulelake': 'Tule Lake',
+}
 STATES = {
     'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas',
     'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut',
@@ -126,7 +139,7 @@ class NameRecord(object):
         @param request: Django HttpRequest
         @returns: OrderedDict
         """
-        document = docstore.Docstore().es.get(
+        document = DOCSTORE.es.get(
             index=NAME_RECORD_DOCTYPE,
             id=oid
         )
@@ -205,11 +218,12 @@ class NameRecord(object):
         #]
         #return not_this_record
         params = {'m_pseudoid': record_m_pseudoid_nospaces}
-        searcher = search.Searcher()
+        searcher = search.Searcher(DOCSTORE)
         searcher.prepare(
             params=params,
             params_whitelist=SEARCH_PARAM_WHITELIST,
             search_models=SEARCH_MODELS,
+            sort=[],
             fields=SEARCH_INCLUDE_FIELDS,
             fields_nested=SEARCH_NESTED_FIELDS,
             fields_agg=SEARCH_AGG_FIELDS,
@@ -234,11 +248,12 @@ class NameRecord(object):
         else:
             return []
         params = {'m_familyno': familyno}
-        searcher = search.Searcher()
+        searcher = search.Searcher(DOCSTORE)
         searcher.prepare(
             params=params,
             params_whitelist=SEARCH_PARAM_WHITELIST,
             search_models=SEARCH_MODELS,
+            sort=[],
             fields=SEARCH_INCLUDE_FIELDS,
             fields_nested=SEARCH_NESTED_FIELDS,
             fields_agg=SEARCH_AGG_FIELDS,

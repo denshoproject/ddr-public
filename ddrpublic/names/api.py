@@ -11,13 +11,10 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 
-from ui import docstore
-from ui import search
+from elastictools import docstore
+from elastictools import search
 from namesdb.definitions import SEARCH_FIELDS as NAMESDB_SEARCH_FIELDS
 from . import models
-
-# set default hosts and index
-DOCSTORE = docstore.Docstore()
 
 DEFAULT_LIMIT = 25
 

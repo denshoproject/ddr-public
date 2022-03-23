@@ -8,10 +8,10 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.cache import cache_page
 
+from elastictools import search
 from .. import encyc
 from .. import forms_search as forms
 from .. import models
-from .. import search
 from ..decorators import ui_state
 
 SHOW_THESE = ['topics', 'facility', 'location', 'format', 'genre',]
@@ -105,14 +105,18 @@ def term( request, facet_id, term_id ):
     params = request.GET.copy()
     params['match_all'] = 'true'
     params[facet_id] = term_id
-    searcher = search.Searcher()
+    searcher = search.Searcher(models.DOCSTORE)
     searcher.prepare(
         params=params,
-        fields=search.SEARCH_INCLUDE_FIELDS,
-        fields_agg=search.SEARCH_AGG_FIELDS,
+        params_whitelist=models.SEARCH_PARAM_WHITELIST,
+        search_models=models.SEARCH_MODELS,
+        sort=[],
+        fields=models.SEARCH_INCLUDE_FIELDS,
+        fields_nested=models.SEARCH_NESTED_FIELDS,
+        fields_agg=models.SEARCH_AGG_FIELDS,
     )
     
-    limit,offset = search.limit_offset(request)
+    limit,offset = search.limit_offset(request, settings.RESULTS_PER_PAGE)
     results = searcher.execute(limit, offset)
     paginator = Paginator(
         results.ordered_dict(
