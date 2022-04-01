@@ -8,6 +8,7 @@ import requests
 
 from django.conf import settings
 from django.core.cache import cache
+from django.shortcuts import Http404
 
 from rest_framework.exceptions import NotFound
 from rest_framework.reverse import reverse
@@ -421,10 +422,13 @@ def docstore_search(text='', must=[], should=[], mustnot=[], models=[], fields=[
     )
 
 def _object(request, oid, format=None):
-    data = DOCSTORE.es.get(
-        index=DOCSTORE.index_name(identifier.Identifier(oid).model),
-        id=oid
-    )
+    try:
+        data = DOCSTORE.es.get(
+            index=DOCSTORE.index_name(identifier.Identifier(oid).model),
+            id=oid
+        )
+    except docstore.NotFoundError:
+        raise Http404
     return format_object_detail2(data, request)
 
 def _object_children(document, request, models=[], sort_fields=[], fields=SEARCH_INCLUDE_FIELDS, limit=DEFAULT_LIMIT, offset=0):
