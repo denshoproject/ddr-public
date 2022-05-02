@@ -227,7 +227,7 @@ install-virtualenv:
 	@echo ""
 	@echo "install-virtualenv -----------------------------------------------------"
 	apt-get --assume-yes install python3-pip python3-venv
-	python3 -m venv $(VIRTUALENV)
+	python3 -m venv --system-site-packages $(VIRTUALENV)
 	source $(VIRTUALENV)/bin/activate; \
 	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) pip
 
@@ -266,6 +266,7 @@ setup-namesdb:
 install-namesdb: install-virtualenv
 	@echo ""
 	@echo "install-namesdb --------------------------------------------------------"
+	apt-get --assume-yes install python3-click
 	git status | grep "On branch"
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_NAMESDB) && python setup.py install
@@ -292,7 +293,24 @@ get-ddr-public:
 install-ddr-public: install-setuptools mkdir-ddr-public
 	@echo ""
 	@echo "install-ddr-public -----------------------------------------------------"
-	apt-get --assume-yes install imagemagick sqlite3 supervisor
+	apt-get --assume-yes install imagemagick sqlite3 supervisor \
+	python3-django \
+	python3-django-redis \
+	python3-django-redis-sessions \
+	python3-djangorestframework \
+	python3-django-cors-headers \
+	python3-bs4 \
+	python3-git \
+	python3-gunicorn \
+	python3-redis \
+	python3-requests \
+	python3-sorl-thumbnail \
+	bpython3 \
+	python3-coverage \
+	python3-pytest \
+	python3-pytest-cov \
+	python3-pytest-django \
+	python3-pytest-xdist
 	source $(VIRTUALENV)/bin/activate; \
 	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) -r $(INSTALL_PUBLIC)/requirements.txt
 
