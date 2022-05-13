@@ -8,6 +8,7 @@ django-log-request-id              # BSD      y        ...
 django-robots>=4.0,<4.1            # BSD               ...
 drf-yasg>=1.20.0,<1.21             # BSD      y        (testing)
 envoy==0.0.3                       # MIT      ???
+gunicorn
 
 git+https://github.com/denshoproject/densho-elastictools.git
 

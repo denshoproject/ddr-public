@@ -301,7 +301,6 @@ install-ddr-public: install-setuptools mkdir-ddr-public
 	python3-django-cors-headers \
 	python3-bs4 \
 	python3-git \
-	python3-gunicorn \
 	python3-redis \
 	python3-requests \
 	python3-sorl-thumbnail \
