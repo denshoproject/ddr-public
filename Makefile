@@ -512,10 +512,26 @@ deb-bullseye:
 	--description "$(DEB_DESCRIPTION)"   \
 	--depends "imagemagick"  \
 	--depends "nginx"   \
-	--depends "python3"   \
 	--depends "redis-server"   \
 	--depends "sqlite3"  \
 	--depends "supervisor"   \
+	--depends "python3"   \
+	--depends "python3-django" \
+	--depends "python3-django-redis" \
+	--depends "python3-django-redis-sessions" \
+	--depends "python3-djangorestframework" \
+	--depends "python3-django-cors-headers" \
+	--depends "python3-bs4" \
+	--depends "python3-git" \
+	--depends "python3-redis" \
+	--depends "python3-requests" \
+	--depends "python3-sorl-thumbnail" \
+	--depends "bpython3" \
+	--depends "python3-coverage" \
+	--depends "python3-pytest" \
+	--depends "python3-pytest-cov" \
+	--depends "python3-pytest-django" \
+	--depends "python3-pytest-xdist" \
 	--after-install "bin/fpm-mkdir-log.sh"   \
 	--chdir $(INSTALL_PUBLIC)   \
 	conf/ddrpublic.cfg=etc/ddr/ddrpublic.cfg   \
