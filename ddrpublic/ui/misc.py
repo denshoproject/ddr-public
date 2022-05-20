@@ -60,7 +60,7 @@ def domain_org(request):
                 org = o
     return repo,org
 
-def choose_base_template(org, default='ui/base.html'):
+def choose_base_template(org, default='base.html'):
     """Choose base template given the selected org
     
     Looks for an existing base template file for the org;
@@ -73,12 +73,12 @@ def choose_base_template(org, default='ui/base.html'):
     @returns: template name (e.g. 'ui/base.html')
     """
     if org:
-        template_name = 'ui/base-%s.html' % org
+        template_name = 'base-%s.html' % org
         try:
             get_template(template_name)
             template = template_name
         except TemplateDoesNotExist:
-            template = 'ui/base-partner.html'
+            template = 'base-partner.html'
     else:
         template = default
     return template
