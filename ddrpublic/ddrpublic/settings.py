@@ -4,13 +4,13 @@ import configparser
 import json
 import logging
 import os
+from pathlib import Path
 import subprocess
 import sys
 
 from elastictools import docstore
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = Path(__file__).absolute().parent.parent
 
 with open(os.path.join(BASE_DIR, '..', 'VERSION'), 'r') as f:
     VERSION = f.read().strip()
