@@ -33,12 +33,12 @@ PACKAGE_TIMESTAMP := $(shell git log -1 --pretty="%ad" --date=short | tr -d -)
 # - templates/static/nginx.conf.j2
 PACKAGE_SERVER=ddr.densho.org/static/ddrpublic
 
-SRC_REPO_NAMESDB=https://github.com/densho/namesdb
+SRC_REPO_NAMESDB=https://github.com/denshoproject/namesdb-public.git
 SRC_REPO_ASSETS=https://github.com/denshoproject/ddr-public-assets.git
 
 INSTALL_BASE=/opt
 INSTALL_PUBLIC=$(INSTALL_BASE)/ddr-public
-INSTALL_NAMESDB=./namesdb
+INSTALL_NAMESDB=$(INSTALL_BASE)/namesdb-public
 INSTALL_ASSETS=/opt/ddr-public-assets
 REQUIREMENTS=./requirements.txt
 PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
@@ -75,7 +75,6 @@ TGZ_BRANCH := $(shell python3 bin/package-branch.py)
 TGZ_FILE=$(APP)_$(APP_VERSION)
 TGZ_DIR=$(INSTALL_PUBLIC)/$(TGZ_FILE)
 TGZ_PUBLIC=$(TGZ_DIR)/ddr-public
-TGZ_NAMES=$(TGZ_DIR)/ddr-public/namesdb
 TGZ_ASSETS=$(TGZ_DIR)/ddr-public/ddr-public-assets
 
 # Adding '-rcN' to VERSION will name the package "ddrlocal-release"
@@ -255,7 +254,7 @@ get-namesdb:
 	git status | grep "On branch"
 	if test -d $(INSTALL_NAMESDB); \
 	then cd $(INSTALL_NAMESDB) && git pull; \
-	else cd $(INSTALL_PUBLIC) && git clone $(SRC_REPO_NAMESDB); \
+	else cd $(INSTALL_BASE) && git clone $(SRC_REPO_NAMESDB); \
 	fi
 
 setup-namesdb:
@@ -266,11 +265,10 @@ setup-namesdb:
 install-namesdb: install-virtualenv
 	@echo ""
 	@echo "install-namesdb --------------------------------------------------------"
-	git status | grep "On branch"
-	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_NAMESDB) && python setup.py install
-	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_NAMESDB) && pip3 install --cache-dir=$(PIP_CACHE_DIR) -U -r requirements.txt
+	-rm -Rf $(INSTALL_PUBLIC)/namesdb_public
+	ln -s $(INSTALL_NAMESDB)/namessite/namesdb_public $(INSTALL_PUBLIC)/ddrpublic/namesdb_public
+#	source $(VIRTUALENV)/bin/activate; \
+#	cd $(INSTALL_NAMESDB) && pip3 install --cache-dir=$(PIP_CACHE_DIR) -U -r requirements.txt
 
 uninstall-namesdb: install-virtualenv
 	@echo ""

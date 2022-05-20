@@ -107,13 +107,11 @@ CACHE_TIMEOUT_LONG = int(config.get('public', 'cache_timeout_long'))
 
 # Elasticsearch
 DOCSTORE_HOST = config.get('public', 'docstore_host')
-NAMESDB_DOCSTORE_HOST = config.get('public', 'namesdb_host')
 DOCSTORE_SSL_CERTFILE = config.get('public', 'docstore_ssl_certfile')
 DOCSTORE_USERNAME = 'elastic'
 DOCSTORE_PASSWORD = config.get('public', 'docstore_password')
 _docstore_clusters = config.get('public', 'docstore_clusters')
 DOCSTORE_CLUSTER = docstore.cluster(_docstore_clusters, DOCSTORE_HOST)
-NAMESDB_CLUSTER = docstore.cluster(_docstore_clusters, NAMESDB_DOCSTORE_HOST)
 
 # Filesystem path and URL for static media (mostly used for interfaces).
 STATIC_ROOT = config.get('public', 'static_root')
@@ -373,7 +371,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 #'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'names.context_processors.sitewide',
                 'ui.context_processors.sitewide',
             ],
         },
