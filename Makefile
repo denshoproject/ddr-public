@@ -294,22 +294,24 @@ install-ddr-public: install-setuptools mkdir-ddr-public
 	@echo ""
 	@echo "install-ddr-public -----------------------------------------------------"
 	apt-get --assume-yes install imagemagick sqlite3 supervisor \
-	python3-django \
 	python3-django-redis \
 	python3-django-redis-sessions \
 	python3-djangorestframework \
-	python3-django-cors-headers \
 	python3-bs4 \
 	python3-git \
 	python3-redis \
 	python3-requests \
-	python3-sorl-thumbnail \
 	bpython3 \
 	python3-coverage \
 	python3-pytest \
 	python3-pytest-cov \
 	python3-pytest-django \
 	python3-pytest-xdist
+ifeq ($(DEBIAN_CODENAME), bullseye)
+	apt-get --assume-yes -t bullseye-backports install \
+	python3-django \
+	python3-sorl-thumbnail
+endif
 	source $(VIRTUALENV)/bin/activate; \
 	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) -r $(INSTALL_PUBLIC)/requirements.txt
 
