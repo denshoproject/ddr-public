@@ -2,10 +2,10 @@ from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
 from django.views.generic import TemplateView
 
+from drf_yasg import views as yasg_views
+from drf_yasg import openapi
 from rest_framework import permissions
-from rest_framework.schemas import get_schema_view
 from rest_framework.urlpatterns import format_suffix_patterns
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from . import api
 from . import sitemaps
@@ -18,6 +18,20 @@ SITEMAPS = {
 
 API_BASE = '/api/0.2/'
 
+schema_view = yasg_views.get_schema_view(
+   openapi.Info(
+      title="Densho Digital Repository API",
+      default_version='0.2',
+      #description="DESCRIPTION TEXT HERE",
+      terms_of_service="http://ddr.densho.org/terms/",
+      contact=openapi.Contact(email="info@densho.org"),
+      #license=openapi.License(name="TBD"),
+   ),
+   #validators=['flex', 'ssv'],
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
+
 urlpatterns = [
     
     path('robots.txt', include('robots.urls')),
@@ -25,20 +39,18 @@ urlpatterns = [
     
     path('redirect/archive.densho.org', redirect, name='ui-redirect'),
     path('names/', include('names.urls')),
-
-    path('api/openapi', get_schema_view(
-        title="Densho Digital Repository",
-        description="Longer descriptive text",
-        version="1.0.0",
-    ), name='openapi-schema'),
-
-    path('api/schema/', SpectacularAPIView.as_view(), name="schema"),
-    path(
-        'api/docs/',
-        SpectacularSwaggerView.as_view(
-            template_name="swagger-ui.html", url_name="schema"
-        ),
-        name="swagger-ui",
+    
+    path('api/swagger.json',
+         schema_view.without_ui(cache_timeout=0), name='schema-json'
+    ),
+    path('api/swagger.yaml',
+         schema_view.without_ui(cache_timeout=0), name='schema-yaml'
+    ),
+    path('api/swagger/',
+         schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'
+    ),
+    path('api/redoc/',
+         schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'
     ),
     
     path('api/0.2/ui-state/', ui_state, name='ui-api-state'),

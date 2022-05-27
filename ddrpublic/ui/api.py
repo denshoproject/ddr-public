@@ -8,6 +8,8 @@ from rest_framework.request import Request as RestRequest
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 from elastictools import docstore
 from elastictools import search
@@ -31,7 +33,7 @@ CHILDREN = {
 
 @api_view(['GET'])
 def index(request, format=None):
-    """OpenAPI UI: /api/openapi/
+    """Swagger UI: /api/swagger/
     """
     repo = 'ddr'
     data = {
