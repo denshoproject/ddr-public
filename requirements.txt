@@ -5,19 +5,17 @@
 
                                    # LICENSE  Python3
 beautifulsoup4==4.6.0              # MIT      y
-django>=3.2.0,<3.3                 # MIT      y
-django-bootstrap-pagination>=1.7,<1.8 # MIT      ???
+django>=4.0.0,<4.1                 # MIT
+django-bootstrap-pagination-forked # MIT      ???     TODO replace
 django-cors-headers>=3.7,<3.8      # MIT      y
 django-log-request-id              # BSD      y
-django-redis>=4.12,<4.13           # BSD      y
-django-redis-sessions>=0.6,<0.7    # BSD      y
 djangorestframework>=3.12.0,<3.13  # BSD      y
-django-robots>=4.0,<4.1            # BSD
+django-robots>=5.0,<5.1            # BSD
 drf-yasg>=1.20.0,<1.21             # BSD      y
 envoy==0.0.3                       # MIT      ???
 GitPython>=3.1,<3.2                # BSD      y
 gunicorn>=20.0,<20.1               # MIT      y
-redis>=3.5.0,<3.6                  # MIT      y
+redis                              # MIT      y
 requests>=2.25,<2.26               # Apache2  y
 sorl-thumbnail>=12.7,<12.8         # BSD      y
 

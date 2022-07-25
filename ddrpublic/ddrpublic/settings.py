@@ -276,11 +276,8 @@ REDIS_DB_SORL = '3'
 CACHES = {
     "default": {
         #'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://%s:%s" % (REDIS_HOST, REDIS_PORT),
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB_CACHE}",
     }
 }
 
@@ -360,7 +357,7 @@ def UI_DOWNLOAD_URL( ddrfile ):
     return None
 
 
-SESSION_ENGINE = 'redis_sessions.session'
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
 TEMPLATES = [
     {
