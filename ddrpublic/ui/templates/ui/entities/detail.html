@@ -165,11 +165,11 @@ IA metadata: {{ object.ia_meta|safe }}
                             <!-- entity.creators -->
                             <h3 class="page-header">CREATORS</h3>
                             <ul class="list-unstyled">
-                              {% for item in object.creators %}
+                              {% for person in object.creators %}
                               <li>
-                                <a href="{% url "ui-search-results" %}?fulltext=creators:{{ item.namepart }}">
-                                  {{ item.namepart }} ({{ item.role }})
-                                </a>
+                                {{ person.namepart }} ({{ person.role }})
+                                <a href="{% url "ui-search-results" %}?fulltext=creators:{{ person.namepart }}">search</a>
+                                <a href="{% url "namespub-person" person.naan person.noid %}">namesdb</a>
                               </li>
                               {% endfor %}
                             </ul>
