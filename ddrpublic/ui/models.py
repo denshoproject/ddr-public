@@ -654,6 +654,11 @@ def format_object_detail2(document, request, listitem=False):
     for key in document.keys():
         if key not in HIDDEN_FIELDS:
             d[key] = document[key]
+    # creators: split nr_id into naan and noid
+    if d.get('creators'):
+        for person in d.get('creators'):
+            if person.get('nr_id'):
+                person['naan'],person['noid'] = person['nr_id'].split('/')
     # download filename
     if d['links'].get('img'):
         d['download_large'] = os.path.basename(d['links']['img'])
