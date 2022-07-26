@@ -1,30 +1,30 @@
 <div id="rightspanel">
-  {% ifequal code "nocc" %}
+  {% if code == "nocc" %}
   <div class="alert alert-warning rights-nocc">
     <strong><i class="fa fa-warning"></i>Caution</strong>
     This object is protected by copyright. You must ask permission from the rights holder if you re-use or publish it elsewhere, unless your project falls under a fair-use exception. 
     <p class="small"><strong><a href="/using/#reusingcontent" style="color: #8a6d3b;">Learn more...</a></strong></p>
   </div>
-  {% endifequal %}
-  {% ifequal code "pcc" %}
+  {% endif %}
+  {% if code == "pcc" %}
   <div class="alert alert-info rights-pcc">
     <strong><i class="fa fa-info-circle"></i>Free re-use available</strong>
     This object is protected by copyright, but the rights holder has allowed us to make it available to you for non-commercial, educational projects. 
     <p class="small"><strong><a href="/using/#reusingcontent" style="color: #337ab7;">Learn more...</a></strong></p>
   </div>
-  {% endifequal %}
-  {% ifequal code "cc" %}
+  {% endif %}
+  {% if code == "cc" %}
   <div class="alert alert-success rights-cc">
     <strong><i class="fa fa-thumbs-up"></i>Free to use</strong>
     This object is offered under a Creative Commons license. You are free to use it for any non-commercial purpose as long as you properly cite it, and if you share what you have created.
     <p class="small"><strong><a href="/using/#reusingcontent" style="color: #3c763d;">Learn more...</a></strong></p>
   </div>
-  {% endifequal %}
-  {% ifequal code "pdm" %}
+  {% endif %}
+  {% if code == "pdm" %}
   <div class="alert alert-success rights-pdm">
     <strong><i class="fa fa-thumbs-up"></i>Free to use</strong>
     This object is in the public domain. You may freely use it for any purpose.
     <p class="small"><strong><a href="/using/#reusingcontent" style="color: #3c763d;">Learn more...</a></strong></p>
   </div>
-  {% endifequal %}
+  {% endif %}
 </div><!-- #rights -->
