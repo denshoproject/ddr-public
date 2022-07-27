@@ -266,9 +266,9 @@ install-namesdb: install-virtualenv
 	@echo ""
 	@echo "install-namesdb --------------------------------------------------------"
 	-rm -Rf $(INSTALL_PUBLIC)/namesdb_public
-	ln -s $(INSTALL_NAMESDB)/namessite/namesdb_public $(INSTALL_PUBLIC)/ddrpublic/namesdb_public
-#	source $(VIRTUALENV)/bin/activate; \
-#	cd $(INSTALL_NAMESDB) && pip3 install --cache-dir=$(PIP_CACHE_DIR) -U -r requirements.txt
+	-ln -s $(INSTALL_NAMESDB)/namessite/namesdb_public $(INSTALL_PUBLIC)/ddrpublic/namesdb_public
+	source $(VIRTUALENV)/bin/activate; \
+	cd $(INSTALL_NAMESDB) && pip3 install --cache-dir=$(PIP_CACHE_DIR) -U -r requirements.txt
 
 uninstall-namesdb: install-virtualenv
 	@echo ""
