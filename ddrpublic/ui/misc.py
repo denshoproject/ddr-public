@@ -1,6 +1,5 @@
 import os
-
-import envoy
+import subprocess
 
 from django.conf import settings
 from django.contrib.sites.requests import RequestSite
@@ -37,9 +36,9 @@ def git_commits():
     cmd_path = settings.CMDLN_INSTALL_PATH
     def_path = settings.REPO_MODELS_PATH
     cmd = 'git log --pretty=format:"%h %ci%d" -1'
-    os.chdir(pub_path); commits['pub'] = envoy.run(cmd).std_out
-    os.chdir(cmd_path); commits['cmd'] = envoy.run(cmd).std_out
-    os.chdir(def_path); commits['def'] = envoy.run(cmd).std_out
+    os.chdir(pub_path); commits['pub'] = subprocess.check_output(cmd, shell=True)
+    os.chdir(cmd_path); commits['cmd'] = subprocess.check_output(cmd, shell=True)
+    os.chdir(def_path); commits['def'] = subprocess.check_output(cmd, shell=True)
     return commits
 
 def domain_org(request):
