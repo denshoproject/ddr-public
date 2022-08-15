@@ -110,7 +110,7 @@ def listitem( obj ):
     return t.render({'object':obj})
 
 def addthis():
-    """AddThis button
+    """AddThis button (now sharingbuttons.io)
     """
     t = template.loader.get_template('ui/addthis.html')
     return t.render({})
