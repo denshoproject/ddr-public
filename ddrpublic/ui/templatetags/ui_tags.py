@@ -1,6 +1,7 @@
 import datetime
 import os
 import re
+from urllib.parse import urlencode, quote
 
 from django import template
 from django.conf import settings
@@ -109,11 +110,24 @@ def listitem( obj ):
     t = template.loader.get_template(template_path)
     return t.render({'object':obj})
 
-def addthis():
+def addthis(obj):
     """AddThis button (now sharingbuttons.io)
+    
+    Facebook: https://facebook.com/sharer/sharer.php?u=http%3A%2F%2Fsharingbuttons.io
+    Twitter: https://twitter.com/intent/tweet/?text=Share%20on%20social%20media&amp;url=http%3A%2F%2Fsharingbuttons.io
+    Email: mailto:?subject=Share%20on%20social%20media&amp;body=http%3A%2F%2Fsharingbuttons.io
     """
+    title = obj['title']
+    objecturl = obj['links']['html']
+    fb_query = urlencode({'u': objecturl}, quote_via=quote)
+    tw_query = urlencode({'text':title, 'url':objecturl}, quote_via=quote)
+    mail_query = urlencode({'subject':title, 'body':objecturl}, quote_via=quote)
     t = template.loader.get_template('ui/addthis.html')
-    return t.render({})
+    return t.render({
+        'facebook_href': f'https://facebook.com/sharer/sharer.php?{fb_query}',
+        'twitter_href': f'https://twitter.com/intent/tweet/?{tw_query}',
+        'mail_href': f'mailto:?{mail_query}',
+    })
 
 def cite( url ):
     """Citation tag
