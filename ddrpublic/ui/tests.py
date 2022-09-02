@@ -417,9 +417,9 @@ class SearchViews(TestCase):
             assert item.doc_count
 
     def test_search_creators(self):
-        """Searches the Persons/Organizations links on entity-detail pages"""
+        """Searches the Creators links on entity-detail pages"""
         response = self.client.get(
-            reverse('ui-search-index'), {'fulltext': 'creators:Yanagihara, Akio'}
+            reverse('ui-search-index'), {'fulltext': 'namepart:"Isozaki, Tamotsu"'}
         )
         self.assertEqual(response.status_code, 200)
         
