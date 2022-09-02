@@ -227,7 +227,7 @@ install-virtualenv:
 	@echo ""
 	@echo "install-virtualenv -----------------------------------------------------"
 	apt-get --assume-yes install python3-pip python3-venv
-	python3 -m venv $(VIRTUALENV)
+	python3 -m venv --system-site-packages $(VIRTUALENV)
 	source $(VIRTUALENV)/bin/activate; \
 	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) pip
 
@@ -292,9 +292,31 @@ get-ddr-public:
 install-ddr-public: install-setuptools mkdir-ddr-public
 	@echo ""
 	@echo "install-ddr-public -----------------------------------------------------"
-	apt-get --assume-yes install imagemagick sqlite3 supervisor
+	apt-get --assume-yes install  \
+	imagemagick                   \
+	bpython3                      \
+	python3                       \
+	python3-git                   \
+	python3-gunicorn              \
+	python3-redis                 \
+	python3-requests              \
+	python3-sorl-thumbnail        \
+	sqlite3                       \
+	supervisor
 	source $(VIRTUALENV)/bin/activate; \
 	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) -r $(INSTALL_PUBLIC)/requirements.txt
+
+install-test:
+	@echo ""
+	@echo "install-test ------------------------------------------------------------"
+	apt-get --assume-yes install  \
+	python3-coverage              \
+	python3-pytest                \
+	python3-pytest-cov            \
+	python3-pytest-django         \
+	python3-pytest-xdist
+	source $(VIRTUALENV)/bin/activate; \
+	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) -r $(INSTALL_PUBLIC)/requirements-dev.txt
 
 mkdir-ddr-public:
 	@echo ""
@@ -494,8 +516,14 @@ deb-bullseye:
 	--maintainer "$(DEB_MAINTAINER)"   \
 	--description "$(DEB_DESCRIPTION)"   \
 	--depends "imagemagick"  \
-	--depends "nginx"   \
-	--depends "python3"   \
+	--depends "nginx"  \
+	--depends "bpython3"  \
+	--depends "python3"  \
+	--depends "python3-git"  \
+	--depends "python3-gunicorn"  \
+	--depends "python3-redis"  \
+	--depends "python3-requests"  \
+	--depends "python3-sorl-thumbnail"  \
 	--depends "redis-server"   \
 	--depends "sqlite3"  \
 	--depends "supervisor"   \
