@@ -6,9 +6,14 @@ ddrindex create
 ddrindex vocabs /opt/densho-vocab/api/0.2/
 ddrindex narrators /opt/densho-vocab/api/0.2/narrators.json
 ddrindex repo /var/www/media/ddr/ddr/repository.json
-ddrindex org /var/www/media/ddr/ddr-testing/organization.json
 ddrindex org /var/www/media/ddr/ddr-densho/organization.json
 ddrindex publish -r --force /var/www/media/ddr/ddr-densho-10
+ddrindex publish -r --force /var/www/media/ddr/ddr-densho-400
+ddrindex publish -r --force /var/www/media/ddr/ddr-csujad-30
+ddrindex publish --force /var/www/media/ddr/ddr-densho-1020/
+ddrindex publish -r --force /var/www/media/ddr/ddr-densho-1020/files/ddr-densho-1020-13
+ddrindex publish --force /var/www/media/ddr/ddr-densho-122/
+ddrindex publish -r --force /var/www/media/ddr/ddr-densho-122/files/ddr-densho-122-4-1
 ddrindex publish --force /var/www/media/ddr/ddr-densho-1000/
 ddrindex publish -r --force /var/www/media/ddr/ddr-densho-1000/files/ddr-densho-1000-1
 """
@@ -399,7 +404,7 @@ class SearchViews(TestCase):
     def test_search_persons(self):
         """Searches the Persons/Organizations links on entity-detail pages"""
         response = self.client.get(
-            reverse('ui-search-index'), {'fulltext': 'persons:Yasui, Sachi'}
+            reverse('ui-search-index'), {'fulltext': 'persons:"Yasui, Sachi"'}
         )
         self.assertEqual(response.status_code, 200)
         
@@ -417,9 +422,9 @@ class SearchViews(TestCase):
             assert item.doc_count
 
     def test_search_creators(self):
-        """Searches the Persons/Organizations links on entity-detail pages"""
+        """Searches the Creators links on entity-detail pages"""
         response = self.client.get(
-            reverse('ui-search-index'), {'fulltext': 'creators:Yanagihara, Akio'}
+            reverse('ui-search-index'), {'fulltext': 'namepart:"Isozaki, Tamotsu"'}
         )
         self.assertEqual(response.status_code, 200)
         
