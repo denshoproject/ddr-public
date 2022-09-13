@@ -63,9 +63,9 @@
     <div class="col-sm-10 col-md-10">
       <div class="input-group">
 
-        {% if   search_field == 'fulltext' %}fulltext {{ search_form.fulltext }}
-        {% elif search_field == 'creators' %}creators {{ search_form.creators }}
-        {% elif search_field == 'persons' %}persons {{ search_form.persons }}{% endif %}
+        {% if   search_field == 'fulltext' %}{{ search_form.fulltext }}
+        {% elif search_field == 'creators' %}creators:"{{ search_form.creators.value }}"
+        {% elif search_field == 'persons' %}persons:"{{ search_form.persons.value }}"{% endif %}
 
         <span class="input-group-btn">
           <button class="btn btn-primary"><i class="fa fa-search"></i></button>
@@ -78,7 +78,7 @@
       <h3>
 
         No results for
-        {% if   search_field == 'fulltext' %}fulltext:"{{ search_form.fulltext.value }}"
+        {% if   search_field == 'fulltext' %}"{{ search_form.fulltext.value }}"
         {% elif search_field == 'creators' %}creators:"{{ search_form.creators.value }}"
         {% elif search_field == 'persons' %}persons:"{{ search_form.persons.value }}"{% endif %}
 
