@@ -75,6 +75,22 @@ class SearchForm(forms.Form):
                 )
             ),
             (
+                'creators',
+                forms.CharField(
+                    max_length=50,
+                    required=False,
+                    widget=forms.HiddenInput()
+                )
+            ),
+            (
+                'persons',
+                forms.CharField(
+                    max_length=50,
+                    required=False,
+                    widget=forms.HiddenInput()
+                )
+            ),
+            (
                 'parent',
                 forms.CharField(
                     max_length=255,
