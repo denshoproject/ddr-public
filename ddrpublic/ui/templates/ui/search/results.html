@@ -64,8 +64,9 @@
       <div class="input-group">
 
         {% if   search_field == 'fulltext' %}{{ search_form.fulltext }}
-        {% elif search_field == 'creators' %}creators:"{{ search_form.creators.value }}"
-        {% elif search_field == 'persons' %}persons:"{{ search_form.persons.value }}"{% endif %}
+        {% elif search_field == 'creators' %}{{ search_form.creators }}creators:"{{ search_form.creators.value }}"
+        {% elif search_field == 'persons'  %}{{ search_form.persons  }}persons:"{{ search_form.persons.value }}"
+        {% endif %}
 
         <span class="input-group-btn">
           <button class="btn btn-primary"><i class="fa fa-search"></i></button>
