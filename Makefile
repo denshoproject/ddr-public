@@ -300,7 +300,6 @@ install-ddr-public: install-setuptools mkdir-ddr-public
 	python3-gunicorn              \
 	python3-redis                 \
 	python3-requests              \
-	python3-sorl-thumbnail        \
 	sqlite3                       \
 	supervisor
 	source $(VIRTUALENV)/bin/activate; \
@@ -523,7 +522,6 @@ deb-bullseye:
 	--depends "python3-gunicorn"  \
 	--depends "python3-redis"  \
 	--depends "python3-requests"  \
-	--depends "python3-sorl-thumbnail"  \
 	--depends "redis-server"   \
 	--depends "sqlite3"  \
 	--depends "supervisor"   \

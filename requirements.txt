@@ -8,7 +8,6 @@
 #     python3-gunicorn       \
 #     python3-redis          \
 #     python3-requests       \
-#     python3-sorl-thumbnail \
 #     supervisor
 
                                    # LICENSE  Python3
@@ -19,5 +18,6 @@ django-log-request-id              # BSD      y
 djangorestframework>=3.13.0,<3.14  # BSD      y
 django-robots>=5.0,<5.1            # BSD
 drf-yasg>=1.21.0,<1.22             # BSD      y
+sorl-thumbnail>=12.8,<12.9
 
 git+https://github.com/denshoproject/densho-elastictools.git
