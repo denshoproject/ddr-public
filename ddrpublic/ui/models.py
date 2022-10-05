@@ -53,6 +53,7 @@ SEARCH_PARAM_WHITELIST = [
     'mimetype',
     'persons',
     'rights',
+    'search_hidden',
 ]
 
 # fields where the relevant value is nested e.g. topics.id
@@ -126,6 +127,7 @@ SEARCH_INCLUDE_FIELDS = [
     'display_name',
     'bio',
     'extent',
+    'search_hidden',
 ]
 
 # TODO move to ddr-defs/repo_models/elastic.py?
