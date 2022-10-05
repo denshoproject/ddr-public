@@ -297,7 +297,6 @@ install-ddr-public: install-setuptools mkdir-ddr-public
 	bpython3                      \
 	python3                       \
 	python3-git                   \
-	python3-gunicorn              \
 	python3-redis                 \
 	python3-requests              \
 	sqlite3                       \
@@ -519,7 +518,6 @@ deb-bullseye:
 	--depends "bpython3"  \
 	--depends "python3"  \
 	--depends "python3-git"  \
-	--depends "python3-gunicorn"  \
 	--depends "python3-redis"  \
 	--depends "python3-requests"  \
 	--depends "redis-server"   \
