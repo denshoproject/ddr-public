@@ -183,7 +183,7 @@ IA metadata: {{ object.ia_meta|safe }}
                             <ul class="list-unstyled">
                               {% for item in object.creators %}
                               <li>
-                                <a href="{% url "ui-search-results" %}?creators={{ item.namepart }}">
+                                <a href="{% url "ui-search-results" %}?fulltext={{ item.namepart }}">
                                   {{ item.namepart }} ({{ item.role }})
                                 </a>
                               </li>
@@ -196,7 +196,7 @@ IA metadata: {{ object.ia_meta|safe }}
                             <ul class="list-unstyled">
                               {% for item in object.persons %}
                               <li>
-                                <a href="{% url "ui-search-results" %}?persons={{ item }}">
+                                <a href="{% url "ui-search-results" %}?fulltext={{ item }}">
                                   {{ item }}
                                 </a>
                               </li>
