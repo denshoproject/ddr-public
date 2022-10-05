@@ -224,7 +224,7 @@ IA metadata: {{ object.ia_meta|safe }}
                             <ul class="list-unstyled">
                               {% for item in object.creators %}
                               <li>
-                                <a href="{% url "ui-search-results" %}?fulltext=creators:&quot;{{ item.namepart }}&quot;">
+                                <a href="{% url "ui-search-results" %}?fulltext={{ item.namepart }}">
                                   {{ item.namepart }} ({{ item.role }})
                                 </a>
                               </li>
@@ -237,7 +237,7 @@ IA metadata: {{ object.ia_meta|safe }}
                             <ul class="list-unstyled">
                               {% for item in object.persons %}
                               <li>
-                                <a href="{% url "ui-search-results" %}?fulltext=&quot;{{ item }}&quot;">
+                                <a href="{% url "ui-search-results" %}?fulltext={{ item }}">
                                   {{ item }}
                                 </a>
                               </li>

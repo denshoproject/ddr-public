@@ -72,8 +72,13 @@ def search_ui(request):
         'api_url': api_url,
     }
     
+    if request.GET.get('fulltext'):   context['search_field'] = 'fulltext'
+    elif request.GET.get('creators'): context['search_field'] = 'creators'
+    elif request.GET.get('persons'):  context['search_field'] = 'persons'
+    
     searcher = search.Searcher(models.DOCSTORE)
-    if request.GET.get('fulltext'):
+    if request.GET.get('fulltext') \
+    or request.GET.get('creators') or request.GET.get('persons'):
         # Redirect if fulltext is a DDR ID
         if is_ddr_id(request.GET.get('fulltext')):
             return HttpResponseRedirect(
@@ -92,7 +97,7 @@ def search_ui(request):
         )
         context['searching'] = True
     
-    if searcher.params.get('fulltext'):
+    if context['searching']:
         limit,offset = search.limit_offset(request, settings.RESULTS_PER_PAGE)
         results = searcher.execute(limit, offset)
         paginator = Paginator(
@@ -112,6 +117,7 @@ def search_ui(request):
         
         context['results'] = results
         context['paginator'] = paginator
+        
         context['page'] = page
         context['search_form'] = form
 

@@ -44,6 +44,7 @@ SEARCH_PARAM_WHITELIST = [
     'facility',
     'contributor',
     'creators',
+    'creators.namepart',
     'format',
     'genre',
     'geography',
@@ -52,11 +53,13 @@ SEARCH_PARAM_WHITELIST = [
     'mimetype',
     'persons',
     'rights',
+    'search_hidden',
 ]
 
 # fields where the relevant value is nested e.g. topics.id
 # TODO move to ddr-defs/repo_models/elastic.py?
 SEARCH_NESTED_FIELDS = [
+    'creators',
     'facility',
     'topics',
 ]
@@ -108,6 +111,7 @@ SEARCH_INCLUDE_FIELDS = [
     'description',
     'contributor',
     'creators',
+    'creators.namepart',
     'facility',
     'format',
     'genre',
@@ -123,6 +127,7 @@ SEARCH_INCLUDE_FIELDS = [
     'display_name',
     'bio',
     'extent',
+    'search_hidden',
 ]
 
 # TODO move to ddr-defs/repo_models/elastic.py?
