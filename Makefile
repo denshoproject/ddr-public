@@ -303,6 +303,8 @@ install-ddr-public: install-setuptools mkdir-ddr-public
 	supervisor
 	source $(VIRTUALENV)/bin/activate; \
 	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) -r $(INSTALL_PUBLIC)/requirements.txt
+	sudo -u ddr git config --global --add safe.directory $(INSTALL_PUBLIC)
+	sudo -u ddr git config --global --add safe.directory $(INSTALL_NAMESDB)
 
 install-test:
 	@echo ""
