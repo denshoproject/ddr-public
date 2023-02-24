@@ -1,0 +1,110 @@
+{% extends BASE_TEMPLATE %}
+{% load namesdb_public_tags %}
+
+{% block title %}{{ record.preferred_name }} | Names{% endblock %}
+
+{% block breadcrumbs %}{{ block.super }}
+<li><a href="{% url "namespub-index" %}">Names Database</a></li>
+<li><a href="{% url "namespub-persons" %}">Persons</a></li>
+<li>{{ record.preferred_name }}</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+<section class="container">
+
+  <h2>
+    <a href="{% url "namespub-index" %}">Names Registry</a>
+    - <a href="{% url "namespub-persons" %}">person</a>
+    - <strong>{{ record.preferred_name }}</strong>
+    <small class="font300">{{ record.nr_id }}</small>
+  </h2>
+
+  <table class="table">
+    <tbody>
+      {% for key,value in record.items %}
+      <tr>
+        <th>
+          {{ key }}
+        </th>
+        <td>
+          {{ value }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h3>Facilities</h3>
+  <table class="table">
+    <tbody>
+      {% for facility in record.facilities %}
+      <tr>
+        <th>
+          {{ facility.facility_id }}
+        </th>
+        <td>
+          {{ facility.entry_date }}
+        </td>
+        <td>
+          {{ facility.exit_date }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h3>FAR Records</h3>
+  <table class="table">
+    <tbody>
+      {% for record in record.far_records %}
+      <tr>
+        <th>
+          <a href="{{ record.links.html }}">{{ record.far_record_id }}</a>
+        </th>
+        <td>
+          {{ record.last_name }}
+        </td>
+        <td>
+          {{ record.first_name }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h3>WRA Records</h3>
+  <table class="table">
+    <tbody>
+      {% for record in record.wra_records %}
+      <tr>
+        <th>
+          <a href="{{ record.links.html }}">{{ record.wra_record_id }}</a>
+        </th>
+        <td>
+          {{ record.lastname }}
+        </td>
+        <td>
+          {{ record.firstname }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h3>Others in Family {{ record.wra_family_no }}</h3>
+  <ul>
+    {% for record in record.family %}
+    <li>
+      <a href="{{ record.links.html }}">
+        {{ record.preferred_name }}
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+
+  <p float="right">
+    <a href="{{ api_url }}">API</a>
+  </p>
+
+</section><!-- .container -->
+{% endblock content %}

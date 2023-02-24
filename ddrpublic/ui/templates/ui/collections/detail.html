@@ -80,6 +80,14 @@
                 <p>{{ object.extent }}</p>
                 <h3 class="page-header">CONTRIBUTOR</h3>
                 <p>{{ object.contributor }}</p>
+                <h3 class="page-header">CREATORS</h3>
+                <ul>
+                  {% for p in object.creators %}
+                  <li>
+                    {% person p %}
+                  </li>
+                  {% endfor %}
+                </ul>
                 <h3 class="page-header">PREFERRED CITATION</h3>
                 <p>{{ object.prefercite }}</p>
                 <h3 class="page-header">RIGHTS</h3>

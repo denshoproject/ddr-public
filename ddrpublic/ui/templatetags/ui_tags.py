@@ -137,6 +137,16 @@ def rightsbadge( code ):
     t = template.loader.get_template(template_name)
     return t.render({'code':code})
 
+def person(person):
+    """Person tag
+    """
+    if person.get('nr_id'):
+        person['naan'],person['noid'] = person['nr_id'].split('/')
+    #person_type = type(person)                         .
+    #assert 0
+    t = template.loader.get_template('ui/person-tag.html')
+    return t.render({'person':person})
+
 register.simple_tag(homeslideitem)
 register.simple_tag(breadcrumbs)
 register.simple_tag(document)
@@ -146,3 +156,4 @@ register.simple_tag(addthis)
 register.simple_tag(cite)
 register.simple_tag(rightspanel)
 register.simple_tag(rightsbadge)
+register.simple_tag(person)
