@@ -196,10 +196,12 @@ IA metadata: {{ object.ia_meta|safe }}
                             <ul class="list-unstyled">
                               {% for item in object.persons %}
                               <li>
-                                <!-- <a href="{% url "ui-search-results" %}?fulltext=persons:{{ item }}"> -->
-                                <a href="{% url "ui-search-results" %}?fulltext=&quot;{{ item }}&quot;">
-                                  {{ item }}
-                                </a>
+                                <!-- {{ item|safe }} -->
+                                {% if item.namepart %}
+                                  <a href="{% url "ui-search-results" %}?fulltext={{ item.namepart }}">{{ item.namepart }}</a>
+                                {% else %}
+                                  <a href="{% url "ui-search-results" %}?fulltext=&quot;{{ item }}&quot;">{{ item }}</a>
+                                {% endif %}
                               </li>
                               {% endfor %}
                             </ul>
