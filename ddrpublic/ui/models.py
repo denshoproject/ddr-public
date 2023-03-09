@@ -497,6 +497,7 @@ def children(request, model, parent_id, sort_fields, fields=SEARCH_INCLUDE_FIELD
         fields=fields,
         fields_nested=[],
         fields_agg={},
+        wildcards=False,
     )
     return searcher.execute(limit, offset)
     
@@ -1117,6 +1118,7 @@ class Narrator(object):
                 fields=list_fields,
                 fields_nested=[],
                 fields_agg={},
+                wildcards=False,
             )
             results = searcher.execute(limit, offset)
             cache.set(key, results, settings.CACHE_TIMEOUT)
@@ -1507,6 +1509,7 @@ class Term(object):
                 fields=SEARCH_INCLUDE_FIELDS,
                 fields_nested=[],
                 fields_agg={},
+                wildcards=False,
             )
             results = searcher.execute(limit, offset)
             cache.set(key, results, settings.CACHE_TIMEOUT)

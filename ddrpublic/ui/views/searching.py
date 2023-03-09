@@ -94,6 +94,7 @@ def search_ui(request):
             fields=models.SEARCH_INCLUDE_FIELDS,
             fields_nested=models.SEARCH_NESTED_FIELDS,
             fields_agg=models.SEARCH_AGG_FIELDS,
+            wildcards=False,
         )
         context['searching'] = True
     
@@ -204,6 +205,7 @@ def parent_search(request, obj):
         fields=models.SEARCH_INCLUDE_FIELDS,
         fields_nested=models.SEARCH_NESTED_FIELDS,
         fields_agg=models.SEARCH_AGG_FIELDS,
+        wildcards=False,
     )
     results = searcher.execute(limit, offset)
     paginator = Paginator(

@@ -227,6 +227,7 @@ class NameRecord(object):
             fields=SEARCH_INCLUDE_FIELDS,
             fields_nested=SEARCH_NESTED_FIELDS,
             fields_agg=SEARCH_AGG_FIELDS,
+            wildcards=False,
         )
         results = searcher.execute(limit=10000, offset=0)
         not_this_record = [
@@ -257,6 +258,7 @@ class NameRecord(object):
             fields=SEARCH_INCLUDE_FIELDS,
             fields_nested=SEARCH_NESTED_FIELDS,
             fields_agg=SEARCH_AGG_FIELDS,
+            wildcards=False,
         )
         results = searcher.execute(limit=10000, offset=0)
         not_this_record = [
