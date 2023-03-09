@@ -130,6 +130,7 @@ def search_ui(request):
             fields=models.SEARCH_INCLUDE_FIELDS,
             fields_nested=models.SEARCH_NESTED_FIELDS,
             fields_agg=models.SEARCH_AGG_FIELDS,
+            wildcards=False,
         )
         limit,offset = _limit_offset(request)
         results = searcher.execute(limit, offset)

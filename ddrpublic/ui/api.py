@@ -122,6 +122,7 @@ class Search(APIView):
             fields=models.SEARCH_INCLUDE_FIELDS,
             fields_nested=models.SEARCH_NESTED_FIELDS,
             fields_agg=models.SEARCH_AGG_FIELDS,
+            wildcards=False,
         )
         results = searcher.execute(limit, offset)
         results_dict = results.ordered_dict(request, format_functions=models.FORMATTERS)

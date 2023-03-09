@@ -126,6 +126,7 @@ class Search(APIView):
             fields=NAMESDB_SEARCH_FIELDS,
             fields_nested=[],
             fields_agg={'m_camp':'m_camp'},
+            wildcards=False,
         )
         results = searcher.execute(limit, offset)
         return Response(

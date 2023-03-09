@@ -121,6 +121,7 @@ def children(request, oid):
         fields=models.SEARCH_INCLUDE_FIELDS,
         fields_nested=models.SEARCH_NESTED_FIELDS,
         fields_agg=models.SEARCH_AGG_FIELDS,
+        wildcards=False,
     )
     limit,offset = search.limit_offset(request, settings.RESULTS_PER_PAGE)
     results = searcher.execute(limit, offset)
