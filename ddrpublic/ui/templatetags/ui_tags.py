@@ -140,10 +140,12 @@ def rightsbadge( code ):
 def person(person):
     """Person tag
     """
-    if person.get('nr_id'):
+    # old pre-Persons str
+    if isinstance(person, str):
+        pass
+    # namesdb Person
+    elif person.get('nr_id'):
         person['naan'],person['noid'] = person['nr_id'].split('/')
-    #person_type = type(person)                         .
-    #assert 0
     t = template.loader.get_template('ui/person-tag.html')
     return t.render({'person':person})
 
