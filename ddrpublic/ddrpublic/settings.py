@@ -235,6 +235,7 @@ INSTALLED_APPS = (
     'ddrpublic',
     'ui',
     'names',
+    'namesdb_public',
 )
 
 ROBOTS_CACHE_TIMEOUT = 60*60*24
