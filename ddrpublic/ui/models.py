@@ -359,7 +359,10 @@ def file_size(url):
     @param url: str
     @returns: int
     """
-    r = requests.head(url)
+    # Disable verification of SSL certs to enable thumbnails in dev
+    # e.g. URLs like https://ddrpublic.local
+    # TODO maybe have a setting that disables only in dev?
+    r = requests.head(url, verify=False)
     if r.status_code == 200:
         return r.headers['Content-Length']
     return 0
