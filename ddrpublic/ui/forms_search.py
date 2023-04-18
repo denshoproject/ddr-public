@@ -22,7 +22,7 @@ from . import models
 
 try:
     FORMS_CHOICES = models.DOCSTORE.es.get(
-        index='forms',
+        index='ddrforms',
         id='forms-choices'
     )['_source']
 except docstore.NotFoundError as err:
