@@ -315,11 +315,20 @@ IA metadata: {{ segment.ia_meta|safe }}
               </div>
               <div class="row">
                 <div class="col-md-12 col-sm-12">
-                  <!-- entity.persons -->
+                  <!-- segment.persons -->
                   <h3 class="page-header">PERSONS/ORGANIZATIONS</h3>
-                  <p>
-                    {{ segment.persons }}
-                  </p>
+                  <ul class="list-unstyled">
+                    {% for item in segment.persons %}
+                    <li>
+                      <!-- {{ item|safe }} -->
+                      {% if item.namepart %}
+                      <a href="{% url "ui-search-results" %}?fulltext={{ item.namepart }}">{{ item.namepart }}</a>
+                      {% else %}
+                      <a href="{% url "ui-search-results" %}?fulltext=&quot;{{ item }}&quot;">{{ item }}</a>
+                      {% endif %}
+                    </li>
+                    {% endfor %}
+                  </ul>
                 </div>
               </div>
               <!-- /core meta -->
@@ -443,9 +452,18 @@ IA metadata: {{ segment.ia_meta|safe }}
 
               <!-- entity.persons -->
               <h3 class="page-header">PERSONS/ORGANIZATIONS</h3>
-                <p>
-                  {{ entity.persons }}
-                </p>
+              <ul class="list-unstyled">
+                {% for item in entity.persons %}
+                <li>
+                  <!-- {{ item|safe }} -->
+                  {% if item.namepart %}
+                  <a href="{% url "ui-search-results" %}?fulltext={{ item.namepart }}">{{ item.namepart }}</a>
+                  {% else %}
+                  <a href="{% url "ui-search-results" %}?fulltext=&quot;{{ item }}&quot;">{{ item }}</a>
+                  {% endif %}
+                </li>
+                {% endfor %}
+              </ul>
 
               <!-- /core meta -->
               <h3 class="page-header">CONTRIBUTOR</h3>
