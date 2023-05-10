@@ -399,7 +399,7 @@ class SearchViews(TestCase):
     def test_search_persons(self):
         """Searches the Persons/Organizations links on entity-detail pages"""
         response = self.client.get(
-            reverse('ui-search-index'), {'fulltext': 'persons:Yasui, Sachi'}
+            reverse('ui-search-index'), {'fulltext': 'Yasui, Sachi'}
         )
         self.assertEqual(response.status_code, 200)
         
@@ -419,7 +419,7 @@ class SearchViews(TestCase):
     def test_search_creators(self):
         """Searches the Persons/Organizations links on entity-detail pages"""
         response = self.client.get(
-            reverse('ui-search-index'), {'fulltext': 'creators:Yanagihara, Akio'}
+            reverse('ui-search-index'), {'fulltext': 'Isozaki, Tamotsu'}
         )
         self.assertEqual(response.status_code, 200)
         
