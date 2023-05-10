@@ -424,7 +424,7 @@ class SearchViews(TestCase):
     def test_search_creators(self):
         """Searches the Creators links on entity-detail pages"""
         response = self.client.get(
-            reverse('ui-search-index'), {'fulltext': '"Isozaki, Tamotsu"'}
+            reverse('ui-search-index'), {'fulltext': 'Isozaki, Tamotsu'}
         )
         self.assertEqual(response.status_code, 200)
         
