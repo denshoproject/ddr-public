@@ -44,6 +44,10 @@ SEARCH_PARAM_WHITELIST = [
     'facility',
     'contributor',
     'creators',
+    'creators.id',
+    'creators.role',
+    'creators.namepart',
+    'narrator',
     'format',
     'genre',
     'geography',
@@ -114,6 +118,7 @@ SEARCH_INCLUDE_FIELDS = [
     'geography',
     'label',
     'language',
+    'creation',
     'location',
     'persons',
     'rights',
@@ -1125,35 +1130,27 @@ class Narrator(object):
         
         TODO cache this - counts segments for each entity
         """
-        SORT_FIELDS = []
-        q = docstore.search_query(
-            must=[
-                # TODO narrator->interview link using creators.id
-                #{"term": {"creators.id": narrator_id}},
-                {"term": {"narrator_id": narrator_id}},
-                {"term": {"format": "vh"}},
-                {"term": {"model": "entity"}},
-            ]
+        params={
+            'narrator': narrator_id,
+        }
+        searcher = search.Searcher(DOCSTORE)
+        searcher.prepare(
+            params=params,
+            params_whitelist=SEARCH_PARAM_WHITELIST,
+            search_models=['ddrentity'],
+            sort=[],
+            fields=SEARCH_INCLUDE_FIELDS,
+            fields_nested=[],
+            fields_agg={},
+            wildcards=False,
         )
-        results = format_list_objects(
-            paginate_results(
-                DOCSTORE.search(
-                    doctypes=['entity'],
-                    query=q,
-                    sort=SORT_FIELDS,
-                    fields=INTERVIEW_LIST_FIELDS,
-                    from_=offset,
-                    size=limit,
-                ),
-                offset, limit, request
-            ),
-            request,
-            format_object_detail2
-        )
+        results = searcher.execute(limit, offset)
         # add segment count per interview
-        for d in results['objects']:
-            d['num_segments'] = count_children(CHILDREN[d['model']], d['id'])
-        return results
+        for o in results.objects:
+            o['num_segments'] = count_children(CHILDREN[o.model], o.id)
+        return results.ordered_dict(
+            request, format_functions=FORMATTERS
+        )
 
 
 class Facet(object):
