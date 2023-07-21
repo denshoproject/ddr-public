@@ -17,7 +17,7 @@ redis                              # MIT      y
 requests                           # Apache2  y
 sorl-thumbnail>=12.8,<12.9         # BSD      y
 
-git+https://github.com/denshoproject/densho-elastictools.git@v1.0.2
+git+https://github.com/denshoproject/densho-elastictools.git@v1.1.2
 
 bpython
 coverage
