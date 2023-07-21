@@ -17,7 +17,18 @@ django-log-request-id              # BSD      y
 djangorestframework>=3.13.0,<3.14  # BSD      y
 django-robots>=5.0,<5.1            # BSD
 drf-yasg>=1.21.0,<1.22             # BSD      y
-sorl-thumbnail>=12.8,<12.9
-gunicorn>=20.1.0,<20.2
+GitPython>=3.1,<3.2                # BSD      y
+gunicorn>=20.1.0,<20.2             # MIT      y
+redis                              # MIT      y
+requests                           # Apache2  y
+sorl-thumbnail>=12.8,<12.9         # BSD      y
 
-git+https://github.com/denshoproject/densho-elastictools.git@v1.0.2
+git+https://github.com/denshoproject/densho-elastictools.git@v1.1.2
+
+bpython
+coverage
+pytest
+pytest-cov
+pytest-django
+pytest-testmon
+pytest-xdist
