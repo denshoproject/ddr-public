@@ -45,6 +45,7 @@ SEARCH_PARAM_WHITELIST = [
     'contributor',
     'creators',
     'creators.id',
+    'creators.oh_id',
     'creators.role',
     'creators.namepart',
     'narrator',
@@ -1138,7 +1139,7 @@ class Narrator(object):
         TODO cache this - counts segments for each entity
         """
         params={
-            'narrator': narrator_id,
+            'creators.oh_id': str(narrator_id),
         }
         searcher = search.Searcher(DOCSTORE)
         searcher.prepare(
@@ -1152,6 +1153,23 @@ class Narrator(object):
             wildcards=False,
         )
         results = searcher.execute(limit, offset)
+        # TODO rm backwards-compatibility when creators.id converted to .oh_id
+        if not results.objects:
+            params={
+                'narrator': str(narrator_id),
+            }
+            searcher = search.Searcher(DOCSTORE)
+            searcher.prepare(
+                params=params,
+                params_whitelist=SEARCH_PARAM_WHITELIST,
+                search_models=['ddrentity'],
+                sort=[],
+                fields=SEARCH_INCLUDE_FIELDS,
+                fields_nested=[],
+                fields_agg={},
+                wildcards=False,
+            )
+            results = searcher.execute(limit, offset)
         # add segment count per interview
         for o in results.objects:
             o['num_segments'] = count_children(CHILDREN[o.model], o.id)
