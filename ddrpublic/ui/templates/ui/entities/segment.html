@@ -327,9 +327,9 @@ IA metadata: {{ segment.ia_meta|safe }}
               <p>
                 {% for person in entity.creators %}
                   {% if person.role == 'narrator' and person.oh_id %}
-                    <a href="{% url "ui-narrators-detail" person.oh_id %}">{{ person.namepart }}</a><br />
+<!-- creators.ohid --><a href="{% url "ui-narrators-detail" person.oh_id %}">{{ person.namepart }}</a><br />
                   {% elif person.role == 'narrator' %}
-                    <a href="{% url "ui-narrators-detail" person.id %}">{{ person.namepart }}</a><br />
+<!-- creators.id   --><a href="{% url "ui-narrators-detail" person.id %}">{{ person.namepart }}</a><br />
                   {% endif %}
                 {% endfor %}
               </p>
