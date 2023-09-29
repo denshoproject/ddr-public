@@ -21,10 +21,10 @@
 
 {{ narrator.bio|linebreaks }}
 
-{% if interviews.objects %}
+{% if interviews %}
 <h4>Interviews</h4>
 
-{% for object in interviews.objects %}
+{% for object in interviews %}
 <div class="media ">
   <!-- {{ object.id }} -->
   {% thumbnail object.links.thumb "110x110" as img %}
@@ -51,7 +51,7 @@
 </div><!-- .media -->
 {% endfor %}{# interview in interviews #}
 
-{% endif %}{# interviews.objects #}
+{% endif %}{# interviews #}
 
     </div><!-- .column -->
     <div class="col-sm-4 col-md-4">

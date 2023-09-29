@@ -1153,29 +1153,37 @@ class Narrator(object):
             wildcards=False,
         )
         results = searcher.execute(limit, offset)
-        # TODO rm backwards-compatibility when creators.id converted to .oh_id
-        if not results.objects:
-            params={
-                'narrator': str(narrator_id),
-            }
-            searcher = search.Searcher(DOCSTORE)
-            searcher.prepare(
-                params=params,
-                params_whitelist=SEARCH_PARAM_WHITELIST,
-                search_models=['ddrentity'],
-                sort=[],
-                fields=SEARCH_INCLUDE_FIELDS,
-                fields_nested=[],
-                fields_agg={},
-                wildcards=False,
-            )
-            results = searcher.execute(limit, offset)
         # add segment count per interview
         for o in results.objects:
             o['num_segments'] = count_children(CHILDREN[o.model], o.id)
-        return results.ordered_dict(
+        ohid_interviews = results.ordered_dict(
             request, format_functions=FORMATTERS
+        )['objects']
+        
+        # TODO rm backwards-compatibility when creators.id converted to .oh_id
+        params={
+            'narrator': str(narrator_id),
+        }
+        searcher = search.Searcher(DOCSTORE)
+        searcher.prepare(
+            params=params,
+            params_whitelist=SEARCH_PARAM_WHITELIST,
+            search_models=['ddrentity'],
+            sort=[],
+            fields=SEARCH_INCLUDE_FIELDS,
+            fields_nested=[],
+            fields_agg={},
+            wildcards=False,
         )
+        results = searcher.execute(limit, offset)
+        # add segment count per interview
+        for o in results.objects:
+            o['num_segments'] = count_children(CHILDREN[o.model], o.id)
+        id_interviews = results.ordered_dict(
+            request, format_functions=FORMATTERS
+        )['objects']
+        
+        return ohid_interviews + id_interviews
 
 
 class Facet(object):
