@@ -1,4 +1,4 @@
-<!-- {{ person }} -->
+<!-- {{ person | safe }} -->
 {% if person.namepart %}
   {% if settings.NAMESDB_PUBLIC and person.naan and person.noid %}
     <a href="{% url "namespub-person" person.naan person.noid %}">{{ person.namepart }}</a>
