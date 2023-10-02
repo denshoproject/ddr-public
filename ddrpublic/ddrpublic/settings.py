@@ -235,7 +235,10 @@ INSTALLED_APPS = (
     'ddrpublic',
     'ui',
     'names',
+    #'namesdb_public',
 )
+
+NAMESDB_PUBLIC = False
 
 ROBOTS_CACHE_TIMEOUT = 60*60*24
 ROBOTS_USE_HOST = True

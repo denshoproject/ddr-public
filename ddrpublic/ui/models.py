@@ -45,6 +45,7 @@ SEARCH_PARAM_WHITELIST = [
     'contributor',
     'creators',
     'creators.id',
+    'creators.oh_id',
     'creators.role',
     'creators.namepart',
     'narrator',
@@ -56,11 +57,13 @@ SEARCH_PARAM_WHITELIST = [
     'mimetype',
     'persons',
     'rights',
+    'search_hidden',
 ]
 
 # fields where the relevant value is nested e.g. topics.id
 # TODO move to ddr-defs/repo_models/elastic.py?
 SEARCH_NESTED_FIELDS = [
+    'creators',
     'facility',
     'topics',
 ]
@@ -112,6 +115,7 @@ SEARCH_INCLUDE_FIELDS = [
     'description',
     'contributor',
     'creators',
+    'creators.namepart',
     'facility',
     'format',
     'genre',
@@ -128,6 +132,7 @@ SEARCH_INCLUDE_FIELDS = [
     'display_name',
     'bio',
     'extent',
+    'search_hidden',
 ]
 
 # TODO move to ddr-defs/repo_models/elastic.py?
@@ -359,7 +364,10 @@ def file_size(url):
     @param url: str
     @returns: int
     """
-    r = requests.head(url)
+    # Disable verification of SSL certs to enable thumbnails in dev
+    # e.g. URLs like https://ddrpublic.local
+    # TODO maybe have a setting that disables only in dev?
+    r = requests.head(url, verify=False)
     if r.status_code == 200:
         return r.headers['Content-Length']
     return 0
@@ -1131,7 +1139,7 @@ class Narrator(object):
         TODO cache this - counts segments for each entity
         """
         params={
-            'narrator': narrator_id,
+            'creators.oh_id': str(narrator_id),
         }
         searcher = search.Searcher(DOCSTORE)
         searcher.prepare(
@@ -1148,10 +1156,55 @@ class Narrator(object):
         # add segment count per interview
         for o in results.objects:
             o['num_segments'] = count_children(CHILDREN[o.model], o.id)
-        return results.ordered_dict(
+        # TODO restore when data is migrated
+        #return results.ordered_dict(
+        #    request, format_functions=FORMATTERS
+        #)
+        
+        ohid_interviews = results.ordered_dict(
             request, format_functions=FORMATTERS
+        )['objects']
+        # TODO rm backwards-compatibility when creators.id converted to .oh_id
+        params={
+            'narrator': str(narrator_id),
+        }
+        searcher = search.Searcher(DOCSTORE)
+        searcher.prepare(
+            params=params,
+            params_whitelist=SEARCH_PARAM_WHITELIST,
+            search_models=['ddrentity'],
+            sort=[],
+            fields=SEARCH_INCLUDE_FIELDS,
+            fields_nested=[],
+            fields_agg={},
+            wildcards=False,
         )
-
+        results = searcher.execute(limit, offset)
+        # add segment count per interview
+        for o in results.objects:
+            o['num_segments'] = count_children(CHILDREN[o.model], o.id)
+        id_interviews = results.ordered_dict(
+            request, format_functions=FORMATTERS
+        )['objects']
+        # NOTE simulate normal formatted ordereddict
+        interviews = ohid_interviews + id_interviews
+        data = {
+            "NOTE": "> > > Temporary API modification while we migrate narrator data < < <",
+            "total": len(interviews),
+            "limit": 1000,
+            "offset": 0,
+            "prev_offset": None,
+            "next_offset": None,
+            "page_size": 1000,
+            "this_page": 1,
+            "num_this_page": len(interviews),
+            "prev_api": "",
+            "next_api": "",
+            "objects": interviews,
+            "query": {},
+            "aggregations": {},
+        }
+        return data
 
 class Facet(object):
     

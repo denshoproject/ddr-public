@@ -62,7 +62,12 @@
   <div class="row">
     <div class="col-sm-10 col-md-10">
       <div class="input-group">
-        {{ search_form.fulltext }}
+
+        {% if   search_field == 'fulltext' %}{{ search_form.fulltext }}
+        {% elif search_field == 'creators' %}{{ search_form.creators }}creators:"{{ search_form.creators.value }}"
+        {% elif search_field == 'persons'  %}{{ search_form.persons  }}persons:"{{ search_form.persons.value }}"
+        {% endif %}
+
         <span class="input-group-btn">
           <button class="btn btn-primary"><i class="fa fa-search"></i></button>
         </span>
@@ -72,7 +77,12 @@
 {% if searching and not page.object_list %}
     <div class="resultInfo">
       <h3>
-        No results for "{{ search_form.fulltext.value }}"
+
+        No results for
+        {% if   search_field == 'fulltext' %}"{{ search_form.fulltext.value }}"
+        {% elif search_field == 'creators' %}creators:"{{ search_form.creators.value }}"
+        {% elif search_field == 'persons' %}persons:"{{ search_form.persons.value }}"{% endif %}
+
       </h3>
     </div>
     <div id="no_results" style="margin-top: -25px;margin-bottom: 20px;">

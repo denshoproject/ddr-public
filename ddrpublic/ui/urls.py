@@ -38,6 +38,7 @@ urlpatterns = [
     path('sitemap.xml', sitemap, {'sitemaps': SITEMAPS}, name='ui-sitemap'),
     
     path('redirect/archive.densho.org', redirect, name='ui-redirect'),
+    #path('namesdb/', include('namesdb_public.urls')),
     path('names/', include('names.urls')),
     
     path('api/swagger.json',
