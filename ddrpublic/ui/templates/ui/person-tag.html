@@ -1,4 +1,4 @@
-<!-- {{ person }} -->
+<!-- {{ person | safe }} -->
 {% if person.namepart %}
   {{ person.namepart }} {% if person.role %}({{ person.role }}){% endif %}
   {% if person.naan and person.noid %}
