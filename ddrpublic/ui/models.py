@@ -1156,10 +1156,14 @@ class Narrator(object):
         # add segment count per interview
         for o in results.objects:
             o['num_segments'] = count_children(CHILDREN[o.model], o.id)
+        # TODO restore when data is migrated
+        #return results.ordered_dict(
+        #    request, format_functions=FORMATTERS
+        #)
+        
         ohid_interviews = results.ordered_dict(
             request, format_functions=FORMATTERS
         )['objects']
-        
         # TODO rm backwards-compatibility when creators.id converted to .oh_id
         params={
             'narrator': str(narrator_id),
@@ -1182,9 +1186,25 @@ class Narrator(object):
         id_interviews = results.ordered_dict(
             request, format_functions=FORMATTERS
         )['objects']
-        
-        return ohid_interviews + id_interviews
-
+        # NOTE simulate normal formatted ordereddict
+        interviews = ohid_interviews + id_interviews
+        data = {
+            "NOTE": "> > > Temporary API modification while we migrate narrator data < < <",
+            "total": len(interviews),
+            "limit": 1000,
+            "offset": 0,
+            "prev_offset": None,
+            "next_offset": None,
+            "page_size": 1000,
+            "this_page": 1,
+            "num_this_page": len(interviews),
+            "prev_api": "",
+            "next_api": "",
+            "objects": interviews,
+            "query": {},
+            "aggregations": {},
+        }
+        return data
 
 class Facet(object):
     
