@@ -72,9 +72,9 @@ def search_ui(request):
         'api_url': api_url,
     }
     
-    if request.GET.get('fulltext'):   context['search_field'] = 'fulltext'
-    elif request.GET.get('creators'): context['search_field'] = 'creators'
+    if   request.GET.get('creators'): context['search_field'] = 'creators'
     elif request.GET.get('persons'):  context['search_field'] = 'persons'
+    else:                             context['search_field'] = 'fulltext'
     
     searcher = search.Searcher(models.DOCSTORE)
     if request.GET.get('fulltext') \
