@@ -33,6 +33,7 @@ class RobotsView(TestCase):
 class SitemapView(TestCase):
     def test_sitemap(self):
         response = self.client.get(reverse('ui-sitemap'))
+        self.assertTrue('ddr-densho-10' in str(response.content))
         self.assertEqual(response.status_code, 200)
 
 
