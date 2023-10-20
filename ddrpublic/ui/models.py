@@ -127,6 +127,7 @@ SEARCH_INCLUDE_FIELDS = [
     'persons',
     'rights',
     'topics',
+    'sort',
     # narrator fields
     'image_url',
     'display_name',
@@ -201,7 +202,7 @@ MODEL_PLURALS = {
 
 # TODO move to ddr-defs
 REPOSITORY_LIST_FIELDS = ['id', 'model', 'title', 'description', 'url',]
-ORGANIZATION_LIST_FIELDS = ['id', 'model', 'title', 'description', 'url',]
+ORGANIZATION_LIST_FIELDS = ['id', 'sort', 'model', 'title', 'description', 'url',]
 COLLECTION_LIST_FIELDS = ['id', 'model', 'title', 'description', 'signature_id',]
 ENTITY_LIST_FIELDS = ['id', 'model', 'title', 'description', 'signature_id',]
 FILE_LIST_FIELDS = ['id', 'model', 'title', 'description', 'access_rel','sort',]
@@ -899,13 +900,23 @@ class Repository(object):
 
     @staticmethod
     def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
-        return _object_children(
+        results = _object_children(
             document=_object(request, oid),
             request=request,
             sort_fields=ORGANIZATION_LIST_SORT,
             limit=limit,
             offset=offset
         )
+        # manually sort organizations by sort field
+        # we cannot sort in Elasticsearch until Organization `sort` field
+        # is mapped as keyword field type.
+        objects = []
+        for keyword in sorted([org.sort for org in results.objects]):
+            for org in results.objects:
+                if org.sort == keyword:
+                    objects.append(org)
+        results.objects = objects
+        return results
 
 
 class Organization(object):
