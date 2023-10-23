@@ -127,7 +127,6 @@ SEARCH_INCLUDE_FIELDS = [
     'persons',
     'rights',
     'topics',
-    'sort',
     # narrator fields
     'image_url',
     'display_name',
@@ -900,9 +899,15 @@ class Repository(object):
 
     @staticmethod
     def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
+        ORGANIZATION_INCLUDE_FIELDS = [
+            'id', 'model', 'sort', 'title', 'description', 'logo',
+            'links_html', 'links_json', 'links_img', 'links_thumb', 'links_children',
+        ]
+
         results = _object_children(
             document=_object(request, oid),
             request=request,
+            fields=ORGANIZATION_INCLUDE_FIELDS,
             sort_fields=ORGANIZATION_LIST_SORT,
             limit=limit,
             offset=offset
