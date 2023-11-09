@@ -20,7 +20,7 @@ def list( request ):
         models.format_object_detail2(org.to_dict(), request)
         for org in models.Repository.children(repo, request).objects
     ]
-    return render(request, 'ui/organizations.html', {
+    return render(request, 'ui/organizations/list.html', {
         'organizations': organizations,
     })
 
