@@ -2,4 +2,5 @@
 
 {% block breadcrumbs %}{{ block.super }}
 <li><a href="{% url "ui-collections-list" %}">Collections</a></li>
+<li><a href="{{ organization.links.html }}">{{ organization.title }}</a></li>
 {% endblock breadcrumbs %}

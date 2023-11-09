@@ -1,4 +1,4 @@
-{% extends "ui/collections/base.html" %}
+{% extends "ui/entities/base.html" %}
 {% load bootstrap_pagination thumbnail ui_tags %}
 
 {% block parent %}
@@ -11,92 +11,36 @@
 {% endblock %}
 
 {% block title %}
-{{ object.id }} {% if object.title %}&mdash;{% endif %} {{ object.title }} &mdash; Objects
+{{ object.id }} {% if object.title %}&mdash;{% endif %} {{ object.title }} &mdash; Children
 {% endblock %}
 
 {% block pagetitle %}
 <span class="label label-default">{{ object.id }}</span>
-{{ object.title }} &mdash; Objects
+{{ object.title }} &mdash; Children
 {% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
-<li><a href="{{ object.links.html }}">{{ object.id }}</a></li>
+{% breadcrumbs object.breadcrumbs True %}
 {% endblock breadcrumbs %}
 
 {% block content %}
 <section id="portfolio" class="container">
 
-<h2>{{ object.title }} <small>{{ object.id }}</small></h2>
+<div style="float:right;">
+  <img src="{{ object.links.img }}" style="width:200px;"/>
+</div>
+<h1>
+  {{ object.title }}
+</h1>
 
   <p>
-     <a class="btn btn-primary btn-sm" href="{% url "ui-object-detail" object.id %}"><i class="fa fa-arrow-circle-left"></i> Back to collection detail</a>
+     <a class="btn btn-primary btn-sm" href="{% url "ui-object-detail" object.id %}"><i class="fa fa-arrow-circle-left"></i> Back to object detail</a>
   </p>
+
+
 
   <div class="row">
     <div class="col-sm-12 col-md-12">
-
-
-<form action="" method="get">
-
-  <div class="row">
-    <div class="col-sm-10 col-md-10">
-      <div class="input-group">
-        {{ form.fulltext }}
-        <span class="input-group-btn">
-          <button class="btn btn-primary"><i class="fa fa-search"></i></button>
-        </span>
-      </div>
-    </div><!-- .col -->
-  </div><!-- .row -->
-
-  <div class="row">
-	<div class="col-sm-12 col-md-12">
-
-          <div class="panel-group" id="filters_accordion">
-              <div class="panel panel-default">
-                  <div class="panel-heading">
-                      <h4 class="panel-title">
-                          <a id="searchfilters" data-toggle="collapse" data-parent="#filters_accordion" href="#acordion1">
-                              <i class="fa fa-filter"></i> Filters
-                          </a>
-                      </h4>
-                  </div>
-                  <div id="acordion1" class="collapse {% if request.session.searchfilters == "open" %}in{% endif %}">
-                      <div class="panel-body">
-                          <div class="row">
-                            <div class="col-sm-12 col-md-12">
-                              <b>Topics</b><br />
-                              {{ form.topics }}
-                            </div>
-                          </div>
-                          <div class="row">
-                            <div class="col-sm-3 col-md-3">
-                              <b>Facilities</b><br />{{ form.facility }}
-                            </div>
-                            <div class="col-sm-3 col-md-3">
-                              <b>Format</b><br />{{ form.format }}
-                            </div>
-                            <div class="col-sm-3 col-md-3">
-                              <b>Genre</b><br />{{ form.genre }}
-                            </div>
-                          </div>
-                          <div class="row">
-                            <div class="col-sm-3 col-md-3">
-                              <b>Usage</b><br />{{ form.rights }}
-                            </div>
-                          </div>
-                          <p>
-                            <button class="btn btn-sm btn-primary"><i class="fa fa-filter"></i> Apply filters</button> <span class="muted small" style="padding-left:20px;">Use &lt;Ctrl&gt; or (⌘) keys to select multiple terms</span>
-                          </p>
-                      </div>
-                  </div>
-              </div>
-          </div>
-
-        </div>
-  </div><!-- .row -->
-</form>
-
 
 {% if page.object_list %}
       <div class="row"> <!-- results content -->
@@ -168,16 +112,18 @@
 {% endif %}{# if page.object_list #}
 
   <p>
-     <a class="btn btn-primary btn-sm" href="{% url "ui-object-detail" object.id %}"><i class="fa fa-arrow-circle-left"></i> Back to collection detail</a> 
+     <a class="btn btn-primary btn-sm" href="{% url "ui-object-detail" object.id %}"><i class="fa fa-arrow-circle-left"></i> Back to object detail</a>
   </p>
 
     </div><!-- .col-sm-12 col-md-12 -->
   </div><!-- .row -->
+
   <div class="row">
     <div class="col-sm-12 col-md-12 text-muted text-right">
       <small><a class="api" href="{{ api_url }}">API</a></small>
     </div>
   </div><!-- .row -->
+
 </section><!-- .container-fluid -->
 {% endblock content %}
 

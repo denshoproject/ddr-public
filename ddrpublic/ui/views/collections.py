@@ -68,11 +68,8 @@ def detail(request, oid):
     except models.NotFound:
         raise Http404
     misc.filter_if_branded(request, collection['organization_id'])
-    # TODO fix this
-    try:
-        organization = models._object(request, collection['organization_id'])
-    except:
-        organization = None
+    organization = models._object(request, collection['organization_id'])
+    
     thispage = 1
     pagesize = 10
     results = models.Collection.children(
@@ -91,8 +88,8 @@ def detail(request, oid):
     )
     page = paginator.page(results.this_page)
     return render(request, 'ui/collections/detail.html', {
-        'object': collection,
         'organization': organization,
+        'object': collection,
         'paginator': paginator,
         'page': page,
         'api_url': reverse('ui-api-object', args=[oid]),
@@ -107,6 +104,7 @@ def children(request, oid):
     except models.NotFound:
         raise Http404
     misc.filter_if_branded(request, collection['organization_id'])
+    organization = models._object(request, collection['organization_id'])
     
     params = request.GET.copy()
     params['parent'] = oid
@@ -141,6 +139,7 @@ def children(request, oid):
     )
 
     return render(request, 'ui/collections/children.html', {
+        'organization': organization,
         'object': collection,
         'paginator': paginator,
         'page': page,

@@ -1,0 +1,20 @@
+            <!-- {{ object.id }} -->
+            <div class="media {{ object.model }}">
+              <div class="media-left">
+                <a href="{{ object.links.html }}">
+                  <img src="{{ object.links.img }}" alt="{{ object.title }}" style="width: 100px;"/>
+                </a>
+              </div><!-- .media-left -->
+              <div class="media-body">
+                <b class="media-heading">
+                  <span class="badge badge-info">Organization</span>
+                  <a href="{{ object.links.html }}">{{ object.title|safe }} ({{ object.id }})</a>
+                </b>
+                <div class="source muted">
+                    {{ object.description|safe|truncatewords_html:56 }}
+                </div>
+                <div class="url">
+                  <a href="{{ object.links.html }}">{{ object.links.html }}</a>
+                </div>
+              </div><!-- .media-body -->
+            </div><!-- .media -->

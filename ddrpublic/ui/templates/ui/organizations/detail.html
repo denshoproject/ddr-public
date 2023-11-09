@@ -1,13 +1,13 @@
 {% extends "ui/repo/base.html" %}
 {% load thumbnail ui_tags %}
 
-{% block title %}{{ repo }}-{{ org }}{% endblock %}
+{% block title %}{{ organization.title }}{% endblock %}
 {% block pagetitle %}
-<span class="label label-default">{{ repo }}-{{ org }}</span>
+<span class="label label-default">{{ organization.title }}</span>
 {% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
-<li>{{ org }}</li>
+<li>{{ organization.title }}</li>
 {% endblock breadcrumbs %}
 
 {% block content %}
@@ -15,23 +15,37 @@
   <div class="row">
 	<div class="col-sm-10 col-md-10">
 
-<h2>
-{{ organization.title }}
-</h2>
-<p>
-Site: <a href="{{ organization.url }}">{{ organization.url }}</a><br/>
-</p>
-<img src="{{ organization.logo_url }}" />
-<p>
+<div style="float:right;">
+  <img src="{{ organization.links.img }}" style="width:200px;"/>
+</div>
+<h1>
+  {{ organization.title }}
+  <small><a href="{{ organization.url }}">{{ organization.url }}</a></small>
+</h1>
 {{ organization.description|linebreaks|safe }}
-</p>
 
-{% if collections %}
-<h3>Collections</h3>
-{% for collection in collections %}
-{% collection collection %}
-{% endfor %}
-{% endif %}{# collections #}
+{% if children_page.object_list %}
+    <div class="row">
+        <div class="col-sm-12 col-md-12">
+          <h3>
+            <a href="{% url "ui-object-children" organization.id %}">
+              {{ children_paginator.count }} Collections
+            </a>
+          </h3>
+
+          {% for collection in children_page.object_list %}
+          {% document collection %}
+          {% endfor %}
+
+          {% if children_paginator.count > pagesize %}
+          <br />
+          <p>
+            <a class="btn btn-primary btn-md" href="{% url "ui-object-children" organization.id %}">See all collections <i class="fa fa-arrow-circle-right"></i></a>
+          </p>
+          {% endif %}
+        </div><!-- end list col -->
+    </div><!-- .row -->
+{% endif %}{# children_page.object_list #}
 
 	</div>
   </div><!-- .row -->

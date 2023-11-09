@@ -1,0 +1,34 @@
+{% extends BASE_TEMPLATE %}
+{% load thumbnail ui_tags %}
+
+{% block title %}Organizations{% endblock %}
+{% block pagetitle %}Organizations{% endblock %}
+
+{% block breadcrumbs %}{{ block.super }}
+<li>Organizations</li>{% endblock breadcrumbs %}
+
+{% block content %}
+<section class="container">
+  <div class="row">
+	<div class="col-sm-10 col-md-10">
+
+
+<h2>Organizations</h2>
+{% for organization in organizations %}
+{% document organization %}
+{% endfor %}
+
+	</div>
+  </div><!-- .row -->
+</section><!-- .container-fluid -->
+{% endblock content %}
+
+{% block pagecss %}
+<style type="text/css">
+h2 { margin-bottom:10px; }
+h3 { margin-top:30px; margin-bottom:20px; }
+ul#org-list { padding-left:0px; }
+ul#org-list li { list-style-type:none; }
+ul#org-list li img { margin-right:10px; }
+</style>
+{% endblock pagecss %}

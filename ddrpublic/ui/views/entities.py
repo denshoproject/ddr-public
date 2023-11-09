@@ -214,6 +214,7 @@ def children( request, oid, role=None ):
     except models.NotFound:
         raise Http404
     misc.filter_if_branded(request, entity['organization_id'])
+    organization = models._object(request, entity['organization_id'])
     # children
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
@@ -234,6 +235,7 @@ def children( request, oid, role=None ):
     )
     page = paginator.page(results.this_page)
     return render(request, 'ui/entities/children.html', {
+        'organization': organization,
         'object': entity,
         'paginator': paginator,
         'page': page,
@@ -249,6 +251,7 @@ def nodes( request, oid, role=None ):
     except models.NotFound:
         raise Http404
     misc.filter_if_branded(request, entity['organization_id'])
+    organization = models._object(request, entity['organization_id'])
     # nodes
     thispage = int(request.GET.get('page', 1))
     pagesize = settings.RESULTS_PER_PAGE
@@ -269,6 +272,7 @@ def nodes( request, oid, role=None ):
     )
     page = paginator.page(results.this_page)
     return render(request, 'ui/entities/nodes.html', {
+        'organization': organization,
         'object': entity,
         'paginator': paginator,
         'page': page,
