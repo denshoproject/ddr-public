@@ -10,7 +10,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from . import api
 from . import sitemaps
 from .views import browse, searching, index
-from .views import organizations, collections, entities, objects
+from .views import collections, entities, objects
 from .views import cite, ui_state, redirect
 
 SITEMAPS = {
@@ -100,7 +100,6 @@ urlpatterns = [
     
     path('cite/<slug:model>/<slug:object_id>/', cite, name='ui-cite'),
     
-    path('organizations/', organizations.list, name='ui-organizations-list'),
     path('collections/', collections.list, name='ui-collections-list'),
     
     path('interviews/<slug:oid>/', entities.interview, name='ui-interview'),

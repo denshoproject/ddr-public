@@ -3,20 +3,24 @@ logger = logging.getLogger(__name__)
 
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import Http404, get_object_or_404, redirect
+from django.shortcuts import redirect, render
 from django.template import RequestContext
 from django.urls import reverse
 
+from .. import misc
+from .. import models
+
 
 def detail( request, oid ):
-    #repository = Repository.get(oid)
-    #organizations = repository.children()
-    #return render_to_response(
-    #    'ui/repo/detail.html',
-    #    {
-    #        'repository': repository,
-    #        'organizations': organizations,
-    #    },
-    #    context_instance=RequestContext(request, processors=[])
-    #)
-    return redirect('ui-collections-list')
+    return redirect('ui-object-children', 'ddr')
+
+#@cache_page(settings.CACHE_TIMEOUT)
+def children(request, oid='ddr'):
+    repo,org = misc.domain_org(request)
+    organizations = [
+        models.format_object_detail2(org.to_dict(), request)
+        for org in models.Repository.children(repo, request).objects
+    ]
+    return render(request, 'ui/repo/children.html', {
+        'organizations': organizations,
+    })

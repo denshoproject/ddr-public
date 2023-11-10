@@ -13,17 +13,6 @@ from .. import models
 from ..decorators import ui_state
 
 
-#@cache_page(settings.CACHE_TIMEOUT)
-def list( request ):
-    repo,org = misc.domain_org(request)
-    organizations = [
-        models.format_object_detail2(org.to_dict(), request)
-        for org in models.Repository.children(repo, request).objects
-    ]
-    return render(request, 'ui/organizations/list.html', {
-        'organizations': organizations,
-    })
-
 def detail(request, oid):
     repo,org = misc.domain_org(request)
     organization = models.Organization.get(oid, request)
