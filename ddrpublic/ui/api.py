@@ -40,6 +40,7 @@ def index(request, format=None):
         'facets': reverse('ui-api-facets', request=request),
         'narrators': reverse('ui-api-narrators', request=request),
         'repository': reverse('ui-api-object', args=[repo,], request=request),
+        'nrids': reverse('ui-api-nrids', request=request),
         'search': reverse('ui-api-search', request=request),
     }
     return Response(data)
@@ -305,6 +306,15 @@ def narrator_interviews(request, object_id, format=None):
     offset = int(request.GET.get('offset', 0))
     data = models.Narrator.interviews(object_id, request, limit=1000)
     return _list(request, data)
+
+@api_view(['GET'])
+def nrids(request, format=None):
+    assert 0
+
+@api_view(['GET'])
+def nrid_objects(request, naan, noid, format=None):
+    data = models.person_objects(naan, noid, request)
+    return Response(data)
 
 @api_view(['GET'])
 def facet_index(request, format=None):

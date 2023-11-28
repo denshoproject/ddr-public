@@ -1707,3 +1707,24 @@ def facilities():
         ]
         cache.set(key, cached, 15) # settings.ELASTICSEARCH_QUERY_TIMEOUT)
     return cached
+
+
+def person_objects(naan, noid, request, limit=10, offset=0):
+    """Return DDR objects for Names Database Person NRID
+    """
+    nr_id = f"{naan}/{noid}"
+    searcher = search.Searcher(ds=DOCSTORE)
+    s = search.Search(using=DOCSTORE.es, index='ddrentity')
+    q = search.Q(
+        'bool',
+        must=[
+            search.Q(
+                'nested',
+                path='persons',
+                query=search.Q('term', persons__nr_id=nr_id)
+            )
+        ]
+    )
+    searcher.s = s.query(q)
+    results = searcher.execute(limit, offset)
+    return results.ordered_dict(request, format_functions=FORMATTERS)
