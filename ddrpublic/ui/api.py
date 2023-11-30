@@ -313,8 +313,14 @@ def nrids(request, format=None):
 
 @api_view(['GET'])
 def nrid_objects(request, naan, noid, format=None):
-    data = models.person_objects(naan, noid, request)
-    return Response(data)
+    nr_id = f"{naan}/{noid}"
+    limit = settings.RESULTS_PER_PAGE
+    offset = int(request.GET.get('offset', 0))
+    results = models.person_objects(request, nr_id, limit, offset=offset)
+    return Response(results.ordered_dict(
+        request=request,
+        format_functions=models.FORMATTERS,
+    ))
 
 @api_view(['GET'])
 def facet_index(request, format=None):

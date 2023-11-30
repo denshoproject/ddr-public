@@ -9,7 +9,8 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 from . import api
 from . import sitemaps
-from .views import browse, searching, collections, entities, objects, index
+from .views import collections, entities, objects, index, persons
+from .views import browse, searching
 from .views import cite, ui_state, redirect, index
 
 SITEMAPS = {
@@ -67,9 +68,9 @@ urlpatterns = [
 
     re_path(
         r'^api/0.2/nrid/(?P<naan>[0-9a-zA-Z_:-]+)/(?P<noid>[0-9a-zA-Z_:-]+)',
-        api.nrid_objects, name='ui-api-nrid-objects'
+        api.nrid_objects, name='ui-api-nrid-detail'
     ),
-    path('api/0.2/nrid/', api.nrids, name='ui-api-nrids'),
+    path('api/0.2/nrid/', api.nrids, name='ui-api-nrid'),
     
     path('api/0.2/facet/<slug:facet_id>/children/', api.facetterms, name='ui-api-facetterms'),
     path('api/0.2/facet/<slug:facet_id>/<slug:term_id>/objects/', api.term_objects, name='ui-api-term-objects'),
@@ -94,7 +95,16 @@ urlpatterns = [
     path('narrators/<slug:oid>/search/', searching.narrator, name='ui-search-narrator'),
     path('narrators/<slug:oid>/', browse.narrator, name='ui-narrators-detail'),
     path('narrators/', browse.narrators, name='ui-narrators-list'),
-    
+
+    re_path(
+        r'^nrid/(?P<naan>[0-9a-zA-Z_:-]+)/(?P<noid>[0-9a-zA-Z_:-]+)/objects/',
+        persons.children, name='ui-nrid-objects'
+    ),
+    re_path(
+        r'^nrid/(?P<naan>[0-9a-zA-Z_:-]+)/(?P<noid>[0-9a-zA-Z_:-]+)/',
+        persons.detail, name='ui-nrid-detail'
+    ),
+
     path('browse/<slug:facet_id>/<slug:term_id>/search/', searching.facetterm, name='ui-search-facetterm'),
     path('browse/<slug:facet_id>/<slug:term_id>/', browse.term, name='ui-browse-term'),
     path('browse/<slug:facet_id>/', browse.facet, name='ui-browse-facet'),

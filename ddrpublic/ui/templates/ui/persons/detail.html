@@ -1,0 +1,119 @@
+{% extends "ui/base.html" %}
+{% load bootstrap_pagination thumbnail ui_tags %}
+
+{% block parent %}
+<!--
+<div id="parent">
+<a href="{{ object.parent.links.html }}"><span class="label label-default">{{ object.parent.id }}</span></a>
+<a href="{{ object.parent.links.html }}">{{ object.parent.title }}</a>
+</div>
+-->
+{% endblock %}
+
+{% block title %}
+{{ person.id }} {% if person.preferred_name %}&mdash;{% endif %} {{ person.preferred_name }} &mdash; Objects
+{% endblock %}
+
+{% block pagetitle %}
+<span class="label label-default">{{ person.id }}</span>
+{{ person.preferred_name }} &mdash; Objects
+{% endblock %}
+
+{% block breadcrumbs %}{{ block.super }}
+{% breadcrumbs person.breadcrumbs True %}
+<li>Objects</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+<section id="portfolio" class="container">
+
+  <h2>{{ person.preferred_name }} <small>{{ person.id }}</small></h2>
+  <p>
+    see <a href="{{ person.links.html }}">Names Database</a>
+  </p>
+
+  <div class="row">
+    <div class="col-sm-12 col-md-12">
+
+
+{% if page.object_list %}
+      <div class="row"> <!-- results content -->
+        <div class="col-sm-12 col-md-12">
+          <!--  view selection tabs -->
+          <div class="tabs no-margin-top" style="margin:10px 0;">
+
+            <ul class="nav nav-tabs">
+              <li class="gallery {% if request.session.liststyle == "gallery" %}active{% endif %}">
+                <a href="#gallery_tab" data-toggle="tab">
+                  <i class="fa fa-th"></i> Gallery view
+                </a>
+              </li>
+              <li class="list {% if request.session.liststyle == "list" %}active{% endif %}">
+                <a href="#list_tab" data-toggle="tab">
+                  <i class="fa fa-list"></i> List view
+                </a>
+              </li>
+            </ul>
+
+            <div class="tab-content">
+
+              <div id="gallery_tab" class="tab-pane {% if request.session.liststyle == "gallery" %}active{% endif %}">
+                <div id="item-count">
+                  {{ paginator.count }} item{{ paginator.count|pluralize }}<br/>
+                </div>
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+                <div class="row">
+                  <ul class="sort-destination isotope fullwidth" data-sort-id="isotope-list">
+{% for object in page.object_list %}
+{% galleryitem object %}
+{% endfor %}
+                  </ul>
+                </div><!-- /.masonry-container -->
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+
+              </div> <!-- end gallery_tab -->
+
+              <div id="list_tab" class="tab-pane {% if request.session.liststyle == "list" %}active{% endif %}">
+                <div id="item-count">
+                  {{ paginator.count }} item{{ paginator.count|pluralize }}<br/>
+                </div>
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+
+{% for object in page.object_list %}
+{% listitem object %}
+{% endfor %}
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+
+              </div> <!-- end list_tab -->
+
+            </div> <!-- end tabs content -->
+          </div> <!-- end tabs -->
+
+        </div>
+      </div> <!-- .row results content -->
+
+{% endif %}{# if page.object_list #}
+
+    </div><!-- .col-sm-12 col-md-12 -->
+  </div><!-- .row -->
+  <div class="row">
+    <div class="col-sm-12 col-md-12 text-muted text-right">
+      <small><a class="api" href="{{ api_url }}">API</a></small>
+    </div>
+  </div><!-- .row -->
+</section><!-- .container-fluid -->
+{% endblock content %}
+
+{% block footer %}
+{% endblock footer %}

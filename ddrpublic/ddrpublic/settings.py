@@ -115,6 +115,11 @@ _docstore_clusters = config.get('public', 'docstore_clusters')
 DOCSTORE_CLUSTER = docstore.cluster(_docstore_clusters, DOCSTORE_HOST)
 NAMESDB_CLUSTER = docstore.cluster(_docstore_clusters, NAMESDB_DOCSTORE_HOST)
 
+NAMESDB_API_URL = config.get('public', 'namesdb_api_url')
+NAMESDB_API_TIMEOUT = int(config.get('public', 'namesdb_api_timeout'))
+NAMESDB_API_USERNAME = config.get('public', 'namesdb_api_username')
+NAMESDB_API_PASSWORD = config.get('public', 'namesdb_api_password')
+
 # Filesystem path and URL for static media (mostly used for interfaces).
 STATIC_ROOT = config.get('public', 'static_root')
 STATIC_URL='/static/'
