@@ -97,10 +97,6 @@ urlpatterns = [
     path('narrators/', browse.narrators, name='ui-narrators-list'),
 
     re_path(
-        r'^nrid/(?P<naan>[0-9a-zA-Z_:-]+)/(?P<noid>[0-9a-zA-Z_:-]+)/objects/',
-        persons.children, name='ui-nrid-objects'
-    ),
-    re_path(
         r'^nrid/(?P<naan>[0-9a-zA-Z_:-]+)/(?P<noid>[0-9a-zA-Z_:-]+)/',
         persons.detail, name='ui-nrid-detail'
     ),
