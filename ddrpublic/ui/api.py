@@ -40,7 +40,7 @@ def index(request, format=None):
         'facets': reverse('ui-api-facets', request=request),
         'narrators': reverse('ui-api-narrators', request=request),
         'repository': reverse('ui-api-object', args=[repo,], request=request),
-        'nrids': reverse('ui-api-nrids', request=request),
+        'nrids': reverse('ui-api-nrid', request=request),
         'search': reverse('ui-api-search', request=request),
     }
     return Response(data)
