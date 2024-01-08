@@ -44,7 +44,11 @@ SEARCH_PARAM_WHITELIST = [
     'facility',
     'contributor',
     'creators',
+    'creators.id',
+    'creators.oh_id',
+    'creators.role',
     'creators.namepart',
+    'narrator',
     'format',
     'genre',
     'geography',
@@ -118,6 +122,7 @@ SEARCH_INCLUDE_FIELDS = [
     'geography',
     'label',
     'language',
+    'creation',
     'location',
     'persons',
     'rights',
@@ -196,7 +201,7 @@ MODEL_PLURALS = {
 
 # TODO move to ddr-defs
 REPOSITORY_LIST_FIELDS = ['id', 'model', 'title', 'description', 'url',]
-ORGANIZATION_LIST_FIELDS = ['id', 'model', 'title', 'description', 'url',]
+ORGANIZATION_LIST_FIELDS = ['id', 'sort', 'model', 'title', 'description', 'url',]
 COLLECTION_LIST_FIELDS = ['id', 'model', 'title', 'description', 'signature_id',]
 ENTITY_LIST_FIELDS = ['id', 'model', 'title', 'description', 'signature_id',]
 FILE_LIST_FIELDS = ['id', 'model', 'title', 'description', 'access_rel','sort',]
@@ -899,13 +904,29 @@ class Repository(object):
 
     @staticmethod
     def children(oid, request, limit=DEFAULT_LIMIT, offset=0):
-        return _object_children(
+        ORGANIZATION_INCLUDE_FIELDS = [
+            'id', 'model', 'sort', 'title', 'description', 'logo',
+            'links_html', 'links_json', 'links_img', 'links_thumb', 'links_children',
+        ]
+
+        results = _object_children(
             document=_object(request, oid),
             request=request,
+            fields=ORGANIZATION_INCLUDE_FIELDS,
             sort_fields=ORGANIZATION_LIST_SORT,
             limit=limit,
             offset=offset
         )
+        # manually sort organizations by sort field
+        # we cannot sort in Elasticsearch until Organization `sort` field
+        # is mapped as keyword field type.
+        objects = []
+        for keyword in sorted([org.sort for org in results.objects]):
+            for org in results.objects:
+                if org.sort == keyword:
+                    objects.append(org)
+        results.objects = objects
+        return results
 
 
 class Organization(object):
@@ -1138,36 +1159,73 @@ class Narrator(object):
         
         TODO cache this - counts segments for each entity
         """
-        SORT_FIELDS = []
-        q = docstore.search_query(
-            must=[
-                # TODO narrator->interview link using creators.id
-                #{"term": {"creators.id": narrator_id}},
-                {"term": {"narrator_id": narrator_id}},
-                {"term": {"format": "vh"}},
-                {"term": {"model": "entity"}},
-            ]
+        params={
+            'creators.oh_id': str(narrator_id),
+        }
+        searcher = search.Searcher(DOCSTORE)
+        searcher.prepare(
+            params=params,
+            params_whitelist=SEARCH_PARAM_WHITELIST,
+            search_models=['ddrentity'],
+            sort=[],
+            fields=SEARCH_INCLUDE_FIELDS,
+            fields_nested=[],
+            fields_agg={},
+            wildcards=False,
         )
-        results = format_list_objects(
-            paginate_results(
-                DOCSTORE.search(
-                    doctypes=['entity'],
-                    query=q,
-                    sort=SORT_FIELDS,
-                    fields=INTERVIEW_LIST_FIELDS,
-                    from_=offset,
-                    size=limit,
-                ),
-                offset, limit, request
-            ),
-            request,
-            format_object_detail2
-        )
+        results = searcher.execute(limit, offset)
         # add segment count per interview
-        for d in results['objects']:
-            d['num_segments'] = count_children(CHILDREN[d['model']], d['id'])
-        return results
-
+        for o in results.objects:
+            o['num_segments'] = count_children(CHILDREN[o.model], o.id)
+        # TODO restore when data is migrated
+        #return results.ordered_dict(
+        #    request, format_functions=FORMATTERS
+        #)
+        
+        ohid_interviews = results.ordered_dict(
+            request, format_functions=FORMATTERS
+        )['objects']
+        # TODO rm backwards-compatibility when creators.id converted to .oh_id
+        params={
+            'narrator': str(narrator_id),
+        }
+        searcher = search.Searcher(DOCSTORE)
+        searcher.prepare(
+            params=params,
+            params_whitelist=SEARCH_PARAM_WHITELIST,
+            search_models=['ddrentity'],
+            sort=[],
+            fields=SEARCH_INCLUDE_FIELDS,
+            fields_nested=[],
+            fields_agg={},
+            wildcards=False,
+        )
+        results = searcher.execute(limit, offset)
+        # add segment count per interview
+        for o in results.objects:
+            o['num_segments'] = count_children(CHILDREN[o.model], o.id)
+        id_interviews = results.ordered_dict(
+            request, format_functions=FORMATTERS
+        )['objects']
+        # NOTE simulate normal formatted ordereddict
+        interviews = ohid_interviews + id_interviews
+        data = {
+            "NOTE": "> > > Temporary API modification while we migrate narrator data < < <",
+            "total": len(interviews),
+            "limit": 1000,
+            "offset": 0,
+            "prev_offset": None,
+            "next_offset": None,
+            "page_size": 1000,
+            "this_page": 1,
+            "num_this_page": len(interviews),
+            "prev_api": "",
+            "next_api": "",
+            "objects": interviews,
+            "query": {},
+            "aggregations": {},
+        }
+        return data
 
 class Facet(object):
     

@@ -233,8 +233,10 @@ INSTALLED_APPS = (
     'ddrpublic',
     'ui',
     'names',
-    'namesdb_public',
+    #'namesdb_public',
 )
+
+NAMESDB_PUBLIC = False
 
 ROBOTS_CACHE_TIMEOUT = 60*60*24
 ROBOTS_USE_HOST = True
@@ -247,6 +249,13 @@ API_BASE = '/api/0.2/'
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # BasicAuthentication breaks the API when behind HTTP Basic auth
+        # (i.e. in dev.stage), causing it to require login for all views.
+        #'rest_framework.authentication.BasicAuthentication',
+        # Password is still required for Django admin.
+        'rest_framework.authentication.SessionAuthentication',
+    ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],

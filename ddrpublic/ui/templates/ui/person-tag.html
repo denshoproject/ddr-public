@@ -1,11 +1,11 @@
-<!-- {{ person }} -->
+<!-- {{ person | safe }} -->
 {% if person.namepart %}
-  {{ person.namepart }} {% if person.role %}({{ person.role }}){% endif %}
-  {% if person.naan and person.noid %}
-  <a href="{% url "namespub-person" person.naan person.noid %}">NamesDB</a>
+  {% if settings.NAMESDB_PUBLIC and person.naan and person.noid %}
+    <a href="{% url "namespub-person" person.naan person.noid %}">{{ person.namepart }}</a>
   {% else %}
-  <a href="{% url "ui-search-results" %}?fulltext={{ person.namepart }}">Search</a>
+    <a href="{% url "ui-search-results" %}?fulltext={{ person.namepart }}">{{ person.namepart }}</a>
   {% endif %}
+  {% if person.role %}({{ person.role }}){% endif %}
 {% else %}
   <a href="{% url "ui-search-results" %}?fulltext={{ person }}">{{ person }}</a>
 {% endif %}

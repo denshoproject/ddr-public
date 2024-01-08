@@ -16,6 +16,8 @@ ddrindex publish --force /var/www/media/ddr/ddr-densho-122/
 ddrindex publish -r --force /var/www/media/ddr/ddr-densho-122/files/ddr-densho-122-4-1
 ddrindex publish --force /var/www/media/ddr/ddr-densho-1000/
 ddrindex publish -r --force /var/www/media/ddr/ddr-densho-1000/files/ddr-densho-1000-1
+ddrindex publish --force /var/www/media/ddr/ddr-densho-1007/
+ddrindex publish -r --force /var/www/media/ddr/ddr-densho-1007/files/ddr-densho-1007-8
 """
 
 from django.test import TestCase
@@ -31,6 +33,7 @@ class RobotsView(TestCase):
 class SitemapView(TestCase):
     def test_sitemap(self):
         response = self.client.get(reverse('ui-sitemap'))
+        self.assertTrue('ddr-densho-10' in str(response.content))
         self.assertEqual(response.status_code, 200)
 
 
@@ -224,6 +227,26 @@ class IndexView(TestCase):
     def test_collections(self):
         response = self.client.get(reverse('ui-collections-list'))
         self.assertEqual(response.status_code, 200)
+    
+    def test_narrators(self):
+        response = self.client.get(reverse('ui-narrators-list'))
+        self.assertEqual(response.status_code, 200)
+    
+    def test_narrator_detail(self):
+        oid = 1  # Gene Akutsu
+        response = self.client.get(reverse('ui-narrators-detail', args=[oid]))
+        self.assertTrue('ddr-densho-1000-1' in str(response.content))
+        self.assertTrue('39 segments.' in str(response.content))
+        
+        oid = 839  # Mae Matsuzaki  (interview w multiple narrators)
+        response = self.client.get(reverse('ui-narrators-detail', args=[oid]))
+        self.assertTrue('December 2, 1985' in str(response.content))
+        self.assertTrue('16 segments.'     in str(response.content))
+        
+        oid = 485  # Kay Uno Kaneko (interview w multiple narrators)
+        response = self.client.get(reverse('ui-narrators-detail', args=[oid]))
+        self.assertTrue('December 2, 1985' in str(response.content))
+        self.assertTrue('16 segments.'     in str(response.content))
 
 
 #    url(r'^(?P<oid>[\w\d-]+)/search/$', search.collection, name='ui-search-collection'),
