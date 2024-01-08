@@ -3,6 +3,8 @@ APP=ddrpublic
 USER=ddr
 SHELL = /bin/bash
 
+RUNSERVER_PORT=8001
+
 APP_VERSION := $(shell cat VERSION)
 GIT_SOURCE_URL=https://github.com/densho/ddr-public
 
@@ -355,7 +357,7 @@ shell:
 
 runserver:
 	source $(VIRTUALENV)/bin/activate; \
-	python ddrpublic/manage.py runserver 0.0.0.0:8000
+	python ddrpublic/manage.py runserver 0.0.0.0:$(RUNSERVER_PORT)
 
 uninstall-ddr-public: install-setuptools
 	@echo ""
