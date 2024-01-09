@@ -233,7 +233,7 @@ INSTALLED_APPS = (
     'ddrpublic',
     'ui',
     'names',
-    #'namesdb_public',
+    'namesdb_public',
 )
 
 NAMESDB_PUBLIC = False
