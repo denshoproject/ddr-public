@@ -1712,3 +1712,42 @@ def facilities():
         ]
         cache.set(key, cached, 15) # settings.ELASTICSEARCH_QUERY_TIMEOUT)
     return cached
+
+
+def person(request, nr_id):
+    url = f"{settings.NAMESDB_API_URL}/persons/{nr_id}/"
+    if settings.NAMESDB_API_USERNAME and settings.NAMESDB_API_PASSWORD:
+        r = requests.get(
+            url, timeout=settings.NAMESDB_API_TIMEOUT,
+            auth=(settings.NAMESDB_API_USERNAME, settings.NAMESDB_API_PASSWORD)
+        )
+    else:
+        r = requests.get(url, timeout=settings.NAMESDB_API_TIMEOUT)
+    if r.status_code == 200:
+        data = r.json()
+        if data.get('id') and data.get('preferred_name'):
+            return url,r.status_code,data
+    return url,r.status_code,{}
+
+def person_objects(request, nr_id, limit=100, offset=0):
+    """Return DDR objects for Names Database Person NRID
+    """
+    searcher = search.Searcher(ds=DOCSTORE)
+    s = search.Search(using=DOCSTORE.es, index='ddrentity')
+    q = search.Q(
+        'bool',
+        must=[
+            #search.Q(
+            #    'nested', path='creators',
+            #    query=search.Q('term', creators__nr_id=nr_id)
+            #) |
+            search.Q(
+              'nested', path='persons',
+              query=search.Q('term', persons__nr_id=nr_id)
+            )
+        ]
+    )
+    searcher.s = s.query(q)
+    results = searcher.execute(limit, offset)
+    results.params = {'placeholder': 'params cannot be empty'}
+    return results
