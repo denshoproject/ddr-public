@@ -95,7 +95,7 @@ SEARCH_MODELS = [
     'ddrnarrator'
 ]
 
-NAMESDB_SEARCH_MODELS = ['names-record']
+#NAMESDB_SEARCH_MODELS = ['names-record']
 
 # fields searched by query e.g. query will find search terms in these fields
 # IMPORTANT: These are used for fulltext search so they must ALL be TEXT fields
@@ -154,9 +154,9 @@ SEARCH_FORM_LABELS = {
     'topics': 'Topics',
 }
 
-NAMESDB_SEARCH_FORM_LABELS = {
-    'm_camp': 'Camp',
-}
+#NAMESDB_SEARCH_FORM_LABELS = {
+#    'm_camp': 'Camp',
+#}
 
 ## TODO should this live in models?
 #def _vocab_choice_labels(field):

@@ -245,7 +245,7 @@ INSTALLED_APPS = (
     #
     'ddrpublic',
     'ui',
-    'names',
+    #'names',
     'namesdb_public',
 )
 
