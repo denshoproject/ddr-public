@@ -1729,7 +1729,7 @@ def person(request, nr_id):
             return url,r.status_code,data
     return url,r.status_code,{}
 
-def person_objects(request, nr_id, limit=100, offset=0):
+def person_objects(request, nr_id, kwargs={}, limit=100, offset=0):
     """Return DDR objects for Names Database Person NRID
     """
     searcher = search.Searcher(ds=DOCSTORE)
@@ -1748,6 +1748,9 @@ def person_objects(request, nr_id, limit=100, offset=0):
         ]
     )
     searcher.s = s.query(q)
+    if kwargs.get('genre'):
+        key = 'genre'; val = kwargs['genre']
+        searcher.s = searcher.s.filter('term', **{key: val})
     results = searcher.execute(limit, offset)
     results.params = {'placeholder': 'params cannot be empty'}
     return results
