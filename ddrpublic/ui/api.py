@@ -307,6 +307,28 @@ def narrator_interviews(request, object_id, format=None):
     return _list(request, data)
 
 @api_view(['GET'])
+def nrid_objects(request, naan, noid):
+    """DDR objects for the specified Names Registry ID.
+    """
+    nr_id = f"{naan}/{noid}"
+    # sanitize
+    ALLOWED_VALUES = {
+        'genre': ['photograph'],  # all we need for Irei API for now
+    }
+    kwargs = {
+        key: val for key,val in request.GET.items()
+        if key in ['genre'] and (val in ALLOWED_VALUES[key])
+    }
+    # search
+    limit = int(request.GET.get('limit', settings.RESULTS_PER_PAGE))
+    offset = int(request.GET.get('offset', 0))
+    results = models.person_objects(request, nr_id, kwargs, limit, offset)
+    return Response(results.ordered_dict(
+        request=request,
+        format_functions=models.FORMATTERS,
+    ))
+
+@api_view(['GET'])
 def facet_index(request, format=None):
     data = models.Facet.facets(request)
     return Response(data)

@@ -236,6 +236,7 @@ INSTALLED_APPS = (
     'ui',
     'names',
     #'namesdb_public',
+    'ireizo_public',
 )
 
 NAMESDB_PUBLIC = False

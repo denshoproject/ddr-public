@@ -6,6 +6,7 @@
 build/
 ddrpublic/ddrpublic/settings.py
 ddr-public-assets/
+ddrpublic/ireizo_public
 namesdb/
 src/
 tmp/
