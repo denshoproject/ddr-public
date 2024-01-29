@@ -36,11 +36,13 @@ PACKAGE_TIMESTAMP := $(shell git log -1 --pretty="%ad" --date=short | tr -d -)
 PACKAGE_SERVER=ddr.densho.org/static/ddrpublic
 
 SRC_REPO_NAMESDB=https://github.com/densho/namesdb
+SRC_REPO_IREIZO=https://github.com/denshoproject/ireizo-public.git
 SRC_REPO_ASSETS=https://github.com/denshoproject/ddr-public-assets.git
 
 INSTALL_BASE=/opt
 INSTALL_PUBLIC=$(INSTALL_BASE)/ddr-public
 INSTALL_NAMESDB=./namesdb
+INSTALL_IREIZO=$(INSTALL_BASE)/ireizo-public
 INSTALL_ASSETS=/opt/ddr-public-assets
 REQUIREMENTS=./requirements.txt
 PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
@@ -240,13 +242,13 @@ install-virtualenv:
 	source $(VIRTUALENV)/bin/activate; \
 	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) setuptools
 
-get-app: get-namesdb get-ddr-public
+get-app: get-namesdb get-ddr-public get-ireizo-public
 
-install-app: install-virtualenv install-namesdb install-ddr-public install-configs install-daemon-configs
+install-app: install-virtualenv install-namesdb install-ireizo-public install-ddr-public install-configs install-daemon-configs
 
 test-app: test-ddr-public
 
-uninstall-app: uninstall-namesdb uninstall-ddr-public uninstall-configs uninstall-daemon-configs
+uninstall-app: uninstall-namesdb uninstall-ireizo-public uninstall-ddr-public uninstall-configs uninstall-daemon-configs
 
 clean-app: clean-ddr-public
 
@@ -284,6 +286,32 @@ clean-namesdb:
 	-rm -Rf $(INSTALL_NAMESDB)/build
 	-rm -Rf $(INSTALL_NAMESDB)/namesdb.egg-info
 	-rm -Rf $(INSTALL_NAMESDB)/dist
+
+
+get-ireizo-public:
+	@echo ""
+	@echo "get-ireizo-public ------------------------------------------------------"
+	git status | grep "On branch"
+	if test -d $(INSTALL_IREIZO); \
+	then cd $(INSTALL_IREIZO) && git pull; \
+	else cd $(INSTALL_BASE) && git clone $(SRC_REPO_IREIZO); \
+	fi
+
+install-ireizo-public: install-virtualenv
+	@echo ""
+	@echo "install-ireizo-public --------------------------------------------------"
+	-rm -Rf $(INSTALL_PUBLIC)/ddrpublic/ireizo_public
+	-ln -s $(INSTALL_IREIZO)/ireizo_public $(INSTALL_PUBLIC)/ddrpublic/ireizo_public
+
+uninstall-ireizo-public: install-virtualenv
+	@echo ""
+	@echo "uninstall-ireizo-public ------------------------------------------------"
+	-rm -Rf $(INSTALL_PUBLIC)/ddrpublic/ireizo_public
+
+clean-ireizo-public:
+	-rm -Rf $(INSTALL_IREIZO)/build
+	-rm -Rf $(INSTALL_IREIZO)/namesdb.egg-info
+	-rm -Rf $(INSTALL_IREIZO)/dist
 
 
 get-ddr-public:

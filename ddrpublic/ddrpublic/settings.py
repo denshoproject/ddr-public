@@ -205,6 +205,14 @@ THROTTLE_USER = config.get('public', 'throttle_user')
 
 SITE_MSG_TEXT = config.get('public', 'site_msg_text')
 
+# namesdb_public
+DDR_UI_URL = config.get('namesdbpublic', 'ddr_ui_url')
+DDR_API_URL = config.get('namesdbpublic', 'ddr_api_url')
+DDR_API_TIMEOUT = int(config.get('namesdbpublic', 'ddr_api_timeout'))
+DDR_API_USERNAME = config.get('namesdbpublic', 'ddr_api_username')
+DDR_API_PASSWORD = config.get('namesdbpublic', 'ddr_api_password')
+
+
 # ----------------------------------------------------------------------
 
 ADMINS = (
@@ -236,6 +244,7 @@ INSTALLED_APPS = (
     'ui',
     'names',
     #'namesdb_public',
+    'ireizo_public',
 )
 
 NAMESDB_PUBLIC = False

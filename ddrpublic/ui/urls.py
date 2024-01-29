@@ -1,5 +1,5 @@
 from django.contrib.sitemaps.views import sitemap
-from django.urls import include, path
+from django.urls import include, path, re_path
 from django.views.generic import TemplateView
 
 from drf_yasg import views as yasg_views
@@ -40,6 +40,7 @@ urlpatterns = [
     path('redirect/archive.densho.org', redirect, name='ui-redirect'),
     #path('namesdb/', include('namesdb_public.urls')),
     path('names/', include('names.urls')),
+    path('irei/', include('ireizo_public.urls')),
     
     path('api/swagger.json',
          schema_view.without_ui(cache_timeout=0), name='schema-json'
@@ -64,7 +65,12 @@ urlpatterns = [
     path('api/0.2/narrator/<slug:object_id>/interviews/', api.narrator_interviews, name='ui-api-narrator-interviews'),
     path('api/0.2/narrator/<slug:object_id>/', api.narrator, name='ui-api-narrator'),
     path('api/0.2/narrator/', api.narrators, name='ui-api-narrators'),
-    
+
+    re_path(
+        r'^api/0.2/nrid/(?P<naan>[0-9a-zA-Z_:-]+)/(?P<noid>[0-9a-zA-Z_:-]+)',
+        api.nrid_objects, name='ui-api-nrid-detail'
+    ),
+
     path('api/0.2/facet/<slug:facet_id>/children/', api.facetterms, name='ui-api-facetterms'),
     path('api/0.2/facet/<slug:facet_id>/<slug:term_id>/objects/', api.term_objects, name='ui-api-term-objects'),
     path('api/0.2/facet/<slug:facet_id>/<slug:term_id>/', api.facetterm, name='ui-api-term'),
