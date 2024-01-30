@@ -302,6 +302,8 @@ install-ireizo-public: install-virtualenv
 	@echo "install-ireizo-public --------------------------------------------------"
 	-rm -Rf $(INSTALL_PUBLIC)/ddrpublic/ireizo_public
 	-ln -s $(INSTALL_IREIZO)/ireizo_public $(INSTALL_PUBLIC)/ddrpublic/ireizo_public
+	source $(VIRTUALENV)/bin/activate; \
+	cd $(INSTALL_IREIZO) && pip3 install --cache-dir=$(PIP_CACHE_DIR) -U -r requirements.txt
 
 uninstall-ireizo-public: install-virtualenv
 	@echo ""
