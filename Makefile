@@ -80,6 +80,7 @@ TGZ_FILE=$(APP)_$(APP_VERSION)
 TGZ_DIR=$(INSTALL_PUBLIC)/$(TGZ_FILE)
 TGZ_PUBLIC=$(TGZ_DIR)/ddr-public
 TGZ_NAMES=$(TGZ_DIR)/ddr-public/namesdb
+TGZ_IREIZO=$(TGZ_DIR)/ireizo-public/
 TGZ_ASSETS=$(TGZ_DIR)/ddr-public/ddr-public-assets
 
 # Adding '-rcN' to VERSION will name the package "ddrlocal-release"
@@ -461,9 +462,11 @@ tgz-local:
 	rm -Rf $(TGZ_DIR)
 	git clone $(INSTALL_PUBLIC) $(TGZ_PUBLIC)
 	git clone $(INSTALL_NAMESDB) $(TGZ_NAMES)
+	git clone $(INSTALL_IREIZO) $(TGZ_IREIZO)
 	git clone $(INSTALL_ASSETS) $(TGZ_ASSETS)
 	cd $(TGZ_PUBLIC); git checkout develop; git checkout master
 	cd $(TGZ_NAMES); git checkout develop; git checkout master
+	cd $(TGZ_IREIZO); git checkout develop; git checkout master
 	cd $(TGZ_ASSETS); git checkout develop; git checkout master
 	tar czf $(TGZ_FILE).tgz $(TGZ_FILE)
 	rm -Rf $(TGZ_DIR)
@@ -473,9 +476,11 @@ tgz:
 	rm -Rf $(TGZ_DIR)
 	git clone $(GIT_SOURCE_URL) $(TGZ_PUBLIC)
 	git clone $(SRC_REPO_NAMESDB) $(TGZ_NAMES)
+	git clone $(SRC_REPO_IREIZO) $(TGZ_IREIZO)
 	git clone $(SRC_REPO_ASSETS) $(TGZ_ASSETS)
 	cd $(TGZ_PUBLIC); git checkout develop; git checkout master
 	cd $(TGZ_NAMES); git checkout develop; git checkout master
+	cd $(TGZ_IREIZO); git checkout develop; git checkout master
 	cd $(TGZ_ASSETS); git checkout develop; git checkout master
 	tar czf $(TGZ_FILE).tgz $(TGZ_FILE)
 	rm -Rf $(TGZ_DIR)
@@ -523,6 +528,7 @@ deb-buster:
 	.git=$(DEB_BASE)   \
 	.gitignore=$(DEB_BASE)   \
 	INSTALL=$(DEB_BASE)   \
+	../ireizo-public=opt   \
 	LICENSE=$(DEB_BASE)   \
 	Makefile=$(DEB_BASE)   \
 	namesdb=$(DEB_BASE)   \
@@ -567,6 +573,7 @@ deb-bullseye:
 	.git=$(DEB_BASE)   \
 	.gitignore=$(DEB_BASE)   \
 	INSTALL=$(DEB_BASE)   \
+	../ireizo-public=opt   \
 	LICENSE=$(DEB_BASE)   \
 	Makefile=$(DEB_BASE)   \
 	namesdb=$(DEB_BASE)   \
