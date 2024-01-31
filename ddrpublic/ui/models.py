@@ -1716,11 +1716,10 @@ def person_objects(request, nr_id, is_irei=False, limit=100, offset=0):
     q = search.Q(
         'bool',
         must=[
-            #search.Q(
-            #    'nested', path='creators',
-            #    query=search.Q('term', creators__nr_id=nr_id)
-            #) |
             search.Q(
+                'nested', path='creators',
+                query=search.Q('term', creators__nr_id=nr_id)
+            ) | search.Q(
                 'nested', path='persons',
                 query=search.Q('term', persons__nr_id=nr_id)
             )
