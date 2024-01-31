@@ -306,23 +306,19 @@ def narrator_interviews(request, object_id, format=None):
     data = models.Narrator.interviews(object_id, request, limit=1000)
     return _list(request, data)
 
+TRUTHY = [True,'True','true','t','YES','Yes','yes','y','1']
+
 @api_view(['GET'])
 def nrid_objects(request, naan, noid):
     """DDR objects for the specified Names Registry ID.
     """
     nr_id = f"{naan}/{noid}"
-    # sanitize
-    ALLOWED_VALUES = {
-        'genre': ['photograph'],  # all we need for Irei API for now
-    }
-    kwargs = {
-        key: val for key,val in request.GET.items()
-        if key in ['genre'] and (val in ALLOWED_VALUES[key])
-    }
-    # search
+    is_irei = False
+    if request.GET.get('irei') and request.GET['irei'] in TRUTHY:
+        is_irei = True
     limit = int(request.GET.get('limit', settings.RESULTS_PER_PAGE))
     offset = int(request.GET.get('offset', 0))
-    results = models.person_objects(request, nr_id, kwargs, limit, offset)
+    results = models.person_objects(request, nr_id, is_irei, limit, offset)
     return Response(results.ordered_dict(
         request=request,
         format_functions=models.FORMATTERS,
