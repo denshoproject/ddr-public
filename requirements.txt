@@ -12,7 +12,7 @@
                                    # LICENSE  Python3
 django>=4.1.0,<4.2                 # MIT
 django-bootstrap-pagination-forked # MIT      ???     TODO replace
-django-cors-headers>=3.13.0,<3.14  # MIT      y
+django-cors-headers>=4.3.0,<4.4    # MIT      y
 django-log-request-id              # BSD      y
 djangorestframework>=3.13.0,<3.14  # BSD      y
 django-robots>=5.0,<5.1            # BSD

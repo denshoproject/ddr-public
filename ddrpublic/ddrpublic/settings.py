@@ -190,15 +190,17 @@ PRETTY_DATE_FORMAT = '%d %B %Y'
 PRETTY_TIME_FORMAT = '%I:%M %p'
 PRETTY_DATETIME_FORMAT = '%d %B %Y, %I:%M %p'
 
-# django-cors-headers (see https://github.com/ottoyiu/django-cors-headers/)
-CORS_ORIGIN_ALLOW_ALL = config.getboolean('public', 'cors_origin_allow_all')
-CORS_ORIGIN_WHITELIST = [
+# django-cors-headers - See https://github.com/adamchainz/django-cors-headers/
+CORS_ALLOWED_ORIGINS = [
     domain.strip()
-    for domain in config.get('public', 'cors_origin_whitelist').split(',')
+    for domain in config.get('public', 'cors_allowed_origins').split(',')
     if domain.strip()
 ]
-## Only send CORS headers for API.
-#CORS_URLS_REGEX = r'^/api/.*$'
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    domain.strip()
+    for domain in config.get('public', 'cors_allowed_origin_regexes').split(',')
+    if domain.strip()
+]
 
 THROTTLE_ANON = config.get('public', 'throttle_anon')
 THROTTLE_USER = config.get('public', 'throttle_user')
@@ -483,6 +485,7 @@ STATICFILES_FINDERS = (
 MIDDLEWARE = [
     'log_request_id.middleware.RequestIDMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
