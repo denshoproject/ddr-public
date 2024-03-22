@@ -231,16 +231,16 @@ install-virtualenv:
 	@echo ""
 	@echo "install-virtualenv -----------------------------------------------------"
 	apt-get --assume-yes install python3-pip python3-venv
-	python3 -m venv --system-site-packages $(VIRTUALENV)
 	source $(VIRTUALENV)/bin/activate; \
-	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) pip
+	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) pip uv
+	uv venv $(VIRTUALENV)
 
  install-setuptools: install-virtualenv
 	@echo ""
 	@echo "install-setuptools -----------------------------------------------------"
 	apt-get --assume-yes install python3-dev
 	source $(VIRTUALENV)/bin/activate; \
-	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) setuptools
+	uv pip install -U --cache-dir=$(PIP_CACHE_DIR) setuptools
 
 get-app: get-namesdb get-ddr-public get-ireizo-public
 
@@ -274,13 +274,13 @@ install-namesdb: install-virtualenv
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_NAMESDB) && python setup.py install
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_NAMESDB) && pip3 install --cache-dir=$(PIP_CACHE_DIR) -U -r requirements.txt
+	cd $(INSTALL_NAMESDB) && uv pip install --cache-dir=$(PIP_CACHE_DIR) -U -r requirements.txt
 
 uninstall-namesdb: install-virtualenv
 	@echo ""
 	@echo "uninstall-namesdb ------------------------------------------------------"
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_NAMESDB) && pip3 uninstall -y -r requirements.txt
+	cd $(INSTALL_NAMESDB) && uv pip uninstall -y -r requirements.txt
 
 clean-namesdb:
 	-rm -Rf $(INSTALL_NAMESDB)/build
@@ -303,7 +303,7 @@ install-ireizo-public: install-virtualenv
 	-rm -Rf $(INSTALL_PUBLIC)/ddrpublic/ireizo_public
 	-ln -s $(INSTALL_IREIZO)/ireizo_public $(INSTALL_PUBLIC)/ddrpublic/ireizo_public
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_IREIZO) && pip3 install --cache-dir=$(PIP_CACHE_DIR) -U -r requirements.txt
+	cd $(INSTALL_IREIZO) && uv pip install --cache-dir=$(PIP_CACHE_DIR) -U -r requirements.txt
 
 uninstall-ireizo-public: install-virtualenv
 	@echo ""
@@ -334,7 +334,7 @@ install-ddr-public: install-setuptools mkdir-ddr-public
 	sqlite3                       \
 	supervisor
 	source $(VIRTUALENV)/bin/activate; \
-	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) -r $(INSTALL_PUBLIC)/requirements.txt
+	uv pip install -U --cache-dir=$(PIP_CACHE_DIR) -r $(INSTALL_PUBLIC)/requirements.txt
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_PUBLIC)
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_NAMESDB)
 
@@ -348,7 +348,7 @@ install-test:
 	python3-pytest-django         \
 	python3-pytest-xdist
 	source $(VIRTUALENV)/bin/activate; \
-	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) -r $(INSTALL_PUBLIC)/requirements-dev.txt
+	uv pip install -U --cache-dir=$(PIP_CACHE_DIR) -r $(INSTALL_PUBLIC)/requirements-dev.txt
 
 mkdir-ddr-public:
 	@echo ""
@@ -393,7 +393,7 @@ uninstall-ddr-public: install-setuptools
 	@echo ""
 	@echo "uninstall-ddr-public ---------------------------------------------------"
 	source $(VIRTUALENV)/bin/activate; \
-	pip3 uninstall -y -r $(INSTALL_PUBLIC)/requirements.txt
+	uv pip uninstall -y -r $(INSTALL_PUBLIC)/requirements.txt
 
 clean-ddr-public:
 	-rm -Rf $(VIRTUALENV)
