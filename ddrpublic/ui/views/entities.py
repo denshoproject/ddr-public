@@ -124,6 +124,7 @@ def detail(request, oid):
         'transcripts': transcripts,
         'facilities': facilities,
         'creators': creators,
+        'len_topics':   len(entity.get('topics',  [])),
         'len_creators': len(entity.get('creators',[])),
         'len_persons':  len(entity.get('persons', [])),
         'object_location': object_location,

@@ -139,14 +139,33 @@ IA metadata: {{ object.ia_meta|safe }}
                         <div class="col-md-5 col-sm-5">
                             <!-- entity.topic_terms -->
                             <h3 class="page-header">TOPICS</h3>
-                            <ul class="list-unstyled">
-                              {% for item in object.topics %}
-                              <li>
-                                <a href="{% url "ui-browse-term" "topics" item.id %}">
-                                  {{ item.term_node }}</a>
-                              </li>
-                              {% endfor %}
-                            </ul>
+
+                            <div id="topics-partial">
+                              {% if len_topics > 10 %}
+                              <a class="topics-toggle" class="small" style="float:right;">show more</a>
+                              {% endif %}
+                              <ul class="list-unstyled">
+                                {% for item in object.topics|slice:":10" %}
+                                <li>
+                                  <a href="{% url "ui-browse-term" "topics" item.id %}">{{ item.term_node }}</a>
+                                </li>
+                                {% endfor %}
+                                {% if len_topics > 10 %}<li>...</li>{% endif %}
+                              </ul>
+                            </div>
+                            <div id="topics-all" style="display:none;">
+                              {% if object.topics %}
+                              <a class="topics-toggle" class="small" style="float:right;">show less</a>
+                              {% endif %}
+                              <ul class="list-unstyled">
+                                {% for item in object.topics|slice:":10" %}
+                                <li>
+                                  <a href="{% url "ui-browse-term" "topics" item.id %}">{{ item.term_node }}</a>
+                                </li>
+                                {% endfor %}
+                              </ul>
+                            </div>
+
                         </div>
                         <div class="col-md-7 col-sm-7">
                             <!-- entity.facility -->
@@ -213,6 +232,7 @@ IA metadata: {{ object.ia_meta|safe }}
                                 {% endfor %}
                               </ul>
                             </div>
+
                         </div>
                     </div>
                     <!-- /core meta -->
@@ -296,6 +316,11 @@ IA metadata: {{ object.ia_meta|safe }}
 
 {% block javascript %}
 <script>
+  /* toggle topics list */
+  $(".topics-toggle").click(function() {
+      $("#topics-partial").toggle();
+      $("#topics-all").toggle();
+  });
   /* toggle creators list */
   $(".creators-toggle").click(function() {
       $("#creators-partial").toggle();
