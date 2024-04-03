@@ -191,21 +191,44 @@ IA metadata: {{ object.ia_meta|safe }}
                               {{ object.format.label }}
                             </p>
                         </div>
-                    </div>
+                    </div><!-- .row -->
                     <div class="row">
-                        <div class="col-md-5 col-sm-5">
+                        <div class="col-md-12 col-sm-12">
+
                             <!-- entity.topic_terms -->
                             <h3 class="page-header">TOPICS</h3>
-                            <ul class="list-unstyled">
-                              {% for item in object.topics %}
-                              <li>
-                                <a href="{% url "ui-browse-term" "topics" item.id %}">
-                                  {{ item.term_node }}</a>
-                              </li>
-                              {% endfor %}
-                            </ul>
+
+                            <div id="topics-partial">
+                              {% if len_topics > 10 %}
+                              <a class="topics-toggle" class="small" style="float:right;">show more</a>
+                              {% endif %}
+                              <ul class="list-unstyled">
+                                {% for item in object.topics|slice:":10" %}
+                                <li>
+                                  <a href="{% url "ui-browse-term" "topics" item.id %}">{{ item.term_node }}</a>
+                                </li>
+                                {% endfor %}
+                                {% if len_topics > 10 %}<li>...</li>{% endif %}
+                              </ul>
+                            </div>
+                            <div id="topics-all" style="display:none;">
+                              {% if object.topics %}
+                              <a class="topics-toggle" class="small" style="float:right;">show less</a>
+                              {% endif %}
+                              <ul class="list-unstyled">
+                                {% for item in object.topics|slice:":10" %}
+                                <li>
+                                  <a href="{% url "ui-browse-term" "topics" item.id %}">{{ item.term_node }}</a>
+                                </li>
+                                {% endfor %}
+                              </ul>
+                            </div>
+
                         </div>
-                        <div class="col-md-7 col-sm-7">
+                    </div><!-- .row -->
+                    <div class="row">
+                        <div class="col-md-12 col-sm-12">
+
                             <!-- entity.facility -->
                             <h3 class="page-header">FACILITY</h3>
                             <ul class="list-unstyled">
@@ -215,30 +238,67 @@ IA metadata: {{ object.ia_meta|safe }}
                               </li>
                               {% endfor %}
                             </ul>
+
                         </div>
-                    </div>
+                    </div><!-- .row -->
                     <div class="row">
-                        <div class="col-md-5 col-sm-5">
+                        <div class="col-md-12 col-sm-12">
+
                             <!-- entity.creators -->
                             <h3 class="page-header">CREATORS</h3>
-                            <ul class="list-unstyled">
-                              {% for p in object.creators %}
-                              <li>
-                                {% person p %}
-                              </li>
-                              {% endfor %}
-                            </ul>
+
+                            <div id="creators-partial">
+                              {% if len_creators > 10 %}
+                              <a class="creators-toggle" class="small" style="float:right;">show more</a>
+                              {% endif %}
+                              <ul class="list-unstyled">
+                                {% for p in object.creators|slice:":10" %}
+                                  <li>{% person p %}</li>
+                                {% endfor %}
+                                {% if len_creators > 10 %}<li>...</li>{% endif %}
+                              </ul>
+                            </div>
+                            <div id="creators-all" style="display:none;">
+                              {% if object.creators %}
+                              <a class="creators-toggle" class="small" style="float:right;">show less</a>
+                              {% endif %}
+                              <ul class="list-unstyled">
+                                {% for p in object.creators %}
+                                  <li>{% person p %}</li>
+                                {% endfor %}
+                              </ul>
+                            </div>
+
                         </div>
-                        <div class="col-md-7 col-sm-7">
+                    </div><!-- .row -->
+                    <div class="row">
+                        <div class="col-md-12 col-sm-12">
+
                             <!-- entity.persons -->
                             <h3 class="page-header">PERSONS/ORGANIZATIONS</h3>
-                            <ul class="list-unstyled">
-                              {% for p in object.persons %}
-                              <li>
-                                {% person p %}
-                              </li>
-                              {% endfor %}
-                            </ul>
+
+                            <div id="persons-partial">
+                              {% if len_persons > 10 %}
+                              <a class="persons-toggle" class="small" style="float:right;">show more</a>
+                              {% endif %}
+                              <ul class="list-unstyled">
+                                {% for p in object.persons|slice:":10" %}
+                                  <li>{% person p %}</li>
+                                {% endfor %}
+                                {% if len_persons > 10 %}<li>...</li>{% endif %}
+                              </ul>
+                            </div>
+                            <div id="persons-all" style="display:none;">
+                              {% if object.persons %}
+                              <a class="persons-toggle" class="small" style="float:right;">show less</a>
+                              {% endif %}
+                              <ul class="list-unstyled">
+                                {% for p in object.persons %}
+                                  <li>{% person p %}</li>
+                                {% endfor %}
+                              </ul>
+                            </div>
+
                         </div>
                     </div>
                     <!-- /core meta -->
