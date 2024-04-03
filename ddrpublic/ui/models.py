@@ -444,7 +444,7 @@ def _object(request, oid, format=None):
         raise Http404
     return format_object_detail2(data, request)
 
-def _object_children(document, request, models=[], sort_fields=[], fields=SEARCH_INCLUDE_FIELDS, limit=DEFAULT_LIMIT, offset=0):
+def _object_children(document, request, models=[], sort_fields=[], fields=SEARCH_INCLUDE_FIELDS, limit=DEFAULT_LIMIT, offset=0, just_count=False):
     """
     TODO this function is probably superfluous
     """
@@ -458,7 +458,8 @@ def _object_children(document, request, models=[], sort_fields=[], fields=SEARCH
         parent_id=document['id'],
         sort_fields=sort_fields,
         fields=fields,
-        limit=limit, offset=offset
+        limit=limit, offset=offset,
+        just_count=just_count,
     )
 
 def children(request, model, parent_id, sort_fields, fields=SEARCH_INCLUDE_FIELDS, limit=DEFAULT_LIMIT, offset=0, just_count=False):
@@ -931,14 +932,15 @@ class Organization(object):
         return _object(request, oid)
 
     @staticmethod
-    def children(oid, request, fields=SEARCH_INCLUDE_FIELDS, limit=DEFAULT_LIMIT, offset=0):
+    def children(oid, request, fields=SEARCH_INCLUDE_FIELDS, limit=DEFAULT_LIMIT, offset=0, just_count=False):
         return _object_children(
             document=_object(request, oid),
             request=request,
             fields=fields,
             sort_fields=COLLECTION_LIST_SORT,
             limit=limit,
-            offset=offset
+            offset=offset,
+            just_count=just_count,
         )
 
 
