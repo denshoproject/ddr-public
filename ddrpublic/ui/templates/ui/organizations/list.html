@@ -1,24 +1,26 @@
-{% extends "ui/organizations/base.html" %}
+{% extends BASE_TEMPLATE %}
 {% load thumbnail ui_tags %}
 
-{% block title %}{{ organization.title }}{% endblock %}
-{% block pagetitle %}
-<span class="label label-default">{{ organization.title }}</span>
-{% endblock %}
+{% block title %}Collections{% endblock %}
+{% block pagetitle %}Collections{% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
-<li>{{ organization.title }}</li>
-{% endblock breadcrumbs %}
+<li>Organizations</li>{% endblock breadcrumbs %}
 
 {% block content %}
 <section class="container">
   <div class="row">
 	<div class="col-sm-10 col-md-10">
 
+
+<h2>Partners</h2>
+{% for organization,num_collections in organizations %}
+{% if num_collections %}
 <div class="organization media">
   <div class="media-left">
     <a href="{% url "ui-object-detail" organization.id %}">
-      <img src="{{ organization.links.img }}" class="media-object" style="width:100px;"/>
+      <img src="{{ organization.links.img }}"
+           class="media-object" style="width:100px;"/>
     </a>
   </div>
   <div class="media-body">
@@ -29,24 +31,25 @@
       <small>({{ num_collections }} collection{{ num_collections | pluralize }})</small>
     </h2>
     <p>
-      Site: <a href="{{ organization.url }}">{{ organization.url }}</a><br/>
-    </p>
-    <p>
-      {{ organization.description|linebreaks|safe }}
+      {{ organization.description }}
     </p>
   </div><!-- .media-left -->
 </div><!-- .media .organization -->
+{% endif %}
+{% endfor %}{# organizations #}
 
-<h3>Collections</h3>
-{% for collection in collections %}
-{% document collection %}
-{% endfor %}
 
 	</div>
   </div><!-- .row -->
 </section><!-- .container-fluid -->
 {% endblock content %}
 
-{% block footer %}
-ui/organizations/detail.html
-{% endblock footer %}
+{% block pagecss %}
+<style type="text/css">
+h2 { margin-bottom:10px; }
+h3 { margin-top:30px; margin-bottom:20px; }
+ul#org-list { padding-left:0px; }
+ul#org-list li { list-style-type:none; }
+ul#org-list li img { margin-right:10px; }
+</style>
+{% endblock pagecss %}
