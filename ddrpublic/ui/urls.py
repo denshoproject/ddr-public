@@ -106,7 +106,7 @@ urlpatterns = [
     
     path('cite/<slug:model>/<slug:object_id>/', cite, name='ui-cite'),
     
-    path('organizations/', organizations.list, name='ui-organizations-list'),
+    path('partners/', organizations.list, name='ui-organizations-list'),
     path('collections/', collections.list, name='ui-collections-list'),
     
     path('interviews/<slug:oid>/', entities.interview, name='ui-interview'),
