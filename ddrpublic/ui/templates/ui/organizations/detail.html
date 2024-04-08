@@ -1,5 +1,5 @@
 {% extends "ui/organizations/base.html" %}
-{% load thumbnail ui_tags %}
+{% load bootstrap_pagination thumbnail ui_tags %}
 
 {% block title %}{{ organization.title }}{% endblock %}
 {% block pagetitle %}
@@ -26,7 +26,6 @@
       <a href="{% url "ui-object-detail" organization.id %}">
         {{ organization.title }}
       </a>
-      <small>({{ num_collections }} collection{{ num_collections | pluralize }})</small>
     </h2>
     <p>
       Site: <a href="{{ organization.url }}">{{ organization.url }}</a><br/>
@@ -37,9 +36,16 @@
   </div><!-- .media-left -->
 </div><!-- .media .organization -->
 
-<h3>Collections</h3>
-{% for collection in collections %}
-{% document collection %}
+<div id="item-count">
+  {{ paginator.count }} Collection{{ paginator.count|pluralize }}<br/>
+</div>
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+
+{% for object in page.object_list %}
+{% document object %}
 {% endfor %}
 
 	</div>

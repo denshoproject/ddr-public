@@ -2,10 +2,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 from django.conf import settings
+from django.core.paginator import Paginator
 from django.http import HttpResponseRedirect
 from django.shortcuts import Http404, redirect, render
 from django.urls import reverse
 
+from elastictools import search
 from .. import misc
 from .. import models
 
@@ -43,18 +45,26 @@ def list(request):
 def detail(request, oid):
     repo,org = misc.domain_org(request)
     organization = models.Organization.get(oid, request)
-    collections = models.Organization.children(
-        oid, request, limit=settings.ELASTICSEARCH_MAX_SIZE,
-    ).ordered_dict(
-        request=request,
-        format_functions=models.FORMATTERS,
-        pad=True,
-    )['objects']
+    # collections
+    limit,offset = search.limit_offset(request, settings.RESULTS_PER_PAGE)
+    results = models.Organization.children(
+        oid, request, limit=limit, offset=offset,
+    )
+    paginator = Paginator(
+        results.ordered_dict(
+            request=request,
+            format_functions=models.FORMATTERS,
+            pad=True,
+        )['objects'],
+        results.page_size,
+    )
+    page = paginator.page(results.this_page)
     return render(request, 'ui/organizations/detail.html', {
         'repo': repo,
         'organization': organization,
         'object': organization,
-        'collections': collections,
-        'num_collections': len(collections),
+        'num_collections': results.total,
+        'paginator': paginator,
+        'page': page,
         'api_url': reverse('ui-api-object', args=[oid]),
     })
