@@ -143,7 +143,11 @@ IA metadata: {{ object.ia_meta|safe }}
 
                             <div id="topics-partial">
                               {% if len_topics > 10 %}
-                              <a class="topics-toggle" class="small" style="float:right;">show more</a>
+                              <small>
+                                <a class="topics-toggle" style="float:right;">
+                                  <i class="fa-solid fa-caret-up"></i> show more
+                                </a>
+                              </small>
                               {% endif %}
                               <ul class="list-unstyled">
                                 {% for item in object.topics|slice:":10" %}
@@ -156,7 +160,11 @@ IA metadata: {{ object.ia_meta|safe }}
                             </div>
                             <div id="topics-all" style="display:none;">
                               {% if object.topics %}
-                              <a class="topics-toggle" class="small" style="float:right;">show less</a>
+                              <small>
+                                <a class="topics-toggle" style="float:right;">
+                                  <i class="fa-solid fa-caret-down"></i> show less
+                                </a>
+                              </small>
                               {% endif %}
                               <ul class="list-unstyled">
                                 {% for item in object.topics|slice:":10" %}
@@ -192,7 +200,11 @@ IA metadata: {{ object.ia_meta|safe }}
 
                             <div id="creators-partial">
                               {% if len_creators > 10 %}
-                              <a class="creators-toggle" class="small" style="float:right;">show more</a>
+                              <small>
+                                <a class="creators-toggle" style="float:right;">
+                                  <i class="fa-solid fa-caret-up"></i> show more
+                                </a>
+                              </small>
                               {% endif %}
                               <ul class="list-unstyled">
                                 {% for p in object.creators|slice:":10" %}
@@ -203,7 +215,11 @@ IA metadata: {{ object.ia_meta|safe }}
                             </div>
                             <div id="creators-all" style="display:none;">
                               {% if object.creators %}
-                              <a class="creators-toggle" class="small" style="float:right;">show less</a>
+                              <small>
+                                <a class="creators-toggle" style="float:right;">
+                                  <i class="fa-solid fa-caret-down"></i> show less
+                                </a>
+                              </small>
                               {% endif %}
                               <ul class="list-unstyled">
                                 {% for p in object.creators %}
@@ -222,7 +238,11 @@ IA metadata: {{ object.ia_meta|safe }}
 
                             <div id="persons-partial">
                               {% if len_persons > 10 %}
-                              <a class="persons-toggle" class="small" style="float:right;">show more</a>
+                              <small>
+                                <a class="persons-toggle" style="float:right;">
+                                  <i class="fa-solid fa-caret-up"></i> show more
+                                </a>
+                              </small>
                               {% endif %}
                               <ul class="list-unstyled">
                                 {% for p in object.persons|slice:":10" %}
@@ -233,7 +253,11 @@ IA metadata: {{ object.ia_meta|safe }}
                             </div>
                             <div id="persons-all" style="display:none;">
                               {% if object.persons %}
-                              <a class="persons-toggle" class="small" style="float:right;">show less</a>
+                              <small>
+                                <a class="persons-toggle" style="float:right;">
+                                  <i class="fa-solid fa-caret-down"></i> show less
+                                </a>
+                              </small>
                               {% endif %}
                               <ul class="list-unstyled">
                                 {% for p in object.persons %}
