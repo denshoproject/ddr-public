@@ -48,6 +48,10 @@
 {% document object %}
 {% endfor %}
 
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+
 	</div>
   </div><!-- .row -->
 </section><!-- .container-fluid -->
