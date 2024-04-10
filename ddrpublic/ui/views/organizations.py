@@ -38,6 +38,7 @@ def list(request):
         )['count']
         organizations.append( (org_formatted,num_collections) )
     return render(request, 'ui/organizations/list.html', {
+        'num_organizations': len(organizations),
         'organizations': organizations,
         'api_url': reverse('ui-api-object-children', args=[repo]),
     })

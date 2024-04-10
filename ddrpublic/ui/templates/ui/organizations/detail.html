@@ -17,15 +17,11 @@
 
 <div class="organization media">
   <div class="media-left">
-    <a href="{% url "ui-object-detail" organization.id %}">
-      <img src="{{ organization.links.img }}" class="media-object" style="width:100px;"/>
-    </a>
+    <img src="{{ organization.links.img }}" class="media-object" style="width:110px;"/>
   </div>
   <div class="media-body">
     <h2 style="margin-bottom:0px;">
-      <a href="{% url "ui-object-detail" organization.id %}">
-        {{ organization.title }}
-      </a>
+      {{ organization.title }}
     </h2>
     <p>
       Site: <a href="{{ organization.url }}">{{ organization.url }}</a><br/>
@@ -37,7 +33,7 @@
 </div><!-- .media .organization -->
 
 <div id="item-count">
-  {{ paginator.count }} Collection{{ paginator.count|pluralize }}<br/>
+  {{ paginator.count }} Collection{{ paginator.count|pluralize }}
 </div>
 
 {% if paginator.num_pages > 1 %}
