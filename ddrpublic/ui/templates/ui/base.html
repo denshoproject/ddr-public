@@ -369,10 +369,11 @@ Include all compiled plugins (below), or include individual files as needed
 <!--
 v{{ version }} {{ packages }}
 {{ commits|safe }}
-ddrpublic {{ docstore_hosts|safe }}
-namesdb   {{ namesdb_hosts|safe }}
-media     {{ MEDIA_URL_LOCAL_NETLOC }} {{ MEDIA_URL_LOCAL_IP }}
-{{ time }} by {{ pid }} on {{ host }}
+ddrpublic  {{ docstore_hosts|safe }}
+namesdb  {{ namesdb_hosts|safe }}
+media  {{ MEDIA_URL_LOCAL_NETLOC }}  {{ MEDIA_URL_LOCAL_IP }}
+{{ host }}  {{ pid }}
+{{ time }}
 -->
 
 </body>
