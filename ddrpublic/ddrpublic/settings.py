@@ -4,8 +4,10 @@ import configparser
 import json
 import logging
 import os
+import socket
 import subprocess
 import sys
+from urllib.parse import urlparse
 
 from elastictools import docstore
 
@@ -132,6 +134,8 @@ MEDIA_URL = config.get('public', 'media_url')
 # a CDN and get blocked for not including a User-Agent header.
 # TODO Hard-coded! Replace with value from ddr.cfg.
 MEDIA_URL_LOCAL = config.get('public', 'media_url_local')
+MEDIA_URL_LOCAL_NETLOC = urlparse(MEDIA_URL_LOCAL).netloc
+MEDIA_URL_LOCAL_IP = socket.gethostbyname(urlparse(MEDIA_URL_LOCAL).netloc)
 # The REST API will use MEDIA_URL_LOCAL for image URLs
 # if this query argument is present with a truthy value.
 MEDIA_URL_LOCAL_MARKER = 'internal'

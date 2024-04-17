@@ -367,11 +367,12 @@ Include all compiled plugins (below), or include individual files as needed
 <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=densho"></script>
 
 <!--
-Rendered at {{ time }} by {{ pid }} on {{ host }}
 v{{ version }} {{ packages }}
 {{ commits|safe }}
-ddrpublic {{ docstore_hosts|safe }} ({{ ddrpublic_cluster|safe }})
-namesdb   {{ namesdb_hosts|safe }} ({{ namesdb_cluster|safe }})
+ddrpublic {{ docstore_hosts|safe }}
+namesdb   {{ namesdb_hosts|safe }}
+media     {{ MEDIA_URL_LOCAL_NETLOC }} {{ MEDIA_URL_LOCAL_IP }}
+{{ time }} by {{ pid }} on {{ host }}
 -->
 
 </body>
