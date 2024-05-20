@@ -31,7 +31,7 @@
       <small>({{ num_collections }} collection{{ num_collections | pluralize }})</small>
     </h3>
     <p>
-      {{ organization.description }}
+      {{ organization.description|linebreaks|safe }}
     </p>
   </div><!-- .media-left -->
 </div><!-- .media .organization -->
