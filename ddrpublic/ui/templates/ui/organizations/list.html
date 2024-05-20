@@ -30,9 +30,7 @@
       </a>
       <small>({{ num_collections }} collection{{ num_collections | pluralize }})</small>
     </h3>
-    <p>
-      {{ organization.description|linebreaks|safe }}
-    </p>
+    {{ organization.description|linebreaks|safe }}
   </div><!-- .media-left -->
 </div><!-- .media .organization -->
 {% endif %}
