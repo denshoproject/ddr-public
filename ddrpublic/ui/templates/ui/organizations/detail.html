@@ -10,6 +10,12 @@
 <li>{{ organization.id }}</li>
 {% endblock breadcrumbs %}
 
+{% block pagecss %}
+<style type="text/css">
+  .organization .media-body p { margin-bottom:10px; }
+</style>
+{% endblock %}
+
 {% block content %}
 <section class="container">
   <div class="row">
