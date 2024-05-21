@@ -31,6 +31,7 @@ def list(request):
         )
     for org in orgs.objects:
         oid = org['id']
+        org['description'] = org['description'].split('\n')[0]
         org_formatted = models.format_object_detail2(org.to_dict(), request)
         num_collections = models.Organization.children(
             oid, request, limit=settings.ELASTICSEARCH_MAX_SIZE,

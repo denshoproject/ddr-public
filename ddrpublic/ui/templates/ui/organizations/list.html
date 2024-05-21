@@ -28,9 +28,11 @@
       <a href="{% url "ui-object-detail" organization.id %}">
         {{ organization.title }}
       </a>
+      <br/>
       <small>({{ num_collections }} collection{{ num_collections | pluralize }})</small>
     </h3>
-    {{ organization.description|linebreaks|safe }}
+    {{ organization.description | safe }}
+    <a href="{% url "ui-object-detail" organization.id %}">[More &raquo;]</a>
   </div><!-- .media-left -->
 </div><!-- .media .organization -->
 {% endif %}
