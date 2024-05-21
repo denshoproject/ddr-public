@@ -12,7 +12,7 @@
 
 {% block pagecss %}
 <style type="text/css">
-  .organization .media-body p { margin-bottom:10px; }
+  .organization .media-body p { color: #2E363F; margin-bottom:10px; }
 </style>
 {% endblock %}
 
@@ -29,10 +29,10 @@
     <h2 style="margin-bottom:0px;">
       {{ organization.title }}
     </h2>
-    <p>
-      Site: <a href="{{ organization.url }}">{{ organization.url }}</a><br/>
-    </p>
-    {{ organization.description|linebreaks|safe }}
+    {% if organization.url %}<p>
+      Site: <a href="{{ organization.url }}">{{ organization.url }}</a>
+    </p>{% endif %}
+    {{ organization.description | safe | linebreaks }}
   </div><!-- .media-left -->
 </div><!-- .media .organization -->
 
