@@ -18,7 +18,7 @@ djangorestframework>=3.13.0,<3.14  # BSD      y
 django-robots>=5.0,<5.1            # BSD
 drf-yasg>=1.21.0,<1.22             # BSD      y
 GitPython>=3.1,<3.2                # BSD      y
-gunicorn>=20.1.0,<20.2             # MIT      y
+gunicorn>=22.0.0,<23.0             # MIT      y
 redis                              # MIT      y
 requests                           # Apache2  y
 sorl-thumbnail>=12.8,<12.9         # BSD      y
