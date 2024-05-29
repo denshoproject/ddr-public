@@ -8,20 +8,6 @@ RUNSERVER_PORT=8001
 APP_VERSION := $(shell cat VERSION)
 GIT_SOURCE_URL=https://github.com/densho/ddr-public
 
-# Release name e.g. stretch
-DEBIAN_CODENAME := $(shell lsb_release -sc)
-# Release numbers e.g. 8.10
-DEBIAN_RELEASE := $(shell lsb_release -sr)
-# Sortable major version tag e.g. deb8
-DEBIAN_RELEASE_TAG = deb$(shell lsb_release -sr | cut -c1)
-
-ifeq ($(DEBIAN_CODENAME), buster)
-	PYTHON_VERSION=python3.7
-endif
-ifeq ($(DEBIAN_CODENAME), bullseye)
-	PYTHON_VERSION=python3.9
-endif
-
 # current branch name minus dashes or underscores
 PACKAGE_BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr -d _ | tr -d -)
 # current commit hash
@@ -61,11 +47,21 @@ MEDIA_ROOT=$(MEDIA_BASE)/media
 ASSETS_ROOT=$(MEDIA_BASE)/assets
 STATIC_ROOT=$(MEDIA_BASE)/static
 
+# Release name e.g. jessie
+DEBIAN_CODENAME := $(shell lsb_release -sc)
+# Release numbers e.g. 8.10
+DEBIAN_RELEASE := $(shell lsb_release -sr)
+# Sortable major version tag e.g. deb8
+DEBIAN_RELEASE_TAG = deb$(shell lsb_release -sr | cut -c1)
+
 OPENJDK_PKG=
-ifeq ($(DEBIAN_CODENAME), buster)
-	OPENJDK_PKG=openjdk-11-jre-headless
-endif
 ifeq ($(DEBIAN_CODENAME), bullseye)
+	OPENJDK_PKG=openjdk-17-jre-headless
+endif
+ifeq ($(DEBIAN_CODENAME), bookworm)
+	OPENJDK_PKG=openjdk-17-jre-headless
+endif
+ifeq ($(DEBIAN_CODENAME), trixie)
 	OPENJDK_PKG=openjdk-17-jre-headless
 endif
 
@@ -87,14 +83,17 @@ TGZ_ASSETS=$(TGZ_DIR)/ddr-public/ddr-public-assets
 # instead of "ddrlocal-BRANCH"
 DEB_BRANCH := $(shell python3 bin/package-branch.py)
 DEB_ARCH=amd64
-DEB_NAME_BUSTER=$(APP)-$(DEB_BRANCH)
 DEB_NAME_BULLSEYE=$(APP)-$(DEB_BRANCH)
+DEB_NAME_BOOKWORM=$(APP)-$(DEB_BRANCH)
+DEB_NAME_TRIXIE=$(APP)-$(DEB_BRANCH)
 # Application version, separator (~), Debian release tag e.g. deb8
 # Release tag used because sortable and follows Debian project usage.
-DEB_VERSION_BUSTER=$(APP_VERSION)~deb10
 DEB_VERSION_BULLSEYE=$(APP_VERSION)~deb11
-DEB_FILE_BUSTER=$(DEB_NAME_BUSTER)_$(DEB_VERSION_BUSTER)_$(DEB_ARCH).deb
+DEB_VERSION_BOOKWORM=$(APP_VERSION)~deb12
+DEB_VERSION_TRIXIE=$(APP_VERSION)~deb13
 DEB_FILE_BULLSEYE=$(DEB_NAME_BULLSEYE)_$(DEB_VERSION_BULLSEYE)_$(DEB_ARCH).deb
+DEB_FILE_BOOKWORM=$(DEB_NAME_BOOKWORM)_$(DEB_VERSION_BOOKWORM)_$(DEB_ARCH).deb
+DEB_FILE_TRIXIE=$(DEB_NAME_TRIXIE)_$(DEB_VERSION_TRIXIE)_$(DEB_ARCH).deb
 DEB_VENDOR=Densho.org
 DEB_MAINTAINER=<geoffrey.jost@densho.org>
 DEB_DESCRIPTION=Densho Digital Repository site
@@ -232,16 +231,16 @@ install-virtualenv:
 	@echo ""
 	@echo "install-virtualenv -----------------------------------------------------"
 	apt-get --assume-yes install python3-pip python3-venv
-	python3 -m venv --system-site-packages $(VIRTUALENV)
 	source $(VIRTUALENV)/bin/activate; \
-	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) pip
+	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) pip uv
+	uv venv $(VIRTUALENV)
 
  install-setuptools: install-virtualenv
 	@echo ""
 	@echo "install-setuptools -----------------------------------------------------"
 	apt-get --assume-yes install python3-dev
 	source $(VIRTUALENV)/bin/activate; \
-	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) setuptools
+	uv pip install -U --cache-dir=$(PIP_CACHE_DIR) setuptools
 
 get-app: get-namesdb get-ddr-public get-ireizo-public
 
@@ -275,13 +274,13 @@ install-namesdb: install-virtualenv
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_NAMESDB) && python setup.py install
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_NAMESDB) && pip3 install --cache-dir=$(PIP_CACHE_DIR) -U -r requirements.txt
+	cd $(INSTALL_NAMESDB) && uv pip install --cache-dir=$(PIP_CACHE_DIR) -U -r requirements.txt
 
 uninstall-namesdb: install-virtualenv
 	@echo ""
 	@echo "uninstall-namesdb ------------------------------------------------------"
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_NAMESDB) && pip3 uninstall -y -r requirements.txt
+	cd $(INSTALL_NAMESDB) && uv pip uninstall -y -r requirements.txt
 
 clean-namesdb:
 	-rm -Rf $(INSTALL_NAMESDB)/build
@@ -304,7 +303,7 @@ install-ireizo-public: install-virtualenv
 	-rm -Rf $(INSTALL_PUBLIC)/ddrpublic/ireizo_public
 	-ln -s $(INSTALL_IREIZO)/ireizo_public $(INSTALL_PUBLIC)/ddrpublic/ireizo_public
 	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_IREIZO) && pip3 install --cache-dir=$(PIP_CACHE_DIR) -U -r requirements.txt
+	cd $(INSTALL_IREIZO) && uv pip install --cache-dir=$(PIP_CACHE_DIR) -U -r requirements.txt
 
 uninstall-ireizo-public: install-virtualenv
 	@echo ""
@@ -335,7 +334,7 @@ install-ddr-public: install-setuptools mkdir-ddr-public
 	sqlite3                       \
 	supervisor
 	source $(VIRTUALENV)/bin/activate; \
-	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) -r $(INSTALL_PUBLIC)/requirements.txt
+	uv pip install -U --cache-dir=$(PIP_CACHE_DIR) -r $(INSTALL_PUBLIC)/requirements.txt
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_PUBLIC)
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_NAMESDB)
 
@@ -349,7 +348,7 @@ install-test:
 	python3-pytest-django         \
 	python3-pytest-xdist
 	source $(VIRTUALENV)/bin/activate; \
-	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) -r $(INSTALL_PUBLIC)/requirements-dev.txt
+	uv pip install -U --cache-dir=$(PIP_CACHE_DIR) -r $(INSTALL_PUBLIC)/requirements-dev.txt
 
 mkdir-ddr-public:
 	@echo ""
@@ -394,7 +393,7 @@ uninstall-ddr-public: install-setuptools
 	@echo ""
 	@echo "uninstall-ddr-public ---------------------------------------------------"
 	source $(VIRTUALENV)/bin/activate; \
-	pip3 uninstall -y -r $(INSTALL_PUBLIC)/requirements.txt
+	uv pip uninstall -y -r $(INSTALL_PUBLIC)/requirements.txt
 
 clean-ddr-public:
 	-rm -Rf $(VIRTUALENV)
@@ -490,24 +489,24 @@ tgz:
 install-fpm:
 	@echo "install-fpm ------------------------------------------------------------"
 	apt-get install --assume-yes ruby ruby-dev rubygems build-essential
-	gem install --no-ri --no-rdoc fpm
+	gem install --no-document fpm
 
 # https://stackoverflow.com/questions/32094205/set-a-custom-install-directory-when-making-a-deb-package-with-fpm
 # https://brejoc.com/tag/fpm/
 deb: deb-bullseye
 
-deb-buster:
+deb-bullseye:
 	@echo ""
-	@echo "DEB packaging (buster) -------------------------------------------------"
-	-rm -Rf $(DEB_FILE_BUSTER)
+	@echo "FPM packaging (bullseye) -----------------------------------------------"
+	-rm -Rf $(DEB_FILE_BULLSEYE)
 # Make package
 	fpm   \
 	--verbose   \
 	--input-type dir   \
 	--output-type deb   \
-	--name $(DEB_NAME_BUSTER)   \
-	--version $(DEB_VERSION_BUSTER)   \
-	--package $(DEB_FILE_BUSTER)   \
+	--name $(DEB_NAME_BULLSEYE)   \
+	--version $(DEB_VERSION_BULLSEYE)   \
+	--package $(DEB_FILE_BULLSEYE)   \
 	--url "$(GIT_SOURCE_URL)"   \
 	--vendor "$(DEB_VENDOR)"   \
 	--maintainer "$(DEB_MAINTAINER)"   \
@@ -537,18 +536,63 @@ deb-buster:
 	venv=$(DEB_BASE)   \
 	VERSION=$(DEB_BASE)
 
-deb-bullseye:
+deb-bookworm:
 	@echo ""
-	@echo "DEB packaging (bullseye) -------------------------------------------------"
-	-rm -Rf $(DEB_FILE_BULLSEYE)
+	@echo "FPM packaging (bookworm) -----------------------------------------------"
+	-rm -Rf $(DEB_FILE_BOOKWORM)
 # Make package
 	fpm   \
 	--verbose   \
 	--input-type dir   \
 	--output-type deb   \
-	--name $(DEB_NAME_BULLSEYE)   \
-	--version $(DEB_VERSION_BULLSEYE)   \
-	--package $(DEB_FILE_BULLSEYE)   \
+	--name $(DEB_NAME_BOOKWORM)   \
+	--version $(DEB_VERSION_BOOKWORM)   \
+	--package $(DEB_FILE_BOOKWORM)   \
+	--url "$(GIT_SOURCE_URL)"   \
+	--vendor "$(DEB_VENDOR)"   \
+	--maintainer "$(DEB_MAINTAINER)"   \
+	--description "$(DEB_DESCRIPTION)"   \
+	--depends "imagemagick"  \
+	--depends "nginx"  \
+	--depends "bpython3"  \
+	--depends "python3"  \
+	--depends "python3-git"  \
+	--depends "python3-redis"  \
+	--depends "python3-requests"  \
+	--depends "redis-server"   \
+	--depends "sqlite3"  \
+	--depends "supervisor"   \
+	--after-install "bin/fpm-mkdir-log.sh"   \
+	--chdir $(INSTALL_PUBLIC)   \
+	conf/ddrpublic.cfg=etc/ddr/ddrpublic.cfg   \
+	bin=$(DEB_BASE)   \
+	conf=$(DEB_BASE)   \
+	COPYRIGHT=$(DEB_BASE)   \
+	ddrpublic=$(DEB_BASE)   \
+	.git=$(DEB_BASE)   \
+	.gitignore=$(DEB_BASE)   \
+	INSTALL=$(DEB_BASE)   \
+	../ireizo-public=opt   \
+	LICENSE=$(DEB_BASE)   \
+	Makefile=$(DEB_BASE)   \
+	namesdb=$(DEB_BASE)   \
+	README.rst=$(DEB_BASE)   \
+	requirements.txt=$(DEB_BASE)   \
+	venv=$(DEB_BASE)   \
+	VERSION=$(DEB_BASE)
+
+deb-trixie:
+	@echo ""
+	@echo "FPM packaging (trixie) -----------------------------------------------"
+	-rm -Rf $(DEB_FILE_TRIXIE)
+# Make package
+	fpm   \
+	--verbose   \
+	--input-type dir   \
+	--output-type deb   \
+	--name $(DEB_NAME_TRIXIE)   \
+	--version $(DEB_VERSION_TRIXIE)   \
+	--package $(DEB_FILE_TRIXIE)   \
 	--url "$(GIT_SOURCE_URL)"   \
 	--vendor "$(DEB_VENDOR)"   \
 	--maintainer "$(DEB_MAINTAINER)"   \

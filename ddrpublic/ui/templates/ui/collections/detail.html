@@ -21,8 +21,9 @@
 {% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
-<li><a href="{% url "ui-collections-list" %}">Collections</a></li>
-<li>{{ object.id }}</li>
+<li><a href="{% url "ui-organizations-list" %}">Partners</a></li>
+<li><a href="{% url "ui-object-detail" organization.id %}">{{ organization.id }}</a></li>
+<li>{{ object.title }}</li>
 {% endblock breadcrumbs %}
 
 {% block content %}

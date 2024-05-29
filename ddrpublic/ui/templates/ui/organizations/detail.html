@@ -1,37 +1,56 @@
-{% extends "ui/repo/base.html" %}
-{% load thumbnail ui_tags %}
+{% extends "ui/organizations/base.html" %}
+{% load bootstrap_pagination thumbnail ui_tags %}
 
-{% block title %}{{ repo }}-{{ org }}{% endblock %}
+{% block title %}{{ organization.title }}{% endblock %}
 {% block pagetitle %}
-<span class="label label-default">{{ repo }}-{{ org }}</span>
+<span class="label label-default">{{ organization.title }}</span>
 {% endblock %}
 
 {% block breadcrumbs %}{{ block.super }}
-<li>{{ org }}</li>
+<li>{{ organization.id }}</li>
 {% endblock breadcrumbs %}
+
+{% block pagecss %}
+<style type="text/css">
+  .organization .media-body p { color: #2E363F; margin-bottom:10px; }
+</style>
+{% endblock %}
 
 {% block content %}
 <section class="container">
   <div class="row">
 	<div class="col-sm-10 col-md-10">
 
-<h2>
-{{ organization.title }}
-</h2>
-<p>
-Site: <a href="{{ organization.url }}">{{ organization.url }}</a><br/>
-</p>
-<img src="{{ organization.logo_url }}" />
-<p>
-{{ organization.description|linebreaks|safe }}
-</p>
+<div class="organization media">
+  <div class="media-left">
+    <img src="{{ organization.links.img }}" class="media-object" style="width:110px;"/>
+  </div>
+  <div class="media-body">
+    <h2 style="margin-bottom:0px;">
+      {{ organization.title }}
+    </h2>
+    {% if organization.url %}<p>
+      Site: <a href="{{ organization.url }}">{{ organization.url }}</a>
+    </p>{% endif %}
+    {{ organization.description | safe | linebreaks }}
+  </div><!-- .media-left -->
+</div><!-- .media .organization -->
 
-{% if collections %}
-<h3>Collections</h3>
-{% for collection in collections %}
-{% collection collection %}
+<div id="item-count">
+  {{ paginator.count }} Collection{{ paginator.count|pluralize }}
+</div>
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
+
+{% for object in page.object_list %}
+{% document object %}
 {% endfor %}
-{% endif %}{# collections #}
+
+{% if paginator.num_pages > 1 %}
+{% bootstrap_paginate page range=10 show_first_last="true" %}
+{% endif %}
 
 	</div>
   </div><!-- .row -->

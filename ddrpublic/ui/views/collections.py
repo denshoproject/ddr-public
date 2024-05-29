@@ -3,7 +3,7 @@ logger = logging.getLogger(__name__)
 
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.shortcuts import Http404, render
+from django.shortcuts import Http404, redirect, render
 from django.urls import reverse
 from django.views.decorators.cache import cache_page
 
@@ -16,50 +16,51 @@ from ..decorators import ui_state
 
 @cache_page(settings.CACHE_TIMEOUT)
 def list( request ):
-    # TODO cache or restrict fields (truncate desc BEFORE caching)
-    organizations = []
-    repo,org = misc.domain_org(request)
-    if repo and org:
-        # partner site
-        organization_id = '%s-%s' % (repo,org) # TODO relies on knowledge of ID structure!
-        collections = models.Organization.children(
-            org.id, request, limit=settings.ELASTICSEARCH_MAX_SIZE,
-        )
-        org_formatted = models.format_object_detail2(org.to_dict(), request)
-        objects = collections.ordered_dict(
-            request=request,
-            format_functions=models.FORMATTERS,
-            pad=True,
-        )['objects']
-        organizations.append( (org_formatted,objects) )
-    else:
-        # default site
-        try:
-            orgs = models.Repository.children(repo, request)
-        except:  # NotFoundError:
-            raise Exception(
-                'No repository record. ' \
-                'Run "ddrindex repo /PATH/TO/REPO/repository.json".'
-            )
-        if not orgs.objects:
-            raise Exception(
-                'No organization records. ' \
-                'Run "ddrindex org /PATH/TO/ORG/organization.json".'
-            )
-        for org in orgs.objects:
-            collections = models.Organization.children(
-                org.id, request, limit=settings.ELASTICSEARCH_MAX_SIZE,
-            )
-            org_formatted = models.format_object_detail2(org.to_dict(), request)
-            objects = collections.ordered_dict(
-                request=request,
-                format_functions=models.FORMATTERS,
-                pad=True,
-            )['objects']
-            organizations.append( (org_formatted,objects) )
-    return render(request, 'ui/collections.html', {
-        'organizations': organizations,
-    })
+    return redirect('ui-organizations-list')
+    ## TODO cache or restrict fields (truncate desc BEFORE caching)
+    #organizations = []
+    #repo,org = misc.domain_org(request)
+    #if repo and org:
+    #    # partner site
+    #    organization_id = '%s-%s' % (repo,org) # TODO relies on knowledge of ID structure!
+    #    collections = models.Organization.children(
+    #        org.id, request, limit=settings.ELASTICSEARCH_MAX_SIZE,
+    #    )
+    #    org_formatted = models.format_object_detail2(org.to_dict(), request)
+    #    objects = collections.ordered_dict(
+    #        request=request,
+    #        format_functions=models.FORMATTERS,
+    #        pad=True,
+    #    )['objects']
+    #    organizations.append( (org_formatted,objects) )
+    #else:
+    #    # default site
+    #    try:
+    #        orgs = models.Repository.children(repo, request)
+    #    except:  # NotFoundError:
+    #        raise Exception(
+    #            'No repository record. ' \
+    #            'Run "ddrindex repo /PATH/TO/REPO/repository.json".'
+    #        )
+    #    if not orgs.objects:
+    #        raise Exception(
+    #            'No organization records. ' \
+    #            'Run "ddrindex org /PATH/TO/ORG/organization.json".'
+    #        )
+    #    for org in orgs.objects:
+    #        collections = models.Organization.children(
+    #            org.id, request, limit=settings.ELASTICSEARCH_MAX_SIZE,
+    #        )
+    #        org_formatted = models.format_object_detail2(org.to_dict(), request)
+    #        objects = collections.ordered_dict(
+    #            request=request,
+    #            format_functions=models.FORMATTERS,
+    #            pad=True,
+    #        )['objects']
+    #        organizations.append( (org_formatted,objects) )
+    #return render(request, 'ui/collections.html', {
+    #    'organizations': organizations,
+    #})
 
 @cache_page(settings.CACHE_TIMEOUT)
 def detail(request, oid):
