@@ -58,4 +58,6 @@ def sitewide(request):
         'MISSING_IMG': settings.MISSING_IMG,
         'DOWNLOAD_URL': settings.DOWNLOAD_URL,
         'STATIC_URL': settings.STATIC_URL,
+        'SEGMENT_URL': settings.SEGMENT_URL,
+        'IA_OFFLINE': settings.IA_OFFLINE,
     }

@@ -1,3 +1,4 @@
+import json
 import logging
 logger = logging.getLogger(__name__)
 from urllib.parse import urlencode
@@ -116,8 +117,8 @@ def detail(request, oid):
         )
 
     template = AV_TEMPLATES.get(entity.get('template'), ENTITY_TEMPLATE_DEFAULT)
-    
-    return render(request, template, {
+
+    context = {
         'templatekey': entity.get('template'),
         'template': template,
         'object': entity,
@@ -136,7 +137,24 @@ def detail(request, oid):
         'nodes_paginator': nodes_paginator,
         'nodes_page': nodes_page,
         'api_url': reverse('ui-api-object', args=[oid]),
-    })
+    }
+
+    if entity.get('ia_meta'):
+        # band-aid solution to possible Internet Archive outages
+        # TODO more permanent solution for IA outages
+        context['object_ia_meta_pretty'] = json.dumps(
+            entity['ia_meta'], indent=4).replace('{','').replace('}','').strip()
+        if settings.IA_OFFLINE:
+            object_url = f"{settings.SEGMENT_URL}/{collection['id']}/{entity['id']}"
+            context['object_mp3_url'] = f"{object_url}/{entity['ia_meta']['files']['mp3']['name']}"
+            context['object_mp4_url'] = f"{object_url}/{entity['ia_meta']['files']['mp4']['name']}"
+            context['object_mpg_url'] = f"{object_url}/{entity['ia_meta']['files']['mpg']['name']}"
+        else:
+            context['object_mp3_url'] = entity['ia_meta']['files']['mp3']['url']
+            context['object_mp4_url'] = entity['ia_meta']['files']['mp4']['url']
+            context['object_mpg_url'] = entity['ia_meta']['files']['mpg']['url']
+
+    return render(request, template, context)
 
 def interview(request, oid):
     try:
@@ -192,11 +210,29 @@ def interview(request, oid):
         )
 
     template = AV_TEMPLATES.get(segment.get('template'), SEGMENT_TEMPLATE_DEFAULT)
-    
+
+    # band-aid solution to possible Internet Archive outages
+    # TODO more permanent solution for IA outages
+    object_ia_meta_pretty = json.dumps(
+        segment['ia_meta'], indent=4).replace('{','').replace('}','').strip()
+    if settings.IA_OFFLINE:
+        object_url = f"{settings.SEGMENT_URL}/{collection['id']}/{segment['id']}"
+        object_mp3_url = f"{object_url}/{segment['ia_meta']['files']['mp3']['name']}"
+        object_mp4_url = f"{object_url}/{segment['ia_meta']['files']['mp4']['name']}"
+        object_mpg_url = f"{object_url}/{segment['ia_meta']['files']['mpg']['name']}"
+    else:
+        object_mp3_url = segment['ia_meta']['files']['mp3']['url']
+        object_mp4_url = segment['ia_meta']['files']['mp4']['url']
+        object_mpg_url = segment['ia_meta']['files']['mpg']['url']
+
     return render(request, template, {
         'templatekey': entity.get('template'),
         'template': template,
         'segment': segment,
+        'object_ia_meta_pretty': object_ia_meta_pretty,
+        'object_mp3_url': object_mp3_url,
+        'object_mp4_url': object_mp4_url,
+        'object_mpg_url': object_mpg_url,
         'segments': segments,
         'transcripts': transcripts,
         'object_location': object_location,

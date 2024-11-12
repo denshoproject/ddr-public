@@ -44,11 +44,12 @@
 <!--
 templatekey: {{ templatekey }}
 template:    {{ template }}
-IA metadata: {{ segment.ia_meta|safe }}
+IA metadata: {{ object_ia_meta_pretty|safe }}
+IA_OFFLINE:  {{ IA_OFFLINE }}
 -->
 <!-- begin VideoJS player -->
 <video id="clip" class="embed-responsive embed-responsive-16by9 video-js vjs-big-play-centered vjs-fluid" controls preload="auto" width="560" height="384" poster="{{ segment.links.img }}" data-setup="{}">
-  <source type="video/mp4" src="{{ segment.ia_meta.files.mp4.url }}">
+  <source type="video/mp4" src="{{ object_mp4_url }}">
     <p class="vjs-no-js">
       To view this video please enable JavaScript, and consider upgrading to a web browser that
       <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
@@ -87,13 +88,13 @@ IA metadata: {{ segment.ia_meta|safe }}
             </a>
             <br />
 
-{% if segment.ia_meta.files.mp4 and segment.ia_meta.files.mpg %}
-            <a href="{{ segment.ia_meta.files.mp4.url }}" class="btn btn-default btn-xs">
+{% if object_mp4_url and object_mpg_url %}
+            <a href="{{ object_mp4_url }}" class="btn btn-default btn-xs">
               <i class="fa fa-download"></i>
               Download MP4
               ({{ segment.ia_meta.files.mp4.size|filesizeformat }})
             </a>
-            <a href="{{ segment.ia_meta.files.mpg.url }}" class="btn btn-default btn-xs">
+            <a href="{{ object_mpg_url }}" class="btn btn-default btn-xs">
               <i class="fa fa-download"></i>
               Download full-size MPEG2
               ({{ segment.ia_meta.files.mpg.size|filesizeformat }})

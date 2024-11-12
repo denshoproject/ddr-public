@@ -159,6 +159,8 @@ NARRATORS_URL = config.get('public', 'narrators_url')
 SEGMENT_URL = config.get('public', 'segment_url')
 # Timeout for segment file metadata from Internet Archive
 IA_SEGMENT_CACHE_TIMEOUT = int(config.get('public', 'ia_segment_cache_timeout'))
+# The Internet Archive is offline
+IA_OFFLINE = config.getboolean('public', 'ia_offline')
 
 # Base URL for Backblaze public bucket
 BACKBLAZE_BUCKET_URL = config.get('public', 'backblaze_bucket_url')

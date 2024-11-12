@@ -39,7 +39,8 @@
 <!--
 templatekey: {{ templatekey }}
 template:    {{ template }}
-IA metadata: {{ segment.ia_meta|safe }}
+IA metadata: {{ object_ia_meta_pretty|safe }}
+IA_OFFLINE:  {{ IA_OFFLINE }}
 -->
       <div id="clip" class="embed-responsive embed-responsive-16by9">
           <iframe frameborder="0" webkitallowfullscreen="true" mozallowfullscreen="true" allowfullscreen src="https://archive.org/embed/{{ segment.id }}"></iframe>
@@ -76,13 +77,13 @@ IA metadata: {{ segment.ia_meta|safe }}
             </a>
             <br />
 
-{% if segment.ia_meta.files.mp4 and segment.ia_meta.files.mpg %}
-            <a href="{{ segment.ia_meta.files.mp4.url }}" class="btn btn-default btn-xs">
+{% if object_mp4_url and object_mpg_url %}
+            <a href="{{ object_mp4_url }}" class="btn btn-default btn-xs">
               <i class="fa fa-download"></i>
               Download MP4
               ({{ segment.ia_meta.files.mp4.size|filesizeformat }})
             </a>
-            <a href="{{ segment.ia_meta.files.mpg.url }}" class="btn btn-default btn-xs">
+            <a href="{{ object_mpg_url }}" class="btn btn-default btn-xs">
               <i class="fa fa-download"></i>
               Download full-size MPEG2
               ({{ segment.ia_meta.files.mpg.size|filesizeformat }})
