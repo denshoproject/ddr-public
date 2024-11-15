@@ -8,7 +8,6 @@ from django.core.paginator import Paginator
 from django.http import HttpResponseRedirect
 from django.shortcuts import Http404, render
 from django.urls import reverse
-import httpx
 
 from .. import models
 from .. import misc
@@ -145,21 +144,15 @@ def detail(request, oid):
         # TODO more permanent solution for IA outages
         context['object_ia_meta_pretty'] = json.dumps(
             entity['ia_meta'], indent=4).replace('{','').replace('}','').strip()
-        context['object_mp3_url'] = None
-        context['object_mp4_url'] = None
-        context['object_mpg_url'] = None
-        if segment['ia_meta']['files'].get('mp3'):
-            context['object_mp3_url'] = media_ia_alt_url(
-                entity['ia_meta']['files']['mp3']['url'], collection, entity, 'mp3'
-            )
-        if segment['ia_meta']['files'].get('mp4'):
-            context['object_mp4_url'] = media_ia_alt_url(
-                entity['ia_meta']['files']['mp4']['url'], collection, entity, 'mp4'
-            )
-        if segment['ia_meta']['files'].get('mpg'):
-            context['object_mpg_url'] = media_ia_alt_url(
-                entity['ia_meta']['files']['mpg']['url'], collection, entity, 'mpg'
-            )
+        if settings.IA_OFFLINE:
+            object_url = f"{settings.SEGMENT_URL}/{collection['id']}/{entity['id']}"
+            context['object_mp3_url'] = f"{object_url}/{entity['ia_meta']['files']['mp3']['name']}"
+            context['object_mp4_url'] = f"{object_url}/{entity['ia_meta']['files']['mp4']['name']}"
+            context['object_mpg_url'] = f"{object_url}/{entity['ia_meta']['files']['mpg']['name']}"
+        else:
+            context['object_mp3_url'] = entity['ia_meta']['files']['mp3']['url']
+            context['object_mp4_url'] = entity['ia_meta']['files']['mp4']['url']
+            context['object_mpg_url'] = entity['ia_meta']['files']['mpg']['url']
 
     return render(request, template, context)
 
@@ -222,15 +215,15 @@ def interview(request, oid):
     # TODO more permanent solution for IA outages
     object_ia_meta_pretty = json.dumps(
         segment['ia_meta'], indent=4).replace('{','').replace('}','').strip()
-    object_mp3_url = None
-    object_mp4_url = None
-    object_mpg_url = None
-    if segment['ia_meta']['files'].get('mp3'):
-        object_mp3_url = media_ia_alt_url(segment['ia_meta']['files']['mp3']['url'], collection, segment, 'mp3')
-    if segment['ia_meta']['files'].get('mp4'):
-        object_mp4_url = media_ia_alt_url(segment['ia_meta']['files']['mp4']['url'], collection, segment, 'mp4')
-    if segment['ia_meta']['files'].get('mpg'):
-        object_mpg_url = media_ia_alt_url(segment['ia_meta']['files']['mpg']['url'], collection, segment, 'mpg')
+    if settings.IA_OFFLINE:
+        object_url = f"{settings.SEGMENT_URL}/{collection['id']}/{segment['id']}"
+        object_mp3_url = f"{object_url}/{segment['ia_meta']['files']['mp3']['name']}"
+        object_mp4_url = f"{object_url}/{segment['ia_meta']['files']['mp4']['name']}"
+        object_mpg_url = f"{object_url}/{segment['ia_meta']['files']['mpg']['name']}"
+    else:
+        object_mp3_url = segment['ia_meta']['files']['mp3']['url']
+        object_mp4_url = segment['ia_meta']['files']['mp4']['url']
+        object_mpg_url = segment['ia_meta']['files']['mpg']['url']
 
     return render(request, template, {
         'templatekey': entity.get('template'),
@@ -330,19 +323,3 @@ def labelify_vocab_term(fname,fdata):
         'query': '?filter_%s=%s' % (fname,fdata),
         'label': FORMS_CHOICE_LABELS.get(fname,{}).get(fdata,''),
     }
-
-def media_ia_alt_url(url, collection, entity, filetype):
-    """Check IA for existence of file; if absent use selfhosted
-    """
-    def ia_selfhost_url(collection, entity, filetype):
-        object_url = f"{settings.SEGMENT_URL}/{collection['id']}/{entity['id']}"
-        return f"{object_url}/{entity['ia_meta']['files'][filetype]['name']}"
-    # sitewide short-circuit
-    if settings.IA_OFFLINE:
-        return ia_selfhost_url(collection, entity, filetype)
-    # try Internet Archive
-    r = httpx.head(url, follow_redirects=True, timeout=3)
-    if r.status_code in [200,302]:
-        return url
-    # request unsuccessful or timed out
-    return ia_selfhost_url(collection, entity, filetype)
