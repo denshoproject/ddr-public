@@ -6,7 +6,7 @@ SHELL = /bin/bash
 RUNSERVER_PORT=8001
 
 APP_VERSION := $(shell cat VERSION)
-GIT_SOURCE_URL=https://github.com/densho/ddr-public
+GIT_SOURCE_URL=https://github.com/denshoproject/ddr-public
 
 # current branch name minus dashes or underscores
 PACKAGE_BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr -d _ | tr -d -)
@@ -16,12 +16,12 @@ PACKAGE_COMMIT := $(shell git log -1 --pretty="%h")
 PACKAGE_TIMESTAMP := $(shell git log -1 --pretty="%ad" --date=short | tr -d -)
 
 # Media assets and Elasticsearch will be downloaded from this location.
-# See https://github.com/densho/ansible-colo.git for more info:
+# See https://github.com/denshoproject/ansible-colo.git for more info:
 # - templates/proxy/nginx.conf.j2
 # - templates/static/nginx.conf.j2
 PACKAGE_SERVER=ddr.densho.org/static/ddrpublic
 
-SRC_REPO_NAMESDB=https://github.com/densho/namesdb
+SRC_REPO_NAMESDB=https://github.com/denshoproject/namesdb
 SRC_REPO_IREIZO=https://github.com/denshoproject/ireizo-public.git
 SRC_REPO_ASSETS=https://github.com/denshoproject/ddr-public-assets.git
 
