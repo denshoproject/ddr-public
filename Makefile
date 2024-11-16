@@ -334,7 +334,7 @@ install-ddr-public: install-setuptools mkdir-ddr-public
 	sqlite3                       \
 	supervisor
 	source $(VIRTUALENV)/bin/activate; \
-	uv pip install -U --cache-dir=$(PIP_CACHE_DIR) -r $(INSTALL_PUBLIC)/requirements.txt
+	uv pip install -U --cache-dir=$(PIP_CACHE_DIR) .
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_PUBLIC)
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_NAMESDB)
 

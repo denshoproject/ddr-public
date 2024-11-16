@@ -1,0 +1,56 @@
+[project]
+name = "ddr-public"
+description = "Densho Digital Repository"
+authors = [
+    {name = "Geoffrey Jost", email="geoffrey.jost@densho.us"}
+]
+maintainers = [
+    {name = "Geoffrey Jost", email="geoffrey.jost@densho.us"},
+]
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["Django", "repository", "archives",]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Framework :: Django",
+    "Framework :: Django :: 4.1",
+]
+
+dynamic = ["version"]  # will read __version__ from ddrpublic/__init__.py
+requires-python = ">=3.9"
+dependencies = [
+    "django>=4.1.0,<4.2",
+    "django-bootstrap-pagination-forked",
+    "django-cors-headers>=4.3.0,<4.4",
+    "django-log-request-id",
+    "djangorestframework>=3.13.0,<3.14",
+    "django-robots>=5.0,<5.1",
+    "drf-yasg>=1.21.0,<1.22",
+    "GitPython>=3.1,<3.2",
+    "gunicorn>=22.0.0,<23.0",
+    "redis",
+    "requests",
+    "sorl-thumbnail>=12.8,<12.9",
+    "elastictools @ git+https://github.com/denshoproject/densho-elastictools.git@v1.1.3",
+    "bpython",
+]
+
+[project.optional-dependencies]
+testing = []
+dev = []
+
+[project.urls]
+Repository = "https://github.com/denshoproject/ddr-public"
+
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ['ddrpublic']
