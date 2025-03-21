@@ -321,7 +321,7 @@ get-ddr-public:
 	@echo "get-ddr-public ---------------------------------------------------------"
 	git pull
 
-install-ddr-public: install-setuptools mkdir-ddr-public
+install-ddr-public: install-setuptools git-safe-dir mkdir-ddr-public
 	@echo ""
 	@echo "install-ddr-public -----------------------------------------------------"
 	apt-get --assume-yes install  \
@@ -333,6 +333,14 @@ install-ddr-public: install-setuptools mkdir-ddr-public
 	uv pip install -U --cache-dir=$(PIP_CACHE_DIR) .
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_PUBLIC)
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_NAMESDB)
+
+git-safe-dir:
+	@echo ""
+	@echo "git-safe-dir -----------------------------------------------------------"
+	sudo -u ddr git config --global --add safe.directory $(INSTALL_PUBLIC)
+	sudo -u ddr git config --global --add safe.directory $(INSTALL_NAMESDB)
+	sudo -u ddr git config --global --add safe.directory $(INSTALL_IREIZO)
+	sudo -u ddr git config --global --add safe.directory $(INSTALL_ASSETS)
 
 install-test:
 	@echo ""
