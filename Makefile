@@ -231,11 +231,11 @@ install-virtualenv:
 	@echo ""
 	@echo "install-virtualenv -----------------------------------------------------"
 	apt-get --assume-yes install python3-pip python3-venv
+	python3 -m venv $(VIRTUALENV)
 	source $(VIRTUALENV)/bin/activate; \
-	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) pip uv
-	uv venv $(VIRTUALENV)
+	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) uv
 
- install-setuptools: install-virtualenv
+install-setuptools: install-virtualenv
 	@echo ""
 	@echo "install-setuptools -----------------------------------------------------"
 	apt-get --assume-yes install python3-dev
