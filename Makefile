@@ -326,11 +326,7 @@ install-ddr-public: install-setuptools mkdir-ddr-public
 	@echo "install-ddr-public -----------------------------------------------------"
 	apt-get --assume-yes install  \
 	imagemagick                   \
-	bpython3                      \
 	python3                       \
-	python3-git                   \
-	python3-redis                 \
-	python3-requests              \
 	sqlite3                       \
 	supervisor
 	source $(VIRTUALENV)/bin/activate; \
