@@ -321,7 +321,7 @@ get-ddr-public:
 	@echo "get-ddr-public ---------------------------------------------------------"
 	git pull
 
-install-ddr-public: install-setuptools git-safe-dir mkdir-ddr-public
+install-ddr-public: install-setuptools git-safe-dir
 	@echo ""
 	@echo "install-ddr-public -----------------------------------------------------"
 	apt-get --assume-yes install  \
