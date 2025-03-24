@@ -6,7 +6,7 @@ SHELL = /bin/bash
 RUNSERVER_PORT=8001
 
 APP_VERSION := $(shell cat VERSION)
-GIT_SOURCE_URL=https://github.com/densho/ddr-public
+GIT_SOURCE_URL=https://github.com/denshoproject/ddr-public
 
 # current branch name minus dashes or underscores
 PACKAGE_BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr -d _ | tr -d -)
@@ -16,12 +16,12 @@ PACKAGE_COMMIT := $(shell git log -1 --pretty="%h")
 PACKAGE_TIMESTAMP := $(shell git log -1 --pretty="%ad" --date=short | tr -d -)
 
 # Media assets and Elasticsearch will be downloaded from this location.
-# See https://github.com/densho/ansible-colo.git for more info:
+# See https://github.com/denshoproject/ansible-colo.git for more info:
 # - templates/proxy/nginx.conf.j2
 # - templates/static/nginx.conf.j2
 PACKAGE_SERVER=ddr.densho.org/static/ddrpublic
 
-SRC_REPO_NAMESDB=https://github.com/densho/namesdb
+SRC_REPO_NAMESDB=https://github.com/denshoproject/namesdb
 SRC_REPO_IREIZO=https://github.com/denshoproject/ireizo-public.git
 SRC_REPO_ASSETS=https://github.com/denshoproject/ddr-public-assets.git
 
@@ -231,11 +231,11 @@ install-virtualenv:
 	@echo ""
 	@echo "install-virtualenv -----------------------------------------------------"
 	apt-get --assume-yes install python3-pip python3-venv
+	python3 -m venv $(VIRTUALENV)
 	source $(VIRTUALENV)/bin/activate; \
-	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) pip uv
-	uv venv $(VIRTUALENV)
+	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) uv
 
- install-setuptools: install-virtualenv
+install-setuptools: install-virtualenv
 	@echo ""
 	@echo "install-setuptools -----------------------------------------------------"
 	apt-get --assume-yes install python3-dev
@@ -321,22 +321,26 @@ get-ddr-public:
 	@echo "get-ddr-public ---------------------------------------------------------"
 	git pull
 
-install-ddr-public: install-setuptools mkdir-ddr-public
+install-ddr-public: install-setuptools git-safe-dir
 	@echo ""
 	@echo "install-ddr-public -----------------------------------------------------"
 	apt-get --assume-yes install  \
 	imagemagick                   \
-	bpython3                      \
 	python3                       \
-	python3-git                   \
-	python3-redis                 \
-	python3-requests              \
 	sqlite3                       \
 	supervisor
 	source $(VIRTUALENV)/bin/activate; \
-	uv pip install -U --cache-dir=$(PIP_CACHE_DIR) -r $(INSTALL_PUBLIC)/requirements.txt
+	uv pip install -U --cache-dir=$(PIP_CACHE_DIR) .
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_PUBLIC)
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_NAMESDB)
+
+git-safe-dir:
+	@echo ""
+	@echo "git-safe-dir -----------------------------------------------------------"
+	sudo -u ddr git config --global --add safe.directory $(INSTALL_PUBLIC)
+	sudo -u ddr git config --global --add safe.directory $(INSTALL_NAMESDB)
+	sudo -u ddr git config --global --add safe.directory $(INSTALL_IREIZO)
+	sudo -u ddr git config --global --add safe.directory $(INSTALL_ASSETS)
 
 install-test:
 	@echo ""
