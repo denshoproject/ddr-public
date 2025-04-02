@@ -535,8 +535,8 @@ deb-bullseye:
 	LICENSE=$(DEB_BASE)   \
 	Makefile=$(DEB_BASE)   \
 	namesdb=$(DEB_BASE)   \
+	pyproject.toml=$(DEB_BASE)   \
 	README.rst=$(DEB_BASE)   \
-	requirements.txt=$(DEB_BASE)   \
 	venv=$(DEB_BASE)   \
 	VERSION=$(DEB_BASE)
 
@@ -580,8 +580,8 @@ deb-bookworm:
 	LICENSE=$(DEB_BASE)   \
 	Makefile=$(DEB_BASE)   \
 	namesdb=$(DEB_BASE)   \
+	pyproject.toml=$(DEB_BASE)   \
 	README.rst=$(DEB_BASE)   \
-	requirements.txt=$(DEB_BASE)   \
 	venv=$(DEB_BASE)   \
 	VERSION=$(DEB_BASE)
 
@@ -625,7 +625,7 @@ deb-trixie:
 	LICENSE=$(DEB_BASE)   \
 	Makefile=$(DEB_BASE)   \
 	namesdb=$(DEB_BASE)   \
+	pyproject.toml=$(DEB_BASE)   \
 	README.rst=$(DEB_BASE)   \
-	requirements.txt=$(DEB_BASE)   \
 	venv=$(DEB_BASE)   \
 	VERSION=$(DEB_BASE)
