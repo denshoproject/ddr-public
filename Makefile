@@ -558,7 +558,6 @@ deb-bookworm:
 	--description "$(DEB_DESCRIPTION)"   \
 	--depends "imagemagick"  \
 	--depends "nginx"  \
-	--depends "bpython3"  \
 	--depends "python3"  \
 	--depends "python3-git"  \
 	--depends "python3-redis"  \
@@ -603,7 +602,6 @@ deb-trixie:
 	--description "$(DEB_DESCRIPTION)"   \
 	--depends "imagemagick"  \
 	--depends "nginx"  \
-	--depends "bpython3"  \
 	--depends "python3"  \
 	--depends "python3-git"  \
 	--depends "python3-redis"  \
