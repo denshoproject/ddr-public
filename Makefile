@@ -187,10 +187,10 @@ install-nginx:
 	@echo ""
 	@echo "Nginx ------------------------------------------------------------------"
 	apt-get --assume-yes remove apache2
-	apt-get --assume-yes install nginx-light
+	apt-get --assume-yes install nginx
 
 remove-nginx:
-	apt-get --assume-yes remove nginx-light
+	apt-get --assume-yes remove nginx
 
 install-redis:
 	@echo ""
