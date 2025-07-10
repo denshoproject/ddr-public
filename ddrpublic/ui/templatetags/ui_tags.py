@@ -149,6 +149,19 @@ def person(person):
     t = template.loader.get_template('ui/person-tag.html')
     return t.render({'person':person})
 
+def alternateid(object):
+    alternate_id = object.get('alternate_id', None)
+    if not alternate_id:
+        return ''
+
+    if 'denshouid' in alternate_id:
+        text = f"Legacy UID: {alternate_id|legacydenshouid}"
+    else:
+        text = alternate_id
+
+    t = template.loader.get_template('ui/alternateid.html')
+    return t.render({'text': text})
+
 register.simple_tag(homeslideitem)
 register.simple_tag(breadcrumbs)
 register.simple_tag(document)
@@ -159,3 +172,4 @@ register.simple_tag(cite)
 register.simple_tag(rightspanel)
 register.simple_tag(rightsbadge)
 register.simple_tag(person)
+register.simple_tag(alternateid)
