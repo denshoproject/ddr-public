@@ -156,6 +156,10 @@ def alternateid(object):
 
     if 'denshouid' in alternate_id:
         text = f"Legacy UID: {alternate_id|legacydenshouid}"
+
+    elif 'ia_external_id' in alternate_id:
+        text = f"Internet Archive: {alternate_id}"
+
     else:
         text = alternate_id
 
