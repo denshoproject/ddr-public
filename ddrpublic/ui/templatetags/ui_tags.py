@@ -158,7 +158,11 @@ def alternateid(object):
         text = f"Legacy UID: {alternate_id|legacydenshouid}"
 
     elif 'ia_external_id' in alternate_id:
-        text = f"Internet Archive: {alternate_id}"
+        # ia_external_id:cabemrc_000010
+        # -> https://archive.org/details/cabemrc_000010
+        marker,aid = alternate_id.strip().split(':')
+        url = f"https://archive.org/details/{aid}"
+        text = f'Internet Archive: <a href="{url}">{aid}</a>'
 
     else:
         text = alternate_id
