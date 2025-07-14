@@ -5,6 +5,7 @@ import re
 from django import template
 from django.conf import settings
 
+from ui.archivedotorg import EXTERNAL_OBJECT_ID_PATTERN
 from ui.models import MODEL_PLURALS
 
 register = template.Library()
@@ -158,8 +159,15 @@ def alternateid(object):
         text = f"Legacy UID: {alternate_id|legacydenshouid}"
 
     elif 'ia_external_id' in alternate_id:
+        # [ia_external_id:cabemrc_000010];
         # ia_external_id:cabemrc_000010
         # -> https://archive.org/details/cabemrc_000010
+        # make sure we really have an IA alternate ID
+        match = re.search(EXTERNAL_OBJECT_ID_PATTERN, alternate_id)
+        if not match:
+            return ''
+        # get just the ID, not markup around it i.e. [ia_external_id:cabemrc_000010];
+        alternate_id = match[0]
         marker,aid = alternate_id.strip().split(':')
         url = f"https://archive.org/details/{aid}"
         text = f'Internet Archive: <a href="{url}">{aid}</a>'
