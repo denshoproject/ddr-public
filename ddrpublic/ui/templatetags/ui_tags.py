@@ -156,7 +156,14 @@ def alternateid(object):
         return ''
 
     if 'denshouid' in alternate_id:
-        text = f"Legacy UID: {alternate_id|legacydenshouid}"
+        uid = ''
+        p = re.compile('\[denshouid:[ ]*([a-z_\-0-9]+)\]')
+        m = p.findall(alternate_id)
+        if m is not None:
+            uid = m[0]
+        else:
+            text = ''
+        text = f"Legacy UID: {uid}"
 
     elif 'ia_external_id' in alternate_id:
         # [ia_external_id:cabemrc_000010];
