@@ -331,8 +331,6 @@ install-ddr-public: install-setuptools git-safe-dir
 	supervisor
 	source $(VIRTUALENV)/bin/activate; \
 	uv pip install -U --cache-dir=$(PIP_CACHE_DIR) .
-	source $(VIRTUALENV)/bin/activate; \
-	uv pip install -U --cache-dir=$(PIP_CACHE_DIR) internetarchive
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_PUBLIC)
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_NAMESDB)
 

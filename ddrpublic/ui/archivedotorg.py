@@ -1,8 +1,8 @@
-import json
 import re
-import subprocess
 
+from django.conf import settings
 from django.core.cache import cache
+import httpx
 
 # "... [ia_external_id:EXTERNALID]; ..."
 EXTERNAL_OBJECT_ID_PATTERN = re.compile(r'ia_external_id:([\w._-]+)')
@@ -36,15 +36,9 @@ def get_ia_metadata(ia_external_id: str) -> dict:
     key = f"archivedotorg:ia_meta:{ia_external_id}"
     results = cache.get(key)
     if not results:
-
-        cmd = f'ia metadata {ia_external_id}'
-        try:
-            out = subprocess.check_output(cmd.split()).decode()
-        except FileNotFoundError:
-            msg = "Internet Archive `ia` command required for this operation. " \
-                "Install using 'pip install -U internetarchive'."
-            raise Exception(msg)
-        results = json.loads(out)
-
-        cache.set(key, results, 60) #settings.CACHE_TIMEOUT)
+        url = f"https://archive.org/metadata/{ia_external_id}"
+        result = httpx.get(url, timeout=10)
+        data = result.json()
+        results = data
+        cache.set(key, results, settings.CACHE_TIMEOUT)
     return results
