@@ -5,6 +5,7 @@ import re
 from django import template
 from django.conf import settings
 
+from ui.archivedotorg import EXTERNAL_OBJECT_ID_PATTERN
 from ui.models import MODEL_PLURALS
 
 register = template.Library()
@@ -149,6 +150,41 @@ def person(person):
     t = template.loader.get_template('ui/person-tag.html')
     return t.render({'person':person})
 
+def alternateid(object):
+    alternate_id = object.get('alternate_id', None)
+    if not alternate_id:
+        return ''
+
+    if 'denshouid' in alternate_id:
+        uid = ''
+        p = re.compile('\[denshouid:[ ]*([a-z_\-0-9]+)\]')
+        m = p.findall(alternate_id)
+        if m is not None:
+            uid = m[0]
+        else:
+            text = ''
+        text = f"Legacy UID: {uid}"
+
+    elif 'ia_external_id' in alternate_id:
+        # [ia_external_id:cabemrc_000010];
+        # ia_external_id:cabemrc_000010
+        # -> https://archive.org/details/cabemrc_000010
+        # make sure we really have an IA alternate ID
+        match = re.search(EXTERNAL_OBJECT_ID_PATTERN, alternate_id)
+        if not match:
+            return ''
+        # get just the ID, not markup around it i.e. [ia_external_id:cabemrc_000010];
+        alternate_id = match[0]
+        marker,aid = alternate_id.strip().split(':')
+        url = f"https://archive.org/details/{aid}"
+        text = f'Internet Archive: <a href="{url}">{aid}</a>'
+
+    else:
+        text = alternate_id
+
+    t = template.loader.get_template('ui/alternateid.html')
+    return t.render({'text': text})
+
 register.simple_tag(homeslideitem)
 register.simple_tag(breadcrumbs)
 register.simple_tag(document)
@@ -159,3 +195,4 @@ register.simple_tag(cite)
 register.simple_tag(rightspanel)
 register.simple_tag(rightsbadge)
 register.simple_tag(person)
+register.simple_tag(alternateid)

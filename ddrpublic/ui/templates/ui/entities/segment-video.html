@@ -98,6 +98,14 @@ IA metadata: {{ segment.ia_meta|safe }}
               Download full-size MPEG2
               ({{ segment.ia_meta.files.mpg.size|filesizeformat }})
             </a>
+{% else %}
+            <!-- streaming-only / no download -->
+{# We don't have a mechanism in DDR for marking videos stream-only/no-download. #}
+{# This is done as part of the process of uploading videos to Internet Archive. #}
+{# See Gitbook:                                                                 #}
+{# Densho Internal Wiki > Archives Team Wiki > Audio/Visual Material Workflow \ #}
+{# > Internet Archive Preparation & Upload                                      #}
+
 {% endif %}
 
           </div><!-- #dls_tab .tab-pane -->
