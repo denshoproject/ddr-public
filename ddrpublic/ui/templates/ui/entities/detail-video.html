@@ -66,7 +66,7 @@ IA metadata: {{ object.ia_meta|safe }}
                 Download transcript
               </a>
               {% endif %}
-{% if object.ia_meta.files.mp4.url %}
+{% if object.ia_meta.files.mp4.url and not object.ia_meta.stream_only %}
               <a href="{{ object.ia_meta.files.mp4.url }}" class="btn btn-default btn-xs">
                 <i class="fa fa-download"></i>
                 Download MP4
@@ -94,15 +94,8 @@ IA metadata: {{ object.ia_meta|safe }}
                     <!-- entity.entity_id -->
                     <h3 class="page-header">OBJECT ID</h3>
                     <p>
-                    {{ object.id }}
-                    {% if object.alternate_id != None %}
-                      {% if "denshouid" in object.alternate_id %}
-                      <span class="small">(Legacy UID: {{ object.alternate_id|legacydenshouid }})</span>
-                      {% else %}
-                      <span class="small">({{ object.alternate_id }})</span>
-                      {% endif %}
-                    {% endif %}
-
+                      {{ object.id }}
+                      {% alternateid object %}
                     </p>
                     <!-- entity.collection -->
                     <h3 class="page-header">PARENT COLLECTION</h3>

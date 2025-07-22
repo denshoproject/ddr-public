@@ -81,15 +81,8 @@ IA metadata: {{ object.ia_meta|safe }}
                     <!-- entity.entity_id -->
                     <h3 class="page-header">OBJECT ID</h3>
                     <p>
-                    {{ object.id }}
-                    {% if object.alternate_id != None %}
-                      {% if "denshouid" in object.alternate_id %}
-                      <span class="small">(Legacy UID: {{ object.alternate_id|legacydenshouid }})</span>
-                      {% else %}
-                      <span class="small">({{ object.alternate_id }})</span>
-                      {% endif %}
-                    {% endif %}
-
+                      {{ object.id }}
+                      {% alternateid object %}
                     </p>
                     <!-- entity.collection -->
                     <h3 class="page-header">PARENT COLLECTION</h3>

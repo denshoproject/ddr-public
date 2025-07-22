@@ -8,6 +8,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import Http404, render
 from django.urls import reverse
 
+from .. import archivedotorg
 from .. import models
 from .. import misc
 from ..decorators import ui_state
@@ -116,7 +117,11 @@ def detail(request, oid):
         )
 
     template = AV_TEMPLATES.get(entity.get('template'), ENTITY_TEMPLATE_DEFAULT)
-    
+
+    # Get current URL for external IA videos, check if they're stream-only
+    # see https://github.com/denshoproject/ddr-public/issues/230
+    archivedotorg.handle_ia_external(entity)
+
     return render(request, template, {
         'templatekey': entity.get('template'),
         'template': template,
