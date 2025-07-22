@@ -22,7 +22,7 @@ def get_mp4_url(ia_external_id):
     iaserver = iameta['server']
     iadir = iameta['dir']
     for f in iameta['files']:
-        if f['format'] == 'h.264':
+        if f['format'].lower() in ['h.264', 'mpeg4']:
             filename = f['name']
             mp4_url = f"https://{iaserver}{iadir}/{filename}"
             return mp4_url
