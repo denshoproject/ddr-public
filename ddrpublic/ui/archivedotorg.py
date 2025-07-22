@@ -28,6 +28,21 @@ def get_mp4_url(ia_external_id):
             return mp4_url
     return None
 
+def is_streaming_only(ia_external_id):
+    """Indicate whether we can display a download link
+
+    IA marks videos as stream-only by adding them to a global collection
+    which appears in object metadata.
+
+    Returns True (streaming-only), False (download okay), or None (shrug)
+    """
+    iameta = get_ia_metadata(ia_external_id)
+    if not iameta:
+        return None
+    if 'stream_only' in iameta['metadata']['collection']:
+        return True
+    return False
+
 def get_ia_metadata(ia_external_id: str) -> dict:
     """Use official IA client to get metadata for an IA object
     
