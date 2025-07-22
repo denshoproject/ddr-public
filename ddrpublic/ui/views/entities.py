@@ -120,15 +120,7 @@ def detail(request, oid):
 
     # Get current URL for external IA videos, check if they're stream-only
     # see https://github.com/denshoproject/ddr-public/issues/230
-    try:
-        ia_external_id = entity['ia_meta']['ia_external_id']
-    except:
-        ia_external_id = None
-    if ia_external_id:
-        mp4_url = archivedotorg.get_mp4_url(ia_external_id)
-        stream_only = archivedotorg.is_streaming_only(ia_external_id)
-        entity['ia_meta']['files']['mp4']['url'] = mp4_url
-        entity['ia_meta']['stream_only'] = stream_only
+    archivedotorg.handle_ia_external(entity)
 
     return render(request, template, {
         'templatekey': entity.get('template'),

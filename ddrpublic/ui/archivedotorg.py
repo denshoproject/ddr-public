@@ -8,6 +8,20 @@ import httpx
 EXTERNAL_OBJECT_ID_PATTERN = re.compile(r'ia_external_id:([\w._-]+)')
 
 
+def handle_ia_external(entity):
+    """Special processing for external IA videos
+    - Get current direct URL for video
+    - Check if they're stream-only
+    see https://github.com/denshoproject/ddr-public/issues/230
+    """
+    try:
+        ia_external_id = entity['ia_meta']['ia_external_id']
+    except:
+        ia_external_id = None
+    if ia_external_id:
+        entity['ia_meta']['files']['mp4']['url'] = get_mp4_url(ia_external_id)
+        entity['ia_meta']['stream_only'] = is_streaming_only(ia_external_id)
+
 def get_mp4_url(ia_external_id):
     """Get current URL for external IA video
     
