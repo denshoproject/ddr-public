@@ -87,26 +87,24 @@ IA metadata: {{ segment.ia_meta|safe }}
             </a>
             <br />
 
-{% if segment.ia_meta.files.mp4 and segment.ia_meta.files.mpg %}
+            {% if segment.ia_meta.stream_only %}
+            <!-- stream-only no downloads -->
+            {% else %}
+            {% if segment.ia_meta.files.mp4 %}
             <a href="{{ segment.ia_meta.files.mp4.url }}" class="btn btn-default btn-xs">
               <i class="fa fa-download"></i>
               Download MP4
               ({{ segment.ia_meta.files.mp4.size|filesizeformat }})
             </a>
+            {% endif %}{# mp4 #}
+            {% if segment.ia_meta.files.mpg %}
             <a href="{{ segment.ia_meta.files.mpg.url }}" class="btn btn-default btn-xs">
               <i class="fa fa-download"></i>
               Download full-size MPEG2
               ({{ segment.ia_meta.files.mpg.size|filesizeformat }})
             </a>
-{% else %}
-            <!-- streaming-only / no download -->
-{# We don't have a mechanism in DDR for marking videos stream-only/no-download. #}
-{# This is done as part of the process of uploading videos to Internet Archive. #}
-{# See Gitbook:                                                                 #}
-{# Densho Internal Wiki > Archives Team Wiki > Audio/Visual Material Workflow \ #}
-{# > Internet Archive Preparation & Upload                                      #}
-
-{% endif %}
+            {% endif %}{# mpg #}
+            {% endif %}{# segment.ia_meta.stream_only #}
 
           </div><!-- #dls_tab .tab-pane -->
           <!-- end Left Tab -------------------------------------- -->
