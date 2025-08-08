@@ -58,7 +58,6 @@ IA metadata: {{ object.ia_meta|safe }}
 <!-- end VideoJS player-->
             </div><!-- #object-display -->
 
-            {% if signature %}
             <div id="object-download" style="padding-top: 5px;">
               {% if transcripts.interview %}
               <a href="{{ transcripts.interview.links.download }}" class="btn btn-default btn-xs">
@@ -66,15 +65,16 @@ IA metadata: {{ object.ia_meta|safe }}
                 Download transcript
               </a>
               {% endif %}
-{% if object.ia_meta.files.mp4.url and not object.ia_meta.stream_only %}
+              {% if object.ia_meta.stream_only %}
+              <!-- stream-only no download -->
+              {% elif object.ia_meta.files.mp4.url %}
               <a href="{{ object.ia_meta.files.mp4.url }}" class="btn btn-default btn-xs">
                 <i class="fa fa-download"></i>
                 Download MP4
-                ({{ signature.size|filesizeformat }})
+                ({{ object.ia_meta.files.mp4.size | filesizeformat }})
               </a>
-{% endif %}
+              {% endif %}
             </div><!-- #object-download -->
-            {% endif %}
 
             <div id="object-rights">
 {% rightspanel object.rights %}
