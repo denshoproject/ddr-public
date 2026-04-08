@@ -122,7 +122,7 @@ def detail(request, oid):
     # see https://github.com/denshoproject/ddr-public/issues/230
     archivedotorg.handle_ia_external(entity)
     # serve IA media locally if requested
-    if settings.IA_LOCAL_URL:
+    if entity.get('ia_meta') and settings.IA_LOCAL_URL:
         archivedotorg.ia_local_entity(entity)
 
     return render(request, template, {
@@ -202,7 +202,7 @@ def interview(request, oid):
     template = AV_TEMPLATES.get(segment.get('template'), SEGMENT_TEMPLATE_DEFAULT)
 
     # serve IA media locally if requested
-    if settings.IA_LOCAL_URL:
+    if segment.get('ia_meta') and settings.IA_LOCAL_URL:
         archivedotorg.ia_local_segment(entity, segment)
 
     return render(request, template, {
