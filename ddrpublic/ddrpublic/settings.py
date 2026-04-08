@@ -153,6 +153,9 @@ MISSING_IMG = config.get('public', 'missing_img')
 #     }
 DOWNLOAD_URL = config.get('public', 'download_url')
 
+# URL for local copies of Internet Archive media, in case IA is offline
+IA_LOCAL_URL = config.get('public', 'ia_local_url')
+
 # Base URL for narrator images
 NARRATORS_URL = config.get('public', 'narrators_url')
 # Base URL for VH interview segment images
