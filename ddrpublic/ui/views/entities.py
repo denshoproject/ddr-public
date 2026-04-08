@@ -203,7 +203,7 @@ def interview(request, oid):
 
     # serve IA media locally if requested
     if settings.IA_LOCAL_URL:
-        archivedotorg.ia_local_segment(segment)
+        archivedotorg.ia_local_segment(entity, segment)
 
     return render(request, template, {
         'templatekey': entity.get('template'),
