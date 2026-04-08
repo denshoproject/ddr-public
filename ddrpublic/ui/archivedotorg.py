@@ -112,3 +112,28 @@ def get_streaming_mpeg4_url(entity_id, file_id):
     ]
     return mp4_urls[0]
 
+def ia_local_entity(entity):
+    """Replace Internet Archive base URL with IA_LOCAL_URL
+
+    See https://github.com/denshoproject/ddr-public/issues/236
+    """
+    file_extensions = [
+        file_ext for file_ext in entity['ia_meta']['files']
+    ]
+    for file_ext in file_extensions:
+        f = entity['ia_meta']['files'][file_ext]
+        url = f"{settings.IA_LOCAL_URL}{entity['id']}/{f['name']}"
+        f['url'] = url
+
+def ia_local_segment(entity, segment):
+    """Replace Internet Archive base URL with IA_LOCAL_URL
+
+    See https://github.com/denshoproject/ddr-public/issues/236
+    """
+    file_extensions = [
+        'mp4', 'mpg'
+    ]
+    for file_ext in file_extensions:
+        f = segment['ia_meta']['files'][file_ext]
+        url = f"{settings.IA_LOCAL_URL}{entity['id']}/{f['name']}"
+        f['url'] = url
