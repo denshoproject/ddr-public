@@ -1,5 +1,8 @@
+import json
+from pathlib import Path
 import re
 
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.cache import cache
 import httpx
@@ -21,6 +24,13 @@ def handle_ia_external(entity):
     if ia_external_id:
         entity['ia_meta']['files']['mp4']['url'] = get_mp4_url(ia_external_id)
         entity['ia_meta']['stream_only'] = is_streaming_only(ia_external_id)
+    # special handling for certain stream-only videos in ddr-densho-1024
+    if entity['id'] in BROKEN_ENTITY_FILE_URLS.keys():
+        eid = entity['id']
+        fid = BROKEN_ENTITY_FILE_URLS[eid]
+        mp4_url = get_streaming_mpeg4_url(eid, fid)
+        if mp4_url:
+            entity['ia_meta']['files']['mp4']['url'] = mp4_url
 
 def get_mp4_url(ia_external_id):
     """Get current URL for external IA video
@@ -71,3 +81,59 @@ def get_ia_metadata(ia_external_id: str) -> dict:
         results = data
         cache.set(key, results, settings.CACHE_TIMEOUT)
     return results
+
+BROKEN_ENTITY_FILE_URLS = {
+    'ddr-densho-1024-37': 'ddr-densho-1024-37-mezzanine-c87e531646',
+    'ddr-densho-1024-45': 'ddr-densho-1024-45-mezzanine-7ba45b4b88',
+    'ddr-densho-1024-55': 'ddr-densho-1024-55-mezzanine-7bb01254ca',
+    'ddr-densho-1024-92': 'ddr-densho-1024-92-mezzanine-a65fa6c613',
+}
+
+def get_streaming_mpeg4_url(entity_id, file_id):
+    """Special stream-only MP4 URLs for certain entities
+
+    Certain videos will only play using an obfuscated URL
+    For these videos, the .mp4 URL returns not a binary but a fragment
+    of HTML. This fragment contains a <play-av> tag that contains
+    the *actual* URL of the file.
+    This function tries to return that actual URL.
+    """
+    url = f"https://archive.org/stream/{entity_id}/{file_id}.mp4"
+    r = httpx.get(url)
+    if not r.status_code in [200, 301, 302]:
+        return None
+    sources = json.loads(
+        BeautifulSoup(r.content).find_all('play-av')[0]['playlist']
+    )
+    mp4_urls = [
+        filedata['file']
+        for filedata in sources[0]['sources']
+        if filedata['type'] == 'video/mp4'
+    ]
+    return mp4_urls[0]
+
+def ia_local_entity(entity):
+    """Replace Internet Archive base URL with IA_LOCAL_URL
+
+    See https://github.com/denshoproject/ddr-public/issues/236
+    """
+    file_extensions = [
+        file_ext for file_ext in entity['ia_meta']['files']
+    ]
+    for file_ext in file_extensions:
+        f = entity['ia_meta']['files'][file_ext]
+        url = f"{settings.IA_LOCAL_URL}{entity['id']}/{f['name']}"
+        f['url'] = url
+
+def ia_local_segment(entity, segment):
+    """Replace Internet Archive base URL with IA_LOCAL_URL
+
+    See https://github.com/denshoproject/ddr-public/issues/236
+    """
+    file_extensions = [
+        'mp4', 'mpg'
+    ]
+    for file_ext in file_extensions:
+        f = segment['ia_meta']['files'][file_ext]
+        url = f"{settings.IA_LOCAL_URL}{entity['id']}/{f['name']}"
+        f['url'] = url

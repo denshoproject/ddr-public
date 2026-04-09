@@ -26,6 +26,7 @@ dynamic = ["version"]  # will read __version__ from ddrpublic/__init__.py
 requires-python = ">=3.9"
 dependencies = [
     "django>=4.2.0,<4.3",
+    "bs4",
     "django-bootstrap-pagination-forked",
     "django-cors-headers>=4.3.0,<4.4",
     "django-log-request-id",

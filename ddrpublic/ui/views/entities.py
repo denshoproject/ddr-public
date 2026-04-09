@@ -121,6 +121,9 @@ def detail(request, oid):
     # Get current URL for external IA videos, check if they're stream-only
     # see https://github.com/denshoproject/ddr-public/issues/230
     archivedotorg.handle_ia_external(entity)
+    # serve IA media locally if requested
+    if entity.get('ia_meta') and settings.IA_LOCAL_URL:
+        archivedotorg.ia_local_entity(entity)
 
     return render(request, template, {
         'templatekey': entity.get('template'),
@@ -197,7 +200,11 @@ def interview(request, oid):
         )
 
     template = AV_TEMPLATES.get(segment.get('template'), SEGMENT_TEMPLATE_DEFAULT)
-    
+
+    # serve IA media locally if requested
+    if segment.get('ia_meta') and settings.IA_LOCAL_URL:
+        archivedotorg.ia_local_segment(entity, segment)
+
     return render(request, template, {
         'templatekey': entity.get('template'),
         'template': template,
