@@ -5,7 +5,7 @@ import re
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.cache import cache
-import httpx
+import httpx2
 
 # "... [ia_external_id:EXTERNALID]; ..."
 EXTERNAL_OBJECT_ID_PATTERN = re.compile(r'ia_external_id:([\w._-]+)')
@@ -76,7 +76,7 @@ def get_ia_metadata(ia_external_id: str) -> dict:
     results = cache.get(key)
     if not results:
         url = f"https://archive.org/metadata/{ia_external_id}"
-        result = httpx.get(url, timeout=10)
+        result = httpx2.get(url, timeout=10)
         data = result.json()
         results = data
         cache.set(key, results, settings.CACHE_TIMEOUT)
@@ -99,7 +99,7 @@ def get_streaming_mpeg4_url(entity_id, file_id):
     This function tries to return that actual URL.
     """
     url = f"https://archive.org/stream/{entity_id}/{file_id}.mp4"
-    r = httpx.get(url)
+    r = httpx2.get(url)
     if not r.status_code in [200, 301, 302]:
         return None
     sources = json.loads(
