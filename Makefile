@@ -27,13 +27,13 @@ SRC_REPO_ASSETS=https://github.com/denshoproject/ddr-public-assets.git
 
 INSTALL_BASE=/opt
 INSTALL_PUBLIC=$(INSTALL_BASE)/ddr-public
-INSTALL_NAMESDB=./namesdb
+INSTALL_NAMESDB=$(INSTALL_PUBLIC)/namesdb
 INSTALL_IREIZO=$(INSTALL_BASE)/ireizo-public
 INSTALL_ASSETS=/opt/ddr-public-assets
 REQUIREMENTS=./requirements.txt
 PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
 
-VIRTUALENV=$(INSTALL_PUBLIC)/venv/ddrpublic
+VIRTUALENV=$(INSTALL_PUBLIC)/.venv
 
 CONF_BASE=/etc/ddr
 CONF_PRODUCTION=$(CONF_BASE)/ddrpublic.cfg
@@ -230,17 +230,10 @@ remove-elasticsearch:
 install-virtualenv:
 	@echo ""
 	@echo "install-virtualenv -----------------------------------------------------"
-	apt-get --assume-yes install python3-pip python3-venv
-	python3 -m venv $(VIRTUALENV)
-	source $(VIRTUALENV)/bin/activate; \
-	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) uv
-
-install-setuptools: install-virtualenv
-	@echo ""
-	@echo "install-setuptools -----------------------------------------------------"
-	apt-get --assume-yes install python3-dev
-	source $(VIRTUALENV)/bin/activate; \
-	uv pip install -U --cache-dir=$(PIP_CACHE_DIR) setuptools
+	apt-get install --assume-yes extrepo
+	extrepo enable uv
+	apt-get install --assume-yes uv
+	uv venv --relocatable --managed-python --allow-existing --python /usr/bin/python3
 
 get-app: get-namesdb get-ddr-public get-ireizo-public
 
@@ -262,19 +255,11 @@ get-namesdb:
 	else cd $(INSTALL_PUBLIC) && git clone $(SRC_REPO_NAMESDB); \
 	fi
 
-setup-namesdb:
-	git status | grep "On branch"
-	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_NAMESDB) && python setup.py install
-
 install-namesdb: install-virtualenv
 	@echo ""
 	@echo "install-namesdb --------------------------------------------------------"
 	git status | grep "On branch"
-	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_NAMESDB) && python setup.py install
-	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_NAMESDB) && uv pip install --cache-dir=$(PIP_CACHE_DIR) -U -r requirements.txt
+	source $(VIRTUALENV)/bin/activate; cd $(INSTALL_NAMESDB); uv sync --active --inexact
 
 uninstall-namesdb: install-virtualenv
 	@echo ""
@@ -302,8 +287,7 @@ install-ireizo-public: install-virtualenv
 	@echo "install-ireizo-public --------------------------------------------------"
 	-rm -Rf $(INSTALL_PUBLIC)/ddrpublic/ireizo_public
 	-ln -s $(INSTALL_IREIZO)/ireizo_public $(INSTALL_PUBLIC)/ddrpublic/ireizo_public
-	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_IREIZO) && uv pip install --cache-dir=$(PIP_CACHE_DIR) -U -r requirements.txt
+	source $(VIRTUALENV)/bin/activate; cd $(INSTALL_IREIZO); uv sync --active --inexact
 
 uninstall-ireizo-public: install-virtualenv
 	@echo ""
@@ -321,7 +305,12 @@ get-ddr-public:
 	@echo "get-ddr-public ---------------------------------------------------------"
 	git pull
 
-install-ddr-public: install-setuptools git-safe-dir
+install-pyproject: install-virtualenv
+	@echo ""
+	@echo "install pyproject -------------------------------------------------"
+	source $(VIRTUALENV)/bin/activate; uv sync --active --inexact
+
+install-ddr-public: install-pyproject git-safe-dir
 	@echo ""
 	@echo "install-ddr-public -----------------------------------------------------"
 	apt-get --assume-yes install  \
@@ -329,8 +318,6 @@ install-ddr-public: install-setuptools git-safe-dir
 	python3                       \
 	sqlite3                       \
 	supervisor
-	source $(VIRTUALENV)/bin/activate; \
-	uv pip install -U --cache-dir=$(PIP_CACHE_DIR) .
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_PUBLIC)
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_NAMESDB)
 
@@ -345,14 +332,7 @@ git-safe-dir:
 install-test:
 	@echo ""
 	@echo "install-test ------------------------------------------------------------"
-	apt-get --assume-yes install  \
-	python3-coverage              \
-	python3-pytest                \
-	python3-pytest-cov            \
-	python3-pytest-django         \
-	python3-pytest-xdist
-	source $(VIRTUALENV)/bin/activate; \
-	uv pip install -U --cache-dir=$(PIP_CACHE_DIR) -r $(INSTALL_PUBLIC)/requirements-dev.txt
+	source $(VIRTUALENV)/bin/activate; uv pip install .[testing]
 
 mkdir-ddr-public:
 	@echo ""
@@ -393,7 +373,7 @@ runserver:
 	source $(VIRTUALENV)/bin/activate; \
 	python ddrpublic/manage.py runserver 0.0.0.0:$(RUNSERVER_PORT)
 
-uninstall-ddr-public: install-setuptools
+uninstall-ddr-public:
 	@echo ""
 	@echo "uninstall-ddr-public ---------------------------------------------------"
 	source $(VIRTUALENV)/bin/activate; \
