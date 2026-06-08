@@ -48,7 +48,7 @@ def legacydenshouid( value ):
     """returns plain legacy denshouid
     """
     uid = ''
-    p = re.compile('\[denshouid:[ ]*([a-z_\-0-9]+)\]')
+    p = re.compile(r"\[denshouid:[ ]*([a-z_\-0-9]+)\]")
     m = p.findall(value)
     if m is not None:
         uid = m[0]
@@ -157,7 +157,7 @@ def alternateid(object):
 
     if 'denshouid' in alternate_id:
         uid = ''
-        p = re.compile('\[denshouid:[ ]*([a-z_\-0-9]+)\]')
+        p = re.compile(r"\[denshouid:[ ]*([a-z_\-0-9]+)\]")
         m = p.findall(alternate_id)
         if m is not None:
             uid = m[0]
