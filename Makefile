@@ -517,7 +517,7 @@ deb-bookworm:
 	Makefile=$(DEB_BASE)   \
 	namesdb=$(DEB_BASE)   \
 	pyproject.toml=$(DEB_BASE)   \
-	README.rst=$(DEB_BASE)   \
+	README.md=$(DEB_BASE)   \
 	.venv=$(DEB_BASE)   \
 	VERSION=$(DEB_BASE)
 
@@ -562,6 +562,6 @@ deb-trixie:
 	Makefile=$(DEB_BASE)   \
 	namesdb=$(DEB_BASE)   \
 	pyproject.toml=$(DEB_BASE)   \
-	README.rst=$(DEB_BASE)   \
+	README.md=$(DEB_BASE)   \
 	.venv=$(DEB_BASE)   \
 	VERSION=$(DEB_BASE)
