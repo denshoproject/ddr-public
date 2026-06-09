@@ -492,13 +492,10 @@ deb-bookworm:
 	--vendor "$(DEB_VENDOR)"   \
 	--maintainer "$(DEB_MAINTAINER)"   \
 	--description "$(DEB_DESCRIPTION)"   \
+	--depends "extrepo"  \
 	--depends "imagemagick"  \
 	--depends "nginx"  \
-	--depends "bpython3"  \
 	--depends "python3"  \
-	--depends "python3-git"  \
-	--depends "python3-redis"  \
-	--depends "python3-requests"  \
 	--depends "redis-server"   \
 	--depends "sqlite3"  \
 	--depends "supervisor"   \
@@ -537,13 +534,10 @@ deb-trixie:
 	--vendor "$(DEB_VENDOR)"   \
 	--maintainer "$(DEB_MAINTAINER)"   \
 	--description "$(DEB_DESCRIPTION)"   \
+	--depends "extrepo"  \
 	--depends "imagemagick"  \
 	--depends "nginx"  \
-	--depends "bpython3"  \
 	--depends "python3"  \
-	--depends "python3-git"  \
-	--depends "python3-redis"  \
-	--depends "python3-requests"  \
 	--depends "redis-server"   \
 	--depends "sqlite3"  \
 	--depends "supervisor"   \
