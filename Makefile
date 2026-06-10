@@ -208,7 +208,7 @@ install-elasticsearch: install-core
 	apt-get --assume-yes install $(OPENJDK_PKG)
 	-gdebi --non-interactive /tmp/downloads/$(ELASTICSEARCH)
 #cp $(INSTALL_LOCAL)/conf/elasticsearch.yml /etc/elasticsearch/
-#chown root.root /etc/elasticsearch/elasticsearch.yml
+#chown root:root /etc/elasticsearch/elasticsearch.yml
 #chmod 644 /etc/elasticsearch/elasticsearch.yml
 # 	@echo "${bldgrn}search engine (re)start${txtrst}"
 	-service elasticsearch stop
@@ -336,16 +336,16 @@ mkdir-ddr-public:
 	@echo "mkdir-ddr-public --------------------------------------------------------"
 # logs dir
 	-mkdir $(LOG_BASE)
-	chown -R ddr.ddr $(LOG_BASE)
+	chown -R ddr:ddr $(LOG_BASE)
 	chmod -R 775 $(LOG_BASE)
 # sqlite db dir
 	-mkdir $(SQLITE_BASE)
-	chown -R ddr.ddr $(SQLITE_BASE)
+	chown -R ddr:ddr $(SQLITE_BASE)
 	chmod -R 775 $(SQLITE_BASE)
 # media dir
 	-mkdir -p $(MEDIA_BASE)
 	-mkdir -p $(MEDIA_ROOT)
-	chown -R ddr.ddr $(MEDIA_ROOT)
+	chown -R ddr:ddr $(MEDIA_ROOT)
 	chmod -R 755 $(MEDIA_ROOT)
 
 test-ddr-public: test-ddr-public-ui test-ddr-public-names
@@ -393,9 +393,9 @@ get-ddr-public-assets:
 migrate:
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_PUBLIC)/ddrpublic && python manage.py migrate --noinput
-	chown -R ddr.ddr $(SQLITE_BASE)
+	chown -R ddr:ddr $(SQLITE_BASE)
 	chmod -R 770 $(SQLITE_BASE)
-	chown -R ddr.ddr $(LOG_BASE)
+	chown -R ddr:ddr $(LOG_BASE)
 	chmod -R 775 $(LOG_BASE)
 
 
@@ -407,10 +407,10 @@ install-configs:
 # /etc/ddr/ddrpublic-local.cfg must be readable by ddr but contains sensitive info
 	-mkdir /etc/ddr
 	cp $(INSTALL_PUBLIC)/conf/ddrpublic.cfg $(CONF_PRODUCTION)
-	chown root.root $(CONF_PRODUCTION)
+	chown root:root $(CONF_PRODUCTION)
 	chmod 644 $(CONF_PRODUCTION)
 	touch $(CONF_LOCAL)
-	chown ddr.root $(CONF_LOCAL)
+	chown ddr:root $(CONF_LOCAL)
 	chmod 640 $(CONF_LOCAL)
 
 uninstall-configs:
@@ -424,13 +424,13 @@ install-daemon-configs:
 	@echo "install-daemon-configs -------------------------------------------------"
 # nginx settings
 	cp $(INSTALL_PUBLIC)/conf/nginx.conf $(NGINX_CONF)
-	chown root.root $(NGINX_CONF)
+	chown root:root $(NGINX_CONF)
 	chmod 644 $(NGINX_CONF)
 	-ln -s $(NGINX_CONF) $(NGINX_CONF_LINK)
 	-rm /etc/nginx/sites-enabled/default
 # supervisord
 	cp $(INSTALL_PUBLIC)/conf/supervisor.conf $(SUPERVISOR_GUNICORN_CONF)
-	chown root.root $(SUPERVISOR_GUNICORN_CONF)
+	chown root:root $(SUPERVISOR_GUNICORN_CONF)
 	chmod 644 $(SUPERVISOR_GUNICORN_CONF)
 
 uninstall-daemon-configs:
