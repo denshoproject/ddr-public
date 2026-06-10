@@ -326,7 +326,7 @@ git-safe-dir:
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_IREIZO)
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_ASSETS)
 
-install-test:
+install-test: install-virtualenv
 	@echo ""
 	@echo "install-test ------------------------------------------------------------"
 	source $(VIRTUALENV)/bin/activate; uv pip install .[testing]
