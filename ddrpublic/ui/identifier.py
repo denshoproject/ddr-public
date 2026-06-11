@@ -495,7 +495,7 @@ IDENTIFIERS = [
             'access': '{id}-a.jpg',
             'json': '{id}.json',
         },
-        'filename_regex': '-([\d]+)-([\w]+)-([\w\d]+).json',
+        'filename_regex': r'-([\d]+)-([\w]+)-([\w\d]+).json',
     },
 ]
 
