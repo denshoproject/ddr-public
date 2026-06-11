@@ -27,13 +27,13 @@ SRC_REPO_ASSETS=https://github.com/denshoproject/ddr-public-assets.git
 
 INSTALL_BASE=/opt
 INSTALL_PUBLIC=$(INSTALL_BASE)/ddr-public
-INSTALL_NAMESDB=./namesdb
+INSTALL_NAMESDB=$(INSTALL_PUBLIC)/namesdb
 INSTALL_IREIZO=$(INSTALL_BASE)/ireizo-public
 INSTALL_ASSETS=/opt/ddr-public-assets
 REQUIREMENTS=./requirements.txt
 PIP_CACHE_DIR=$(INSTALL_BASE)/pip-cache
 
-VIRTUALENV=$(INSTALL_PUBLIC)/venv/ddrpublic
+VIRTUALENV=$(INSTALL_PUBLIC)/.venv
 
 CONF_BASE=/etc/ddr
 CONF_PRODUCTION=$(CONF_BASE)/ddrpublic.cfg
@@ -55,14 +55,14 @@ DEBIAN_RELEASE := $(shell lsb_release -sr)
 DEBIAN_RELEASE_TAG = deb$(shell lsb_release -sr | cut -c1)
 
 OPENJDK_PKG=
-ifeq ($(DEBIAN_CODENAME), bullseye)
-	OPENJDK_PKG=openjdk-17-jre-headless
-endif
+PYTHON_VERSION=
 ifeq ($(DEBIAN_CODENAME), bookworm)
 	OPENJDK_PKG=openjdk-17-jre-headless
+	PYTHON_VERSION=3.11.2
 endif
 ifeq ($(DEBIAN_CODENAME), trixie)
-	OPENJDK_PKG=openjdk-17-jre-headless
+	OPENJDK_PKG=openjdk-21-jre-headless
+	PYTHON_VERSION=3.13
 endif
 
 ELASTICSEARCH=elasticsearch-7.3.1-amd64.de
@@ -83,15 +83,12 @@ TGZ_ASSETS=$(TGZ_DIR)/ddr-public/ddr-public-assets
 # instead of "ddrlocal-BRANCH"
 DEB_BRANCH := $(shell python3 bin/package-branch.py)
 DEB_ARCH=amd64
-DEB_NAME_BULLSEYE=$(APP)-$(DEB_BRANCH)
 DEB_NAME_BOOKWORM=$(APP)-$(DEB_BRANCH)
 DEB_NAME_TRIXIE=$(APP)-$(DEB_BRANCH)
 # Application version, separator (~), Debian release tag e.g. deb8
 # Release tag used because sortable and follows Debian project usage.
-DEB_VERSION_BULLSEYE=$(APP_VERSION)~deb11
 DEB_VERSION_BOOKWORM=$(APP_VERSION)~deb12
 DEB_VERSION_TRIXIE=$(APP_VERSION)~deb13
-DEB_FILE_BULLSEYE=$(DEB_NAME_BULLSEYE)_$(DEB_VERSION_BULLSEYE)_$(DEB_ARCH).deb
 DEB_FILE_BOOKWORM=$(DEB_NAME_BOOKWORM)_$(DEB_VERSION_BOOKWORM)_$(DEB_ARCH).deb
 DEB_FILE_TRIXIE=$(DEB_NAME_TRIXIE)_$(DEB_VERSION_TRIXIE)_$(DEB_ARCH).deb
 DEB_VENDOR=Densho.org
@@ -211,7 +208,7 @@ install-elasticsearch: install-core
 	apt-get --assume-yes install $(OPENJDK_PKG)
 	-gdebi --non-interactive /tmp/downloads/$(ELASTICSEARCH)
 #cp $(INSTALL_LOCAL)/conf/elasticsearch.yml /etc/elasticsearch/
-#chown root.root /etc/elasticsearch/elasticsearch.yml
+#chown root:root /etc/elasticsearch/elasticsearch.yml
 #chmod 644 /etc/elasticsearch/elasticsearch.yml
 # 	@echo "${bldgrn}search engine (re)start${txtrst}"
 	-service elasticsearch stop
@@ -230,17 +227,10 @@ remove-elasticsearch:
 install-virtualenv:
 	@echo ""
 	@echo "install-virtualenv -----------------------------------------------------"
-	apt-get --assume-yes install python3-pip python3-venv
-	python3 -m venv $(VIRTUALENV)
-	source $(VIRTUALENV)/bin/activate; \
-	pip3 install -U --cache-dir=$(PIP_CACHE_DIR) uv
-
-install-setuptools: install-virtualenv
-	@echo ""
-	@echo "install-setuptools -----------------------------------------------------"
-	apt-get --assume-yes install python3-dev
-	source $(VIRTUALENV)/bin/activate; \
-	uv pip install -U --cache-dir=$(PIP_CACHE_DIR) setuptools
+	apt-get install --assume-yes extrepo
+	extrepo enable uv
+	apt-get install --assume-yes uv
+	uv venv --relocatable --managed-python --allow-existing --python /usr/bin/python3
 
 get-app: get-namesdb get-ddr-public get-ireizo-public
 
@@ -262,19 +252,11 @@ get-namesdb:
 	else cd $(INSTALL_PUBLIC) && git clone $(SRC_REPO_NAMESDB); \
 	fi
 
-setup-namesdb:
-	git status | grep "On branch"
-	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_NAMESDB) && python setup.py install
-
 install-namesdb: install-virtualenv
 	@echo ""
 	@echo "install-namesdb --------------------------------------------------------"
 	git status | grep "On branch"
-	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_NAMESDB) && python setup.py install
-	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_NAMESDB) && uv pip install --cache-dir=$(PIP_CACHE_DIR) -U -r requirements.txt
+	source $(VIRTUALENV)/bin/activate; cd $(INSTALL_NAMESDB); uv sync --active --inexact
 
 uninstall-namesdb: install-virtualenv
 	@echo ""
@@ -302,8 +284,7 @@ install-ireizo-public: install-virtualenv
 	@echo "install-ireizo-public --------------------------------------------------"
 	-rm -Rf $(INSTALL_PUBLIC)/ddrpublic/ireizo_public
 	-ln -s $(INSTALL_IREIZO)/ireizo_public $(INSTALL_PUBLIC)/ddrpublic/ireizo_public
-	source $(VIRTUALENV)/bin/activate; \
-	cd $(INSTALL_IREIZO) && uv pip install --cache-dir=$(PIP_CACHE_DIR) -U -r requirements.txt
+	source $(VIRTUALENV)/bin/activate; cd $(INSTALL_IREIZO); uv sync --active --inexact
 
 uninstall-ireizo-public: install-virtualenv
 	@echo ""
@@ -321,7 +302,12 @@ get-ddr-public:
 	@echo "get-ddr-public ---------------------------------------------------------"
 	git pull
 
-install-ddr-public: install-setuptools git-safe-dir
+install-pyproject: install-virtualenv
+	@echo ""
+	@echo "install pyproject -------------------------------------------------"
+	source $(VIRTUALENV)/bin/activate; uv sync --active --inexact
+
+install-ddr-public: install-pyproject git-safe-dir
 	@echo ""
 	@echo "install-ddr-public -----------------------------------------------------"
 	apt-get --assume-yes install  \
@@ -329,8 +315,6 @@ install-ddr-public: install-setuptools git-safe-dir
 	python3                       \
 	sqlite3                       \
 	supervisor
-	source $(VIRTUALENV)/bin/activate; \
-	uv pip install -U --cache-dir=$(PIP_CACHE_DIR) .
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_PUBLIC)
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_NAMESDB)
 
@@ -342,33 +326,26 @@ git-safe-dir:
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_IREIZO)
 	sudo -u ddr git config --global --add safe.directory $(INSTALL_ASSETS)
 
-install-test:
+install-test: install-virtualenv
 	@echo ""
 	@echo "install-test ------------------------------------------------------------"
-	apt-get --assume-yes install  \
-	python3-coverage              \
-	python3-pytest                \
-	python3-pytest-cov            \
-	python3-pytest-django         \
-	python3-pytest-xdist
-	source $(VIRTUALENV)/bin/activate; \
-	uv pip install -U --cache-dir=$(PIP_CACHE_DIR) -r $(INSTALL_PUBLIC)/requirements-dev.txt
+	source $(VIRTUALENV)/bin/activate; uv pip install .[testing]
 
 mkdir-ddr-public:
 	@echo ""
 	@echo "mkdir-ddr-public --------------------------------------------------------"
 # logs dir
 	-mkdir $(LOG_BASE)
-	chown -R ddr.ddr $(LOG_BASE)
+	chown -R ddr:ddr $(LOG_BASE)
 	chmod -R 775 $(LOG_BASE)
 # sqlite db dir
 	-mkdir $(SQLITE_BASE)
-	chown -R ddr.ddr $(SQLITE_BASE)
+	chown -R ddr:ddr $(SQLITE_BASE)
 	chmod -R 775 $(SQLITE_BASE)
 # media dir
 	-mkdir -p $(MEDIA_BASE)
 	-mkdir -p $(MEDIA_ROOT)
-	chown -R ddr.ddr $(MEDIA_ROOT)
+	chown -R ddr:ddr $(MEDIA_ROOT)
 	chmod -R 755 $(MEDIA_ROOT)
 
 test-ddr-public: test-ddr-public-ui test-ddr-public-names
@@ -393,7 +370,7 @@ runserver:
 	source $(VIRTUALENV)/bin/activate; \
 	python ddrpublic/manage.py runserver 0.0.0.0:$(RUNSERVER_PORT)
 
-uninstall-ddr-public: install-setuptools
+uninstall-ddr-public:
 	@echo ""
 	@echo "uninstall-ddr-public ---------------------------------------------------"
 	source $(VIRTUALENV)/bin/activate; \
@@ -416,9 +393,9 @@ get-ddr-public-assets:
 migrate:
 	source $(VIRTUALENV)/bin/activate; \
 	cd $(INSTALL_PUBLIC)/ddrpublic && python manage.py migrate --noinput
-	chown -R ddr.ddr $(SQLITE_BASE)
+	chown -R ddr:ddr $(SQLITE_BASE)
 	chmod -R 770 $(SQLITE_BASE)
-	chown -R ddr.ddr $(LOG_BASE)
+	chown -R ddr:ddr $(LOG_BASE)
 	chmod -R 775 $(LOG_BASE)
 
 
@@ -430,10 +407,10 @@ install-configs:
 # /etc/ddr/ddrpublic-local.cfg must be readable by ddr but contains sensitive info
 	-mkdir /etc/ddr
 	cp $(INSTALL_PUBLIC)/conf/ddrpublic.cfg $(CONF_PRODUCTION)
-	chown root.root $(CONF_PRODUCTION)
+	chown root:root $(CONF_PRODUCTION)
 	chmod 644 $(CONF_PRODUCTION)
 	touch $(CONF_LOCAL)
-	chown ddr.root $(CONF_LOCAL)
+	chown ddr:root $(CONF_LOCAL)
 	chmod 640 $(CONF_LOCAL)
 
 uninstall-configs:
@@ -447,13 +424,13 @@ install-daemon-configs:
 	@echo "install-daemon-configs -------------------------------------------------"
 # nginx settings
 	cp $(INSTALL_PUBLIC)/conf/nginx.conf $(NGINX_CONF)
-	chown root.root $(NGINX_CONF)
+	chown root:root $(NGINX_CONF)
 	chmod 644 $(NGINX_CONF)
 	-ln -s $(NGINX_CONF) $(NGINX_CONF_LINK)
 	-rm /etc/nginx/sites-enabled/default
 # supervisord
 	cp $(INSTALL_PUBLIC)/conf/supervisor.conf $(SUPERVISOR_GUNICORN_CONF)
-	chown root.root $(SUPERVISOR_GUNICORN_CONF)
+	chown root:root $(SUPERVISOR_GUNICORN_CONF)
 	chmod 644 $(SUPERVISOR_GUNICORN_CONF)
 
 uninstall-daemon-configs:
@@ -497,48 +474,7 @@ install-fpm:
 
 # https://stackoverflow.com/questions/32094205/set-a-custom-install-directory-when-making-a-deb-package-with-fpm
 # https://brejoc.com/tag/fpm/
-deb: deb-bullseye
-
-deb-bullseye:
-	@echo ""
-	@echo "FPM packaging (bullseye) -----------------------------------------------"
-	-rm -Rf $(DEB_FILE_BULLSEYE)
-# Make package
-	fpm   \
-	--verbose   \
-	--input-type dir   \
-	--output-type deb   \
-	--name $(DEB_NAME_BULLSEYE)   \
-	--version $(DEB_VERSION_BULLSEYE)   \
-	--package $(DEB_FILE_BULLSEYE)   \
-	--url "$(GIT_SOURCE_URL)"   \
-	--vendor "$(DEB_VENDOR)"   \
-	--maintainer "$(DEB_MAINTAINER)"   \
-	--description "$(DEB_DESCRIPTION)"   \
-	--depends "imagemagick"  \
-	--depends "nginx"   \
-	--depends "python3"   \
-	--depends "redis-server"   \
-	--depends "sqlite3"  \
-	--depends "supervisor"   \
-	--after-install "bin/fpm-mkdir-log.sh"   \
-	--chdir $(INSTALL_PUBLIC)   \
-	conf/ddrpublic.cfg=etc/ddr/ddrpublic.cfg   \
-	bin=$(DEB_BASE)   \
-	conf=$(DEB_BASE)   \
-	COPYRIGHT=$(DEB_BASE)   \
-	ddrpublic=$(DEB_BASE)   \
-	.git=$(DEB_BASE)   \
-	.gitignore=$(DEB_BASE)   \
-	INSTALL=$(DEB_BASE)   \
-	../ireizo-public=opt   \
-	LICENSE=$(DEB_BASE)   \
-	Makefile=$(DEB_BASE)   \
-	namesdb=$(DEB_BASE)   \
-	pyproject.toml=$(DEB_BASE)   \
-	README.rst=$(DEB_BASE)   \
-	venv=$(DEB_BASE)   \
-	VERSION=$(DEB_BASE)
+deb: deb-trixie
 
 deb-bookworm:
 	@echo ""
@@ -556,12 +492,10 @@ deb-bookworm:
 	--vendor "$(DEB_VENDOR)"   \
 	--maintainer "$(DEB_MAINTAINER)"   \
 	--description "$(DEB_DESCRIPTION)"   \
+	--depends "extrepo"  \
 	--depends "imagemagick"  \
 	--depends "nginx"  \
 	--depends "python3"  \
-	--depends "python3-git"  \
-	--depends "python3-redis"  \
-	--depends "python3-requests"  \
 	--depends "redis-server"   \
 	--depends "sqlite3"  \
 	--depends "supervisor"   \
@@ -580,8 +514,8 @@ deb-bookworm:
 	Makefile=$(DEB_BASE)   \
 	namesdb=$(DEB_BASE)   \
 	pyproject.toml=$(DEB_BASE)   \
-	README.rst=$(DEB_BASE)   \
-	venv=$(DEB_BASE)   \
+	README.md=$(DEB_BASE)   \
+	.venv=$(DEB_BASE)   \
 	VERSION=$(DEB_BASE)
 
 deb-trixie:
@@ -600,12 +534,10 @@ deb-trixie:
 	--vendor "$(DEB_VENDOR)"   \
 	--maintainer "$(DEB_MAINTAINER)"   \
 	--description "$(DEB_DESCRIPTION)"   \
+	--depends "extrepo"  \
 	--depends "imagemagick"  \
 	--depends "nginx"  \
 	--depends "python3"  \
-	--depends "python3-git"  \
-	--depends "python3-redis"  \
-	--depends "python3-requests"  \
 	--depends "redis-server"   \
 	--depends "sqlite3"  \
 	--depends "supervisor"   \
@@ -624,6 +556,6 @@ deb-trixie:
 	Makefile=$(DEB_BASE)   \
 	namesdb=$(DEB_BASE)   \
 	pyproject.toml=$(DEB_BASE)   \
-	README.rst=$(DEB_BASE)   \
-	venv=$(DEB_BASE)   \
+	README.md=$(DEB_BASE)   \
+	.venv=$(DEB_BASE)   \
 	VERSION=$(DEB_BASE)

@@ -407,11 +407,7 @@ TEMPLATES = [
     },
 ]
 
-STATICFILES_DIRS = (
-    #os.path.join(BASE_DIR, 'ddrpublic/static'),
-    #os.path.join(BASE_DIR, 'storage/static'),
-    os.path.join(BASE_DIR, 'ui/static'),
-)
+STATICFILES_DIRS = ()
 
 LOG_REQUEST_ID_HEADER = "HTTP_X_REQUEST_ID"
 GENERATE_REQUEST_ID_IF_NOT_IN_HEADER = True
