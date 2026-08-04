@@ -34,7 +34,7 @@ dependencies = [
     "djangorestframework==3.17.1",
     "drf-yasg==1.21.15",
     "django-robots==6.1",
-    "gitpython==3.1.46",
+    "gitpython==3.1.57",
     "gunicorn==26.0.0",
     "httpx2==2.0.0",
     "redis==7.4.0",
