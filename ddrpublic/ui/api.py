@@ -241,8 +241,13 @@ def object_detail(request, object_id):
     """Information for a specific object.
     """
     # TODO just get doc_type
+    oi = identifier.Identifier(object_id)
+    if oi.model == 'file-role':
+        # There is no ES index for file role.
+        # This is not an object type and should not be linked to
+        return Response(status=status.HTTP_404_NOT_FOUND)
     document = models.DOCSTORE.es.get(
-        index=models.DOCSTORE.index_name(identifier.Identifier(object_id).model),
+        index=models.DOCSTORE.index_name(oi.model),
         id=object_id
     )
     model = document['_index'].replace(models.INDEX_PREFIX, '')
