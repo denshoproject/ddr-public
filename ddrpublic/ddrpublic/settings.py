@@ -450,19 +450,18 @@ LOGGING = {
             'filters': ['request_id'],
             'formatter': 'verbose',
         },
-        'mail_admins': {
-            'level': 'ERROR',
-            'class': 'django.utils.log.AdminEmailHandler',
-            'filters': ['require_debug_false'],
-            'filters': ['request_id'],
-            'formatter': 'verbose',
-        },
+        #'mail_admins': {
+        #    'level': 'ERROR',
+        #    'class': 'django.utils.log.AdminEmailHandler',
+        #    'filters': ['require_debug_false'],
+        #    'filters': ['request_id'],
+        #    'formatter': 'verbose',
+        #},
     },
     'loggers': {
         'django.request': {
             'level': 'ERROR',
             'propagate': True,
-            'handlers': ['mail_admins'],
             'handlers': [
                 #'mail_admins'
             ],
