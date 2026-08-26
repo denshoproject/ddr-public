@@ -616,7 +616,10 @@ def format_object_detail2(document, request, listitem=False):
                 )
     
     if not listitem:
-        if document.get('parent_id'):
+        if document.get('parent_id') and (document['model'] != 'file'):
+            # don't link from file up to file-role
+            # (causes Elasticsearch index-not-found)
+            # TODO link from file up to entity parent
             d['links']['parent'] = reverse(
                 'ui-api-object',
                 args=[document.pop('links_parent')],

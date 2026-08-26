@@ -31,7 +31,7 @@ dependencies = [
     "django-bootstrap-pagination-forked==1.7.2",
     "django-cors-headers",
     "django-log-request-id",
-    "djangorestframework==3.17.1",
+    "djangorestframework==3.18.0",
     "drf-yasg==1.21.15",
     "django-robots==6.1",
     "gitpython==3.1.58",
