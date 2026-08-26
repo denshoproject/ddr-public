@@ -22,6 +22,10 @@ def legacy(request, repo, org, cid, eid=None, role=None, sha1=None):
     return HttpResponseRedirect(reverse('ui-object-detail', args=[oid]))
 
 def detail(request, oid):
+    # redirect bots to the API
+    query_string = request.META.get('QUERY_STRING')
+    if query_string == 'format=api':
+        return HttpResponseRedirect(reverse('ui-api-object', args=[oid]))
     o = models._object(request, oid)
     if   o['model'] == 'repository': return repository.detail(request, oid)
     elif o['model'] == 'organization': return organizations.detail(request, oid)
@@ -32,6 +36,10 @@ def detail(request, oid):
     raise Exception("Could not match ID,model,view.")
 
 def children(request, oid):
+    # redirect bots to the API
+    query_string = request.META.get('QUERY_STRING')
+    if query_string == 'format=api':
+        return HttpResponseRedirect(reverse('ui-api-object-children', args=[oid]))
     o = models._object(request, oid)
     if   o['model'] == 'repository': return repository.children(request, oid)
     elif o['model'] == 'organization': return organizations.children(request, oid)
@@ -42,6 +50,10 @@ def children(request, oid):
     raise Exception("Could not match ID,model,view.")
 
 def nodes(request, oid):
+    # redirect bots to the API
+    query_string = request.META.get('QUERY_STRING')
+    if query_string == 'format=api':
+        return HttpResponseRedirect(reverse('ui-api-object-nodes', args=[oid]))
     o = models._object(request, oid)
     if   o['model'] == 'repository': return repository.nodes(request, oid)
     elif o['model'] == 'organization': return organizations.nodes(request, oid)
