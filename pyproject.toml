@@ -36,7 +36,7 @@ dependencies = [
     "django-robots==6.1",
     "gitpython==3.1.58",
     "gunicorn==26.0.0",
-    "httpx2==2.0.0",
+    "httpx2==2.12.0",
     "redis==7.4.0",
     "sorl-thumbnail==13.0.0", #>=12.8,<12.9",
     "elastictools @ git+https://github.com/denshoproject/densho-elastictools.git@v1.1.3",
