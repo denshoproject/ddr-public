@@ -501,6 +501,16 @@ IDENTIFIERS = [
 ]
 
 
+class InvalidIdentifierException(Exception):
+    pass
+
+class InvalidInputException(Exception):
+    pass
+
+class MalformedIDException(Exception):
+    pass
+
+
 class Definitions():
     """Functions for parsing and extracting useful data from IDENTIFIERS
     """

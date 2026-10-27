@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import Http404, render
 from django.urls import reverse
 
+from ..identifier import InvalidInputException
 from .. import models
 from . import repo as repository
 from . import organizations, collections, entities, files
@@ -26,7 +27,10 @@ def detail(request, oid):
     query_string = request.META.get('QUERY_STRING')
     if query_string == 'format=api':
         return HttpResponseRedirect(reverse('ui-api-object', args=[oid]))
-    o = models._object(request, oid)
+    try:
+        o = models._object(request, oid)
+    except InvalidInputException:
+        raise Http404
     if   o['model'] == 'repository': return repository.detail(request, oid)
     elif o['model'] == 'organization': return organizations.detail(request, oid)
     elif o['model'] == 'collection': return collections.detail(request, oid)
