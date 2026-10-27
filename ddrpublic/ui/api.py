@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from django.conf import settings
+from django.http import Http404
 
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -16,6 +17,7 @@ from elastictools import search
 from . import identifier
 from .misc import filter_if_branded
 from . import models
+from .views.browse import BROWSABLE_FACETS
 
 DEFAULT_LIMIT = 25
 
@@ -209,6 +211,8 @@ def facetterms(request, facet_id, format=None):
     
     `facet_id`: "topics", "facility", "format", "genre", or "rights". 
     """
+    if not facet_id in BROWSABLE_FACETS:
+        raise Http404
     offset = int(request.GET.get('offset', 0))
     data = models.Facet.children(
         facet_id, request,
@@ -231,6 +235,8 @@ def term_objects(request, facet_id, term_id, limit=DEFAULT_LIMIT, offset=0):
     - http://partner.densho.org/vocab/api/0.2/genre.json
     - http://partner.densho.org/vocab/api/0.2/rights.json
     """
+    if not facet_id in BROWSABLE_FACETS:
+        raise Http404
     object_id = '%s-%s' % (facet_id, str(term_id))
     offset = int(request.GET.get('offset', 0))
     data = models.Term.objects(
@@ -342,6 +348,8 @@ def facet(request, facet_id, format=None):
     
     `facet_id`: "topics", "facility", "format", "genre", or "rights". 
     """
+    if not facet_id in BROWSABLE_FACETS:
+        raise Http404
     data = models.Facet.get(facet_id, request)
     return _detail(request, data)
 
@@ -358,6 +366,8 @@ def facetterm(request, facet_id, term_id, format=None):
     - http://partner.densho.org/vocab/api/0.2/genre.json
     - http://partner.densho.org/vocab/api/0.2/rights.json
     """
+    if not facet_id in BROWSABLE_FACETS:
+        raise Http404
     object_id = '%s-%s' % (facet_id, str(term_id))
     data = models.Term.get(object_id, request)
     return _detail(request, data)
