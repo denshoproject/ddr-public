@@ -254,10 +254,13 @@ def object_detail(request, object_id):
         # There is no ES index for file role.
         # This is not an object type and should not be linked to
         return Response(status=status.HTTP_404_NOT_FOUND)
-    document = models.DOCSTORE.es.get(
-        index=models.DOCSTORE.index_name(oi.model),
-        id=object_id
-    )
+    try:
+        document = models.DOCSTORE.es.get(
+            index=models.DOCSTORE.index_name(oi.model),
+            id=object_id
+        )
+    except search.docstore.NotFoundError:
+        raise Http404
     model = document['_index'].replace(models.INDEX_PREFIX, '')
     if   model == 'repository': return repository(request._request, object_id)
     elif model == 'organization': return organization(request._request, object_id)
@@ -310,7 +313,10 @@ def narrators(request, format=None):
 
 @api_view(['GET'])
 def narrator(request, object_id, format=None):
-    data = models.Narrator.get(object_id, request)
+    try:
+        data = models.Narrator.get(object_id, request)
+    except search.docstore.NotFoundError:
+        raise Http404
     return _detail(request, data)
 
 @api_view(['GET'])
@@ -369,5 +375,8 @@ def facetterm(request, facet_id, term_id, format=None):
     if not facet_id in BROWSABLE_FACETS:
         raise Http404
     object_id = '%s-%s' % (facet_id, str(term_id))
-    data = models.Term.get(object_id, request)
+    try:
+        data = models.Term.get(object_id, request)
+    except search.docstore.NotFoundError:
+        raise Http404
     return _detail(request, data)
