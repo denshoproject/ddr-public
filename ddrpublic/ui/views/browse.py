@@ -74,7 +74,7 @@ def facet(request, facet_id):
 
 @ui_state
 def term( request, facet_id, term_id ):
-    oid = '-'.join([facet_id, term_id])
+    oid = '-'.join([facet_id, str(term_id)])
     template_name = 'ui/facets/term-%s.html' % facet_id
     facet = models.Facet.get(facet_id, request)
     term = models.Term.get(oid, request)
@@ -104,7 +104,7 @@ def term( request, facet_id, term_id ):
 
     params = request.GET.copy()
     params['match_all'] = 'true'
-    params[facet_id] = term_id
+    params[facet_id] = str(term_id)
     searcher = search.Searcher(models.DOCSTORE)
     searcher.prepare(
         params=params,

@@ -231,9 +231,11 @@ def term_objects(request, facet_id, term_id, limit=DEFAULT_LIMIT, offset=0):
     - http://partner.densho.org/vocab/api/0.2/genre.json
     - http://partner.densho.org/vocab/api/0.2/rights.json
     """
-    object_id = '%s-%s' % (facet_id, term_id)
+    object_id = '%s-%s' % (facet_id, str(term_id))
     offset = int(request.GET.get('offset', 0))
-    data = models.Term.objects(facet_id, term_id, request, limit=limit, offset=offset)
+    data = models.Term.objects(
+        facet_id, str(term_id), request, limit=limit, offset=offset
+    )
     return _list(request, data)
 
 @api_view(['GET'])
@@ -356,6 +358,6 @@ def facetterm(request, facet_id, term_id, format=None):
     - http://partner.densho.org/vocab/api/0.2/genre.json
     - http://partner.densho.org/vocab/api/0.2/rights.json
     """
-    object_id = '%s-%s' % (facet_id, term_id)
+    object_id = '%s-%s' % (facet_id, str(term_id))
     data = models.Term.get(object_id, request)
     return _detail(request, data)
