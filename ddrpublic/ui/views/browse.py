@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 
 from django.conf import settings
 from django.core.paginator import Paginator
+from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.cache import cache_page
@@ -49,8 +50,12 @@ def narrators(request):
 
 @cache_page(settings.CACHE_TIMEOUT)
 def narrator(request, oid):
+    try:
+        narrator = models.Narrator.get(oid, request)
+    except search.docstore.NotFoundError:
+        raise Http404
     return render(request, 'ui/narrators/detail.html', {
-        'narrator': models.Narrator.get(oid, request),
+        'narrator': narrator,
         'interviews': models.Narrator.interviews(oid, request, limit=1000),
         'api_url': reverse('ui-api-narrator', args=[oid]),
     })
@@ -79,7 +84,10 @@ def term( request, facet_id, term_id ):
     oid = '-'.join([facet_id, str(term_id)])
     template_name = 'ui/facets/term-%s.html' % facet_id
     facet = models.Facet.get(facet_id, request)
-    term = models.Term.get(oid, request)
+    try:
+        term = models.Term.get(oid, request)
+    except search.docstore.NotFoundError:
+        raise Http404
     
     # terms tree (topics)
     if facet_id == 'topics':
