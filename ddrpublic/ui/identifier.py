@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from functools import total_ordering
+from os import path
 import re
 
 IDENTIFIERS = [
@@ -609,7 +610,7 @@ def _is_url(text):
     return matches_pattern(text, URL_PATTERNS)
 
 def _is_abspath(text):
-    if isinstance(text, basestring) and os.path.isabs(text):
+    if isinstance(text, str) and path.isabs(text):
         return True
     return False
 
