@@ -15,7 +15,7 @@ from .. import models
 from ..decorators import ui_state
 
 SHOW_THESE = ['topics', 'facility', 'location', 'format', 'genre',]
-
+BROWSABLE_FACETS = ['topics', 'facility']
 
 @cache_page(settings.CACHE_TIMEOUT)
 def index( request ):
@@ -57,15 +57,15 @@ def narrator(request, oid):
 
 @ui_state
 def facet(request, facet_id):
+    if not facet_id in BROWSABLE_FACETS:
+        raise Http404
     if facet_id == 'topics':
         template_name = 'ui/facets/facet-topics.html'
         terms = models.Facet.topics_terms(request)
-        
     elif facet_id == 'facility':
         template_name = 'ui/facets/facet-facility.html'
         # for some reason ES does not sort
         terms = models.Facet.facility_terms(request)
-    
     return render(request, template_name, {
         'facet': models.Facet.get(facet_id, request),
         'terms': terms,
@@ -74,6 +74,8 @@ def facet(request, facet_id):
 
 @ui_state
 def term( request, facet_id, term_id ):
+    if not facet_id in BROWSABLE_FACETS:
+        raise Http404
     oid = '-'.join([facet_id, str(term_id)])
     template_name = 'ui/facets/term-%s.html' % facet_id
     facet = models.Facet.get(facet_id, request)
