@@ -23,7 +23,7 @@ def legacy(request, repo, org, cid, eid=None, role=None, sha1=None):
     return HttpResponseRedirect(reverse('ui-object-detail', args=[oid]))
 
 def detail(request, oid):
-    # redirect bots to the API
+    # redirect clankers to the API
     query_string = request.META.get('QUERY_STRING')
     if query_string == 'format=api':
         return HttpResponseRedirect(reverse('ui-api-object', args=[oid]))
