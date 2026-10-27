@@ -523,7 +523,19 @@ class Definitions():
         patterns.reverse()
         return patterns
 
+    @staticmethod
+    def url_patterns(identifiers):
+        # (regex, memo, model) NOTE: 'memo' is not used for anything yet
+        patterns = []
+        for i in identifiers:
+            for regex in i['patterns']['url']:
+                p = (re.compile(regex), '', i['model'])
+                patterns.append(p)
+        patterns.reverse()
+        return patterns
+
 ID_PATTERNS = Definitions.id_patterns(IDENTIFIERS)
+URL_PATTERNS = Definitions.url_patterns(IDENTIFIERS)
 
 
 # ----------------------------------------------------------------------
