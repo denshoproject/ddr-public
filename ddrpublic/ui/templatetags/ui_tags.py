@@ -128,10 +128,17 @@ def rightspanel( code ):
     t = template.loader.get_template('ui/rightspanel-tag.html')
     return t.render({'code':code})
 
+RIGHTS_TEMPLATES = [
+    'cc',
+    'pcc',
+    'nocc',
+    'pdm',
+]
+
 def rightsbadge( code ):
     """Item rights badge
     """
-    if code:
+    if code and code in RIGHTS_TEMPLATES:
         template_name = 'ui/license-{}.html'.format(code)
     else:
         template_name = 'ui/license.html'

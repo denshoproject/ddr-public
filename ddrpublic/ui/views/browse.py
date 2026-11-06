@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 
 from django.conf import settings
 from django.core.paginator import Paginator
+from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.cache import cache_page
@@ -15,7 +16,7 @@ from .. import models
 from ..decorators import ui_state
 
 SHOW_THESE = ['topics', 'facility', 'location', 'format', 'genre',]
-
+BROWSABLE_FACETS = ['topics', 'facility']
 
 @cache_page(settings.CACHE_TIMEOUT)
 def index( request ):
@@ -49,23 +50,27 @@ def narrators(request):
 
 @cache_page(settings.CACHE_TIMEOUT)
 def narrator(request, oid):
+    try:
+        narrator = models.Narrator.get(oid, request)
+    except search.docstore.NotFoundError:
+        raise Http404
     return render(request, 'ui/narrators/detail.html', {
-        'narrator': models.Narrator.get(oid, request),
+        'narrator': narrator,
         'interviews': models.Narrator.interviews(oid, request, limit=1000),
         'api_url': reverse('ui-api-narrator', args=[oid]),
     })
 
 @ui_state
 def facet(request, facet_id):
+    if not facet_id in BROWSABLE_FACETS:
+        raise Http404
     if facet_id == 'topics':
         template_name = 'ui/facets/facet-topics.html'
         terms = models.Facet.topics_terms(request)
-        
     elif facet_id == 'facility':
         template_name = 'ui/facets/facet-facility.html'
         # for some reason ES does not sort
         terms = models.Facet.facility_terms(request)
-    
     return render(request, template_name, {
         'facet': models.Facet.get(facet_id, request),
         'terms': terms,
@@ -74,10 +79,15 @@ def facet(request, facet_id):
 
 @ui_state
 def term( request, facet_id, term_id ):
-    oid = '-'.join([facet_id, term_id])
+    if not facet_id in BROWSABLE_FACETS:
+        raise Http404
+    oid = '-'.join([facet_id, str(term_id)])
     template_name = 'ui/facets/term-%s.html' % facet_id
     facet = models.Facet.get(facet_id, request)
-    term = models.Term.get(oid, request)
+    try:
+        term = models.Term.get(oid, request)
+    except search.docstore.NotFoundError:
+        raise Http404
     
     # terms tree (topics)
     if facet_id == 'topics':
@@ -104,7 +114,7 @@ def term( request, facet_id, term_id ):
 
     params = request.GET.copy()
     params['match_all'] = 'true'
-    params[facet_id] = term_id
+    params[facet_id] = str(term_id)
     searcher = search.Searcher(models.DOCSTORE)
     searcher.prepare(
         params=params,

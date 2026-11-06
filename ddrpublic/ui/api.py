@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from django.conf import settings
+from django.http import Http404
 
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -16,6 +17,7 @@ from elastictools import search
 from . import identifier
 from .misc import filter_if_branded
 from . import models
+from .views.browse import BROWSABLE_FACETS
 
 DEFAULT_LIMIT = 25
 
@@ -209,6 +211,8 @@ def facetterms(request, facet_id, format=None):
     
     `facet_id`: "topics", "facility", "format", "genre", or "rights". 
     """
+    if not facet_id in BROWSABLE_FACETS:
+        raise Http404
     offset = int(request.GET.get('offset', 0))
     data = models.Facet.children(
         facet_id, request,
@@ -231,9 +235,13 @@ def term_objects(request, facet_id, term_id, limit=DEFAULT_LIMIT, offset=0):
     - http://partner.densho.org/vocab/api/0.2/genre.json
     - http://partner.densho.org/vocab/api/0.2/rights.json
     """
-    object_id = '%s-%s' % (facet_id, term_id)
+    if not facet_id in BROWSABLE_FACETS:
+        raise Http404
+    object_id = '%s-%s' % (facet_id, str(term_id))
     offset = int(request.GET.get('offset', 0))
-    data = models.Term.objects(facet_id, term_id, request, limit=limit, offset=offset)
+    data = models.Term.objects(
+        facet_id, str(term_id), request, limit=limit, offset=offset
+    )
     return _list(request, data)
 
 @api_view(['GET'])
@@ -246,10 +254,13 @@ def object_detail(request, object_id):
         # There is no ES index for file role.
         # This is not an object type and should not be linked to
         return Response(status=status.HTTP_404_NOT_FOUND)
-    document = models.DOCSTORE.es.get(
-        index=models.DOCSTORE.index_name(oi.model),
-        id=object_id
-    )
+    try:
+        document = models.DOCSTORE.es.get(
+            index=models.DOCSTORE.index_name(oi.model),
+            id=object_id
+        )
+    except search.docstore.NotFoundError:
+        raise Http404
     model = document['_index'].replace(models.INDEX_PREFIX, '')
     if   model == 'repository': return repository(request._request, object_id)
     elif model == 'organization': return organization(request._request, object_id)
@@ -302,7 +313,10 @@ def narrators(request, format=None):
 
 @api_view(['GET'])
 def narrator(request, object_id, format=None):
-    data = models.Narrator.get(object_id, request)
+    try:
+        data = models.Narrator.get(object_id, request)
+    except search.docstore.NotFoundError:
+        raise Http404
     return _detail(request, data)
 
 @api_view(['GET'])
@@ -340,6 +354,8 @@ def facet(request, facet_id, format=None):
     
     `facet_id`: "topics", "facility", "format", "genre", or "rights". 
     """
+    if not facet_id in BROWSABLE_FACETS:
+        raise Http404
     data = models.Facet.get(facet_id, request)
     return _detail(request, data)
 
@@ -356,6 +372,11 @@ def facetterm(request, facet_id, term_id, format=None):
     - http://partner.densho.org/vocab/api/0.2/genre.json
     - http://partner.densho.org/vocab/api/0.2/rights.json
     """
-    object_id = '%s-%s' % (facet_id, term_id)
-    data = models.Term.get(object_id, request)
+    if not facet_id in BROWSABLE_FACETS:
+        raise Http404
+    object_id = '%s-%s' % (facet_id, str(term_id))
+    try:
+        data = models.Term.get(object_id, request)
+    except search.docstore.NotFoundError:
+        raise Http404
     return _detail(request, data)

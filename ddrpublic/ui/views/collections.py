@@ -64,6 +64,10 @@ def list( request ):
 
 @cache_page(settings.CACHE_TIMEOUT)
 def detail(request, oid):
+    # redirect bots to the API
+    query_string = request.META.get('QUERY_STRING')
+    if query_string == 'format=api':
+        return HttpResponseRedirect(reverse('ui-api-object', args=[oid]))
     try:
         collection = models._object(request, oid)
     except models.NotFound:

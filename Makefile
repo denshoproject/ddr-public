@@ -227,9 +227,6 @@ remove-elasticsearch:
 install-virtualenv:
 	@echo ""
 	@echo "install-virtualenv -----------------------------------------------------"
-	apt-get install --assume-yes extrepo
-	extrepo enable uv
-	apt-get install --assume-yes uv
 	uv venv --relocatable --managed-python --allow-existing --python /usr/bin/python3
 
 get-app: get-namesdb get-ddr-public get-ireizo-public
@@ -492,7 +489,6 @@ deb-bookworm:
 	--vendor "$(DEB_VENDOR)"   \
 	--maintainer "$(DEB_MAINTAINER)"   \
 	--description "$(DEB_DESCRIPTION)"   \
-	--depends "extrepo"  \
 	--depends "imagemagick"  \
 	--depends "nginx"  \
 	--depends "python3"  \
@@ -534,7 +530,6 @@ deb-trixie:
 	--vendor "$(DEB_VENDOR)"   \
 	--maintainer "$(DEB_MAINTAINER)"   \
 	--description "$(DEB_DESCRIPTION)"   \
-	--depends "extrepo"  \
 	--depends "imagemagick"  \
 	--depends "nginx"  \
 	--depends "python3"  \

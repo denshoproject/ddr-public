@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from functools import total_ordering
+from os import path
 import re
 
 IDENTIFIERS = [
@@ -500,6 +501,16 @@ IDENTIFIERS = [
 ]
 
 
+class InvalidIdentifierException(Exception):
+    pass
+
+class InvalidInputException(Exception):
+    pass
+
+class MalformedIDException(Exception):
+    pass
+
+
 class Definitions():
     """Functions for parsing and extracting useful data from IDENTIFIERS
     """
@@ -523,7 +534,19 @@ class Definitions():
         patterns.reverse()
         return patterns
 
+    @staticmethod
+    def url_patterns(identifiers):
+        # (regex, memo, model) NOTE: 'memo' is not used for anything yet
+        patterns = []
+        for i in identifiers:
+            for regex in i['patterns']['url']:
+                p = (re.compile(regex), '', i['model'])
+                patterns.append(p)
+        patterns.reverse()
+        return patterns
+
 ID_PATTERNS = Definitions.id_patterns(IDENTIFIERS)
+URL_PATTERNS = Definitions.url_patterns(IDENTIFIERS)
 
 
 # ----------------------------------------------------------------------
@@ -597,7 +620,7 @@ def _is_url(text):
     return matches_pattern(text, URL_PATTERNS)
 
 def _is_abspath(text):
-    if isinstance(text, basestring) and os.path.isabs(text):
+    if isinstance(text, str) and path.isabs(text):
         return True
     return False
 

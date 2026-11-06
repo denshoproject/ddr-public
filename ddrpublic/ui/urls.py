@@ -63,8 +63,8 @@ urlpatterns = [
     ),
     path('api/0.2/search/', api.Search.as_view(), name='ui-api-search'),
     
-    path('api/0.2/narrator/<slug:object_id>/interviews/', api.narrator_interviews, name='ui-api-narrator-interviews'),
-    path('api/0.2/narrator/<slug:object_id>/', api.narrator, name='ui-api-narrator'),
+    path('api/0.2/narrator/<int:object_id>/interviews/', api.narrator_interviews, name='ui-api-narrator-interviews'),
+    path('api/0.2/narrator/<int:object_id>/', api.narrator, name='ui-api-narrator'),
     path('api/0.2/narrator/', api.narrators, name='ui-api-narrators'),
 
     re_path(
@@ -73,8 +73,8 @@ urlpatterns = [
     ),
 
     path('api/0.2/facet/<slug:facet_id>/children/', api.facetterms, name='ui-api-facetterms'),
-    path('api/0.2/facet/<slug:facet_id>/<slug:term_id>/objects/', api.term_objects, name='ui-api-term-objects'),
-    path('api/0.2/facet/<slug:facet_id>/<slug:term_id>/', api.facetterm, name='ui-api-term'),
+    path('api/0.2/facet/<slug:facet_id>/<int:term_id>/objects/', api.term_objects, name='ui-api-term-objects'),
+    path('api/0.2/facet/<slug:facet_id>/<int:term_id>/', api.facetterm, name='ui-api-term'),
     path('api/0.2/facet/<slug:facet_id>/', api.facet, name='ui-api-facet'),
     path('api/0.2/facet/', api.facet_index, name='ui-api-facets'),
     
@@ -92,12 +92,12 @@ urlpatterns = [
     path('using/', TemplateView.as_view(template_name='ui/using.html'), name='ui-using'),
     path('ethicalediting/', TemplateView.as_view(template_name='ui/ethicalediting.html'), name='ui-ethicalediting'),
     
-    path('narrators/<slug:oid>/search/', searching.narrator, name='ui-search-narrator'),
-    path('narrators/<slug:oid>/', browse.narrator, name='ui-narrators-detail'),
+    path('narrators/<int:oid>/search/', searching.narrator, name='ui-search-narrator'),
+    path('narrators/<int:oid>/', browse.narrator, name='ui-narrators-detail'),
     path('narrators/', browse.narrators, name='ui-narrators-list'),
     
-    path('browse/<slug:facet_id>/<slug:term_id>/search/', searching.facetterm, name='ui-search-facetterm'),
-    path('browse/<slug:facet_id>/<slug:term_id>/', browse.term, name='ui-browse-term'),
+    path('browse/<slug:facet_id>/<int:term_id>/search/', searching.facetterm, name='ui-search-facetterm'),
+    path('browse/<slug:facet_id>/<int:term_id>/', browse.term, name='ui-browse-term'),
     path('browse/<slug:facet_id>/', browse.facet, name='ui-browse-facet'),
     path('browse/', browse.index, name='ui-browse-index'),
     
