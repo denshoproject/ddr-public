@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 import configparser
+import logging
 import os
 from pathlib import Path
 import socket
@@ -369,6 +370,7 @@ THUMBNAIL_GEOMETRY='512x512>'
 THUMBNAIL_COLORSPACE='sRGB'
 THUMBNAIL_OPTIONS=''
 THUMBNAIL_DEBUG = config.getboolean('sorl-thumbnail', 'debug')
+logging.getLogger('sorl.thumbnail').setLevel(logging.CRITICAL)
 
 # File thumbnail URL generator function
 # sorl.thumbnail will download original files from this source and generate thumbnails locally.
